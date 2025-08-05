@@ -154,6 +154,27 @@ const FormatPage = () => {
         </div>
       </div>
 
+      {/* Format Showcase Image Section */}
+      {(cmsContent?.content?.showcase_image || format.showcaseImage) && (
+        <section className="py-16 px-4 bg-muted/20">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-4">See {format.shortName} in Action</h2>
+              <p className="text-lg text-muted-foreground">
+                Real examples of {format.name} across London
+              </p>
+            </div>
+            <div className="max-w-4xl mx-auto">
+              <img 
+                src={cmsContent?.content?.showcase_image || format.showcaseImage} 
+                alt={`${format.name} example`}
+                className="w-full h-auto rounded-lg shadow-2xl"
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Custom Content Sections */}
       {cmsContent?.content?.sections && cmsContent.content.sections.length > 0 && (
         <div className="container mx-auto px-4 py-16">
