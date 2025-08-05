@@ -3,9 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent } from '@/components/ui/card';
-import { Upload, Image, Video, FileText, Trash2, Copy } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Upload, Image, Video, FileText, Trash2, Copy, Search, Filter } from 'lucide-react';
 
 interface MediaFile {
   id: string;
@@ -21,6 +22,9 @@ interface MediaFile {
 
 export const MediaLibrary = () => {
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+  const [filteredFiles, setFilteredFiles] = useState<MediaFile[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'image' | 'video' | 'document'>('all');
   const [uploading, setUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -29,6 +33,40 @@ export const MediaLibrary = () => {
   useEffect(() => {
     fetchMediaFiles();
   }, []);
+
+  useEffect(() => {
+    filterMediaFiles();
+  }, [mediaFiles, searchTerm, typeFilter]);
+
+  const filterMediaFiles = () => {
+    let filtered = [...mediaFiles];
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(file => 
+        file.original_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        file.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (file.alt_text && file.alt_text.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (file.caption && file.caption.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    // Type filter
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(file => {
+        const category = getFileCategory(file.file_type);
+        return category === typeFilter;
+      });
+    }
+
+    setFilteredFiles(filtered);
+  };
+
+  const getFileCategory = (fileType: string): 'image' | 'video' | 'document' => {
+    if (fileType.startsWith('image/')) return 'image';
+    if (fileType.startsWith('video/')) return 'video';
+    return 'document';
+  };
 
   const fetchMediaFiles = async () => {
     const { data, error } = await supabase
@@ -242,8 +280,75 @@ export const MediaLibrary = () => {
         </div>
       </div>
 
+      {/* Filter Controls */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="w-4 h-4" />
+            Filter & Search Media
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="media-search">Search Files</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="media-search"
+                  placeholder="Search by filename, alt text..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 mt-1"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="media-type-filter">Filter by Type</Label>
+              <Select value={typeFilter} onValueChange={(value: 'all' | 'image' | 'video' | 'document') => setTypeFilter(value)}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="image">Images</SelectItem>
+                  <SelectItem value="video">Videos</SelectItem>
+                  <SelectItem value="document">Documents</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between mt-4 pt-4 border-t">
+            <p className="text-sm text-muted-foreground">
+              Showing {filteredFiles.length} of {mediaFiles.length} files
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                setSearchTerm('');
+                setTypeFilter('all');
+              }}
+            >
+              Clear Filters
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Media Files Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {mediaFiles.map((file) => (
+        {filteredFiles.length === 0 ? (
+          <div className="col-span-full">
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">No files found matching your filters.</p>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          filteredFiles.map((file) => (
           <Card key={file.id}>
             <CardContent className="p-4">
               <div className="space-y-3">
@@ -291,8 +396,9 @@ export const MediaLibrary = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        ))}
+            </Card>
+          ))
+        )}
       </div>
     </div>
   );

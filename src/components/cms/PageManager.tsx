@@ -25,12 +25,45 @@ interface ContentPage {
 
 export const PageManager = () => {
   const [pages, setPages] = useState<ContentPage[]>([]);
+  const [filteredPages, setFilteredPages] = useState<ContentPage[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'ooh_format' | 'page'>('all');
   const [syncing, setSyncing] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchPages();
   }, []);
+
+  useEffect(() => {
+    filterPages();
+  }, [pages, searchTerm, statusFilter, typeFilter]);
+
+  const filterPages = () => {
+    let filtered = [...pages];
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(page => 
+        page.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        page.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (page.meta_description && page.meta_description.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(page => page.status === statusFilter);
+    }
+
+    // Type filter
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(page => page.page_type === typeFilter);
+    }
+
+    setFilteredPages(filtered);
+  };
 
   const fetchPages = async () => {
     const { data, error } = await supabase
@@ -223,8 +256,81 @@ export const PageManager = () => {
         </TabsContent>
 
         <TabsContent value="pages">
-          <div className="space-y-4">
-            {pages.map((page) => (
+          <div className="space-y-6">
+            {/* Filter Controls */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Filter & Search</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="search">Search Pages</Label>
+                    <Input
+                      id="search"
+                      placeholder="Search by title, slug, or description..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="status-filter">Filter by Status</Label>
+                    <Select value={statusFilter} onValueChange={(value: 'all' | 'draft' | 'published') => setStatusFilter(value)}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="published">Published</SelectItem>
+                        <SelectItem value="draft">Draft</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="type-filter">Filter by Type</Label>
+                    <Select value={typeFilter} onValueChange={(value: 'all' | 'ooh_format' | 'page') => setTypeFilter(value)}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="ooh_format">OOH Formats</SelectItem>
+                        <SelectItem value="page">General Pages</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {filteredPages.length} of {pages.length} pages
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setSearchTerm('');
+                      setStatusFilter('all');
+                      setTypeFilter('all');
+                    }}
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Pages List */}
+            <div className="space-y-4">
+              {filteredPages.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <p className="text-muted-foreground">No pages found matching your filters.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                filteredPages.map((page) => (
               <Card key={page.id}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -261,8 +367,10 @@ export const PageManager = () => {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-            ))}
+                  </Card>
+                ))
+              )}
+            </div>
           </div>
         </TabsContent>
 
