@@ -6,33 +6,29 @@ const HowItWorks = () => {
     {
       number: "01",
       title: "Submit your brief",
-      description: "Format, location, timing, budget",
-      icon: "📝"
+      description: "Format, location, timing, budget"
     },
     {
-      number: "02", 
+      number: "02",
       title: "Get a quote same-day",
-      description: "We'll show you what's live and what performs",
-      icon: "⚡"
+      description: "We'll show you what's live and what performs"
     },
     {
       number: "03",
       title: "Approve & book",
-      description: "We handle all logistics and confirmations", 
-      icon: "✅"
+      description: "We handle all logistics and confirmations"
     },
     {
       number: "04",
       title: "Go live",
-      description: "With full Proof of Posting (POP) and campaign support",
-      icon: "🚀"
+      description: "With full Proof of Posting (POP) and campaign support"
     }
   ];
 
   const addOns = [
-    "🚀 Creative production (print or motion)",
-    "📊 Audience targeting by postcode, footfall or Mosaic type", 
-    "🔄 Programmatic DOOH campaigns with live optimisation"
+    "Creative production (print or motion)",
+    "Audience targeting by postcode, footfall or Mosaic type",
+    "Programmatic DOOH campaigns with live optimisation"
   ];
 
   return (
@@ -41,7 +37,7 @@ const HowItWorks = () => {
         {/* How It Works */}
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-4 text-lg px-6 py-2">
-            ⚙️ HOW IT WORKS
+            HOW IT WORKS
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             Simple. Fast. Effective.
@@ -58,8 +54,7 @@ const HowItWorks = () => {
                 {step.number}
               </div>
               <CardHeader className="relative z-10">
-                <div className="text-4xl mb-4">{step.icon}</div>
-                <CardTitle className="text-xl text-foreground">{step.title}</CardTitle>
+                <CardTitle className="text-xl text-foreground mb-4">{step.title}</CardTitle>
               </CardHeader>
               <CardContent className="relative z-10">
                 <p className="text-muted-foreground">{step.description}</p>

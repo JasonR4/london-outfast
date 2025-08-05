@@ -4,37 +4,31 @@ import { Badge } from "@/components/ui/badge";
 const Services = () => {
   const services = [
     {
-      icon: "🚇",
       title: "Transport & Commuter Hubs",
       description: "London Underground (TfL) formats, National Rail & Overground",
       formats: ["6-sheets", "16-sheets", "Digital Escalator Panels (DEPs)", "Cross-track Projectors (XTPs)", "Tube Car Panels (TCPs)", "Rail 6s and 48s", "Station Gateway D6s", "D6 Motion formats"]
     },
     {
-      icon: "🚌",
       title: "Roadside & Bus Formats",
       description: "Classic and digital roadside, plus comprehensive bus advertising",
       formats: ["Classic 48-sheets & Digital 48s (D48s)", "96-sheets & Mega 6s", "London Bus Supersides, T-sides, Rears", "Bus Shelter 6-sheets (JCDecaux & Clear Channel)"]
     },
     {
-      icon: "🏬",
       title: "Retail & Lifestyle Spaces",
       description: "High-traffic retail and shopping environments",
       formats: ["Malls and Shopping Centres (Mall D6s, Portrait Panels)", "Supermarket Panels (ASDA Live, Tesco Screens)", "High Street Storefront Takeovers"]
     },
     {
-      icon: "✈️",
       title: "Airports & Premium Environments",
       description: "Premium locations for maximum impact",
       formats: ["Heathrow, Gatwick, London City – D6s, Baggage Halls, Walkways", "Office & Corporate Towers (Elevator Screens, Reception Dominations)"]
     },
     {
-      icon: "🖥️",
       title: "Digital OOH (DOOH)",
       description: "Cutting-edge digital advertising solutions",
       formats: ["Large Format Digital (D48, D96, Mega Portraits)", "Roadside LED Screens", "Programmatic DOOH (real-time audience buys)"]
     },
     {
-      icon: "🚖",
       title: "Street-Level Formats",
       description: "Ground-level and ambient advertising opportunities",
       formats: ["Phone kiosks (InLink & Kiosk Panels)", "Taxi liveries & tip-seats", "Ambient / guerrilla OOH (flyposting, projections)"]
@@ -46,7 +40,7 @@ const Services = () => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-4 text-lg px-6 py-2">
-            ✅ Our OOH Inventory Includes
+            Our OOH Inventory Includes
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             Complete London Coverage
@@ -60,7 +54,6 @@ const Services = () => {
           {services.map((service, index) => (
             <Card key={index} className="bg-gradient-card border-border hover:shadow-card transition-all duration-300 hover:scale-105">
               <CardHeader>
-                <div className="text-4xl mb-4">{service.icon}</div>
                 <CardTitle className="text-xl text-foreground">{service.title}</CardTitle>
                 <p className="text-muted-foreground">{service.description}</p>
               </CardHeader>

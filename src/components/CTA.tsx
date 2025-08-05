@@ -25,7 +25,7 @@ const CTA = () => {
       
       <div className="relative z-10 max-w-6xl mx-auto text-center">
         <Badge variant="secondary" className="mb-6 text-lg px-6 py-2">
-          📞 READY TO LAUNCH?
+          READY TO LAUNCH?
         </Badge>
         
         <h2 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent">

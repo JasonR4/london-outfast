@@ -4,31 +4,26 @@ import { Badge } from "@/components/ui/badge";
 const WhyChooseUs = () => {
   const features = [
     {
-      icon: "🕒",
       title: "Fast Turnarounds",
       description: "Quotes within hours. Book today, live next week.",
       highlight: "Same-day quotes"
     },
     {
-      icon: "💰",
       title: "Best Price Guarantee",
       description: "We beat any agency quote. No middleman fees.",
       highlight: "Unbeatable rates"
     },
     {
-      icon: "📍",
       title: "100% London Coverage",
       description: "From Croydon to Camden. Full TfL access.",
       highlight: "Complete coverage"
     },
     {
-      icon: "🎯",
       title: "All Budgets Welcome",
       description: "From £500 local buys to £500K takeovers.",
       highlight: "No minimum spend"
     },
     {
-      icon: "📈",
       title: "Performance Focused",
       description: "Plan by audience, postcode, footfall & WMI (Weighted Media Index).",
       highlight: "Data-driven planning"
@@ -50,7 +45,7 @@ const WhyChooseUs = () => {
         {/* Why Choose Us */}
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-4 text-lg px-6 py-2">
-            💡 WHY MEDIA BUYING LONDON?
+            WHY MEDIA BUYING LONDON?
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             Cheaper, Faster, Better
@@ -64,8 +59,7 @@ const WhyChooseUs = () => {
           {features.map((feature, index) => (
             <Card key={index} className="bg-card border-border hover:shadow-card transition-all duration-300 group">
               <CardHeader className="text-center">
-                <div className="text-5xl mb-4 group-hover:animate-pulse-glow">{feature.icon}</div>
-                <CardTitle className="text-xl text-foreground">{feature.title}</CardTitle>
+                <CardTitle className="text-xl text-foreground mb-4">{feature.title}</CardTitle>
                 <Badge variant="outline" className="text-accent border-accent mx-auto">
                   {feature.highlight}
                 </Badge>
@@ -80,7 +74,7 @@ const WhyChooseUs = () => {
         {/* Who Uses Us */}
         <div className="text-center">
           <Badge variant="secondary" className="mb-4 text-lg px-6 py-2">
-            👇 WHO USES US?
+            WHO USES US?
           </Badge>
           <h3 className="text-3xl md:text-4xl font-bold mb-8">
             From Startups to Enterprise
