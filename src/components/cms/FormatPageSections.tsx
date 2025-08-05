@@ -120,7 +120,7 @@ export const FormatPageSections: React.FC<FormatPageSectionsProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="category">Category</Label>
-              <Select value={content.category || ''} onValueChange={(value) => updateSection('hero', 'category', value)}>
+              <Select value={content.category || ''} onValueChange={(value) => onUpdateContent({...content, category: value})}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
