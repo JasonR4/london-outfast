@@ -60,6 +60,7 @@ export const LegalPagesEditor = () => {
   };
 
   const handlePageSelect = (page: LegalPage) => {
+    console.log('Selecting legal page:', page); // Debug log
     setSelectedPage(page);
     setEditForm({
       title: page.title,
@@ -67,6 +68,10 @@ export const LegalPagesEditor = () => {
       sections: page.content?.sections || [{ heading: '', content: '' }]
     });
     setIsEditing(false);
+    console.log('Page selected, editForm set:', {
+      title: page.title,
+      sections: page.content?.sections?.length || 0
+    }); // Debug log
   };
 
   const addSection = () => {
