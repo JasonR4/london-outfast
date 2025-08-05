@@ -125,11 +125,21 @@ export const FormatPageSections: React.FC<FormatPageSectionsProps> = ({
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
+                  <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
+                  <SelectItem value="Bus & Transport">Bus & Transport</SelectItem>
+                  <SelectItem value="Street Furniture">Street Furniture</SelectItem>
+                  <SelectItem value="Retail Advertising">Retail Advertising</SelectItem>
+                  <SelectItem value="Lifestyle & Leisure">Lifestyle & Leisure</SelectItem>
+                  <SelectItem value="Ambient / Guerrilla OOH">Ambient / Guerrilla OOH</SelectItem>
+                  <SelectItem value="Digital OOH">Digital OOH</SelectItem>
+                  <SelectItem value="Transit Advertising">Transit Advertising</SelectItem>
+                  <SelectItem value="Programmatic DOOH (pDOOH)">Programmatic DOOH (pDOOH)</SelectItem>
+                  {/* Legacy options for backwards compatibility */}
                   <SelectItem value="Billboard">Billboard</SelectItem>
                   <SelectItem value="Digital Billboard">Digital Billboard</SelectItem>
                   <SelectItem value="Tube">Tube</SelectItem>
                   <SelectItem value="Bus">Bus</SelectItem>
-                  <SelectItem value="Street Furniture">Street Furniture</SelectItem>
                   <SelectItem value="Retail">Retail</SelectItem>
                   <SelectItem value="Airport">Airport</SelectItem>
                 </SelectContent>
