@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Building, Cross, Ticket, ShoppingBag, Briefcase, Clock, DollarSign, Users, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -159,6 +160,42 @@ const About = () => {
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {section.type === 'industries_accordion' && (
+                <div className="max-w-4xl mx-auto">
+                  <div className="text-center mb-12">
+                    <h2 className="text-3xl font-bold mb-2">{section.title}</h2>
+                    <p className="text-lg text-muted-foreground">{section.subtitle}</p>
+                  </div>
+                  <Accordion type="single" collapsible className="w-full space-y-4">
+                    {section.industries?.map((industry: any, idx: number) => (
+                      <AccordionItem key={industry.id || idx} value={industry.id || `industry-${idx}`} className="border rounded-lg px-6">
+                        <AccordionTrigger className="text-left text-lg font-semibold hover:no-underline">
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">{industry.icon}</span>
+                            <span>{industry.title}</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="text-muted-foreground pt-4">
+                          <div className="flex justify-between items-start gap-4">
+                            <p className="flex-1">{industry.description}</p>
+                            {industry.url && industry.url !== '/quote' && (
+                              <Button asChild variant="outline" size="sm">
+                                <Link to={industry.url}>Learn More</Link>
+                              </Button>
+                            )}
+                            {industry.url === '/quote' && (
+                              <Button asChild variant="default" size="sm">
+                                <Link to={industry.url}>Get Quote</Link>
+                              </Button>
+                            )}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
                 </div>
               )}
 
