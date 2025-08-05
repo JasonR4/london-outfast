@@ -120,52 +120,36 @@ export const ContentEditor = () => {
     } else {
       const cmsPages = data || [];
       
-      // Create map of CMS overrides by slug for easy lookup
-      const cmsOverrides = new Map();
-      cmsPages.forEach(page => {
-        cmsOverrides.set(page.slug, page);
-      });
+      // Filter out OOH format pages from CMS - we'll show these as static instead
+      const customCmsPages = cmsPages.filter(page => page.page_type !== 'ooh_format');
       
-      // Generate pages: always show static data with ability to override
-      const oohPages = oohFormats.map(format => {
-        const cmsOverride = cmsOverrides.get(format.slug);
-        
-        // Always use static data as base, but mark if there's a CMS override
-        return {
-          id: cmsOverride ? cmsOverride.id : `ooh_${format.id}`,
-          slug: format.slug,
-          title: cmsOverride ? cmsOverride.title : format.name,
-          meta_description: cmsOverride ? cmsOverride.meta_description : format.metaDescription,
-          content: cmsOverride ? cmsOverride.content : {
-            hero_title: format.name,
-            hero_description: format.description,
-            category: format.category,
-            type: format.type,
-            placement: format.placement,
-            dwellTime: format.dwellTime,
-            effectiveness: format.effectiveness,
-            pricing: format.priceRange,
-            coverage: format.londonCoverage,
-            whoUsesThis: format.whoUsesIt,
-            networks: format.networks
-          },
-          status: 'published',
-          page_type: 'ooh_format',
-          created_at: cmsOverride ? cmsOverride.created_at : new Date().toISOString(),
-          updated_at: cmsOverride ? cmsOverride.updated_at : new Date().toISOString(),
-          created_by: cmsOverride?.created_by,
-          updated_by: cmsOverride?.updated_by,
-          is_static: !cmsOverride // Mark as static if no CMS override exists
-        };
-      });
+      // Always show OOH formats as static pages from oohFormats.ts
+      const staticOohPages = oohFormats.map(format => ({
+        id: `ooh_${format.id}`,
+        slug: format.slug,
+        title: format.name,
+        meta_description: format.metaDescription,
+        content: {
+          hero_title: format.name,
+          hero_description: format.description,
+          category: format.category,
+          type: format.type,
+          placement: format.placement,
+          dwellTime: format.dwellTime,
+          effectiveness: format.effectiveness,
+          pricing: format.priceRange,
+          coverage: format.londonCoverage,
+          whoUsesThis: format.whoUsesIt,
+          networks: format.networks
+        },
+        status: 'published',
+        page_type: 'ooh_format',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        is_static: true
+      }));
       
-      // Add purely custom CMS pages (non-OOH format pages)
-      const customCmsPages = cmsPages.filter(page => 
-        page.page_type !== 'ooh_format' || 
-        !oohFormats.some(format => format.slug === page.slug)
-      );
-      
-      const allPages = [...oohPages, ...customCmsPages];
+      const allPages = [...staticOohPages, ...customCmsPages];
       setPages(allPages);
     }
   };
