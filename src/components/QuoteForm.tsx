@@ -261,6 +261,42 @@ const QuoteForm = () => {
 
           {/* Contact Form */}
           <div className="lg:col-span-1">
+            {/* Selected Formats Summary */}
+            {selectedFormats.length > 0 && (
+              <Card className="bg-gradient-card border-border mb-6">
+                <CardHeader>
+                  <CardTitle className="text-lg">Your Selected Formats ({selectedFormats.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {selectedFormats.map((format, index) => (
+                      <div key={index} className="flex items-center justify-between bg-muted/50 p-3 rounded-lg">
+                        <span className="text-sm text-foreground">{format}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleFormatToggle(format)}
+                          className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedFormats([])}
+                      className="w-full"
+                    >
+                      Clear All Selections
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="bg-gradient-card border-border sticky top-8">
               <CardHeader>
                 <CardTitle className="text-2xl">Your Details</CardTitle>
