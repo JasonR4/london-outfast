@@ -20,6 +20,7 @@ export interface OOHFormat {
   metaTitle: string;
   metaDescription: string;
   heroImage?: string;
+  showcaseImage?: string;
 }
 
 export const oohFormats: OOHFormat[] = [
@@ -43,7 +44,8 @@ export const oohFormats: OOHFormat[] = [
     londonCoverage: "Available across all 32 London boroughs with premium sites in zones 1-3 and strategic commuter routes",
     metaTitle: "48 Sheet Billboard Advertising in London | Media Buying London",
     metaDescription: "Book 48 sheet billboard advertising in London at unbeatable rates. Classic and digital D48 formats available across all zones. Fast quotes, best prices guaranteed.",
-    heroImage: billboardImage
+    heroImage: billboardImage,
+    showcaseImage: billboardImage
   },
   {
     id: "96-sheet",
