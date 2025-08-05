@@ -38,7 +38,11 @@ const CTA = () => {
         </p>
         
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-          <Button size="lg" className="text-xl px-12 py-8 shadow-glow animate-pulse-glow">
+          <Button 
+            size="lg" 
+            className="text-xl px-12 py-8 shadow-glow animate-pulse-glow"
+            onClick={() => document.getElementById('quote-form')?.scrollIntoView({ behavior: 'smooth' })}
+          >
             GET MY MEDIA QUOTE
           </Button>
           <Button variant="outline" size="lg" className="text-xl px-12 py-8">
