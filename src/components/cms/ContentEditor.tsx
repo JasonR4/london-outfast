@@ -118,8 +118,8 @@ export const ContentEditor = () => {
         variant: "destructive"
       });
     } else {
-      // Combine CMS pages with OOH format pages
-      const cmsPages = data || [];
+      // Filter out OOH format pages from CMS to avoid duplicates with static pages
+      const cmsPages = (data || []).filter(page => page.page_type !== 'ooh_format');
       const oohPages = oohFormats.map(format => ({
         id: `ooh_${format.id}`,
         slug: format.slug,
