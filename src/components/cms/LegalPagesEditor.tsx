@@ -182,7 +182,8 @@ export const LegalPagesEditor = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[800px]">
+    <div className="w-full h-full overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[800px]">
       {/* Left Panel - Legal Pages List */}
       <Card className="lg:col-span-1">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -372,6 +373,7 @@ export const LegalPagesEditor = () => {
           )}
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 };
