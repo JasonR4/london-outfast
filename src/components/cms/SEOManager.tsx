@@ -28,6 +28,20 @@ interface SEOData {
   schema_markup?: any;
   focus_keyword: string;
   london_locations: string[];
+  h1_heading?: string;
+  h2_headings?: string[];
+  h3_headings?: string[];
+  content_structure?: {
+    word_count: number;
+    readability_score: number;
+    keyword_density: number;
+  };
+  alt_texts?: string[];
+  internal_links_count?: number;
+  external_links_count?: number;
+  page_speed_score?: number;
+  mobile_friendly?: boolean;
+  ssl_enabled?: boolean;
   competitor_analysis?: any;
   content_score?: number;
   created_at?: string;
@@ -188,31 +202,116 @@ export const SEOManager = () => {
 
   const analyzeSEOScore = (seoData: SEOData) => {
     let score = 0;
+    const factors = [];
     
-    // Meta title optimization (25 points)
-    if (seoData.meta_title?.length >= 50 && seoData.meta_title?.length <= 60) score += 25;
-    else if (seoData.meta_title?.length >= 30) score += 15;
+    // Meta title optimization (10 points)
+    if (seoData.meta_title?.length >= 50 && seoData.meta_title?.length <= 60) {
+      score += 10;
+      factors.push("✅ Meta Title Length Optimal");
+    } else if (seoData.meta_title?.length >= 30) {
+      score += 5;
+      factors.push("⚠️ Meta Title Length Acceptable");
+    } else {
+      factors.push("❌ Meta Title Too Short");
+    }
     
-    // Meta description optimization (20 points)
-    if (seoData.meta_description?.length >= 150 && seoData.meta_description?.length <= 160) score += 20;
-    else if (seoData.meta_description?.length >= 120) score += 10;
+    // Meta description optimization (10 points)
+    if (seoData.meta_description?.length >= 150 && seoData.meta_description?.length <= 160) {
+      score += 10;
+      factors.push("✅ Meta Description Length Perfect");
+    } else if (seoData.meta_description?.length >= 120) {
+      score += 5;
+      factors.push("⚠️ Meta Description Length Acceptable");
+    } else {
+      factors.push("❌ Meta Description Too Short");
+    }
     
-    // Focus keyword in title (15 points)
-    if (seoData.meta_title?.toLowerCase().includes(seoData.focus_keyword?.toLowerCase())) score += 15;
+    // H1 heading optimization (15 points)
+    if (seoData.h1_heading) {
+      if (seoData.h1_heading.toLowerCase().includes(seoData.focus_keyword?.toLowerCase())) {
+        score += 15;
+        factors.push("✅ H1 Contains Focus Keyword");
+      } else {
+        score += 8;
+        factors.push("⚠️ H1 Present but Missing Focus Keyword");
+      }
+    } else {
+      factors.push("❌ Missing H1 Heading");
+    }
     
-    // Focus keyword in description (15 points)
-    if (seoData.meta_description?.toLowerCase().includes(seoData.focus_keyword?.toLowerCase())) score += 15;
+    // H2/H3 structure (10 points)
+    if (seoData.h2_headings?.length >= 2) {
+      score += 10;
+      factors.push("✅ Good Heading Structure (H2s)");
+    } else if (seoData.h2_headings?.length >= 1) {
+      score += 5;
+      factors.push("⚠️ Basic Heading Structure");
+    } else {
+      factors.push("❌ Missing H2 Headings");
+    }
     
-    // Keywords count (10 points)
-    if (seoData.keywords?.length >= 5) score += 10;
+    // Focus keyword in title (10 points)
+    if (seoData.meta_title?.toLowerCase().includes(seoData.focus_keyword?.toLowerCase())) {
+      score += 10;
+      factors.push("✅ Focus Keyword in Title");
+    } else {
+      factors.push("❌ Focus Keyword Missing from Title");
+    }
     
-    // London locations (10 points)
-    if (seoData.london_locations?.length >= 5) score += 10;
+    // Focus keyword in description (10 points)
+    if (seoData.meta_description?.toLowerCase().includes(seoData.focus_keyword?.toLowerCase())) {
+      score += 10;
+      factors.push("✅ Focus Keyword in Description");
+    } else {
+      factors.push("❌ Focus Keyword Missing from Description");
+    }
     
-    // Schema markup (5 points)
-    if (seoData.schema_markup) score += 5;
+    // Keywords optimization (10 points)
+    if (seoData.keywords?.length >= 5) {
+      score += 10;
+      factors.push("✅ Rich Keyword Set");
+    } else if (seoData.keywords?.length >= 3) {
+      score += 5;
+      factors.push("⚠️ Basic Keyword Set");
+    } else {
+      factors.push("❌ Insufficient Keywords");
+    }
     
-    return score;
+    // London locations (5 points)
+    if (seoData.london_locations?.length >= 5) {
+      score += 5;
+      factors.push("✅ Comprehensive London Coverage");
+    } else if (seoData.london_locations?.length >= 3) {
+      score += 3;
+      factors.push("⚠️ Basic London Coverage");
+    } else {
+      factors.push("❌ Limited London Coverage");
+    }
+    
+    // Schema markup (10 points)
+    if (seoData.schema_markup) {
+      score += 10;
+      factors.push("✅ Schema Markup Present");
+    } else {
+      factors.push("❌ Missing Schema Markup");
+    }
+    
+    // Content quality factors (10 points)
+    if (seoData.content_structure?.word_count >= 300) {
+      score += 5;
+      factors.push("✅ Adequate Content Length");
+    } else {
+      factors.push("❌ Content Too Short");
+    }
+    
+    if (seoData.content_structure?.keyword_density >= 1 && seoData.content_structure?.keyword_density <= 3) {
+      score += 5;
+      factors.push("✅ Optimal Keyword Density");
+    } else {
+      factors.push("❌ Poor Keyword Density");
+    }
+    
+    return { score, factors };
   };
 
   return (
@@ -265,7 +364,7 @@ export const SEOManager = () => {
               <CardContent>
                 <div className="text-2xl font-bold">
                   {seoPages.length > 0 
-                    ? Math.round(seoPages.reduce((acc, page) => acc + analyzeSEOScore(page), 0) / seoPages.length)
+                    ? Math.round(seoPages.reduce((acc, page) => acc + analyzeSEOScore(page).score, 0) / seoPages.length)
                     : 0
                   }%
                 </div>
@@ -325,8 +424,8 @@ export const SEOManager = () => {
                       <p className="font-medium">{page.page_slug}</p>
                       <p className="text-sm text-muted-foreground">{page.focus_keyword}</p>
                     </div>
-                    <Badge variant={analyzeSEOScore(page) >= 80 ? "default" : "secondary"}>
-                      {analyzeSEOScore(page)}%
+                    <Badge variant={analyzeSEOScore(page).score >= 80 ? "default" : "secondary"}>
+                      {analyzeSEOScore(page).score}%
                     </Badge>
                   </div>
                 ))}
@@ -396,12 +495,123 @@ export const SEOManager = () => {
 
                   <Separator />
 
+                  <div className="space-y-4">
+                    <h4 className="font-medium">Heading Structure (Critical for 100% SEO)</h4>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="h1_heading">H1 Heading (Must contain focus keyword)</Label>
+                      <Input
+                        id="h1_heading"
+                        value={selectedPage.h1_heading || ''}
+                        onChange={(e) => setSelectedPage({
+                          ...selectedPage,
+                          h1_heading: e.target.value
+                        })}
+                        placeholder="e.g., Billboard Advertising London | Premium Outdoor Media"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="h2_headings">H2 Headings (comma separated, minimum 2)</Label>
+                      <Textarea
+                        id="h2_headings"
+                        value={selectedPage.h2_headings?.join(', ') || ''}
+                        onChange={(e) => setSelectedPage({
+                          ...selectedPage,
+                          h2_headings: e.target.value.split(',').map(h => h.trim()).filter(Boolean)
+                        })}
+                        placeholder="e.g., Why Choose Our London Billboard Service, Premium Billboard Locations, Fast Campaign Setup"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="h3_headings">H3 Headings (comma separated, optional)</Label>
+                      <Textarea
+                        id="h3_headings"
+                        value={selectedPage.h3_headings?.join(', ') || ''}
+                        onChange={(e) => setSelectedPage({
+                          ...selectedPage,
+                          h3_headings: e.target.value.split(',').map(h => h.trim()).filter(Boolean)
+                        })}
+                        placeholder="e.g., Central London, East London, West London"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Content Analytics</Label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <Label htmlFor="word_count">Word Count</Label>
+                          <Input
+                            id="word_count"
+                            type="number"
+                            value={selectedPage.content_structure?.word_count || ''}
+                            onChange={(e) => setSelectedPage({
+                              ...selectedPage,
+                              content_structure: {
+                                ...selectedPage.content_structure,
+                                word_count: parseInt(e.target.value) || 0,
+                                readability_score: selectedPage.content_structure?.readability_score || 0,
+                                keyword_density: selectedPage.content_structure?.keyword_density || 0
+                              }
+                            })}
+                            placeholder="300+"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="readability_score">Readability %</Label>
+                          <Input
+                            id="readability_score"
+                            type="number"
+                            value={selectedPage.content_structure?.readability_score || ''}
+                            onChange={(e) => setSelectedPage({
+                              ...selectedPage,
+                              content_structure: {
+                                ...selectedPage.content_structure,
+                                word_count: selectedPage.content_structure?.word_count || 0,
+                                readability_score: parseInt(e.target.value) || 0,
+                                keyword_density: selectedPage.content_structure?.keyword_density || 0
+                              }
+                            })}
+                            placeholder="80"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="keyword_density">Keyword Density %</Label>
+                          <Input
+                            id="keyword_density"
+                            type="number"
+                            step="0.1"
+                            value={selectedPage.content_structure?.keyword_density || ''}
+                            onChange={(e) => setSelectedPage({
+                              ...selectedPage,
+                              content_structure: {
+                                ...selectedPage.content_structure,
+                                word_count: selectedPage.content_structure?.word_count || 0,
+                                readability_score: selectedPage.content_structure?.readability_score || 0,
+                                keyword_density: parseFloat(e.target.value) || 0
+                              }
+                            })}
+                            placeholder="1.5"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">SEO Score</p>
                       <p className="text-sm text-muted-foreground">
-                        {analyzeSEOScore(selectedPage)}% optimization
+                        {analyzeSEOScore(selectedPage).score}% optimization
                       </p>
+                      <div className="mt-2 space-y-1">
+                        {analyzeSEOScore(selectedPage).factors.slice(0, 3).map((factor, index) => (
+                          <p key={index} className="text-xs text-muted-foreground">{factor}</p>
+                        ))}
+                      </div>
                     </div>
                     <Button onClick={() => saveSEOData(selectedPage)} disabled={isLoading}>
                       Save SEO Data
