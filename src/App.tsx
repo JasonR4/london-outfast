@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import Quote from "./pages/Quote";
 import FormatPage from "./pages/FormatPage";
 import FormatDirectory from "./pages/FormatDirectory";
+import Auth from "./pages/Auth";
+import CMS from "./pages/CMS";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +24,8 @@ const App = () => (
           <Route path="/quote" element={<Quote />} />
           <Route path="/outdoor-media" element={<FormatDirectory />} />
           <Route path="/outdoor-media/:formatSlug" element={<FormatPage />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/cms" element={<CMS />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
