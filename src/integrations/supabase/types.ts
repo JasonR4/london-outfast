@@ -166,22 +166,32 @@ export type Database = {
       }
       seo_pages: {
         Row: {
+          alt_texts: string[] | null
           canonical_url: string | null
           competitor_analysis: Json | null
           content_score: number | null
+          content_structure: Json | null
           created_at: string
           created_by: string
+          external_links_count: number | null
           focus_keyword: string
+          h1_heading: string | null
+          h2_headings: string[] | null
+          h3_headings: string[] | null
           id: string
+          internal_links_count: number | null
           keywords: string[] | null
           london_locations: string[] | null
           meta_description: string
           meta_title: string
+          mobile_friendly: boolean | null
           og_description: string | null
           og_image: string | null
           og_title: string | null
           page_slug: string
+          page_speed_score: number | null
           schema_markup: Json | null
+          ssl_enabled: boolean | null
           twitter_description: string | null
           twitter_image: string | null
           twitter_title: string | null
@@ -189,22 +199,32 @@ export type Database = {
           updated_by: string
         }
         Insert: {
+          alt_texts?: string[] | null
           canonical_url?: string | null
           competitor_analysis?: Json | null
           content_score?: number | null
+          content_structure?: Json | null
           created_at?: string
           created_by: string
+          external_links_count?: number | null
           focus_keyword: string
+          h1_heading?: string | null
+          h2_headings?: string[] | null
+          h3_headings?: string[] | null
           id?: string
+          internal_links_count?: number | null
           keywords?: string[] | null
           london_locations?: string[] | null
           meta_description: string
           meta_title: string
+          mobile_friendly?: boolean | null
           og_description?: string | null
           og_image?: string | null
           og_title?: string | null
           page_slug: string
+          page_speed_score?: number | null
           schema_markup?: Json | null
+          ssl_enabled?: boolean | null
           twitter_description?: string | null
           twitter_image?: string | null
           twitter_title?: string | null
@@ -212,22 +232,32 @@ export type Database = {
           updated_by: string
         }
         Update: {
+          alt_texts?: string[] | null
           canonical_url?: string | null
           competitor_analysis?: Json | null
           content_score?: number | null
+          content_structure?: Json | null
           created_at?: string
           created_by?: string
+          external_links_count?: number | null
           focus_keyword?: string
+          h1_heading?: string | null
+          h2_headings?: string[] | null
+          h3_headings?: string[] | null
           id?: string
+          internal_links_count?: number | null
           keywords?: string[] | null
           london_locations?: string[] | null
           meta_description?: string
           meta_title?: string
+          mobile_friendly?: boolean | null
           og_description?: string | null
           og_image?: string | null
           og_title?: string | null
           page_slug?: string
+          page_speed_score?: number | null
           schema_markup?: Json | null
+          ssl_enabled?: boolean | null
           twitter_description?: string | null
           twitter_image?: string | null
           twitter_title?: string | null
