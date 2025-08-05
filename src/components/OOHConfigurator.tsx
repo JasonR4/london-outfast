@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ArrowRight, Target, Users, MapPin, Clock, DollarSign, Eye, Zap } from 'lucide-react';
+import QuoteFormSection from './QuoteFormSection';
 
 interface Answer {
   questionId: string;
@@ -345,6 +346,7 @@ export const OOHConfigurator = () => {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [selectedValues, setSelectedValues] = useState<(string | number)[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [showQuoteForm, setShowQuoteForm] = useState(false);
 
   const getVisibleQuestions = () => {
     return questions.filter(q => !q.condition || q.condition(answers));
@@ -490,7 +492,60 @@ export const OOHConfigurator = () => {
     setAnswers([]);
     setSelectedValues([]);
     setShowResults(false);
+    setShowQuoteForm(false);
   };
+
+  const getSelectedFormats = (): string[] => {
+    const recommendations = calculateRecommendations();
+    return recommendations.map(rec => {
+      const formatInfo = formatDescriptions[rec.format as keyof typeof formatDescriptions];
+      return formatInfo?.name || rec.format;
+    });
+  };
+
+  const getBudgetRange = (): string => {
+    const budget = answers.find(a => a.questionId === 'budget_range')?.value;
+    switch(budget) {
+      case 'low': return '£1K - £5K';
+      case 'medium': return '£5K - £25K';
+      case 'high': return '£25K - £100K';
+      case 'premium': return '£100K+';
+      default: return '';
+    }
+  };
+
+  const getCampaignObjective = (): string => {
+    const objective = answers.find(a => a.questionId === 'campaign_objective')?.value;
+    switch(objective) {
+      case 'awareness': return 'Brand Awareness';
+      case 'traffic': return 'Drive Traffic/Sales';
+      case 'local': return 'Local Presence';
+      case 'event': return 'Event Promotion';
+      default: return '';
+    }
+  };
+
+  const getTargetAudience = (): string => {
+    const audience = answers.find(a => a.questionId === 'target_audience')?.value;
+    switch(audience) {
+      case 'commuters': return 'Commuters & Office Workers';
+      case 'shoppers': return 'Shoppers & Consumers';
+      case 'tourists': return 'Tourists & Visitors';
+      case 'residents': return 'Local Residents';
+      case 'young': return 'Young Demographics (18-35)';
+      default: return '';
+    }
+  };
+
+  if (showQuoteForm) {
+    return <QuoteFormSection 
+      prefilledFormats={getSelectedFormats()}
+      budgetRange={getBudgetRange()}
+      campaignObjective={getCampaignObjective()}
+      targetAudience={getTargetAudience()}
+      onBack={() => setShowQuoteForm(false)}
+    />;
+  }
 
   if (showResults) {
     const recommendations = calculateRecommendations();
@@ -539,7 +594,7 @@ export const OOHConfigurator = () => {
               <Button onClick={restart} variant="outline" className="flex-1">
                 Start Over
               </Button>
-              <Button className="flex-1">
+              <Button onClick={() => setShowQuoteForm(true)} className="flex-1">
                 Get Detailed Quote
               </Button>
             </div>
