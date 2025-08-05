@@ -118,39 +118,8 @@ export const ContentEditor = () => {
         variant: "destructive"
       });
     } else {
-      const cmsPages = data || [];
-      
-      // Filter out OOH format pages from CMS - we'll show these as static instead
-      const customCmsPages = cmsPages.filter(page => page.page_type !== 'ooh_format');
-      
-      // Always show OOH formats as static pages from oohFormats.ts
-      const staticOohPages = oohFormats.map(format => ({
-        id: `ooh_${format.id}`,
-        slug: format.slug,
-        title: format.name,
-        meta_description: format.metaDescription,
-        content: {
-          hero_title: format.name,
-          hero_description: format.description,
-          category: format.category,
-          type: format.type,
-          placement: format.placement,
-          dwellTime: format.dwellTime,
-          effectiveness: format.effectiveness,
-          pricing: format.priceRange,
-          coverage: format.londonCoverage,
-          whoUsesThis: format.whoUsesIt,
-          networks: format.networks
-        },
-        status: 'published',
-        page_type: 'ooh_format',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        is_static: true
-      }));
-      
-      const allPages = [...staticOohPages, ...customCmsPages];
-      setPages(allPages);
+      // All pages are now in CMS - just show them directly
+      setPages(data || []);
     }
   };
 
