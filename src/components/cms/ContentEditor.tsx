@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, Plus, Edit, Trash2, Eye, Image, Video, FileText, Upload, X, Search, Filter } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { oohFormats } from '@/data/oohFormats';
+import { FormatPageSections } from './FormatPageSections';
 
 interface ContentPage {
   id: string;
@@ -294,12 +295,28 @@ export const ContentEditor = () => {
         ...prev,
         content: { ...prev.content, hero_image: mediaUrl }
       }));
+    } else if (editingSection === 'showcase_image') {
+      setFormData(prev => ({
+        ...prev,
+        content: { ...prev.content, showcase_image: mediaUrl }
+      }));
     } else if (editingSection === 'gallery') {
       setFormData(prev => ({
         ...prev,
         content: { 
           ...prev.content, 
           gallery: [...(prev.content.gallery || []), mediaUrl] 
+        }
+      }));
+    } else if (editingSection?.startsWith('section_')) {
+      const sectionIndex = parseInt(editingSection.split('_')[1]);
+      setFormData(prev => ({
+        ...prev,
+        content: {
+          ...prev.content,
+          sections: prev.content.sections?.map((section, index) => 
+            index === sectionIndex ? { ...section, image: mediaUrl } : section
+          ) || []
         }
       }));
     }
@@ -545,14 +562,27 @@ export const ContentEditor = () => {
             </div>
           </div>
 
-          <Tabs defaultValue="content" className="space-y-4">
+          <Tabs defaultValue="sections" className="space-y-4">
             <TabsList>
-              <TabsTrigger value="content">Content</TabsTrigger>
-              <TabsTrigger value="media">Media & Images</TabsTrigger>
+              <TabsTrigger value="sections">Page Sections</TabsTrigger>
+              <TabsTrigger value="custom">Custom Sections</TabsTrigger>
               <TabsTrigger value="seo">SEO & Settings</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="content" className="space-y-6">
+            <TabsContent value="sections" className="space-y-6">
+              <FormatPageSections
+                content={formData.content}
+                onUpdateContent={(content) => setFormData(prev => ({ ...prev, content }))}
+                onOpenMediaLibrary={(section) => {
+                  setEditingSection(section);
+                  setShowMediaLibrary(true);
+                }}
+                mediaFiles={mediaFiles}
+              />
+            </TabsContent>
+
+            <TabsContent value="custom" className="space-y-6">
+              {/* Custom Sections - Legacy Support */}
               {/* Hero Section */}
               <Card>
                 <CardHeader>
@@ -707,45 +737,6 @@ export const ContentEditor = () => {
                       </div>
                     </Card>
                   ))}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="media" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Image Gallery</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button
-                    onClick={() => {
-                      setEditingSection('gallery');
-                      setShowMediaLibrary(true);
-                    }}
-                  >
-                    <Image className="w-4 h-4 mr-2" />
-                    Add Images to Gallery
-                  </Button>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {formData.content.gallery?.map((imageUrl: string, index: number) => (
-                      <div key={index} className="relative">
-                        <img 
-                          src={imageUrl} 
-                          alt={`Gallery ${index + 1}`} 
-                          className="w-full h-32 object-cover rounded"
-                        />
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="absolute top-1 right-1"
-                          onClick={() => removeFromGallery(index)}
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
