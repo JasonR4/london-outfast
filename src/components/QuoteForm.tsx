@@ -603,15 +603,6 @@ const QuoteForm = () => {
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="preferredLocations">Preferred London Areas</Label>
-                    <Input
-                      id="preferredLocations"
-                      value={formData.preferredLocations}
-                      onChange={(e) => handleInputChange("preferredLocations", e.target.value)}
-                      placeholder="e.g., Zone 1, Shoreditch, Camden"
-                    />
-                  </div>
 
                   <div>
                     <Label htmlFor="additionalDetails">Additional Details</Label>
