@@ -119,8 +119,11 @@ export const ContentEditor = () => {
         variant: "destructive"
       });
     } else {
-      // All pages are now in CMS - just show them directly
-      setPages(data || []);
+      // All pages are now in CMS, but exclude legal pages from content tab
+      const filteredPages = (data || []).filter(page => 
+        !['privacy-policy', 'terms-of-service', 'cookie-policy', 'disclaimer'].includes(page.slug)
+      );
+      setPages(filteredPages);
     }
   };
 
