@@ -187,19 +187,30 @@ export const SEOManager = () => {
   const generateAllMediaSEO = async () => {
     setIsLoading(true);
     try {
+      const user = await supabase.auth.getUser();
+      
       for (const mediaType of MEDIA_TYPES) {
         const seoData = generateLondonSEOContent(mediaType);
+        const pageSlug = `/outdoor-media/${mediaType}`;
+        
+        console.log(`Generating SEO for: ${mediaType} with slug: ${pageSlug}`);
         
         const { error } = await supabase
           .from('seo_pages')
           .upsert({
-            page_slug: `/outdoor-media/${mediaType}`,
-            created_by: (await supabase.auth.getUser()).data.user?.id || '',
-            updated_by: (await supabase.auth.getUser()).data.user?.id || '',
+            page_slug: pageSlug,
+            created_by: user.data.user?.id || '',
+            updated_by: user.data.user?.id || '',
             ...seoData
+          }, {
+            onConflict: 'page_slug',
+            ignoreDuplicates: false
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error(`Error upserting SEO for ${mediaType}:`, error);
+          throw error;
+        }
       }
 
       toast({
