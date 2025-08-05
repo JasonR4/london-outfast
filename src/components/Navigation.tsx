@@ -1,7 +1,8 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Phone } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Menu, Phone, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import useGlobalSettings from '@/hooks/useGlobalSettings';
 
@@ -82,17 +83,45 @@ const Navigation = () => {
             </SheetTrigger>
             <SheetContent>
               <div className="flex flex-col space-y-4 mt-8">
-                {navigation.menu_items?.map((item: any, index: number) => (
-                  <button
-                    key={index}
-                    onClick={() => handleNavigation(item.url)}
-                    className={`text-left text-lg font-medium transition-colors hover:text-primary ${
-                      isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
+                {navigation.menu_items?.map((item: any, index: number) => {
+                  if (item.type === 'dropdown' && item.submenu) {
+                    return (
+                      <Collapsible key={index}>
+                        <CollapsibleTrigger asChild>
+                          <button className="flex items-center justify-between w-full text-left text-lg font-medium transition-colors hover:text-primary text-muted-foreground">
+                            {item.label}
+                            <ChevronDown className="h-4 w-4" />
+                          </button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="pl-4 space-y-2 mt-2">
+                          {item.submenu.map((subItem: any, subIndex: number) => (
+                            <button
+                              key={subIndex}
+                              onClick={() => handleNavigation(subItem.url)}
+                              className={`block w-full text-left text-base font-medium transition-colors hover:text-primary ${
+                                isActive(subItem.url) ? 'text-primary' : 'text-muted-foreground'
+                              }`}
+                            >
+                              {subItem.label}
+                            </button>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    );
+                  }
+                  
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => handleNavigation(item.url)}
+                      className={`text-left text-lg font-medium transition-colors hover:text-primary ${
+                        isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
                 {navigation.phone && (
                   <Button 
                     onClick={() => window.location.href = `tel:${navigation.phone.replace(/\s/g, '')}`}
