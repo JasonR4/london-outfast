@@ -7,10 +7,10 @@ const CTA = () => {
   const navigate = useNavigate();
   
   const taglines = [
-    "Your Brand. On London's Streets. For Less.",
-    "Buy Fast. Pay Less. Go Big.",
+    "We're Media Buyers and Planners. And We're Very, Very Good at It.",
+    "Buy Smarter. Plan Faster. Cut Out the Middle.",
     "OOH in London, Without the Agency Overhead.",
-    "Seen in London. Booked by You. Delivered by Us."
+    "Same-Day Quotes. Best Price Guarantee. Zero Delay."
   ];
 
   return (

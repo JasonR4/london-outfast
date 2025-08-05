@@ -45,13 +45,14 @@ const WhyChooseUs = () => {
         {/* Why Choose Us */}
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-4 text-lg px-6 py-2">
-            WHY MEDIA BUYING LONDON?
+            THE ALTERNATIVE TO SLOW-MOVING RETAINERS
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Cheaper, Faster, Better
+            We're Media Buyers. That's the Point.
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-12">
-            We're not a creative agency. We're media buying specialists. You bring the brief, we bring the space.
+            No meetings about meetings. No fluff. No retainers. We don't build brands — we get them seen. 
+            You bring the brief, we bring the space.
           </p>
         </div>
 

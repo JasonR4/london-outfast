@@ -44,13 +44,13 @@ const Services = () => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-4 text-lg px-6 py-2">
-            Our OOH Inventory Includes
+            OOH, DONE DIFFERENTLY
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Complete London Coverage
+            Our Mission: Buy Smarter. Plan Faster. Cut Out the Middle.
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            From Zone 1 to the outer boroughs, we have access to every major OOH format across Greater London
+            We deliver out-of-home campaigns across London with unmatched access, insider rates, and zero delay
           </p>
         </div>
         

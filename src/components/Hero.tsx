@@ -34,7 +34,7 @@ const Hero = () => {
       {/* Content */}
       <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
         <Badge variant="secondary" className="mb-6 text-lg px-6 py-2">
-          London's Fastest Out-of-Home Media Buying Agency
+          We're Not an Agency. We're the Ones Agencies Call.
         </Badge>
         
         <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent leading-tight">
@@ -42,16 +42,16 @@ const Hero = () => {
         </h1>
         
         <p className="text-2xl md:text-3xl font-semibold mb-4 text-foreground">
-          Unbeaten on Price. Unmatched on Speed.
+          London's Fastest, Leanest OOH Media Buying Specialists
         </p>
         
         <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed">
-          From a 6-sheet in Zone 1 to premium Digital 48s in Shoreditch, we plan and book OOH campaigns 
-          across Greater London at unbeatable rates. Same-day quotes and guaranteed best pricing.
+          We don't build brands — we get them seen. From 6-sheets to Digital 48s, 
+          we buy media that gets noticed. Fast turnarounds, insider rates, zero delay.
         </p>
         
         <p className="text-xl font-medium mb-12 text-accent">
-          No delays. No mark-ups. No agency fluff.
+          Buy smarter. Plan faster. Cut out the middle.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
