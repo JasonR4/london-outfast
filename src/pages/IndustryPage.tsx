@@ -24,6 +24,7 @@ interface ContentSection {
 
 interface PageContent {
   sections: ContentSection[];
+  description?: string;
 }
 
 export default function IndustryPage() {
@@ -219,6 +220,22 @@ export default function IndustryPage() {
   return (
     <div className="min-h-screen">
       {content.sections.map((section, index) => renderSection(section, index))}
+      
+      {/* Render description section if it exists */}
+      {content.description && (
+        <section className="py-20 px-4 bg-gradient-to-b from-background to-muted/10">
+          <div className="max-w-4xl mx-auto text-center">
+            <Badge variant="secondary" className="mb-6 text-lg px-6 py-2">
+              INDUSTRY EXPERTISE
+            </Badge>
+            <div className="prose prose-lg max-w-none text-left">
+              <p className="text-lg leading-relaxed whitespace-pre-line text-foreground">
+                {content.description}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
