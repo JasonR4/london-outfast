@@ -10,9 +10,10 @@ import { ContentEditor } from '@/components/cms/ContentEditor';
 import { MediaLibrary } from '@/components/cms/MediaLibrary';
 import { PageManager } from '@/components/cms/PageManager';
 import { TeamManager } from '@/components/cms/TeamManager';
+import { LegalPagesEditor } from '@/components/cms/LegalPagesEditor';
 import { GlobalSettings } from '@/components/cms/GlobalSettings';
 import { SEOManager } from '@/components/cms/SEOManager';
-import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft } from 'lucide-react';
+import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale } from 'lucide-react';
 
 const CMS = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -125,10 +126,14 @@ const CMS = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="content" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="content" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
               Content
+            </TabsTrigger>
+            <TabsTrigger value="legal" className="flex items-center gap-2">
+              <Scale className="w-4 h-4" />
+              Legal
             </TabsTrigger>
             <TabsTrigger value="media" className="flex items-center gap-2">
               <Image className="w-4 h-4" />
@@ -161,6 +166,10 @@ const CMS = () => {
                 <ContentEditor />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="legal">
+            <LegalPagesEditor />
           </TabsContent>
 
           <TabsContent value="media">
