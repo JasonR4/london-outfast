@@ -1,3 +1,5 @@
+import billboardImage from "@/assets/48-sheet-billboard.jpg";
+
 export interface OOHFormat {
   id: string;
   slug: string;
@@ -40,7 +42,8 @@ export const oohFormats: OOHFormat[] = [
     whoUsesIt: ["Automotive brands", "Fashion retailers", "Entertainment venues", "Financial services", "Food & beverage brands", "Property developers"],
     londonCoverage: "Available across all 32 London boroughs with premium sites in zones 1-3 and strategic commuter routes",
     metaTitle: "48 Sheet Billboard Advertising in London | Media Buying London",
-    metaDescription: "Book 48 sheet billboard advertising in London at unbeatable rates. Classic and digital D48 formats available across all zones. Fast quotes, best prices guaranteed."
+    metaDescription: "Book 48 sheet billboard advertising in London at unbeatable rates. Classic and digital D48 formats available across all zones. Fast quotes, best prices guaranteed.",
+    heroImage: billboardImage
   },
   {
     id: "96-sheet",
