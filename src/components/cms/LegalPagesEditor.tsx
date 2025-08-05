@@ -46,6 +46,8 @@ export const LegalPagesEditor = () => {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
+      
+      console.log('Legal pages fetched:', data); // Debug log
       setLegalPages(data || []);
     } catch (error) {
       console.error('Error fetching legal pages:', error);
