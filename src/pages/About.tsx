@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Clock, DollarSign, Users, Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Building, Cross, Ticket, ShoppingBag, Briefcase, Clock, DollarSign, Users, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface ContentPage {
   id: string;
@@ -44,6 +45,16 @@ const About = () => {
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
+      case 'building':
+        return <Building className="h-8 w-8 text-primary" />;
+      case 'cross':
+        return <Cross className="h-8 w-8 text-primary" />;
+      case 'ticket':
+        return <Ticket className="h-8 w-8 text-primary" />;
+      case 'shopping-bag':
+        return <ShoppingBag className="h-8 w-8 text-primary" />;
+      case 'briefcase':
+        return <Briefcase className="h-8 w-8 text-primary" />;
       case 'clock':
         return <Clock className="h-8 w-8 text-primary" />;
       case 'pound':
@@ -101,30 +112,53 @@ const About = () => {
           {content.sections?.map((section: any, index: number) => (
             <div key={section.id || index}>
               {section.type === 'text_with_media' && (
-                <div className={`grid md:grid-cols-2 gap-12 items-center ${
-                  section.layout === 'media_left_text_right' ? 'md:grid-cols-2' : ''
+                <div className={`${
+                  section.layout === 'text_only' ? 'text-center max-w-4xl mx-auto' : 
+                  `grid md:grid-cols-2 gap-12 items-center ${
+                    section.layout === 'media_left_text_right' ? 'md:grid-cols-2' : ''
+                  }`
                 }`}>
                   <div className={section.layout === 'media_left_text_right' ? 'md:order-2' : ''}>
                     <h2 className="text-3xl font-bold mb-6">{section.title}</h2>
-                    <p className="text-lg text-muted-foreground leading-relaxed">
-                      {section.content}
-                    </p>
-                  </div>
-                  <div className={section.layout === 'media_left_text_right' ? 'md:order-1' : ''}>
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                      {section.media_url ? (
-                        section.media_type === 'video' ? (
-                          <video src={section.media_url} controls className="w-full h-full rounded-lg" />
-                        ) : (
-                          <img src={section.media_url} alt={section.title} className="w-full h-full object-cover rounded-lg" />
-                        )
-                      ) : (
-                        <p className="text-muted-foreground">
-                          {section.media_type === 'video' ? 'Video Placeholder' : 'Image Placeholder'}
+                    <div className="text-lg text-muted-foreground leading-relaxed mb-6">
+                      {section.content?.split('\n').map((line: string, idx: number) => (
+                        <p key={idx} className={line.trim() === '' ? 'mb-4' : ''}>
+                          {line}
                         </p>
-                      )}
+                      ))}
                     </div>
+                    {section.cta_buttons && (
+                      <div className="flex flex-wrap gap-4 justify-center">
+                        {section.cta_buttons.map((cta: any, idx: number) => (
+                          <Button
+                            key={idx}
+                            asChild
+                            variant={cta.style === 'primary' ? 'default' : 'outline'}
+                            size="lg"
+                          >
+                            <Link to={cta.url}>{cta.text}</Link>
+                          </Button>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                  {section.layout !== 'text_only' && (
+                    <div className={section.layout === 'media_left_text_right' ? 'md:order-1' : ''}>
+                      <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                        {section.media_url ? (
+                          section.media_type === 'video' ? (
+                            <video src={section.media_url} controls className="w-full h-full rounded-lg" />
+                          ) : (
+                            <img src={section.media_url} alt={section.title} className="w-full h-full object-cover rounded-lg" />
+                          )
+                        ) : (
+                          <p className="text-muted-foreground">
+                            {section.media_type === 'video' ? 'Video Placeholder' : 'Image Placeholder'}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
