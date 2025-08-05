@@ -27,13 +27,14 @@ interface TeamManagerProps {
 export const TeamManager: React.FC<TeamManagerProps> = ({ userProfile }) => {
   const [teamMembers, setTeamMembers] = useState<Profile[]>([]);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'admin' | 'editor' | 'viewer'>('editor');
+  const [inviteRole, setInviteRole] = useState<'super_admin' | 'admin' | 'editor' | 'viewer'>('editor');
   const [editingMember, setEditingMember] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ full_name: '', role: '' });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const isAdmin = userProfile?.role === 'admin';
+  const isSuperAdmin = userProfile?.role === 'super_admin';
+  const isAdmin = userProfile?.role === 'admin' || isSuperAdmin;
 
   useEffect(() => {
     fetchTeamMembers();
@@ -61,7 +62,7 @@ export const TeamManager: React.FC<TeamManagerProps> = ({ userProfile }) => {
     if (!isAdmin) {
       toast({
         title: "Access Denied",
-        description: "Only admins can invite team members",
+        description: "Only admins and super admins can invite team members",
         variant: "destructive"
       });
       return;
@@ -90,10 +91,14 @@ export const TeamManager: React.FC<TeamManagerProps> = ({ userProfile }) => {
   };
 
   const handleEditSave = async (memberId: string) => {
-    if (!isAdmin) {
+    // Super admins can edit anyone, regular admins can't edit super admins
+    const targetMember = teamMembers.find(m => m.id === memberId);
+    const isEditingSuperAdmin = targetMember?.role === 'super_admin';
+    
+    if (!isSuperAdmin && (isEditingSuperAdmin || !isAdmin)) {
       toast({
         title: "Access Denied",
-        description: "Only admins can edit team member roles",
+        description: "You don't have permission to edit this user",
         variant: "destructive"
       });
       return;
@@ -130,6 +135,7 @@ export const TeamManager: React.FC<TeamManagerProps> = ({ userProfile }) => {
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
+      case 'super_admin': return 'destructive';
       case 'admin': return 'destructive';
       case 'editor': return 'default';
       case 'viewer': return 'secondary';
@@ -139,6 +145,7 @@ export const TeamManager: React.FC<TeamManagerProps> = ({ userProfile }) => {
 
   const getRoleDescription = (role: string) => {
     switch (role) {
+      case 'super_admin': return 'Full access + can manage other admins';
       case 'admin': return 'Full access to all features';
       case 'editor': return 'Can create and edit content';
       case 'viewer': return 'View-only access';
@@ -154,6 +161,9 @@ export const TeamManager: React.FC<TeamManagerProps> = ({ userProfile }) => {
             <CardTitle className="flex items-center gap-2">
               <UserPlus className="w-5 h-5" />
               Invite Team Member
+              {isSuperAdmin && (
+                <Badge variant="destructive" className="ml-2">Super Admin Access</Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -181,6 +191,9 @@ export const TeamManager: React.FC<TeamManagerProps> = ({ userProfile }) => {
                       <SelectItem value="viewer">Viewer - View only</SelectItem>
                       <SelectItem value="editor">Editor - Can edit content</SelectItem>
                       <SelectItem value="admin">Admin - Full access</SelectItem>
+                      {isSuperAdmin && (
+                        <SelectItem value="super_admin">Super Admin - Full access + manage admins</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -228,6 +241,9 @@ export const TeamManager: React.FC<TeamManagerProps> = ({ userProfile }) => {
                             <SelectItem value="viewer">Viewer</SelectItem>
                             <SelectItem value="editor">Editor</SelectItem>
                             <SelectItem value="admin">Admin</SelectItem>
+                            {isSuperAdmin && (
+                              <SelectItem value="super_admin">Super Admin</SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
                       </div>
@@ -269,13 +285,16 @@ export const TeamManager: React.FC<TeamManagerProps> = ({ userProfile }) => {
                           </Button>
                         </div>
                       ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEditStart(member)}
-                        >
-                          <Edit2 className="w-3 h-3" />
-                        </Button>
+                        // Only allow editing if user has permission
+                        (isSuperAdmin || (isAdmin && member.role !== 'super_admin')) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditStart(member)}
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </Button>
+                        )
                       )}
                     </>
                   )}
@@ -296,7 +315,7 @@ export const TeamManager: React.FC<TeamManagerProps> = ({ userProfile }) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="p-4 border rounded-lg">
                 <Badge variant="secondary" className="mb-2">Viewer</Badge>
                 <ul className="text-sm space-y-1">
@@ -323,6 +342,16 @@ export const TeamManager: React.FC<TeamManagerProps> = ({ userProfile }) => {
                   <li>• Invite team members</li>
                   <li>• Manage user roles</li>
                   <li>• Delete content and media</li>
+                </ul>
+              </div>
+
+              <div className="p-4 border rounded-lg">
+                <Badge variant="destructive" className="mb-2">Super Admin</Badge>
+                <ul className="text-sm space-y-1">
+                  <li>• All admin permissions</li>
+                  <li>• Can promote users to admin</li>
+                  <li>• Can manage other admins</li>
+                  <li>• Full system control</li>
                 </ul>
               </div>
             </div>
