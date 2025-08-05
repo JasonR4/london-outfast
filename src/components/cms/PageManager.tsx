@@ -28,7 +28,7 @@ export const PageManager = () => {
   const [filteredPages, setFilteredPages] = useState<ContentPage[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published'>('all');
-  const [typeFilter, setTypeFilter] = useState<'all' | 'ooh_format' | 'page'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'ooh_format' | 'general' | 'landing' | 'home' | 'about' | 'faq' | 'legal' | 'industry'>('all');
   const [syncing, setSyncing] = useState(false);
   const { toast } = useToast();
 
@@ -177,8 +177,11 @@ export const PageManager = () => {
     const published = pages.filter(p => p.status === 'published').length;
     const draft = pages.filter(p => p.status === 'draft').length;
     const oohFormats = pages.filter(p => p.page_type === 'ooh_format').length;
+    const industries = pages.filter(p => p.page_type === 'industry').length;
+    const legal = pages.filter(p => p.page_type === 'legal').length;
+    const core = pages.filter(p => ['home', 'about', 'faq'].includes(p.page_type)).length;
     
-    return { total, published, draft, oohFormats };
+    return { total, published, draft, oohFormats, industries, legal, core };
   };
 
   const stats = getPageStats();
@@ -193,7 +196,7 @@ export const PageManager = () => {
         </TabsList>
 
         <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">Total Pages</CardTitle>
@@ -227,6 +230,33 @@ export const PageManager = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-blue-600">{stats.oohFormats}</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Industries</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-purple-600">{stats.industries}</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Legal Pages</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-orange-600">{stats.legal}</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Core Pages</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-indigo-600">{stats.core}</div>
               </CardContent>
             </Card>
           </div>
@@ -289,14 +319,20 @@ export const PageManager = () => {
                   </div>
                   <div>
                     <Label htmlFor="type-filter">Filter by Type</Label>
-                    <Select value={typeFilter} onValueChange={(value: 'all' | 'ooh_format' | 'page') => setTypeFilter(value)}>
+                    <Select value={typeFilter} onValueChange={(value: 'all' | 'ooh_format' | 'general' | 'landing' | 'home' | 'about' | 'faq' | 'legal' | 'industry') => setTypeFilter(value)}>
                       <SelectTrigger className="mt-1">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Types</SelectItem>
                         <SelectItem value="ooh_format">OOH Formats</SelectItem>
-                        <SelectItem value="page">General Pages</SelectItem>
+                        <SelectItem value="industry">Industry Pages</SelectItem>
+                        <SelectItem value="home">Home Page</SelectItem>
+                        <SelectItem value="about">About Page</SelectItem>
+                        <SelectItem value="faq">FAQ Page</SelectItem>
+                        <SelectItem value="legal">Legal Pages</SelectItem>
+                        <SelectItem value="general">General Pages</SelectItem>
+                        <SelectItem value="landing">Landing Pages</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -348,7 +384,13 @@ export const PageManager = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(`/outdoor-media/${page.slug}`, '_blank')}
+                        onClick={() => {
+                          const url = page.page_type === 'ooh_format' ? `/outdoor-media/${page.slug}` : 
+                                     page.page_type === 'industry' ? `/industries/${page.slug.replace('industries/', '')}` :
+                                     page.slug === 'home' ? '/' :
+                                     `/${page.slug}`;
+                          window.open(url, '_blank');
+                        }}
                       >
                         <Globe className="w-4 h-4" />
                       </Button>
