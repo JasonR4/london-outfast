@@ -12,6 +12,7 @@ import FormatPage from "./pages/FormatPage";
 import FormatDirectory from "./pages/FormatDirectory";
 import Auth from "./pages/Auth";
 import CMS from "./pages/CMS";
+import LegalPage from "./pages/LegalPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,11 @@ const App = () => (
             <Route path="/outdoor-media/:formatSlug" element={<FormatPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/cms" element={<CMS />} />
+            {/* Legal Pages */}
+            <Route path="/privacy-policy" element={<LegalPage />} />
+            <Route path="/terms-of-service" element={<LegalPage />} />
+            <Route path="/cookie-policy" element={<LegalPage />} />
+            <Route path="/disclaimer" element={<LegalPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
