@@ -5,8 +5,7 @@ import londonHero from "@/assets/london-hero.jpg";
 
 const Quote = () => {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
+    <>
       <section className="relative py-20 overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
@@ -98,7 +97,7 @@ const Quote = () => {
           </div>
         </div>
       </section>
-    </div>
+    </>
   );
 };
 

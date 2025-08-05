@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -91,12 +89,8 @@ const FormatPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">Loading...</div>
-        </div>
-        <Footer />
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">Loading...</div>
       </div>
     );
   }
@@ -106,9 +100,7 @@ const FormatPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
+    <>
       {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-primary to-primary-foreground text-white">
         {/* Hero Image */}
@@ -436,9 +428,7 @@ const FormatPage = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
-    </div>
+    </>
   );
 };
 
