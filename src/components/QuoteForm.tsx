@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 const QuoteForm = () => {
   const { toast } = useToast();
   const [selectedFormats, setSelectedFormats] = useState<string[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [locationSearch, setLocationSearch] = useState("");
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -135,6 +137,54 @@ const QuoteForm = () => {
     }
   ];
 
+  const londonAreas = [
+    {
+      zone: "CENTRAL LONDON (Zone 1)",
+      color: "bg-blue-500",
+      areas: ["Westminster", "Soho", "Mayfair", "Covent Garden", "Holborn", "Fitzrovia", "Bloomsbury", "Marylebone", "Pimlico", "Belgravia", "St James's", "City of London", "Clerkenwell", "Barbican", "Farringdon", "King's Cross", "South Bank", "Waterloo", "Temple"]
+    },
+    {
+      zone: "WEST LONDON",
+      color: "bg-green-500",
+      areas: ["Notting Hill", "Chelsea", "Kensington", "Earl's Court", "Ladbroke Grove", "South Kensington", "Holland Park", "North Kensington", "West Brompton", "Hammersmith", "Fulham", "Shepherd's Bush", "White City", "West Kensington", "Parsons Green", "Sands End", "Ealing", "Acton", "Hanwell", "Southall", "Northolt", "Greenford", "Perivale"]
+    },
+    {
+      zone: "NORTH LONDON", 
+      color: "bg-yellow-500",
+      areas: ["Camden Town", "Hampstead", "Belsize Park", "Kentish Town", "Gospel Oak", "Swiss Cottage", "West Hampstead", "Chalk Farm", "Angel", "Highbury", "Islington", "Holloway", "Barnsbury", "Canonbury", "Finsbury", "Archway", "Finchley", "Golders Green", "Hendon", "Mill Hill", "Edgware", "Burnt Oak", "East Barnet", "Totteridge", "Colindale", "Tottenham", "Wood Green", "Muswell Hill", "Crouch End", "Hornsey", "Bounds Green", "Seven Sisters", "Highgate"]
+    },
+    {
+      zone: "EAST LONDON",
+      color: "bg-red-500", 
+      areas: ["Hackney Central", "Dalston", "Shoreditch", "Hoxton", "Stoke Newington", "London Fields", "Homerton", "Haggerston", "Canary Wharf", "Whitechapel", "Bethnal Green", "Bow", "Mile End", "Poplar", "Wapping", "Limehouse", "Shadwell", "Stratford", "Plaistow", "East Ham", "West Ham", "Canning Town", "Forest Gate", "Manor Park", "Beckton", "Custom House", "Walthamstow", "Leyton", "Leytonstone", "Chingford", "Highams Park", "Whipps Cross"]
+    },
+    {
+      zone: "SOUTH LONDON",
+      color: "bg-purple-500",
+      areas: ["Brixton", "Clapham", "Streatham", "Vauxhall", "Kennington", "Norwood", "Stockwell", "Waterloo (South)", "Tulse Hill", "Peckham", "Bermondsey", "Camberwell", "Dulwich", "Elephant & Castle", "Rotherhithe", "Surrey Quays", "Nunhead", "East Dulwich", "Herne Hill", "Lewisham", "Catford", "Deptford", "New Cross", "Brockley", "Hither Green", "Sydenham", "Forest Hill", "Lee", "Croydon Town Centre", "Purley", "South Norwood", "Thornton Heath", "Addiscombe", "Selhurst", "Coulsdon", "Crystal Palace"]
+    },
+    {
+      zone: "SOUTH WEST LONDON",
+      color: "bg-orange-500",
+      areas: ["Battersea", "Wandsworth Town", "Tooting", "Balham", "Putney", "Earlsfield", "Southfields", "Richmond", "Twickenham", "Kew", "Barnes", "Mortlake", "Sheen", "Hampton", "Teddington", "Whitton", "Kingston", "Surbiton", "New Malden", "Norbiton", "Tolworth", "Chessington"]
+    },
+    {
+      zone: "NORTH WEST LONDON",
+      color: "bg-amber-600",
+      areas: ["Wembley", "Harlesden", "Kilburn", "Neasden", "Willesden", "Queensbury", "Stonebridge", "Kingsbury", "Harrow", "Wealdstone", "Stanmore", "Pinner", "Rayners Lane", "Hatch End"]
+    },
+    {
+      zone: "OUTER EAST / SOUTH EAST",
+      color: "bg-yellow-600", 
+      areas: ["Bexleyheath", "Sidcup", "Crayford", "Erith", "Welling", "Belvedere", "Bromley", "Beckenham", "Orpington", "Chislehurst", "West Wickham", "Biggin Hill", "Penge"]
+    },
+    {
+      zone: "HIGH-STREETS / HUBS",
+      color: "bg-pink-500",
+      areas: ["Oxford Street", "Regent Street", "Bond Street", "The Strand", "Old Street Roundabout", "Brick Lane", "Camden High Street", "Kings Road", "Westfield London (Shepherd's Bush)", "Westfield Stratford", "Carnaby Street", "Borough Market", "Liverpool Street", "Leicester Square", "Tottenham Court Road", "Victoria Station", "London Bridge", "King's Cross/St Pancras"]
+    }
+  ];
+
   const handleFormatToggle = (format: string) => {
     setSelectedFormats(prev => 
       prev.includes(format) 
@@ -142,6 +192,21 @@ const QuoteForm = () => {
         : [...prev, format]
     );
   };
+
+  const handleLocationToggle = (location: string) => {
+    setSelectedLocations(prev => 
+      prev.includes(location) 
+        ? prev.filter(l => l !== location)
+        : [...prev, location]
+    );
+  };
+
+  const filteredAreas = londonAreas.map(zone => ({
+    ...zone,
+    areas: zone.areas.filter(area => 
+      area.toLowerCase().includes(locationSearch.toLowerCase())
+    )
+  })).filter(zone => zone.areas.length > 0);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -172,6 +237,7 @@ const QuoteForm = () => {
     const quoteData = {
       ...formData,
       selectedFormats,
+      selectedLocations,
       submittedAt: new Date().toISOString()
     };
 
@@ -184,6 +250,8 @@ const QuoteForm = () => {
 
     // Reset form
     setSelectedFormats([]);
+    setSelectedLocations([]);
+    setLocationSearch("");
     setFormData({
       firstName: "",
       lastName: "",
@@ -296,6 +364,104 @@ const QuoteForm = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* Location Selection */}
+            <Card className="bg-gradient-card border-border mb-6">
+              <CardHeader>
+                <CardTitle className="text-xl">Target London Areas</CardTitle>
+                <p className="text-muted-foreground">
+                  Search and select your preferred locations • {selectedLocations.length} selected
+                </p>
+              </CardHeader>
+              <CardContent>
+                {/* Search Input */}
+                <div className="mb-4">
+                  <Input
+                    placeholder="Search London areas..."
+                    value={locationSearch}
+                    onChange={(e) => setLocationSearch(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                
+                {/* Selected Locations Summary */}
+                {selectedLocations.length > 0 && (
+                  <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Selected Areas ({selectedLocations.length})</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedLocations([])}
+                        className="text-xs h-6"
+                      >
+                        Clear All
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedLocations.slice(0, 8).map((location, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {location}
+                        </Badge>
+                      ))}
+                      {selectedLocations.length > 8 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{selectedLocations.length - 8} more
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Areas List */}
+                <div className="max-h-80 overflow-y-auto space-y-4">
+                  {filteredAreas.map((zone, zoneIndex) => (
+                    <div key={zoneIndex}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className={`w-3 h-3 rounded-full ${zone.color}`}></div>
+                        <h4 className="font-semibold text-sm text-foreground">{zone.zone}</h4>
+                        <Badge variant="outline" className="text-xs">
+                          {zone.areas.filter(area => selectedLocations.includes(area)).length}/{zone.areas.length}
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 pl-5">
+                        {zone.areas.map((area, areaIndex) => (
+                          <div key={areaIndex} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`location-${zoneIndex}-${areaIndex}`}
+                              checked={selectedLocations.includes(area)}
+                              onCheckedChange={() => handleLocationToggle(area)}
+                              className="data-[state=checked]:bg-london-red data-[state=checked]:border-london-red"
+                            />
+                            <Label 
+                              htmlFor={`location-${zoneIndex}-${areaIndex}`}
+                              className="text-xs cursor-pointer hover:text-accent transition-colors"
+                            >
+                              {area}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {filteredAreas.length === 0 && locationSearch && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>No areas found matching "{locationSearch}"</p>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setLocationSearch("")}
+                        className="mt-2"
+                      >
+                        Clear search
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
             <Card className="bg-gradient-card border-border sticky top-8">
               <CardHeader>
