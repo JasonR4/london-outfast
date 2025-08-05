@@ -39,7 +39,7 @@ const Hero = () => {
           No delays. No mark-ups. No agency fluff.
         </p>
         
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
           <Button 
             size="lg" 
             className="text-lg px-8 py-6 shadow-glow"
@@ -54,6 +54,16 @@ const Hero = () => {
             onClick={() => navigate('/quote')}
           >
             REQUEST CALLBACK
+          </Button>
+        </div>
+        
+        <div className="flex justify-center">
+          <Button 
+            variant="ghost" 
+            className="text-accent hover:text-accent-foreground"
+            onClick={() => navigate('/outdoor-media')}
+          >
+            Browse All OOH Formats →
           </Button>
         </div>
       </div>

@@ -1,7 +1,11 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Services = () => {
+  const navigate = useNavigate();
+  
   const services = [
     {
       title: "Transport & Commuter Hubs",
@@ -69,6 +73,16 @@ const Services = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+        
+        <div className="text-center mt-12">
+          <Button 
+            onClick={() => navigate('/outdoor-media')}
+            size="lg"
+            variant="outline"
+          >
+            View All OOH Formats & Pricing
+          </Button>
         </div>
       </div>
     </section>
