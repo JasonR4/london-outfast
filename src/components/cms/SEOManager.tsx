@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Globe, Target, BarChart3, Zap, MapPin } from "lucide-react";
+import { oohFormats } from "@/data/oohFormats";
 
 interface SEOData {
   id?: string;
@@ -56,11 +57,8 @@ const LONDON_AREAS = [
   'Covent Garden', 'London Bridge', 'Borough Market', 'Kings Cross', 'Paddington'
 ];
 
-const MEDIA_TYPES = [
-  '6-sheet-poster', '48-sheet-billboard', '96-sheet-billboard', 'bus-advertising',
-  'tube-advertising', 'taxi-advertising', 'digital-billboard', 'street-furniture',
-  'transit-advertising', 'retail-advertising', 'ambient-advertising', 'experiential'
-];
+// Extract all format slugs from oohFormats to ensure we generate SEO for all 55+ formats
+const MEDIA_TYPES = oohFormats.map(format => format.slug);
 
 export const SEOManager = () => {
   const { toast } = useToast();
