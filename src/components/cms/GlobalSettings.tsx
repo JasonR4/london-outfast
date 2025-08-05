@@ -104,17 +104,30 @@ export const GlobalSettings = () => {
     setNavigationData(updated);
   };
 
-  const updateFooter = (field: string, value: any, section?: string, index?: number) => {
+  const updateFooter = (field: string, value: any, index?: number) => {
     const updated = { ...footerData };
     
-    if (section && field.includes('add_')) {
-      const [, type] = field.split('_');
-      updated.links[type] = [...(updated.links[type] || []), value];
-    } else if (section && field.includes('remove_') && index !== undefined) {
-      const [, type] = field.split('_');
-      updated.links[type] = updated.links[type].filter((_: any, i: number) => i !== index);
-    } else if (section && index !== undefined) {
-      updated.links[section][index] = value;
+    if (field === 'add_service_link') {
+      if (!updated.links) updated.links = {};
+      updated.links.services = [...(updated.links.services || []), value];
+    } else if (field === 'remove_service_link' && index !== undefined) {
+      updated.links.services = updated.links.services.filter((_: any, i: number) => i !== index);
+    } else if (field === 'services_links' && index !== undefined) {
+      updated.links.services[index] = value;
+    } else if (field === 'add_company_link') {
+      if (!updated.links) updated.links = {};
+      updated.links.company = [...(updated.links.company || []), value];
+    } else if (field === 'remove_company_link' && index !== undefined) {
+      updated.links.company = updated.links.company.filter((_: any, i: number) => i !== index);
+    } else if (field === 'company_links' && index !== undefined) {
+      updated.links.company[index] = value;
+    } else if (field === 'add_legal_link') {
+      if (!updated.links) updated.links = {};
+      updated.links.legal = [...(updated.links.legal || []), value];
+    } else if (field === 'remove_legal_link' && index !== undefined) {
+      updated.links.legal = updated.links.legal.filter((_: any, i: number) => i !== index);
+    } else if (field === 'legal_links' && index !== undefined) {
+      updated.links.legal[index] = value;
     } else if (field.includes('.')) {
       const [parent, child] = field.split('.');
       updated[parent] = { ...updated[parent], [child]: value };
@@ -282,6 +295,163 @@ export const GlobalSettings = () => {
                       value={footerData.copyright || ''}
                       onChange={(e) => updateFooter('copyright', e.target.value)}
                     />
+                  </div>
+
+                  {/* Services Links */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <Label>Services Links</Label>
+                      <Button
+                        size="sm"
+                        onClick={() => updateFooter('add_service_link', { label: '', url: '' })}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Service
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {footerData.links?.services?.map((link: any, index: number) => (
+                        <div key={index} className="flex gap-4 items-end p-3 border rounded-lg">
+                          <div className="flex-1">
+                            <Label>Label</Label>
+                            <Input
+                              value={link.label || ''}
+                              onChange={(e) => updateFooter('services_links', { ...link, label: e.target.value }, index)}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <Label>URL</Label>
+                            <Input
+                              value={link.url || ''}
+                              onChange={(e) => updateFooter('services_links', { ...link, url: e.target.value }, index)}
+                            />
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateFooter('remove_service_link', null, index)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )) || []}
+                    </div>
+                  </div>
+
+                  {/* Company Links */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <Label>Company Links</Label>
+                      <Button
+                        size="sm"
+                        onClick={() => updateFooter('add_company_link', { label: '', url: '' })}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Company Link
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {footerData.links?.company?.map((link: any, index: number) => (
+                        <div key={index} className="flex gap-4 items-end p-3 border rounded-lg">
+                          <div className="flex-1">
+                            <Label>Label</Label>
+                            <Input
+                              value={link.label || ''}
+                              onChange={(e) => updateFooter('company_links', { ...link, label: e.target.value }, index)}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <Label>URL</Label>
+                            <Input
+                              value={link.url || ''}
+                              onChange={(e) => updateFooter('company_links', { ...link, url: e.target.value }, index)}
+                            />
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateFooter('remove_company_link', null, index)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )) || []}
+                    </div>
+                  </div>
+
+                  {/* Legal Links */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <Label>Legal Links</Label>
+                      <Button
+                        size="sm"
+                        onClick={() => updateFooter('add_legal_link', { label: '', url: '' })}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Legal Link
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {footerData.links?.legal?.map((link: any, index: number) => (
+                        <div key={index} className="flex gap-4 items-end p-3 border rounded-lg">
+                          <div className="flex-1">
+                            <Label>Label</Label>
+                            <Input
+                              value={link.label || ''}
+                              onChange={(e) => updateFooter('legal_links', { ...link, label: e.target.value }, index)}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <Label>URL</Label>
+                            <Input
+                              value={link.url || ''}
+                              onChange={(e) => updateFooter('legal_links', { ...link, url: e.target.value }, index)}
+                            />
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateFooter('remove_legal_link', null, index)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )) || []}
+                    </div>
+                  </div>
+
+                  {/* Social Media Links */}
+                  <div>
+                    <Label className="text-base font-semibold">Social Media Links</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                      <div>
+                        <Label>Twitter URL</Label>
+                        <Input
+                          value={footerData.social?.twitter || ''}
+                          onChange={(e) => updateFooter('social.twitter', e.target.value)}
+                          placeholder="https://twitter.com/..."
+                        />
+                      </div>
+                      <div>
+                        <Label>LinkedIn URL</Label>
+                        <Input
+                          value={footerData.social?.linkedin || ''}
+                          onChange={(e) => updateFooter('social.linkedin', e.target.value)}
+                          placeholder="https://linkedin.com/company/..."
+                        />
+                      </div>
+                      <div>
+                        <Label>Facebook URL</Label>
+                        <Input
+                          value={footerData.social?.facebook || ''}
+                          onChange={(e) => updateFooter('social.facebook', e.target.value)}
+                          placeholder="https://facebook.com/..."
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <Button onClick={() => saveSettings('main_footer', footerData, 'footer')} disabled={loading}>
