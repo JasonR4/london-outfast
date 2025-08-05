@@ -8,7 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Save, Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Save, Plus, Edit, Trash2, Eye, Image, Video, FileText, Upload, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { oohFormats } from '@/data/oohFormats';
 
 interface ContentPage {
   id: string;
@@ -20,13 +23,17 @@ interface ContentPage {
   page_type: string;
   created_at: string;
   updated_at: string;
+  is_static?: boolean;
 }
 
 export const ContentEditor = () => {
   const [pages, setPages] = useState<ContentPage[]>([]);
+  const [mediaFiles, setMediaFiles] = useState<any[]>([]);
   const [selectedPage, setSelectedPage] = useState<ContentPage | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+  const [editingSection, setEditingSection] = useState<string | null>(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -36,7 +43,14 @@ export const ContentEditor = () => {
     content: {
       hero_title: '',
       hero_description: '',
-      sections: []
+      hero_image: '',
+      sections: [] as any[],
+      gallery: [] as string[],
+      features: [] as any[],
+      specifications: {} as any,
+      pricing_info: '',
+      booking_info: '',
+      custom_html: ''
     },
     status: 'draft' as 'draft' | 'published',
     page_type: 'ooh_format' as 'ooh_format' | 'general' | 'landing'
@@ -44,6 +58,7 @@ export const ContentEditor = () => {
 
   useEffect(() => {
     fetchPages();
+    fetchMediaFiles();
   }, []);
 
   const fetchPages = async () => {
@@ -59,7 +74,47 @@ export const ContentEditor = () => {
         variant: "destructive"
       });
     } else {
-      setPages(data || []);
+      // Combine CMS pages with OOH format pages
+      const cmsPages = data || [];
+      const oohPages = oohFormats.map(format => ({
+        id: `ooh_${format.id}`,
+        slug: format.slug,
+        title: format.name,
+        meta_description: format.metaDescription,
+        content: {
+          hero_title: format.name,
+          hero_description: format.description,
+          category: format.category,
+          type: format.type,
+          placement: format.placement,
+          dwellTime: format.dwellTime,
+          effectiveness: format.effectiveness,
+          pricing: format.priceRange,
+          coverage: format.londonCoverage,
+          whoUsesThis: format.whoUsesIt,
+          networks: format.networks
+        },
+        status: 'published',
+        page_type: 'ooh_format',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        is_static: true
+      }));
+      
+      setPages([...cmsPages, ...oohPages]);
+    }
+  };
+
+  const fetchMediaFiles = async () => {
+    const { data, error } = await supabase
+      .from('media_library')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching media:', error);
+    } else {
+      setMediaFiles(data || []);
     }
   };
 
@@ -69,14 +124,18 @@ export const ContentEditor = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // If it's a static OOH page, create a new CMS override
+    const isStaticPage = selectedPage?.id?.startsWith('ooh_');
+    
     const payload = {
       ...formData,
+      slug: isStaticPage ? selectedPage.slug : formData.slug,
       created_by: user.id,
       updated_by: user.id
     };
 
     let result;
-    if (selectedPage) {
+    if (selectedPage && !isStaticPage) {
       result = await supabase
         .from('content_pages')
         .update(payload)
@@ -96,7 +155,7 @@ export const ContentEditor = () => {
     } else {
       toast({
         title: "Success",
-        description: `Page ${selectedPage ? 'updated' : 'created'} successfully`
+        description: `Page ${selectedPage && !isStaticPage ? 'updated' : 'created'} successfully`
       });
       fetchPages();
       setIsEditing(false);
@@ -108,6 +167,7 @@ export const ContentEditor = () => {
   };
 
   const handleEdit = (page: ContentPage) => {
+    const isStaticPage = page.id?.startsWith('ooh_');
     setSelectedPage(page);
     setFormData({
       title: page.title,
@@ -121,6 +181,15 @@ export const ContentEditor = () => {
   };
 
   const handleDelete = async (page: ContentPage) => {
+    if (page.id?.startsWith('ooh_')) {
+      toast({
+        title: "Cannot Delete",
+        description: "Static OOH format pages cannot be deleted, only customized",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (!confirm('Are you sure you want to delete this page?')) return;
 
     const { error } = await supabase
@@ -151,7 +220,14 @@ export const ContentEditor = () => {
       content: {
         hero_title: '',
         hero_description: '',
-        sections: []
+        hero_image: '',
+        sections: [],
+        gallery: [],
+        features: [],
+        specifications: {},
+        pricing_info: '',
+        booking_info: '',
+        custom_html: ''
       },
       status: 'draft',
       page_type: 'ooh_format'
@@ -165,6 +241,91 @@ export const ContentEditor = () => {
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .trim();
+  };
+
+  const insertMedia = (mediaFile: any) => {
+    const mediaUrl = getMediaUrl(mediaFile);
+    
+    if (editingSection === 'hero_image') {
+      setFormData(prev => ({
+        ...prev,
+        content: { ...prev.content, hero_image: mediaUrl }
+      }));
+    } else if (editingSection === 'gallery') {
+      setFormData(prev => ({
+        ...prev,
+        content: { 
+          ...prev.content, 
+          gallery: [...(prev.content.gallery || []), mediaUrl] 
+        }
+      }));
+    }
+    
+    setShowMediaLibrary(false);
+    setEditingSection(null);
+  };
+
+  const getMediaUrl = (mediaFile: any) => {
+    const [bucket, ...pathParts] = mediaFile.storage_path.split('/');
+    const filePath = pathParts.join('/');
+    
+    const { data } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  };
+
+  const addSection = () => {
+    setFormData(prev => ({
+      ...prev,
+      content: {
+        ...prev.content,
+        sections: [
+          ...(prev.content.sections || []),
+          {
+            id: Date.now().toString(),
+            type: 'text',
+            title: '',
+            content: '',
+            image: '',
+            order: (prev.content.sections?.length || 0) + 1
+          }
+        ]
+      }
+    }));
+  };
+
+  const updateSection = (sectionId: string, field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      content: {
+        ...prev.content,
+        sections: prev.content.sections?.map(section => 
+          section.id === sectionId ? { ...section, [field]: value } : section
+        ) || []
+      }
+    }));
+  };
+
+  const removeSection = (sectionId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      content: {
+        ...prev.content,
+        sections: prev.content.sections?.filter(section => section.id !== sectionId) || []
+      }
+    }));
+  };
+
+  const removeFromGallery = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      content: {
+        ...prev.content,
+        gallery: prev.content.gallery?.filter((_, i) => i !== index) || []
+      }
+    }));
   };
 
   return (
@@ -185,7 +346,12 @@ export const ContentEditor = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="font-semibold">{page.title}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{page.title}</h3>
+                        {page.is_static && (
+                          <Badge variant="outline">Static</Badge>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground">/{page.slug}</p>
                       <p className="text-xs text-muted-foreground mt-1">
                         Updated: {new Date(page.updated_at).toLocaleDateString()}
@@ -209,13 +375,15 @@ export const ContentEditor = () => {
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(page)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      {!page.is_static && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(page)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -227,7 +395,8 @@ export const ContentEditor = () => {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">
-              {selectedPage ? 'Edit Page' : 'Create New Page'}
+              {selectedPage?.is_static ? `Customize ${selectedPage.title}` : 
+               selectedPage ? 'Edit Page' : 'Create New Page'}
             </h2>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setIsEditing(false)}>
@@ -240,105 +409,324 @@ export const ContentEditor = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => {
-                    const title = e.target.value;
-                    setFormData(prev => ({
-                      ...prev,
-                      title,
-                      slug: generateSlug(title)
-                    }));
-                  }}
-                  placeholder="Page title"
-                />
-              </div>
+          <Tabs defaultValue="content" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="content">Content</TabsTrigger>
+              <TabsTrigger value="media">Media & Images</TabsTrigger>
+              <TabsTrigger value="seo">SEO & Settings</TabsTrigger>
+            </TabsList>
 
-              <div>
-                <Label htmlFor="slug">URL Slug</Label>
-                <Input
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                  placeholder="page-url-slug"
-                />
-              </div>
+            <TabsContent value="content" className="space-y-6">
+              {/* Hero Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Hero Section</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="hero_title">Hero Title</Label>
+                    <Input
+                      id="hero_title"
+                      value={formData.content.hero_title || ''}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        content: { ...prev.content, hero_title: e.target.value }
+                      }))}
+                      placeholder="Hero section title"
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="meta_description">Meta Description</Label>
-                <Textarea
-                  id="meta_description"
-                  value={formData.meta_description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value }))}
-                  placeholder="SEO meta description"
-                  rows={3}
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="hero_description">Hero Description</Label>
+                    <Textarea
+                      id="hero_description"
+                      value={formData.content.hero_description || ''}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        content: { ...prev.content, hero_description: e.target.value }
+                      }))}
+                      placeholder="Hero section description"
+                      rows={4}
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value: any) => setFormData(prev => ({ ...prev, status: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="published">Published</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div>
+                    <Label>Hero Image</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={formData.content.hero_image || ''}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          content: { ...prev.content, hero_image: e.target.value }
+                        }))}
+                        placeholder="Image URL"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingSection('hero_image');
+                          setShowMediaLibrary(true);
+                        }}
+                      >
+                        <Image className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    {formData.content.hero_image && (
+                      <img 
+                        src={formData.content.hero_image} 
+                        alt="Hero" 
+                        className="mt-2 max-w-xs rounded"
+                      />
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
 
-              <div>
-                <Label htmlFor="page_type">Page Type</Label>
-                <Select value={formData.page_type} onValueChange={(value: any) => setFormData(prev => ({ ...prev, page_type: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ooh_format">OOH Format</SelectItem>
-                    <SelectItem value="general">General Page</SelectItem>
-                    <SelectItem value="landing">Landing Page</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+              {/* Content Sections */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Content Sections</CardTitle>
+                    <Button onClick={addSection} size="sm">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Section
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {formData.content.sections?.map((section: any, index: number) => (
+                    <Card key={section.id} className="p-4">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="font-medium">Section {index + 1}</h4>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeSection(section.id)}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="grid gap-4">
+                        <div>
+                          <Label>Section Type</Label>
+                          <Select 
+                            value={section.type} 
+                            onValueChange={(value) => updateSection(section.id, 'type', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="text">Text</SelectItem>
+                              <SelectItem value="image">Image</SelectItem>
+                              <SelectItem value="video">Video</SelectItem>
+                              <SelectItem value="text_image">Text + Image</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="hero_title">Hero Title</Label>
-                <Input
-                  id="hero_title"
-                  value={formData.content.hero_title || ''}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    content: { ...prev.content, hero_title: e.target.value }
-                  }))}
-                  placeholder="Hero section title"
-                />
-              </div>
+                        <div>
+                          <Label>Section Title</Label>
+                          <Input
+                            value={section.title || ''}
+                            onChange={(e) => updateSection(section.id, 'title', e.target.value)}
+                            placeholder="Section title"
+                          />
+                        </div>
 
-              <div>
-                <Label htmlFor="hero_description">Hero Description</Label>
-                <Textarea
-                  id="hero_description"
-                  value={formData.content.hero_description || ''}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    content: { ...prev.content, hero_description: e.target.value }
-                  }))}
-                  placeholder="Hero section description"
-                  rows={6}
-                />
-              </div>
-            </div>
-          </div>
+                        <div>
+                          <Label>Content</Label>
+                          <Textarea
+                            value={section.content || ''}
+                            onChange={(e) => updateSection(section.id, 'content', e.target.value)}
+                            placeholder="Section content"
+                            rows={4}
+                          />
+                        </div>
+
+                        {(section.type === 'image' || section.type === 'video' || section.type === 'text_image') && (
+                          <div>
+                            <Label>Media URL</Label>
+                            <div className="flex gap-2">
+                              <Input
+                                value={section.image || ''}
+                                onChange={(e) => updateSection(section.id, 'image', e.target.value)}
+                                placeholder="Media URL"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingSection(`section_${section.id}`);
+                                  setShowMediaLibrary(true);
+                                }}
+                              >
+                                <Upload className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="media" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Image Gallery</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button
+                    onClick={() => {
+                      setEditingSection('gallery');
+                      setShowMediaLibrary(true);
+                    }}
+                  >
+                    <Image className="w-4 h-4 mr-2" />
+                    Add Images to Gallery
+                  </Button>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {formData.content.gallery?.map((imageUrl: string, index: number) => (
+                      <div key={index} className="relative">
+                        <img 
+                          src={imageUrl} 
+                          alt={`Gallery ${index + 1}`} 
+                          className="w-full h-32 object-cover rounded"
+                        />
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-1 right-1"
+                          onClick={() => removeFromGallery(index)}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="seo" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>SEO & Page Settings</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="title">Page Title</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => {
+                        const title = e.target.value;
+                        setFormData(prev => ({
+                          ...prev,
+                          title,
+                          slug: selectedPage?.is_static ? prev.slug : generateSlug(title)
+                        }));
+                      }}
+                      placeholder="Page title"
+                    />
+                  </div>
+
+                  {!selectedPage?.is_static && (
+                    <div>
+                      <Label htmlFor="slug">URL Slug</Label>
+                      <Input
+                        id="slug"
+                        value={formData.slug}
+                        onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                        placeholder="page-url-slug"
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <Label htmlFor="meta_description">Meta Description</Label>
+                    <Textarea
+                      id="meta_description"
+                      value={formData.meta_description}
+                      onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value }))}
+                      placeholder="SEO meta description"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="status">Status</Label>
+                    <Select value={formData.status} onValueChange={(value: any) => setFormData(prev => ({ ...prev, status: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="published">Published</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="page_type">Page Type</Label>
+                    <Select value={formData.page_type} onValueChange={(value: any) => setFormData(prev => ({ ...prev, page_type: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ooh_format">OOH Format</SelectItem>
+                        <SelectItem value="general">General Page</SelectItem>
+                        <SelectItem value="landing">Landing Page</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       )}
+
+      {/* Media Library Dialog */}
+      <Dialog open={showMediaLibrary} onOpenChange={setShowMediaLibrary}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>Select Media</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {mediaFiles.map((file) => (
+              <div
+                key={file.id}
+                className="cursor-pointer border rounded-lg p-2 hover:bg-muted"
+                onClick={() => insertMedia(file)}
+              >
+                {file.file_type.startsWith('image/') ? (
+                  <img
+                    src={getMediaUrl(file)}
+                    alt={file.original_name}
+                    className="w-full h-32 object-cover rounded"
+                  />
+                ) : file.file_type.startsWith('video/') ? (
+                  <div className="w-full h-32 bg-muted rounded flex items-center justify-center">
+                    <Video className="w-8 h-8" />
+                  </div>
+                ) : (
+                  <div className="w-full h-32 bg-muted rounded flex items-center justify-center">
+                    <FileText className="w-8 h-8" />
+                  </div>
+                )}
+                <p className="text-xs mt-2 truncate">{file.original_name}</p>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
