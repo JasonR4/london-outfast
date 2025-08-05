@@ -1,9 +1,22 @@
 import { useNavigate } from "react-router-dom";
-import { oohFormats } from "@/data/oohFormats";
 import { Separator } from "@/components/ui/separator";
+import useGlobalSettings from '@/hooks/useGlobalSettings';
 
 const Footer = () => {
   const navigate = useNavigate();
+  const { footer, loading } = useGlobalSettings();
+
+  if (loading || !footer) {
+    return (
+      <footer className="bg-muted/30 border-t border-border py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center text-sm text-muted-foreground">
+            <p>&copy; 2024 Media Buying London. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="bg-muted/30 border-t border-border py-12 px-4">
@@ -12,61 +25,78 @@ const Footer = () => {
           
           {/* Company Info */}
           <div>
-            <h3 className="font-bold text-lg mb-4">Media Buying London</h3>
+            <h3 className="font-bold text-lg mb-4">{footer.company?.name || 'Media Buying London'}</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              London's fastest OOH media buying agency. Unbeaten on price, unmatched on speed.
+              {footer.company?.description || 'London\'s fastest OOH media buying agency. Unbeaten on price, unmatched on speed.'}
             </p>
-            <p className="text-sm">📞 020 8068 0220</p>
+            {footer.company?.phone && (
+              <p className="text-sm">📞 {footer.company.phone}</p>
+            )}
+            {footer.company?.email && (
+              <p className="text-sm">✉️ {footer.company.email}</p>
+            )}
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-semibold mb-4">Quick Links</h4>
-            <div className="space-y-2 text-sm">
-              <button onClick={() => navigate('/')} className="block hover:text-primary">Home</button>
-              <button onClick={() => navigate('/quote')} className="block hover:text-primary">Get Quote</button>
-              <button onClick={() => navigate('/outdoor-media')} className="block hover:text-primary">All OOH Formats</button>
+          {/* Services Links */}
+          {footer.links?.services && (
+            <div>
+              <h4 className="font-semibold mb-4">Services</h4>
+              <div className="space-y-2 text-sm">
+                {footer.links.services.map((link: any, index: number) => (
+                  <button 
+                    key={index}
+                    onClick={() => navigate(link.url)}
+                    className="block hover:text-primary text-left"
+                  >
+                    {link.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* OOH Media - First Half */}
-          <div>
-            <h4 className="font-semibold mb-4">OOH Media</h4>
-            <div className="space-y-2 text-sm">
-              {oohFormats.slice(0, Math.ceil(oohFormats.length / 2)).map((format) => (
-                <button 
-                  key={format.id}
-                  onClick={() => navigate(`/outdoor-media/${format.slug}`)}
-                  className="block hover:text-primary text-left"
-                >
-                  {format.shortName}
-                </button>
-              ))}
+          {/* Company Links */}
+          {footer.links?.company && (
+            <div>
+              <h4 className="font-semibold mb-4">Company</h4>
+              <div className="space-y-2 text-sm">
+                {footer.links.company.map((link: any, index: number) => (
+                  <button 
+                    key={index}
+                    onClick={() => navigate(link.url)}
+                    className="block hover:text-primary text-left"
+                  >
+                    {link.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* OOH Media - Second Half */}
-          <div>
-            <h4 className="font-semibold mb-4 opacity-0">OOH Media</h4>
-            <div className="space-y-2 text-sm">
-              {oohFormats.slice(Math.ceil(oohFormats.length / 2)).map((format) => (
-                <button 
-                  key={format.id}
-                  onClick={() => navigate(`/outdoor-media/${format.slug}`)}
-                  className="block hover:text-primary text-left"
-                >
-                  {format.shortName}
-                </button>
-              ))}
+          {/* Legal Links */}
+          {footer.links?.legal && (
+            <div>
+              <h4 className="font-semibold mb-4">Legal</h4>
+              <div className="space-y-2 text-sm">
+                {footer.links.legal.map((link: any, index: number) => (
+                  <button 
+                    key={index}
+                    onClick={() => navigate(link.url)}
+                    className="block hover:text-primary text-left"
+                  >
+                    {link.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
         
         <Separator className="my-8" />
         
         <div className="text-center text-sm text-muted-foreground">
-          <p>&copy; 2024 Media Buying London. All rights reserved.</p>
+          <p>{footer.copyright || '© 2024 Media Buying London. All rights reserved.'}</p>
         </div>
       </div>
     </footer>

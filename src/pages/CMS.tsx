@@ -10,7 +10,8 @@ import { ContentEditor } from '@/components/cms/ContentEditor';
 import { MediaLibrary } from '@/components/cms/MediaLibrary';
 import { PageManager } from '@/components/cms/PageManager';
 import { TeamManager } from '@/components/cms/TeamManager';
-import { LogOut, FileText, Image, Users, Settings } from 'lucide-react';
+import { GlobalSettings } from '@/components/cms/GlobalSettings';
+import { LogOut, FileText, Image, Users, Settings, Globe } from 'lucide-react';
 
 const CMS = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -112,7 +113,7 @@ const CMS = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="content" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="content" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
               Content
@@ -124,6 +125,10 @@ const CMS = () => {
             <TabsTrigger value="pages" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
               Pages
+            </TabsTrigger>
+            <TabsTrigger value="global" className="flex items-center gap-2">
+              <Globe className="w-4 h-4" />
+              Global
             </TabsTrigger>
             <TabsTrigger value="team" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -160,6 +165,17 @@ const CMS = () => {
               </CardHeader>
               <CardContent>
                 <PageManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="global">
+            <Card>
+              <CardHeader>
+                <CardTitle>Global Settings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <GlobalSettings />
               </CardContent>
             </Card>
           </TabsContent>

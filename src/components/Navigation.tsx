@@ -1,19 +1,15 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, Phone } from "lucide-react";
 import { useState } from "react";
+import useGlobalSettings from '@/hooks/useGlobalSettings';
 
 const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-
-  const navItems = [
-    { name: "Home", path: "/" },
-    { name: "Get Quote", path: "/quote" },
-    { name: "OOH Formats", path: "/outdoor-media" }
-  ];
+  const { navigation, loading } = useGlobalSettings();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -22,6 +18,23 @@ const Navigation = () => {
     setIsOpen(false);
   };
 
+  if (loading || !navigation) {
+    return (
+      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <button 
+              onClick={() => handleNavigation('/')}
+              className="font-bold text-xl bg-gradient-hero bg-clip-text text-transparent"
+            >
+              Media Buying London
+            </button>
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
       <div className="max-w-6xl mx-auto px-4">
@@ -29,32 +42,35 @@ const Navigation = () => {
           
           {/* Logo */}
           <button 
-            onClick={() => handleNavigation('/')}
+            onClick={() => handleNavigation(navigation.logo?.url || '/')}
             className="font-bold text-xl bg-gradient-hero bg-clip-text text-transparent"
           >
-            Media Buying London
+            {navigation.logo?.text || 'Media Buying London'}
           </button>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
+            {navigation.menu_items?.map((item: any, index: number) => (
               <button
-                key={item.path}
-                onClick={() => handleNavigation(item.path)}
+                key={index}
+                onClick={() => handleNavigation(item.url)}
                 className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive(item.path) ? 'text-primary' : 'text-muted-foreground'
+                  isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
-                {item.name}
+                {item.label}
               </button>
             ))}
-            <Button 
-              onClick={() => window.location.href = "tel:+442080680220"}
-              variant="outline"
-              size="sm"
-            >
-              Call: 020 8068 0220
-            </Button>
+            {navigation.phone && (
+              <Button 
+                onClick={() => window.location.href = `tel:${navigation.phone.replace(/\s/g, '')}`}
+                variant="outline"
+                size="sm"
+              >
+                <Phone className="h-4 w-4 mr-2" />
+                {navigation.phone}
+              </Button>
+            )}
           </div>
 
           {/* Mobile Nav */}
@@ -66,23 +82,26 @@ const Navigation = () => {
             </SheetTrigger>
             <SheetContent>
               <div className="flex flex-col space-y-4 mt-8">
-                {navItems.map((item) => (
+                {navigation.menu_items?.map((item: any, index: number) => (
                   <button
-                    key={item.path}
-                    onClick={() => handleNavigation(item.path)}
+                    key={index}
+                    onClick={() => handleNavigation(item.url)}
                     className={`text-left text-lg font-medium transition-colors hover:text-primary ${
-                      isActive(item.path) ? 'text-primary' : 'text-muted-foreground'
+                      isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
-                    {item.name}
+                    {item.label}
                   </button>
                 ))}
-                <Button 
-                  onClick={() => window.location.href = "tel:+442080680220"}
-                  className="w-full mt-4"
-                >
-                  Call: 020 8068 0220
-                </Button>
+                {navigation.phone && (
+                  <Button 
+                    onClick={() => window.location.href = `tel:${navigation.phone.replace(/\s/g, '')}`}
+                    className="w-full mt-4"
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    {navigation.phone}
+                  </Button>
+                )}
               </div>
             </SheetContent>
           </Sheet>
