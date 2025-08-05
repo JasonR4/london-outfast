@@ -29,7 +29,6 @@ const QuoteForm = () => {
 
   const oohCategories = [
     {
-      emoji: "🏙️",
       title: "Classic & Digital Roadside",
       formats: [
         "48-sheet Billboard (Classic or D48)",
@@ -40,7 +39,6 @@ const QuoteForm = () => {
       ]
     },
     {
-      emoji: "🚇",
       title: "London Underground (TfL)",
       formats: [
         "6-sheet (LT Panel) – station entrance/exit points",
@@ -53,7 +51,6 @@ const QuoteForm = () => {
       ]
     },
     {
-      emoji: "🚉",
       title: "National Rail & Commuter Rail",
       formats: [
         "Rail 6-sheets",
@@ -66,7 +63,6 @@ const QuoteForm = () => {
       ]
     },
     {
-      emoji: "🚌",
       title: "Bus Advertising",
       formats: [
         "Superside",
@@ -79,7 +75,6 @@ const QuoteForm = () => {
       ]
     },
     {
-      emoji: "🚖",
       title: "Taxi Advertising",
       formats: [
         "Full Livery Wrap",
@@ -90,7 +85,6 @@ const QuoteForm = () => {
       ]
     },
     {
-      emoji: "🧱",
       title: "Retail & Leisure Environments",
       formats: [
         "Mall D6s / Digital Portrait Panels",
@@ -101,7 +95,6 @@ const QuoteForm = () => {
       ]
     },
     {
-      emoji: "✈️",
       title: "Airports",
       formats: [
         "Digital 6-sheets",
@@ -113,7 +106,6 @@ const QuoteForm = () => {
       ]
     },
     {
-      emoji: "📞",
       title: "Street Furniture",
       formats: [
         "Phone Kiosks / InLink Panels",
@@ -124,7 +116,6 @@ const QuoteForm = () => {
       ]
     },
     {
-      emoji: "🧠",
       title: "Programmatic DOOH (pDOOH)",
       formats: [
         "Real-time, data-driven DOOH inventory across all D6, D48, and LFD formats",
@@ -132,7 +123,6 @@ const QuoteForm = () => {
       ]
     },
     {
-      emoji: "🔥",
       title: "Ambient / Guerrilla OOH",
       formats: [
         "Flyposting / Wildposting",
@@ -188,7 +178,7 @@ const QuoteForm = () => {
     console.log("Quote submission data for HubSpot:", quoteData);
     
     toast({
-      title: "Quote Request Submitted! 🚀",
+      title: "Quote Request Submitted!",
       description: "We'll get back to you with a custom quote within hours. Check your email!"
     });
 
@@ -215,7 +205,7 @@ const QuoteForm = () => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-6 text-lg px-6 py-2 animate-pulse-glow">
-            🚀 GET YOUR CUSTOM QUOTE
+            GET YOUR CUSTOM QUOTE
           </Badge>
           <h2 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent">
             Choose Your Formats
@@ -239,7 +229,6 @@ const QuoteForm = () => {
                 {oohCategories.map((category, categoryIndex) => (
                   <div key={categoryIndex} className="space-y-3">
                     <div className="flex items-center gap-3 mb-4">
-                      <span className="text-2xl">{category.emoji}</span>
                       <h3 className="text-lg font-semibold text-foreground">{category.title}</h3>
                       <Badge variant="outline" className="ml-auto">
                         {category.formats.filter(format => selectedFormats.includes(format)).length}/{category.formats.length}
@@ -439,7 +428,7 @@ const QuoteForm = () => {
                     className="w-full text-lg py-6 shadow-glow"
                     disabled={selectedFormats.length === 0}
                   >
-                    Get My Custom Quote 🚀
+                    Get My Custom Quote
                   </Button>
 
                   <p className="text-xs text-muted-foreground text-center">

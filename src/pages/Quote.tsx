@@ -17,7 +17,7 @@ const Quote = () => {
         
         <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
           <Badge variant="secondary" className="mb-6 text-lg px-6 py-2">
-            🚀 FREE CUSTOM QUOTE
+            FREE CUSTOM QUOTE
           </Badge>
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent leading-tight">
@@ -35,18 +35,15 @@ const Quote = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <div className="bg-gradient-card p-6 rounded-lg border border-border">
-              <div className="text-3xl mb-2">⚡</div>
-              <h3 className="font-semibold text-foreground">Lightning Fast</h3>
+              <h3 className="font-semibold text-foreground mb-2">Lightning Fast</h3>
               <p className="text-sm text-muted-foreground">Quotes within hours, not days</p>
             </div>
             <div className="bg-gradient-card p-6 rounded-lg border border-border">
-              <div className="text-3xl mb-2">💰</div>
-              <h3 className="font-semibold text-foreground">Best Prices</h3>
+              <h3 className="font-semibold text-foreground mb-2">Best Prices</h3>
               <p className="text-sm text-muted-foreground">We beat any agency quote</p>
             </div>
             <div className="bg-gradient-card p-6 rounded-lg border border-border">
-              <div className="text-3xl mb-2">📍</div>
-              <h3 className="font-semibold text-foreground">Full Coverage</h3>
+              <h3 className="font-semibold text-foreground mb-2">Full Coverage</h3>
               <p className="text-sm text-muted-foreground">Every format across London</p>
             </div>
           </div>
