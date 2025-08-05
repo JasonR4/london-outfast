@@ -213,6 +213,12 @@ export const ContentEditor = () => {
   const handleEdit = (page: ContentPage) => {
     const isStaticPage = page.id?.startsWith('ooh_');
     setSelectedPage(page);
+    
+    // Debug logging to see what's in the page content
+    console.log('Editing page:', page.title);
+    console.log('Page content.category:', page.content?.category);
+    console.log('Full page content:', page.content);
+    
     setFormData({
       title: page.title,
       slug: page.slug,
