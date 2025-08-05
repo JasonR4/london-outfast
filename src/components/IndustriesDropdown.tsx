@@ -67,19 +67,17 @@ const IndustriesDropdown = () => {
       </button>
       
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-2 w-64 bg-background border border-border rounded-lg shadow-lg z-50">
-          <div className="max-h-80 overflow-y-auto">
-            <div className="space-y-1 p-2">
-              {industries.map((industry) => (
-                <button
-                  key={industry.slug}
-                  onClick={() => handleIndustryClick(industry.slug)}
-                  className="block w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
-                >
-                  {industry.displayName}
-                </button>
-              ))}
-            </div>
+        <div className="absolute bottom-full left-0 mb-1 w-56 bg-background border border-border rounded-md shadow-lg z-[60] max-h-64 overflow-y-auto">
+          <div className="py-1">
+            {industries.map((industry) => (
+              <button
+                key={industry.slug}
+                onClick={() => handleIndustryClick(industry.slug)}
+                className="block w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                {industry.displayName}
+              </button>
+            ))}
           </div>
         </div>
       )}
