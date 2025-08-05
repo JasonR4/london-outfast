@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import useGlobalSettings from '@/hooks/useGlobalSettings';
+import IndustriesDropdown from './IndustriesDropdown';
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const Footer = () => {
   return (
     <footer className="bg-muted/30 border-t border-border py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
           
           {/* Company Info */}
           <div>
@@ -54,6 +55,11 @@ const Footer = () => {
               </div>
             </div>
           )}
+
+          {/* Industries Dropdown */}
+          <div>
+            <IndustriesDropdown />
+          </div>
 
           {/* Company Links */}
           {footer.links?.company && (
