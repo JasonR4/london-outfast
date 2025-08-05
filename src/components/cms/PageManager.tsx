@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RefreshCw, Globe, BarChart } from 'lucide-react';
+import { RefreshCw, Globe } from 'lucide-react';
 import { oohFormats } from '@/data/oohFormats';
 
 interface ContentPage {
