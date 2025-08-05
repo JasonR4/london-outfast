@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Plus, Edit, Trash2, Eye, Image, Video, FileText, Upload, X } from 'lucide-react';
+import { Save, Plus, Edit, Trash2, Eye, Image, Video, FileText, Upload, X, Search, Filter } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { oohFormats } from '@/data/oohFormats';
 
@@ -28,6 +28,11 @@ interface ContentPage {
 
 export const ContentEditor = () => {
   const [pages, setPages] = useState<ContentPage[]>([]);
+  const [filteredPages, setFilteredPages] = useState<ContentPage[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'ooh_format' | 'general' | 'landing'>('all');
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'cms' | 'static'>('all');
   const [mediaFiles, setMediaFiles] = useState<any[]>([]);
   const [selectedPage, setSelectedPage] = useState<ContentPage | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -60,6 +65,44 @@ export const ContentEditor = () => {
     fetchPages();
     fetchMediaFiles();
   }, []);
+
+  useEffect(() => {
+    filterPages();
+  }, [pages, searchTerm, statusFilter, typeFilter, sourceFilter]);
+
+  const filterPages = () => {
+    let filtered = [...pages];
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(page => 
+        page.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        page.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (page.meta_description && page.meta_description.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(page => page.status === statusFilter);
+    }
+
+    // Type filter
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(page => page.page_type === typeFilter);
+    }
+
+    // Source filter
+    if (sourceFilter !== 'all') {
+      if (sourceFilter === 'static') {
+        filtered = filtered.filter(page => page.is_static);
+      } else if (sourceFilter === 'cms') {
+        filtered = filtered.filter(page => !page.is_static);
+      }
+    }
+
+    setFilteredPages(filtered);
+  };
 
   const fetchPages = async () => {
     const { data, error } = await supabase
@@ -340,8 +383,100 @@ export const ContentEditor = () => {
             </Button>
           </div>
 
+          {/* Filter Controls */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                Filter & Search Content
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <Label htmlFor="content-search">Search Pages</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="content-search"
+                      placeholder="Search by title, slug..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 mt-1"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="content-status-filter">Filter by Status</Label>
+                  <Select value={statusFilter} onValueChange={(value: 'all' | 'draft' | 'published') => setStatusFilter(value)}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="published">Published</SelectItem>
+                      <SelectItem value="draft">Draft</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="content-type-filter">Filter by Type</Label>
+                  <Select value={typeFilter} onValueChange={(value: 'all' | 'ooh_format' | 'general' | 'landing') => setTypeFilter(value)}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="ooh_format">OOH Formats</SelectItem>
+                      <SelectItem value="general">General Pages</SelectItem>
+                      <SelectItem value="landing">Landing Pages</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="content-source-filter">Filter by Source</Label>
+                  <Select value={sourceFilter} onValueChange={(value: 'all' | 'cms' | 'static') => setSourceFilter(value)}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Sources</SelectItem>
+                      <SelectItem value="cms">CMS Pages</SelectItem>
+                      <SelectItem value="static">Static Pages</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                <p className="text-sm text-muted-foreground">
+                  Showing {filteredPages.length} of {pages.length} pages
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setStatusFilter('all');
+                    setTypeFilter('all');
+                    setSourceFilter('all');
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="grid gap-4">
-            {pages.map((page) => (
+            {filteredPages.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <p className="text-muted-foreground">No pages found matching your filters.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              filteredPages.map((page) => (
               <Card key={page.id}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -388,7 +523,8 @@ export const ContentEditor = () => {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            ))
+            )}
           </div>
         </>
       ) : (
