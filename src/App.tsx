@@ -17,6 +17,7 @@ import FAQs from "./pages/FAQs";
 import LegalPage from "./pages/LegalPage";
 import NotFound from "./pages/NotFound";
 import IndustryPage from "./pages/IndustryPage";
+import Configurator from "./pages/Configurator";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/quote" element={<Quote />} />
+            <Route path="/configurator" element={<Configurator />} />
             <Route path="/outdoor-media" element={<FormatDirectory />} />
             <Route path="/outdoor-media/:formatSlug" element={<FormatPage />} />
             <Route path="/industries/:industrySlug" element={<IndustryPage />} />
