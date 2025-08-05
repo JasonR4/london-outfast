@@ -13,6 +13,7 @@ import FormatDirectory from "./pages/FormatDirectory";
 import Auth from "./pages/Auth";
 import CMS from "./pages/CMS";
 import About from "./pages/About";
+import FAQs from "./pages/FAQs";
 import LegalPage from "./pages/LegalPage";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/outdoor-media" element={<FormatDirectory />} />
             <Route path="/outdoor-media/:formatSlug" element={<FormatPage />} />
             <Route path="/about" element={<About />} />
+            <Route path="/faqs" element={<FAQs />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/cms" element={<CMS />} />
             {/* Legal Pages */}
