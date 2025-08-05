@@ -65,6 +65,8 @@ export const GlobalSettings = () => {
         setting_type: settingType,
         created_by: user.id,
         updated_by: user.id
+      }, {
+        onConflict: 'setting_key'
       });
 
     if (error) {
