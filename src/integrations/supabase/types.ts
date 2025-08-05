@@ -164,6 +164,78 @@ export type Database = {
         }
         Relationships: []
       }
+      seo_pages: {
+        Row: {
+          canonical_url: string | null
+          competitor_analysis: Json | null
+          content_score: number | null
+          created_at: string
+          created_by: string
+          focus_keyword: string
+          id: string
+          keywords: string[] | null
+          london_locations: string[] | null
+          meta_description: string
+          meta_title: string
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          page_slug: string
+          schema_markup: Json | null
+          twitter_description: string | null
+          twitter_image: string | null
+          twitter_title: string | null
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          canonical_url?: string | null
+          competitor_analysis?: Json | null
+          content_score?: number | null
+          created_at?: string
+          created_by: string
+          focus_keyword: string
+          id?: string
+          keywords?: string[] | null
+          london_locations?: string[] | null
+          meta_description: string
+          meta_title: string
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          page_slug: string
+          schema_markup?: Json | null
+          twitter_description?: string | null
+          twitter_image?: string | null
+          twitter_title?: string | null
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          canonical_url?: string | null
+          competitor_analysis?: Json | null
+          content_score?: number | null
+          created_at?: string
+          created_by?: string
+          focus_keyword?: string
+          id?: string
+          keywords?: string[] | null
+          london_locations?: string[] | null
+          meta_description?: string
+          meta_title?: string
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          page_slug?: string
+          schema_markup?: Json | null
+          twitter_description?: string | null
+          twitter_image?: string | null
+          twitter_title?: string | null
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
