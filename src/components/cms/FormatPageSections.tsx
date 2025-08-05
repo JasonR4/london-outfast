@@ -594,12 +594,33 @@ export const FormatPageSections: React.FC<FormatPageSectionsProps> = ({
               />
             </div>
             <div>
+              <Label htmlFor="cta_primary_url">Primary Button URL</Label>
+              <Input
+                id="cta_primary_url"
+                value={content.cta_primary_url || ''}
+                onChange={(e) => updateSection('cta', 'primary_url', e.target.value)}
+                placeholder="e.g., /quote"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <Label htmlFor="cta_secondary_text">Secondary Button Text</Label>
               <Input
                 id="cta_secondary_text"
                 value={content.cta_secondary_text || ''}
                 onChange={(e) => updateSection('cta', 'secondary_text', e.target.value)}
                 placeholder="e.g., SPEAK TO PLANNER"
+              />
+            </div>
+            <div>
+              <Label htmlFor="cta_phone_number">Phone Number</Label>
+              <Input
+                id="cta_phone_number"
+                value={content.cta_phone_number || ''}
+                onChange={(e) => updateSection('cta', 'phone_number', e.target.value)}
+                placeholder="e.g., 020 7946 0465"
               />
             </div>
           </div>
