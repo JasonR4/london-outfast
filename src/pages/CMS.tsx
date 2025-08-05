@@ -12,7 +12,7 @@ import { PageManager } from '@/components/cms/PageManager';
 import { TeamManager } from '@/components/cms/TeamManager';
 import { GlobalSettings } from '@/components/cms/GlobalSettings';
 import { SEOManager } from '@/components/cms/SEOManager';
-import { LogOut, FileText, Image, Users, Settings, Globe, Search } from 'lucide-react';
+import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft } from 'lucide-react';
 
 const CMS = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -99,7 +99,18 @@ const CMS = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Media Buying London CMS</h1>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Site
+            </Button>
+            <h1 className="text-2xl font-bold">Media Buying London CMS</h1>
+          </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">
               Welcome, {userProfile?.full_name || user.email}
