@@ -20,34 +20,51 @@ const Footer = () => {
   }
 
   return (
-    <footer className="bg-muted/30 border-t border-border py-12 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
+    <footer className="bg-gradient-to-br from-muted/20 via-muted/30 to-muted/40 border-t border-border">
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12 lg:gap-8">
           
-          {/* Company Info */}
-          <div>
-            <h3 className="font-bold text-lg mb-4">{footer.company?.name || 'Media Buying London'}</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              {footer.company?.description || 'London\'s fastest OOH media buying agency. Unbeaten on price, unmatched on speed.'}
-            </p>
-            {footer.company?.phone && (
-              <p className="text-sm">📞 {footer.company.phone}</p>
-            )}
-            {footer.company?.email && (
-              <p className="text-sm">✉️ {footer.company.email}</p>
-            )}
+          {/* Company Info - Spans 2 columns */}
+          <div className="lg:col-span-2">
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-4">
+                {footer.company?.name || 'Media Buying London'}
+              </h3>
+              <p className="text-muted-foreground leading-relaxed mb-6 max-w-sm">
+                {footer.company?.description || 'London\'s fastest OOH media buying agency. Unbeaten on price, unmatched on speed.'}
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              {footer.company?.phone && (
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary">📞</span>
+                  </div>
+                  <span className="font-medium">{footer.company.phone}</span>
+                </div>
+              )}
+              {footer.company?.email && (
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary">✉️</span>
+                  </div>
+                  <span className="font-medium">{footer.company.email}</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Services Links */}
           {footer.links?.services && (
             <div>
-              <h4 className="font-semibold mb-4">Services</h4>
-              <div className="space-y-2 text-sm">
+              <h4 className="text-lg font-bold mb-6 text-foreground">Services</h4>
+              <div className="space-y-3">
                 {footer.links.services.map((link: any, index: number) => (
                   <button 
                     key={index}
                     onClick={() => navigate(link.url)}
-                    className="block hover:text-primary text-left"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
                   >
                     {link.label}
                   </button>
@@ -58,19 +75,20 @@ const Footer = () => {
 
           {/* Industries Dropdown */}
           <div>
+            <h4 className="text-lg font-bold mb-6 text-foreground">Industries</h4>
             <IndustriesDropdown />
           </div>
 
           {/* Company Links */}
           {footer.links?.company && (
             <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <div className="space-y-2 text-sm">
+              <h4 className="text-lg font-bold mb-6 text-foreground">Company</h4>
+              <div className="space-y-3">
                 {footer.links.company.map((link: any, index: number) => (
                   <button 
                     key={index}
                     onClick={() => navigate(link.url)}
-                    className="block hover:text-primary text-left"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
                   >
                     {link.label}
                   </button>
@@ -82,13 +100,13 @@ const Footer = () => {
           {/* Legal Links */}
           {footer.links?.legal && (
             <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <div className="space-y-2 text-sm">
+              <h4 className="text-lg font-bold mb-6 text-foreground">Legal</h4>
+              <div className="space-y-3">
                 {footer.links.legal.map((link: any, index: number) => (
                   <button 
                     key={index}
                     onClick={() => navigate(link.url)}
-                    className="block hover:text-primary text-left"
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
                   >
                     {link.label}
                   </button>
@@ -99,10 +117,18 @@ const Footer = () => {
 
         </div>
         
-        <Separator className="my-8" />
-        
-        <div className="text-center text-sm text-muted-foreground">
-          <p>{footer.copyright || '© 2024 Media Buying London. All rights reserved.'}</p>
+        {/* Bottom Section */}
+        <div className="mt-16 pt-8 border-t border-border/50">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-sm text-muted-foreground">
+              {footer.copyright || '© 2024 Media Buying London. All rights reserved.'}
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="text-xs text-muted-foreground">
+                Built with ❤️ in London
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

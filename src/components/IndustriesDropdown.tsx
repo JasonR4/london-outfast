@@ -56,24 +56,24 @@ const IndustriesDropdown = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 font-semibold mb-4 hover:text-primary transition-colors text-left"
+        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors duration-200 font-medium"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        Industries
+        View All Industries
         <ChevronDown 
-          className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} 
+          className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
         />
       </button>
       
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-1 w-56 bg-background border border-border rounded-md shadow-lg z-[60] max-h-64 overflow-y-auto">
-          <div className="py-1">
+        <div className="absolute bottom-full left-0 mb-2 w-64 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-xl z-[70] max-h-80 overflow-y-auto">
+          <div className="py-2">
             {industries.map((industry) => (
               <button
                 key={industry.slug}
                 onClick={() => handleIndustryClick(industry.slug)}
-                className="block w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                className="block w-full text-left px-4 py-2.5 text-sm text-muted-foreground hover:text-primary hover:bg-accent/50 transition-all duration-200 font-medium"
               >
                 {industry.displayName}
               </button>
