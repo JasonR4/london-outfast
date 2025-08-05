@@ -25,13 +25,9 @@ const Navigation = () => {
           <div className="flex items-center justify-between h-16">
             <button 
               onClick={() => handleNavigation('/')}
-              className="flex items-center"
+              className="font-bold text-xl bg-gradient-hero bg-clip-text text-transparent"
             >
-              <img 
-                src="/lovable-uploads/169f13ce-765c-47ab-8d8c-9ebc3ea0f24f.png" 
-                alt="Media Buying London"
-                className="h-10 w-auto"
-              />
+              Media Buying London
             </button>
           </div>
         </div>
@@ -47,13 +43,9 @@ const Navigation = () => {
           {/* Logo */}
           <button 
             onClick={() => handleNavigation(navigation.logo?.url || '/')}
-            className="flex items-center"
+            className="font-bold text-xl bg-gradient-hero bg-clip-text text-transparent"
           >
-            <img 
-              src="/lovable-uploads/169f13ce-765c-47ab-8d8c-9ebc3ea0f24f.png" 
-              alt="Media Buying London"
-              className="h-10 w-auto"
-            />
+            {navigation.logo?.text || 'Media Buying London'}
           </button>
 
           {/* Desktop Nav */}
