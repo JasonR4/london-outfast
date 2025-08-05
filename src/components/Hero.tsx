@@ -1,10 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { getSEODataForPage, updateMetaTags } from "@/utils/seo";
 import londonHero from "@/assets/london-hero.jpg";
 
 const Hero = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadHomepageSEO = async () => {
+      const seoData = await getSEODataForPage('/');
+      
+      const title = seoData?.meta_title || "London's Fastest OOH Media Buying Agency | Media Buying London";
+      const description = seoData?.meta_description || "London's fastest out-of-home media buying agency. Unbeaten on price, unmatched on speed. Get your campaign live in 48 hours.";
+      
+      updateMetaTags(title, description, 'https://mediabuyinglondon.co.uk', seoData);
+    };
+
+    loadHomepageSEO();
+  }, []);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">

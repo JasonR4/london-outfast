@@ -11,7 +11,8 @@ import { MediaLibrary } from '@/components/cms/MediaLibrary';
 import { PageManager } from '@/components/cms/PageManager';
 import { TeamManager } from '@/components/cms/TeamManager';
 import { GlobalSettings } from '@/components/cms/GlobalSettings';
-import { LogOut, FileText, Image, Users, Settings, Globe } from 'lucide-react';
+import { SEOManager } from '@/components/cms/SEOManager';
+import { LogOut, FileText, Image, Users, Settings, Globe, Search } from 'lucide-react';
 
 const CMS = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -113,7 +114,7 @@ const CMS = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="content" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="content" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
               Content
@@ -125,6 +126,10 @@ const CMS = () => {
             <TabsTrigger value="pages" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
               Pages
+            </TabsTrigger>
+            <TabsTrigger value="seo" className="flex items-center gap-2">
+              <Search className="w-4 h-4" />
+              SEO
             </TabsTrigger>
             <TabsTrigger value="global" className="flex items-center gap-2">
               <Globe className="w-4 h-4" />
@@ -165,6 +170,17 @@ const CMS = () => {
               </CardHeader>
               <CardContent>
                 <PageManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="seo">
+            <Card>
+              <CardHeader>
+                <CardTitle>SEO Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SEOManager />
               </CardContent>
             </Card>
           </TabsContent>

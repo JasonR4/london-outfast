@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { getFormatBySlug } from '@/data/oohFormats';
-import { updateMetaTags, generateStructuredData } from '@/utils/seo';
+import { updateMetaTags, generateStructuredData, getSEODataForPage } from '@/utils/seo';
 import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone } from 'lucide-react';
 
 const FormatPage = () => {
@@ -14,6 +14,7 @@ const FormatPage = () => {
   const navigate = useNavigate();
   const [format, setFormat] = useState<any>(null);
   const [cmsContent, setCmsContent] = useState<any>(null);
+  const [seoData, setSeoData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,7 +24,11 @@ const FormatPage = () => {
         return;
       }
 
-      // First check for CMS content
+      // Fetch SEO data first
+      const seoPageData = await getSEODataForPage(`/outdoor-media/${formatSlug}`);
+      setSeoData(seoPageData);
+
+      // Check for CMS content
       const { data: cmsData } = await supabase
         .from('content_pages')
         .select('*')
@@ -52,13 +57,13 @@ const FormatPage = () => {
       setFormat(finalFormat);
       setLoading(false);
 
-      // Update meta tags
+      // Update meta tags with SEO data priority
       if (finalFormat) {
-        updateMetaTags(
-          cmsData?.title || finalFormat.metaTitle,
-          cmsData?.meta_description || finalFormat.metaDescription,
-          `${window.location.origin}/outdoor-media/${formatSlug}`
-        );
+        const title = seoPageData?.meta_title || cmsData?.title || finalFormat.metaTitle;
+        const description = seoPageData?.meta_description || cmsData?.meta_description || finalFormat.metaDescription;
+        const currentUrl = `https://mediabuyinglondon.co.uk/outdoor-media/${formatSlug}`;
+        
+        updateMetaTags(title, description, currentUrl, seoPageData);
 
         // Add structured data
         const structuredData = generateStructuredData(finalFormat);

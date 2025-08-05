@@ -122,6 +122,8 @@ export const SEOManager = () => {
           .from('seo_pages')
           .upsert({
             page_slug: `/outdoor-media/${mediaType}`,
+            created_by: (await supabase.auth.getUser()).data.user?.id || '',
+            updated_by: (await supabase.auth.getUser()).data.user?.id || '',
             ...seoData
           });
 
@@ -149,9 +151,20 @@ export const SEOManager = () => {
   const saveSEOData = async (seoData: SEOData) => {
     setIsLoading(true);
     try {
+      const user = await supabase.auth.getUser();
+      const userId = user.data.user?.id;
+      
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
       const { error } = await supabase
         .from('seo_pages')
-        .upsert(seoData);
+        .upsert({
+          ...seoData,
+          created_by: userId,
+          updated_by: userId
+        });
 
       if (error) throw error;
 
