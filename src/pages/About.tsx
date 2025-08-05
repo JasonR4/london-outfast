@@ -174,7 +174,9 @@ const About = () => {
                       <AccordionItem key={industry.id || idx} value={industry.id || `industry-${idx}`} className="border rounded-lg px-6">
                         <AccordionTrigger className="text-left text-lg font-semibold hover:no-underline">
                           <div className="flex items-center gap-3">
-                            <span className="text-2xl">{industry.icon}</span>
+                            {industry.icon && industry.icon.trim() !== '' && (
+                              <span className="text-2xl">{industry.icon}</span>
+                            )}
                             <span>{industry.title}</span>
                           </div>
                         </AccordionTrigger>
