@@ -73,7 +73,7 @@ const CTA = () => {
             Same-day quotes • Best price guarantee • 100% London coverage
           </p>
           <p className="text-sm text-muted-foreground">
-            Media Buying London - London's fastest OOH media buying agency
+            Media Buying London - London's fastest media planners and buyers
           </p>
         </div>
       </div>
