@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 import londonHero from "@/assets/london-hero.jpg";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -40,11 +43,16 @@ const Hero = () => {
           <Button 
             size="lg" 
             className="text-lg px-8 py-6 shadow-glow"
-            onClick={() => document.getElementById('quote-form')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => navigate('/quote')}
           >
             GET MY MEDIA QUOTE
           </Button>
-          <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="text-lg px-8 py-6"
+            onClick={() => navigate('/quote')}
+          >
             REQUEST CALLBACK
           </Button>
         </div>

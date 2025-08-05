@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 import oohNetwork from "@/assets/ooh-network.jpg";
 
 const CTA = () => {
+  const navigate = useNavigate();
+  
   const taglines = [
     "Your Brand. On London's Streets. For Less.",
     "Buy Fast. Pay Less. Go Big.",
@@ -41,11 +44,16 @@ const CTA = () => {
           <Button 
             size="lg" 
             className="text-xl px-12 py-8 shadow-glow animate-pulse-glow"
-            onClick={() => document.getElementById('quote-form')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => navigate('/quote')}
           >
             GET MY MEDIA QUOTE
           </Button>
-          <Button variant="outline" size="lg" className="text-xl px-12 py-8">
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="text-xl px-12 py-8"
+            onClick={() => navigate('/quote')}
+          >
             REQUEST CALLBACK
           </Button>
         </div>
