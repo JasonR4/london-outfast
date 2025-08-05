@@ -4,6 +4,7 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import HowItWorks from "@/components/HowItWorks";
 import FormatLinks from "@/components/FormatLinks";
 import CTA from "@/components/CTA";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
@@ -14,6 +15,7 @@ const Index = () => {
       <HowItWorks />
       <FormatLinks />
       <CTA />
+      <Footer />
     </div>
   );
 };
