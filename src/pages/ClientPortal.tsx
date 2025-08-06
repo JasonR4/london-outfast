@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { LogOut, FileText, Calendar, BarChart3, Camera, Palette, User, Plus, Eye } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LogOut, FileText, Calendar, BarChart3, Camera, Palette, User, Plus, Eye, Clock, CheckCircle, FileCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { QuoteDetailsModal } from '@/components/QuoteDetailsModal';
+import { ConfirmedMediaSchedule } from '@/components/ConfirmedMediaSchedule';
+import { ContractAgreements } from '@/components/ContractAgreements';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 interface UserQuote {
@@ -16,6 +19,13 @@ interface UserQuote {
   status: string;
   created_at: string;
   updated_at: string;
+  confirmed_at?: string;
+  confirmed_by?: string;
+  approved_at?: string;
+  rejected_at?: string;
+  rejection_reason?: string;
+  confirmed_details?: any;
+  contract_details?: any;
   contact_name?: string;
   contact_email?: string;
   contact_phone?: string;
@@ -125,6 +135,13 @@ export default function ClientPortal() {
           status,
           created_at,
           updated_at,
+          confirmed_at,
+          confirmed_by,
+          approved_at,
+          rejected_at,
+          rejection_reason,
+          confirmed_details,
+          contract_details,
           contact_name,
           contact_email,
           contact_phone,
@@ -172,6 +189,18 @@ export default function ClientPortal() {
       navigate('/');
     }
   };
+
+  const handleQuoteStatusUpdate = () => {
+    if (user) {
+      fetchUserQuotes(user.id);
+    }
+  };
+
+  // Group quotes by status
+  const submittedQuotes = quotes.filter(q => q.status === 'submitted');
+  const confirmedQuotes = quotes.filter(q => q.status === 'confirmed');
+  const approvedQuotes = quotes.filter(q => q.status === 'approved' || q.status === 'contract');
+  const activeQuotes = quotes.filter(q => q.status === 'active');
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-GB', {
@@ -310,14 +339,14 @@ export default function ClientPortal() {
               </Card>
             </div>
 
-            {/* Quotes List */}
+            {/* Tabbed Quotes and Campaigns */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle>Your Quotes & Campaigns</CardTitle>
                     <CardDescription>
-                      Track all your submitted quotes and active campaigns
+                      Track your quotes through every stage of the process
                     </CardDescription>
                   </div>
                   <Button onClick={() => navigate('/outdoor-media')}>
@@ -327,74 +356,174 @@ export default function ClientPortal() {
                 </div>
               </CardHeader>
               <CardContent>
-                {quotes.length === 0 ? (
-                  <div className="text-center py-8">
-                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No quotes yet</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Start by creating your first campaign quote
-                    </p>
-                    <Button onClick={() => navigate('/outdoor-media')}>
-                      Browse OOH Formats
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {quotes.map((quote) => (
-                      <div 
-                        key={quote.id} 
-                        className="border rounded-lg p-4 hover:bg-muted/30 transition-colors cursor-pointer"
-                        onClick={() => handleViewQuote(quote)}
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <h3 className="font-semibold">Quote #{quote.id.slice(0, 8)}</h3>
-                            <Badge variant={getStatusColor(quote.status)}>
-                              {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-right">
-                              <div className="font-semibold">{formatCurrency(quote.total_cost)}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {new Date(quote.created_at).toLocaleDateString('en-GB')}
+                <Tabs defaultValue="submitted" className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="submitted" className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Submitted ({submittedQuotes.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="confirmed" className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      Media Schedule ({confirmedQuotes.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="contracts" className="flex items-center gap-2">
+                      <FileCheck className="h-4 w-4" />
+                      Contracts ({approvedQuotes.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="active" className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4" />
+                      Active ({activeQuotes.length})
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="submitted" className="mt-6">
+                    {submittedQuotes.length === 0 ? (
+                      <div className="text-center py-8">
+                        <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold mb-2">No submitted quotes</h3>
+                        <p className="text-muted-foreground mb-4">
+                          Your submitted quotes will appear here while they're being reviewed
+                        </p>
+                        <Button onClick={() => navigate('/outdoor-media')}>
+                          Create Your First Quote
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {submittedQuotes.map((quote) => (
+                          <div 
+                            key={quote.id} 
+                            className="border rounded-lg p-4 hover:bg-muted/30 transition-colors cursor-pointer"
+                            onClick={() => handleViewQuote(quote)}
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <h3 className="font-semibold">Quote #{quote.id.slice(0, 8)}</h3>
+                                <Badge variant="secondary">Under Review</Badge>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="text-right">
+                                  <div className="font-semibold">{formatCurrency(quote.total_cost)}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {new Date(quote.created_at).toLocaleDateString('en-GB')}
+                                  </div>
+                                </div>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewQuote(quote);
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
                               </div>
                             </div>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewQuote(quote);
-                              }}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
+                            
+                            <div className="grid md:grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="font-medium mb-1">Formats:</p>
+                                <ul className="text-muted-foreground">
+                                  {quote.quote_items?.map((item, idx) => (
+                                    <li key={idx}>
+                                      {item.quantity}× {item.format_name}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                              <div>
+                                <p className="font-medium mb-1">Total Locations:</p>
+                                <p className="text-muted-foreground">
+                                  {quote.quote_items?.reduce((sum, item) => sum + item.selected_areas.length, 0)} areas
+                                </p>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                        
-                        <div className="grid md:grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <p className="font-medium mb-1">Formats:</p>
-                            <ul className="text-muted-foreground">
-                              {quote.quote_items?.map((item, idx) => (
-                                <li key={idx}>
-                                  {item.quantity}× {item.format_name}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                          <div>
-                            <p className="font-medium mb-1">Total Locations:</p>
-                            <p className="text-muted-foreground">
-                              {quote.quote_items?.reduce((sum, item) => sum + item.selected_areas.length, 0)} areas
-                            </p>
-                          </div>
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="confirmed" className="mt-6">
+                    {confirmedQuotes.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold mb-2">No confirmed media schedules</h3>
+                        <p className="text-muted-foreground">
+                          Once our team confirms your media plan details, they'll appear here for your approval
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {confirmedQuotes.map((quote) => (
+                          <ConfirmedMediaSchedule 
+                            key={quote.id} 
+                            quote={quote} 
+                            onStatusUpdate={handleQuoteStatusUpdate}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="contracts" className="mt-6">
+                    {approvedQuotes.length === 0 ? (
+                      <div className="text-center py-8">
+                        <FileCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold mb-2">No contracts ready</h3>
+                        <p className="text-muted-foreground">
+                          After approving your media schedule, contracts and payment details will appear here
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {approvedQuotes.map((quote) => (
+                          <ContractAgreements 
+                            key={quote.id} 
+                            quote={quote} 
+                            onStatusUpdate={handleQuoteStatusUpdate}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="active" className="mt-6">
+                    {activeQuotes.length === 0 ? (
+                      <div className="text-center py-8">
+                        <CheckCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold mb-2">No active campaigns</h3>
+                        <p className="text-muted-foreground">
+                          Your live campaigns will appear here with tracking and reporting
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {activeQuotes.map((quote) => (
+                          <div 
+                            key={quote.id} 
+                            className="border rounded-lg p-4 bg-green-50 border-green-200"
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <h3 className="font-semibold">Campaign #{quote.id.slice(0, 8)}</h3>
+                                <Badge className="bg-green-500">Live</Badge>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-semibold text-green-700">{formatCurrency(quote.total_cost)}</div>
+                                <div className="text-xs text-green-600">Campaign Value</div>
+                              </div>
+                            </div>
+                            <div className="text-sm text-green-700">
+                              Campaign is currently live and being tracked
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </div>

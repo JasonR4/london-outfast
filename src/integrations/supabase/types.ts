@@ -493,12 +493,19 @@ export type Database = {
       quotes: {
         Row: {
           additional_requirements: string | null
+          approved_at: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
+          confirmed_details: Json | null
           contact_company: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
+          contract_details: Json | null
           created_at: string
           id: string
+          rejected_at: string | null
+          rejection_reason: string | null
           status: string
           timeline: string | null
           total_cost: number | null
@@ -509,12 +516,19 @@ export type Database = {
         }
         Insert: {
           additional_requirements?: string | null
+          approved_at?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          confirmed_details?: Json | null
           contact_company?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          contract_details?: Json | null
           created_at?: string
           id?: string
+          rejected_at?: string | null
+          rejection_reason?: string | null
           status?: string
           timeline?: string | null
           total_cost?: number | null
@@ -525,12 +539,19 @@ export type Database = {
         }
         Update: {
           additional_requirements?: string | null
+          approved_at?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          confirmed_details?: Json | null
           contact_company?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          contract_details?: Json | null
           created_at?: string
           id?: string
+          rejected_at?: string | null
+          rejection_reason?: string | null
           status?: string
           timeline?: string | null
           total_cost?: number | null
