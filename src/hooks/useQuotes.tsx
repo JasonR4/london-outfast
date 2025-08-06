@@ -180,22 +180,97 @@ export const useQuotes = () => {
     }
   };
 
-  // Update quote total cost
+  // Update quote total cost and recalculate bulk discounts
   const updateQuoteTotalCost = async (quoteId: string) => {
     try {
       const { data: items, error } = await supabase
         .from('quote_items')
-        .select('total_cost')
+        .select('*')
         .eq('quote_id', quoteId);
 
       if (error) throw error;
 
-      const totalCost = items?.reduce((sum, item) => sum + Number(item.total_cost), 0) || 0;
+      // Group items by format to calculate total periods per format
+      const formatGroups: Record<string, QuoteItem[]> = {};
+      items?.forEach(item => {
+        if (!formatGroups[item.format_slug]) {
+          formatGroups[item.format_slug] = [];
+        }
+        formatGroups[item.format_slug].push(item);
+      });
+
+      // Recalculate discounts for each format group
+      const updatedItems: QuoteItem[] = [];
+      for (const [formatSlug, formatItems] of Object.entries(formatGroups)) {
+        const totalPeriods = formatItems.reduce((sum, item) => sum + item.selected_periods.length, 0);
+        
+        // Get discount tier for this format
+        const { data: discountTiers, error: discountError } = await supabase
+          .from('discount_tiers')
+          .select('*')
+          .eq('is_active', true)
+          .order('discount_percentage', { ascending: false });
+
+        if (discountError) {
+          console.error('Error fetching discount tiers:', discountError);
+          continue;
+        }
+
+        const applicableDiscount = discountTiers
+          ?.filter(d => d.min_periods <= totalPeriods && (!d.max_periods || totalPeriods <= d.max_periods))
+          ?.sort((a, b) => b.discount_percentage - a.discount_percentage)[0];
+
+        // Update each item in this format group with the bulk discount
+        for (const item of formatItems) {
+          const originalCost = item.original_cost || item.base_cost;
+          let newBaseCost = originalCost;
+          let discountPercentage = 0;
+          let discountAmount = 0;
+
+          if (applicableDiscount && applicableDiscount.discount_percentage > (item.discount_percentage || 0)) {
+            discountPercentage = applicableDiscount.discount_percentage;
+            discountAmount = originalCost * (discountPercentage / 100);
+            newBaseCost = originalCost - discountAmount;
+          }
+
+          const newTotalCost = newBaseCost + item.production_cost + item.creative_cost;
+
+          // Update the item in the database
+          await supabase
+            .from('quote_items')
+            .update({
+              base_cost: newBaseCost,
+              total_cost: newTotalCost,
+              discount_percentage: discountPercentage,
+              discount_amount: discountAmount,
+              original_cost: originalCost
+            })
+            .eq('id', item.id);
+
+          updatedItems.push({
+            ...item,
+            base_cost: newBaseCost,
+            total_cost: newTotalCost,
+            discount_percentage: discountPercentage,
+            discount_amount: discountAmount,
+            original_cost: originalCost
+          });
+        }
+      }
+
+      const totalCost = updatedItems.reduce((sum, item) => sum + Number(item.total_cost), 0);
 
       await supabase
         .from('quotes')
         .update({ total_cost: totalCost })
         .eq('id', quoteId);
+
+      // Update the current quote state with recalculated items
+      setCurrentQuote(prev => prev ? {
+        ...prev,
+        quote_items: updatedItems,
+        total_cost: totalCost
+      } : null);
 
     } catch (err: any) {
       console.error('Error updating quote total:', err);
@@ -212,17 +287,10 @@ export const useQuotes = () => {
 
       if (error) throw error;
 
-      // Update current quote
-      setCurrentQuote(prev => {
-        if (!prev) return null;
-        const updatedItems = prev.quote_items?.filter(item => item.id !== itemId) || [];
-        const newTotalCost = updatedItems.reduce((sum, item) => sum + item.total_cost, 0);
-        return {
-          ...prev,
-          quote_items: updatedItems,
-          total_cost: newTotalCost
-        };
-      });
+      // Get the quote ID from current quote to recalculate discounts
+      if (currentQuote?.id) {
+        await updateQuoteTotalCost(currentQuote.id);
+      }
 
       toast.success('Removed from plan');
       return true;
