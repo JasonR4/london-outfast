@@ -13,7 +13,8 @@ import { TeamManager } from '@/components/cms/TeamManager';
 import { LegalPagesEditor } from '@/components/cms/LegalPagesEditor';
 import { GlobalSettings } from '@/components/cms/GlobalSettings';
 import { SEOManager } from '@/components/cms/SEOManager';
-import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale } from 'lucide-react';
+import IndustryContentManager from '@/components/cms/IndustryContentManager';
+import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building } from 'lucide-react';
 
 const CMS = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -126,10 +127,14 @@ const CMS = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="content" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="content" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
               Content
+            </TabsTrigger>
+            <TabsTrigger value="industries" className="flex items-center gap-2">
+              <Building className="w-4 h-4" />
+              Industries
             </TabsTrigger>
             <TabsTrigger value="legal" className="flex items-center gap-2">
               <Scale className="w-4 h-4" />
@@ -164,6 +169,17 @@ const CMS = () => {
               </CardHeader>
               <CardContent>
                 <ContentEditor />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="industries">
+            <Card>
+              <CardHeader>
+                <CardTitle>Industry Content Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <IndustryContentManager />
               </CardContent>
             </Card>
           </TabsContent>
