@@ -104,6 +104,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('🔐 Authentication check:', user?.email || 'Not authenticated');
       setUser(user);
     };
     
@@ -111,6 +112,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('🔄 Auth state change:', event, session?.user?.email || 'No user');
         setUser(session?.user ?? null);
       }
     );
