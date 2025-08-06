@@ -440,16 +440,52 @@ export function QuoteManager() {
               </CardContent>
             </Card>
           ) : (
-            confirmedQuotes.map((quote) => (
-              <QuoteCard 
-                key={quote.id} 
-                quote={quote} 
-                onViewDetails={(q) => {
-                  setSelectedQuote(q);
-                  setShowQuoteDetails(true);
-                }} 
-              />
-            ))
+            <>
+              {/* Bulk Actions */}
+              <Card className="bg-muted/30">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center gap-4">
+                      <Checkbox
+                        checked={selectedQuoteIds.length === confirmedQuotes.length && confirmedQuotes.length > 0}
+                        onCheckedChange={(checked) => handleSelectAll(confirmedQuotes, checked as boolean)}
+                      />
+                      <span className="text-sm font-medium">
+                        {selectedQuoteIds.length > 0 ? `${selectedQuoteIds.length} selected` : 'Select all'}
+                      </span>
+                    </div>
+                    
+                    {selectedQuoteIds.length > 0 && (
+                      <div className="flex gap-2 flex-wrap">
+                        <Button size="sm" variant="outline" onClick={() => handleBulkAction('approved')}>
+                          Approve ({selectedQuoteIds.length})
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleBulkAction('active')}>
+                          Make Active ({selectedQuoteIds.length})
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleBulkAction('delete')}>
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete ({selectedQuoteIds.length})
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {confirmedQuotes.map((quote) => (
+                <QuoteCard 
+                  key={quote.id} 
+                  quote={quote} 
+                  onViewDetails={(q) => {
+                    setSelectedQuote(q);
+                    setShowQuoteDetails(true);
+                  }}
+                  isSelected={selectedQuoteIds.includes(quote.id)}
+                  onSelect={(checked) => handleSelectQuote(quote.id, checked)}
+                />
+              ))}
+            </>
           )}
         </TabsContent>
 
@@ -464,16 +500,49 @@ export function QuoteManager() {
               </CardContent>
             </Card>
           ) : (
-            approvedQuotes.map((quote) => (
-              <QuoteCard 
-                key={quote.id} 
-                quote={quote} 
-                onViewDetails={(q) => {
-                  setSelectedQuote(q);
-                  setShowQuoteDetails(true);
-                }} 
-              />
-            ))
+            <>
+              {/* Bulk Actions */}
+              <Card className="bg-muted/30">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center gap-4">
+                      <Checkbox
+                        checked={selectedQuoteIds.length === approvedQuotes.length && approvedQuotes.length > 0}
+                        onCheckedChange={(checked) => handleSelectAll(approvedQuotes, checked as boolean)}
+                      />
+                      <span className="text-sm font-medium">
+                        {selectedQuoteIds.length > 0 ? `${selectedQuoteIds.length} selected` : 'Select all'}
+                      </span>
+                    </div>
+                    
+                    {selectedQuoteIds.length > 0 && (
+                      <div className="flex gap-2 flex-wrap">
+                        <Button size="sm" variant="outline" onClick={() => handleBulkAction('active')}>
+                          Make Active ({selectedQuoteIds.length})
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleBulkAction('delete')}>
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete ({selectedQuoteIds.length})
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {approvedQuotes.map((quote) => (
+                <QuoteCard 
+                  key={quote.id} 
+                  quote={quote} 
+                  onViewDetails={(q) => {
+                    setSelectedQuote(q);
+                    setShowQuoteDetails(true);
+                  }}
+                  isSelected={selectedQuoteIds.includes(quote.id)}
+                  onSelect={(checked) => handleSelectQuote(quote.id, checked)}
+                />
+              ))}
+            </>
           )}
         </TabsContent>
 
@@ -488,16 +557,46 @@ export function QuoteManager() {
               </CardContent>
             </Card>
           ) : (
-            activeQuotes.map((quote) => (
-              <QuoteCard 
-                key={quote.id} 
-                quote={quote} 
-                onViewDetails={(q) => {
-                  setSelectedQuote(q);
-                  setShowQuoteDetails(true);
-                }} 
-              />
-            ))
+            <>
+              {/* Bulk Actions */}
+              <Card className="bg-muted/30">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center gap-4">
+                      <Checkbox
+                        checked={selectedQuoteIds.length === activeQuotes.length && activeQuotes.length > 0}
+                        onCheckedChange={(checked) => handleSelectAll(activeQuotes, checked as boolean)}
+                      />
+                      <span className="text-sm font-medium">
+                        {selectedQuoteIds.length > 0 ? `${selectedQuoteIds.length} selected` : 'Select all'}
+                      </span>
+                    </div>
+                    
+                    {selectedQuoteIds.length > 0 && (
+                      <div className="flex gap-2 flex-wrap">
+                        <Button size="sm" variant="destructive" onClick={() => handleBulkAction('delete')}>
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete ({selectedQuoteIds.length})
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {activeQuotes.map((quote) => (
+                <QuoteCard 
+                  key={quote.id} 
+                  quote={quote} 
+                  onViewDetails={(q) => {
+                    setSelectedQuote(q);
+                    setShowQuoteDetails(true);
+                  }}
+                  isSelected={selectedQuoteIds.includes(quote.id)}
+                  onSelect={(checked) => handleSelectQuote(quote.id, checked)}
+                />
+              ))}
+            </>
           )}
         </TabsContent>
 
@@ -512,16 +611,46 @@ export function QuoteManager() {
               </CardContent>
             </Card>
           ) : (
-            rejectedQuotes.map((quote) => (
-              <QuoteCard 
-                key={quote.id} 
-                quote={quote} 
-                onViewDetails={(q) => {
-                  setSelectedQuote(q);
-                  setShowQuoteDetails(true);
-                }} 
-              />
-            ))
+            <>
+              {/* Bulk Actions */}
+              <Card className="bg-muted/30">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center gap-4">
+                      <Checkbox
+                        checked={selectedQuoteIds.length === rejectedQuotes.length && rejectedQuotes.length > 0}
+                        onCheckedChange={(checked) => handleSelectAll(rejectedQuotes, checked as boolean)}
+                      />
+                      <span className="text-sm font-medium">
+                        {selectedQuoteIds.length > 0 ? `${selectedQuoteIds.length} selected` : 'Select all'}
+                      </span>
+                    </div>
+                    
+                    {selectedQuoteIds.length > 0 && (
+                      <div className="flex gap-2 flex-wrap">
+                        <Button size="sm" variant="destructive" onClick={() => handleBulkAction('delete')}>
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete ({selectedQuoteIds.length})
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {rejectedQuotes.map((quote) => (
+                <QuoteCard 
+                  key={quote.id} 
+                  quote={quote} 
+                  onViewDetails={(q) => {
+                    setSelectedQuote(q);
+                    setShowQuoteDetails(true);
+                  }}
+                  isSelected={selectedQuoteIds.includes(quote.id)}
+                  onSelect={(checked) => handleSelectQuote(quote.id, checked)}
+                />
+              ))}
+            </>
           )}
         </TabsContent>
       </Tabs>
