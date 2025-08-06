@@ -617,29 +617,47 @@ const FormatPage = () => {
 
                     
                      {/* Incharge Periods Selection - for incharge media formats */}
-                     {format?.category !== 'Bus' && format?.category !== 'Gorilla' && format?.category !== 'Ambient' && inchargePeriods && inchargePeriods.length > 0 && (
+                     {format?.category !== 'Bus' && format?.category !== 'Gorilla' && format?.category !== 'Ambient' && (
                       <div>
                         <Label>Select Campaign Periods</Label>
-                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                          {inchargePeriods.map(period => (
-                            <div key={period.id} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`period-${period.period_number}`}
-                                checked={selectedPeriods.includes(period.period_number)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedPeriods(prev => [...prev, period.period_number]);
-                                  } else {
-                                    setSelectedPeriods(prev => prev.filter(p => p !== period.period_number));
-                                  }
-                                }}
-                              />
-                              <Label htmlFor={`period-${period.period_number}`} className="text-sm">
-                                Period {period.period_number}: {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
-                              </Label>
-                            </div>
-                          ))}
+                        
+                        {/* DEBUG INFO */}
+                        <div className="text-xs bg-yellow-100 p-2 rounded mb-2">
+                          <div>Debug - inchargePeriods: {inchargePeriods ? inchargePeriods.length : 'null'} periods</div>
+                          <div>Loading: {rateLoading ? 'true' : 'false'}</div>
+                          <div>Error: {rateError || 'none'}</div>
+                          {inchargePeriods && inchargePeriods.length > 0 && (
+                            <div>First period: {JSON.stringify(inchargePeriods[0])}</div>
+                          )}
                         </div>
+                        
+                        {inchargePeriods && inchargePeriods.length > 0 ? (
+                          <div className="space-y-2 max-h-60 overflow-y-auto">
+                            {inchargePeriods.map(period => (
+                              <div key={period.id || period.period_number} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`period-${period.period_number}`}
+                                  checked={selectedPeriods.includes(period.period_number)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setSelectedPeriods(prev => [...prev, period.period_number]);
+                                    } else {
+                                      setSelectedPeriods(prev => prev.filter(p => p !== period.period_number));
+                                    }
+                                  }}
+                                />
+                                <Label htmlFor={`period-${period.period_number}`} className="text-sm">
+                                  Period {period.period_number}: {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-muted-foreground p-4 bg-muted/50 rounded">
+                            {rateLoading ? 'Loading periods...' : 'No periods available for this format'}
+                          </div>
+                        )}
+                        
                         <p className="text-sm text-muted-foreground mt-2">
                           Selected {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''}
                         </p>
