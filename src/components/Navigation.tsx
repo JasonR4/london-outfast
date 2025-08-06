@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Menu, Phone, ChevronDown, ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -101,17 +102,47 @@ const Navigation = () => {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
-            {navigation.menu_items?.map((item: any, index: number) => (
-              <button
-                key={index}
-                onClick={() => handleNavigation(item.url)}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+            {navigation.menu_items?.map((item: any, index: number) => {
+              if (item.type === 'dropdown' && item.submenu) {
+                return (
+                  <DropdownMenu key={index}>
+                    <DropdownMenuTrigger asChild>
+                      <button className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary ${
+                        item.submenu.some((subItem: any) => isActive(subItem.url)) ? 'text-primary' : 'text-muted-foreground'
+                      }`}>
+                        {item.label}
+                        <ChevronDown className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-background border border-border shadow-lg z-50">
+                      {item.submenu.map((subItem: any, subIndex: number) => (
+                        <DropdownMenuItem 
+                          key={subIndex}
+                          onClick={() => handleNavigation(subItem.url)}
+                          className={`cursor-pointer hover:bg-muted ${
+                            isActive(subItem.url) ? 'bg-muted text-primary' : ''
+                          }`}
+                        >
+                          {subItem.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              }
+              
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleNavigation(item.url)}
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
             
             {/* Client Portal Link - Show only for authenticated users */}
             {user && (
