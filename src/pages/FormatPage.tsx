@@ -475,15 +475,13 @@ const FormatPage = () => {
                         <div className="border-t pt-4 space-y-2">
                           {selectedLocation && !rateLoading && (
                             <>
-                              {(() => {
-                                const priceCalculation = calculatePrice(selectedLocation, incharges, false);
-                                const withProduction = calculatePrice(selectedLocation, incharges, true);
+                               {(() => {
+                                const priceCalculation = calculatePrice(selectedLocation, incharges);
                                 
                                 if (priceCalculation) {
                                   const campaignTotal = priceCalculation.totalPrice * quantity;
-                                  const productionTotal = withProduction ? withProduction.totalPrice - priceCalculation.totalPrice : 0;
                                   const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
-                                  const grandTotal = campaignTotal + productionTotal + creativeTotal;
+                                  const grandTotal = campaignTotal + creativeTotal;
                                   
                                   return (
                                     <>
@@ -491,10 +489,16 @@ const FormatPage = () => {
                                         <span>Base Rate per Incharge:</span>
                                         <span>£{priceCalculation.basePrice.toFixed(2)}</span>
                                       </div>
+                                      {priceCalculation.locationMarkup > 0 && (
+                                        <div className="flex justify-between text-sm text-blue-600">
+                                          <span>Location Markup ({priceCalculation.locationMarkup}%):</span>
+                                          <span>+£{((priceCalculation.adjustedRate - priceCalculation.basePrice) * incharges * quantity).toFixed(2)}</span>
+                                        </div>
+                                      )}
                                       {priceCalculation.discount > 0 && (
                                         <div className="flex justify-between text-sm text-green-600">
                                           <span>Volume Discount ({priceCalculation.discount}%):</span>
-                                          <span>-£{((priceCalculation.basePrice - (priceCalculation.totalPrice / incharges)) * incharges * quantity).toFixed(2)}</span>
+                                          <span>-£{((priceCalculation.adjustedRate - (priceCalculation.totalPrice / incharges)) * incharges * quantity).toFixed(2)}</span>
                                         </div>
                                       )}
                                       {priceCalculation.isOnSale && (
@@ -513,12 +517,6 @@ const FormatPage = () => {
                                         <span>Campaign Cost ({quantity} × {incharges} incharges):</span>
                                         <span>£{campaignTotal.toFixed(2)}</span>
                                       </div>
-                                      {productionTotal > 0 && (
-                                        <div className="flex justify-between text-sm">
-                                          <span>Production Cost:</span>
-                                          <span>£{(productionTotal * quantity).toFixed(2)}</span>
-                                        </div>
-                                      )}
                                       {needsCreative && (
                                         <div className="flex justify-between text-sm">
                                           <span>Creative Assets ({creativeAssets}):</span>

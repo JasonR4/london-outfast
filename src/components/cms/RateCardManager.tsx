@@ -103,7 +103,6 @@ export function RateCardManager() {
         media_format_id: formData.get('media_format_id') as string,
         location_area: formData.get('location_area') as string,
         base_rate_per_incharge: parseFloat(formData.get('base_rate_per_incharge') as string),
-        production_cost: parseFloat(formData.get('production_cost') as string) || 0,
         sale_price: formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null,
         reduced_price: formData.get('reduced_price') ? parseFloat(formData.get('reduced_price') as string) : null,
         location_markup_percentage: parseFloat(formData.get('location_markup_percentage') as string) || 0,
@@ -294,15 +293,6 @@ export function RateCardManager() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="production_cost">Production Cost (£)</Label>
-                          <Input
-                            name="production_cost"
-                            type="number"
-                            step="0.01"
-                            defaultValue={editingRate?.production_cost}
-                          />
-                        </div>
-                        <div>
                           <Label htmlFor="sale_price">Sale Price (£)</Label>
                           <Input
                             name="sale_price"
@@ -354,7 +344,7 @@ export function RateCardManager() {
                     <TableHead>Format</TableHead>
                     <TableHead>Location</TableHead>
                     <TableHead>Base Rate</TableHead>
-                    <TableHead>Production</TableHead>
+                    <TableHead>Location Markup</TableHead>
                     <TableHead>Sale Price</TableHead>
                     <TableHead>Reduced Price</TableHead>
                     <TableHead>Status</TableHead>
@@ -367,7 +357,7 @@ export function RateCardManager() {
                       <TableCell>{rate.media_formats?.format_name}</TableCell>
                       <TableCell>{rate.location_area}</TableCell>
                       <TableCell>£{rate.base_rate_per_incharge}</TableCell>
-                      <TableCell>£{rate.production_cost}</TableCell>
+                      <TableCell>{rate.location_markup_percentage}%</TableCell>
                       <TableCell>{rate.sale_price ? `£${rate.sale_price}` : '-'}</TableCell>
                       <TableCell>{rate.reduced_price ? `£${rate.reduced_price}` : '-'}</TableCell>
                       <TableCell>

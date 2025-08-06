@@ -94,13 +94,18 @@ export function useRateCards(formatSlug?: string) {
     }
   };
 
-  const calculatePrice = (locationArea: string, incharges: number, includeProduction: boolean = false) => {
+  const calculatePrice = (locationArea: string, incharges: number) => {
     const rateCard = rateCards.find(r => r.location_area === locationArea);
     if (!rateCard) return null;
 
+    // Apply location markup to base rate
+    const baseRate = rateCard.base_rate_per_incharge;
+    const markupMultiplier = 1 + (rateCard.location_markup_percentage / 100);
+    const adjustedRate = baseRate * markupMultiplier;
+
     // Check for sale or reduced price first
-    const basePrice = rateCard.sale_price || rateCard.reduced_price || rateCard.base_rate_per_incharge;
-    let totalPrice = basePrice * incharges;
+    const finalRate = rateCard.sale_price || rateCard.reduced_price || adjustedRate;
+    let totalPrice = finalRate * incharges;
 
     // Apply discount tiers
     const applicableDiscount = discountTiers
@@ -111,16 +116,12 @@ export function useRateCards(formatSlug?: string) {
       totalPrice = totalPrice * (1 - applicableDiscount.discount_percentage / 100);
     }
 
-    // Add production cost if requested
-    if (includeProduction) {
-      totalPrice += rateCard.production_cost;
-    }
-
     return {
-      basePrice,
+      basePrice: baseRate,
+      adjustedRate,
       totalPrice,
       discount: applicableDiscount?.discount_percentage || 0,
-      productionCost: rateCard.production_cost,
+      locationMarkup: rateCard.location_markup_percentage,
       isOnSale: !!rateCard.sale_price,
       isReduced: !!rateCard.reduced_price && !rateCard.sale_price
     };
