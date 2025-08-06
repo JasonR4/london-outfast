@@ -153,6 +153,7 @@ export function useRateCards(formatSlug?: string) {
         // Don't throw, just log and continue with empty array
         setRateCardPeriods([]);
       } else {
+        console.log('✅ Rate card periods loaded:', rateCardPeriodsData);
         setRateCardPeriods(rateCardPeriodsData || []);
       }
 
@@ -324,10 +325,22 @@ export function useRateCards(formatSlug?: string) {
 
   // Get all available periods across all locations for this format
   const getAllAvailablePeriods = () => {
+    console.log('🔍 getAllAvailablePeriods Debug:', {
+      rateCardPeriodsLength: rateCardPeriods.length,
+      rateCardPeriods: rateCardPeriods.map(rcp => ({
+        id: rcp.id,
+        rate_card_id: rcp.rate_card_id,
+        is_enabled: rcp.is_enabled,
+        incharge_periods: rcp.incharge_periods
+      }))
+    });
+
     const allEnabledPeriods = rateCardPeriods
       .filter(rcp => rcp.is_enabled)
       .map(rcp => rcp.incharge_periods)
       .filter(Boolean);
+
+    console.log('📋 All enabled periods:', allEnabledPeriods);
 
     // Remove duplicates based on period_number
     const uniquePeriods = allEnabledPeriods.reduce((acc: InchargePeriod[], period) => {
@@ -337,7 +350,10 @@ export function useRateCards(formatSlug?: string) {
       return acc;
     }, []);
 
-    return uniquePeriods.sort((a, b) => a.period_number - b.period_number);
+    const sortedPeriods = uniquePeriods.sort((a, b) => a.period_number - b.period_number);
+    console.log('✅ Final sorted periods:', sortedPeriods);
+    
+    return sortedPeriods;
   };
 
   const getAvailableLocations = () => {
