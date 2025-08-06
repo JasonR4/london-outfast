@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { getFormatBySlug } from '@/data/oohFormats';
 import { updateMetaTags, generateStructuredData, getSEODataForPage } from '@/utils/seo';
 import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone } from 'lucide-react';
+import { LocationSelector } from '@/components/LocationSelector';
 
 const FormatPage = () => {
   const { formatSlug } = useParams();
@@ -16,6 +17,7 @@ const FormatPage = () => {
   const [cmsContent, setCmsContent] = useState<any>(null);
   const [seoData, setSeoData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
 
   useEffect(() => {
     const initializePage = async () => {
@@ -364,30 +366,45 @@ const FormatPage = () => {
             </div>
           </section>
 
-          {/* Coverage Section */}
+          {/* Coverage Section with Location Selector */}
           <section className="py-20 px-4">
             <div className="max-w-6xl mx-auto">
-              <div className="grid lg:grid-cols-2 gap-12 items-center">
-                <div>
-                  <h2 className="text-3xl font-bold mb-6">
-                    Where Can You Book {format.shortName} in London?
-                  </h2>
-                  <p className="text-lg text-muted-foreground mb-8">
-                    {format.londonCoverage}
+              <h2 className="text-3xl font-bold text-center mb-4">
+                Where Can You Book {format.shortName} in London?
+              </h2>
+              <p className="text-lg text-muted-foreground text-center mb-12 max-w-3xl mx-auto">
+                Explore the areas where {format.name.toLowerCase()} advertising is available across London. Select areas of interest to see coverage details.
+              </p>
+              
+              <div className="max-w-2xl mx-auto">
+                <LocationSelector
+                  selectedLocations={selectedAreas}
+                  onSelectionChange={setSelectedAreas}
+                  title={`${format.shortName} Coverage Areas`}
+                  description="Select areas to explore where this format is available"
+                  showSelectedSummary={true}
+                  maxHeight="500px"
+                />
+              </div>
+
+              {selectedAreas.length > 0 && (
+                <div className="mt-8 p-6 bg-card rounded-lg border max-w-2xl mx-auto">
+                  <h3 className="text-xl font-semibold mb-4">Coverage in Selected Areas</h3>
+                  <p className="text-muted-foreground mb-4">
+                    {format.shortName} advertising is available in {selectedAreas.length} selected area{selectedAreas.length !== 1 ? 's' : ''}. 
+                    Our network provides excellent reach and frequency across these locations.
                   </p>
-                </div>
-                <div className="bg-muted/30 p-8 rounded-lg">
-                  <h3 className="font-semibold mb-4">Available Networks:</h3>
-                  <div className="space-y-2">
-                    {format.networks?.map((network: string, index: number) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span>{network}</span>
-                      </div>
-                    ))}
+                  <div className="flex gap-4">
+                    <Button onClick={handleGetQuote} className="flex-1">
+                      Get Quote for Selected Areas
+                    </Button>
+                    <Button variant="outline" onClick={handleCallNow}>
+                      <Phone className="w-4 h-4 mr-2" />
+                      Discuss Coverage
+                    </Button>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </section>
 
