@@ -10,12 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { Search, MapPin, Zap, Calculator, CheckCircle2, AlertTriangle, Info } from "lucide-react";
+import { Search, MapPin, Zap, Calculator, CheckCircle2, AlertTriangle, Info, Palette } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuotes } from "@/hooks/useQuotes";
 import { useRateCards } from "@/hooks/useRateCards";
 import { useLocationSelector } from "@/hooks/useLocationSelector";
 import { useLocationCapacity } from "@/hooks/useLocationCapacity";
+import { useCreativeCapacity } from "@/hooks/useCreativeCapacity";
+import { CreativeCapacityIndicator } from "@/components/CreativeCapacityIndicator";
 import { LocationSelector } from "@/components/LocationSelector";
 import { oohFormats, OOHFormat } from "@/data/oohFormats";
 import { londonAreas } from "@/data/londonAreas";
@@ -36,7 +38,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedPeriods, setSelectedPeriods] = useState<number[]>([]);
   const [needsCreative, setNeedsCreative] = useState(false);
-  const [creativeCategory, setCreativeCategory] = useState('Standard Design');
+  const [creativeAssets, setCreativeAssets] = useState(1);
+  const [creativeReadiness, setCreativeReadiness] = useState<'ready' | 'adjustments' | 'development'>('ready');
   console.log('📊 Selected periods state:', selectedPeriods);
   const [contactDetails, setContactDetails] = useState({
     contact_name: "",
@@ -62,6 +65,15 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     selectedPeriods,
     selectedAreas: selectedLocations,
     basePrice: 1000
+  });
+
+  // Creative capacity logic
+  const creativeCapacity = useCreativeCapacity({
+    sites: quantity,
+    creativeAssets,
+    needsCreative,
+    creativeCostPerAsset: 85,
+    siteCost: 1000
   });
 
   // Rate cards for selected format
@@ -130,8 +142,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         
         const mediaPrice = calculatePrice(location, selectedPeriods);
         const productionPrice = calculateProductionCost(location, quantity);
-        // Calculate creative cost only if needed
-        const creativePrice = needsCreative ? calculateCreativeCost(location, quantity, creativeCategory) : null;
+        // Calculate creative cost based on creative assets and readiness
+        const creativePrice = needsCreative ? calculateCreativeCost(location, creativeAssets, 'Standard Design') : null;
         
         console.log(`💰 Media price result:`, mediaPrice);
         console.log(`🏭 Production price result:`, productionPrice);
@@ -457,8 +469,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <Label className="text-base font-medium">Creative Services</Label>
-                            <p className="text-sm text-muted-foreground">Do you need creative design services?</p>
+                            <Label className="text-base font-medium">Creative Requirements</Label>
+                            <p className="text-sm text-muted-foreground">Do you need creative assets produced?</p>
                           </div>
                           <Switch
                             checked={needsCreative}
@@ -467,18 +479,54 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         </div>
                         
                         {needsCreative && (
-                          <div>
-                            <Label className="text-sm font-medium">Creative Category</Label>
-                            <Select value={creativeCategory} onValueChange={setCreativeCategory}>
-                              <SelectTrigger className="mt-1">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Standard Design">Standard Design</SelectItem>
-                                <SelectItem value="Premium Design">Premium Design</SelectItem>
-                                <SelectItem value="Animation">Animation</SelectItem>
-                              </SelectContent>
-                            </Select>
+                          <div className="space-y-4">
+                            <div>
+                              <Label className="text-sm font-medium">Creative Readiness</Label>
+                              <Select value={creativeReadiness} onValueChange={(value: 'ready' | 'adjustments' | 'development') => setCreativeReadiness(value)}>
+                                <SelectTrigger className="mt-1">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="ready">Ready to go</SelectItem>
+                                  <SelectItem value="adjustments">Need minor adjustments</SelectItem>
+                                  <SelectItem value="development">Need full creative development</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            <div>
+                              <Label className="text-sm font-medium">Number of Creative Assets</Label>
+                              <p className="text-xs text-muted-foreground mb-2">How many different creative designs do you need?</p>
+                              <Select value={creativeAssets.toString()} onValueChange={(value) => setCreativeAssets(parseInt(value))}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20].map(num => (
+                                    <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {/* Creative Capacity Indicator */}
+                            <CreativeCapacityIndicator
+                              sites={quantity}
+                              creativeAssets={creativeAssets}
+                              needsCreative={needsCreative}
+                              efficiency={creativeCapacity.efficiency}
+                              status={creativeCapacity.status}
+                              creativesPerSite={creativeCapacity.creativesPerSite}
+                              recommendations={creativeCapacity.getCreativeRecommendations()}
+                              onOptimizeClick={() => {
+                                // Handle optimization click
+                                const recommendations = creativeCapacity.getCreativeRecommendations();
+                                toast({
+                                  title: "Creative Optimization",
+                                  description: recommendations[0] || "Consider optimizing your creative strategy for better efficiency."
+                                });
+                              }}
+                            />
                           </div>
                         )}
                       </div>
@@ -572,7 +620,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           </div>
                           {needsCreative && pricing.creativeCost > 0 && (
                             <div className="flex justify-between items-center">
-                              <span>Creative Costs ({creativeCategory}):</span>
+                              <span>Creative Development ({creativeAssets} assets):</span>
                               <span className="font-medium">£{pricing.creativeCost.toLocaleString()}</span>
                             </div>
                           )}
