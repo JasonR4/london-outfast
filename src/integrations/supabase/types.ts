@@ -56,6 +56,53 @@ export type Database = {
         }
         Relationships: []
       }
+      discount_tiers: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          discount_percentage: number
+          id: string
+          is_active: boolean
+          max_incharges: number | null
+          media_format_id: string
+          min_incharges: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          discount_percentage: number
+          id?: string
+          is_active?: boolean
+          max_incharges?: number | null
+          media_format_id: string
+          min_incharges: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          discount_percentage?: number
+          id?: string
+          is_active?: boolean
+          max_incharges?: number | null
+          media_format_id?: string
+          min_incharges?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discount_tiers_media_format_id_fkey"
+            columns: ["media_format_id"]
+            isOneToOne: false
+            referencedRelation: "media_formats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       global_settings: {
         Row: {
           created_at: string
@@ -122,6 +169,45 @@ export type Database = {
           section_key?: string
           updated_at?: string
           updated_by?: string
+        }
+        Relationships: []
+      }
+      media_formats: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          dimensions: string | null
+          format_name: string
+          format_slug: string
+          id: string
+          is_active: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          dimensions?: string | null
+          format_name: string
+          format_slug: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          dimensions?: string | null
+          format_name?: string
+          format_slug?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -196,6 +282,59 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      rate_cards: {
+        Row: {
+          base_rate_per_incharge: number
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          location_area: string
+          media_format_id: string
+          production_cost: number
+          reduced_price: number | null
+          sale_price: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          base_rate_per_incharge: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          location_area: string
+          media_format_id: string
+          production_cost?: number
+          reduced_price?: number | null
+          sale_price?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          base_rate_per_incharge?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          location_area?: string
+          media_format_id?: string
+          production_cost?: number
+          reduced_price?: number | null
+          sale_price?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rate_cards_media_format_id_fkey"
+            columns: ["media_format_id"]
+            isOneToOne: false
+            referencedRelation: "media_formats"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       seo_pages: {
         Row: {

@@ -13,6 +13,7 @@ import { getFormatBySlug } from '@/data/oohFormats';
 import { updateMetaTags, generateStructuredData, getSEODataForPage } from '@/utils/seo';
 import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone } from 'lucide-react';
 import { LocationSelector } from '@/components/LocationSelector';
+import { useRateCards } from '@/hooks/useRateCards';
 
 const FormatPage = () => {
   const { formatSlug } = useParams();
@@ -23,8 +24,13 @@ const FormatPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [quantity, setQuantity] = useState<number>(1);
+  const [incharges, setIncharges] = useState<number>(1);
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
   const [needsCreative, setNeedsCreative] = useState<boolean>(false);
   const [creativeAssets, setCreativeAssets] = useState<number>(1);
+  
+  // Use rate cards hook
+  const { rateCards, calculatePrice, getAvailableLocations, loading: rateLoading, error: rateError } = useRateCards(formatSlug);
 
   useEffect(() => {
     const initializePage = async () => {
@@ -399,6 +405,36 @@ const FormatPage = () => {
                         </div>
 
                         <div>
+                          <Label htmlFor="incharges">Number of Incharges (2-week periods)</Label>
+                          <Select value={incharges.toString()} onValueChange={(value) => setIncharges(parseInt(value))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select incharges" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[1,2,3,4,6,8,10,12,16,20,24,26].map(num => (
+                                <SelectItem key={num} value={num.toString()}>{num} incharge{num > 1 ? 's' : ''} ({num * 2} weeks)</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {!rateLoading && getAvailableLocations().length > 0 && (
+                          <div>
+                            <Label htmlFor="location">Location Area</Label>
+                            <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select location area" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {getAvailableLocations().map(location => (
+                                  <SelectItem key={location} value={location}>{location}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+
+                        <div>
                           <Label>Do you have artwork or need creative?</Label>
                           <RadioGroup 
                             value={needsCreative ? "need-creative" : "have-artwork"} 
@@ -437,20 +473,78 @@ const FormatPage = () => {
 
                         {/* Pricing Summary */}
                         <div className="border-t pt-4 space-y-2">
+                          {selectedLocation && !rateLoading && (
+                            <>
+                              {(() => {
+                                const priceCalculation = calculatePrice(selectedLocation, incharges, false);
+                                const withProduction = calculatePrice(selectedLocation, incharges, true);
+                                
+                                if (priceCalculation) {
+                                  const campaignTotal = priceCalculation.totalPrice * quantity;
+                                  const productionTotal = withProduction ? withProduction.totalPrice - priceCalculation.totalPrice : 0;
+                                  const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
+                                  const grandTotal = campaignTotal + productionTotal + creativeTotal;
+                                  
+                                  return (
+                                    <>
+                                      <div className="flex justify-between text-sm">
+                                        <span>Base Rate per Incharge:</span>
+                                        <span>£{priceCalculation.basePrice.toFixed(2)}</span>
+                                      </div>
+                                      {priceCalculation.discount > 0 && (
+                                        <div className="flex justify-between text-sm text-green-600">
+                                          <span>Volume Discount ({priceCalculation.discount}%):</span>
+                                          <span>-£{((priceCalculation.basePrice - (priceCalculation.totalPrice / incharges)) * incharges * quantity).toFixed(2)}</span>
+                                        </div>
+                                      )}
+                                      {priceCalculation.isOnSale && (
+                                        <div className="flex justify-between text-sm text-green-600">
+                                          <span>⚡ Special Offer:</span>
+                                          <span>Sale Price Applied</span>
+                                        </div>
+                                      )}
+                                      {priceCalculation.isReduced && (
+                                        <div className="flex justify-between text-sm text-blue-600">
+                                          <span>💰 Reduced Rate:</span>
+                                          <span>Lower Price Applied</span>
+                                        </div>
+                                      )}
+                                      <div className="flex justify-between text-sm">
+                                        <span>Campaign Cost ({quantity} × {incharges} incharges):</span>
+                                        <span>£{campaignTotal.toFixed(2)}</span>
+                                      </div>
+                                      {productionTotal > 0 && (
+                                        <div className="flex justify-between text-sm">
+                                          <span>Production Cost:</span>
+                                          <span>£{(productionTotal * quantity).toFixed(2)}</span>
+                                        </div>
+                                      )}
+                                      {needsCreative && (
+                                        <div className="flex justify-between text-sm">
+                                          <span>Creative Assets ({creativeAssets}):</span>
+                                          <span>£{creativeTotal}</span>
+                                        </div>
+                                      )}
+                                      <div className="flex justify-between font-semibold text-base border-t pt-2">
+                                        <span>Estimated Total:</span>
+                                        <span>£{grandTotal.toFixed(2)}</span>
+                                      </div>
+                                    </>
+                                  );
+                                }
+                                return null;
+                              })()}
+                            </>
+                          )}
+                          
                           <div className="flex justify-between text-sm">
                             <span>Campaign Duration:</span>
-                            <span>2 weeks minimum</span>
+                            <span>{incharges} incharge{incharges > 1 ? 's' : ''} ({incharges * 2} weeks)</span>
                           </div>
                           <div className="flex justify-between text-sm">
                             <span>Sites Selected:</span>
                             <span>{quantity}</span>
                           </div>
-                          {needsCreative && (
-                            <div className="flex justify-between text-sm">
-                              <span>Creative Assets:</span>
-                              <span>{creativeAssets} × £85 = £{creativeAssets * 85}</span>
-                            </div>
-                          )}
                           <div className="flex justify-between text-sm">
                             <span>Lead Time:</span>
                             <span>5-10 working days</span>

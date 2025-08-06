@@ -15,7 +15,8 @@ import { GlobalSettings } from '@/components/cms/GlobalSettings';
 import { SEOManager } from '@/components/cms/SEOManager';
 import IndustryContentManager from '@/components/cms/IndustryContentManager';
 import HomepageContentManager from '@/components/cms/HomepageContentManager';
-import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home } from 'lucide-react';
+import { RateCardManager } from '@/components/cms/RateCardManager';
+import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator } from 'lucide-react';
 
 const CMS = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -128,7 +129,7 @@ const CMS = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="homepage" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9">
+          <TabsList className="grid w-full grid-cols-10">
             <TabsTrigger value="homepage" className="flex items-center gap-2">
               <Home className="w-4 h-4" />
               Homepage
@@ -152,6 +153,10 @@ const CMS = () => {
             <TabsTrigger value="pages" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
               Pages
+            </TabsTrigger>
+            <TabsTrigger value="rates" className="flex items-center gap-2">
+              <Calculator className="w-4 h-4" />
+              Rates
             </TabsTrigger>
             <TabsTrigger value="seo" className="flex items-center gap-2">
               <Search className="w-4 h-4" />
@@ -224,6 +229,10 @@ const CMS = () => {
                 <PageManager />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="rates">
+            <RateCardManager />
           </TabsContent>
 
           <TabsContent value="seo">
