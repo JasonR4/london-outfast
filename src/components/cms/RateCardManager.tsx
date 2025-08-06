@@ -64,11 +64,14 @@ export function RateCardManager() {
   const [mediaFormats, setMediaFormats] = useState<MediaFormat[]>([]);
   const [rateCards, setRateCards] = useState<RateCard[]>([]);
   const [discountTiers, setDiscountTiers] = useState<DiscountTier[]>([]);
+  const [productionTiers, setProductionTiers] = useState<ProductionCostTier[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingRate, setEditingRate] = useState<RateCard | null>(null);
   const [editingDiscount, setEditingDiscount] = useState<DiscountTier | null>(null);
+  const [editingProduction, setEditingProduction] = useState<ProductionCostTier | null>(null);
   const [isRateDialogOpen, setIsRateDialogOpen] = useState(false);
   const [isDiscountDialogOpen, setIsDiscountDialogOpen] = useState(false);
+  const [isProductionDialogOpen, setIsProductionDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -76,19 +79,22 @@ export function RateCardManager() {
 
   const fetchData = async () => {
     try {
-      const [formatsRes, ratesRes, discountsRes] = await Promise.all([
+      const [formatsRes, ratesRes, discountsRes, productionRes] = await Promise.all([
         supabase.from('media_formats').select('*').order('format_name'),
         supabase.from('rate_cards').select('*, media_formats(format_name)').order('location_area'),
-        supabase.from('discount_tiers').select('*, media_formats(format_name)').order('min_incharges')
+        supabase.from('discount_tiers').select('*, media_formats(format_name)').order('min_incharges'),
+        supabase.from('production_cost_tiers').select('*, media_formats(format_name)').order('min_quantity')
       ]);
 
       if (formatsRes.error) throw formatsRes.error;
       if (ratesRes.error) throw ratesRes.error;
       if (discountsRes.error) throw discountsRes.error;
+      if (productionRes.error) throw productionRes.error;
 
       setMediaFormats(formatsRes.data);
       setRateCards(ratesRes.data);
       setDiscountTiers(discountsRes.data);
+      setProductionTiers(productionRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load rate card data');
@@ -167,6 +173,40 @@ export function RateCardManager() {
     }
   };
 
+  const handleSaveProductionTier = async (formData: FormData) => {
+    try {
+      const productionData = {
+        media_format_id: formData.get('media_format_id') as string,
+        min_quantity: parseInt(formData.get('min_quantity') as string),
+        max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
+        cost_per_unit: parseFloat(formData.get('cost_per_unit') as string),
+        is_active: formData.get('is_active') === 'true'
+      };
+
+      if (editingProduction) {
+        const { error } = await supabase
+          .from('production_cost_tiers')
+          .update(productionData)
+          .eq('id', editingProduction.id);
+        if (error) throw error;
+        toast.success('Production cost tier updated successfully');
+      } else {
+        const { error } = await supabase
+          .from('production_cost_tiers')
+          .insert(productionData);
+        if (error) throw error;
+        toast.success('Production cost tier created successfully');
+      }
+
+      setIsProductionDialogOpen(false);
+      setEditingProduction(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error saving production cost tier:', error);
+      toast.error('Failed to save production cost tier');
+    }
+  };
+
   const handleDeleteRateCard = async (id: string) => {
     if (!confirm('Are you sure you want to delete this rate card?')) return;
     
@@ -203,6 +243,24 @@ export function RateCardManager() {
     }
   };
 
+  const handleDeleteProductionTier = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this production cost tier?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('production_cost_tiers')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      toast.success('Production cost tier deleted successfully');
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting production cost tier:', error);
+      toast.error('Failed to delete production cost tier');
+    }
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center p-8">Loading rate cards...</div>;
   }
@@ -218,6 +276,7 @@ export function RateCardManager() {
             <TabsList>
               <TabsTrigger value="rates">Rate Cards</TabsTrigger>
               <TabsTrigger value="discounts">Discount Tiers</TabsTrigger>
+              <TabsTrigger value="production">Production Costs</TabsTrigger>
             </TabsList>
 
             <TabsContent value="rates" className="space-y-4">
@@ -521,6 +580,146 @@ export function RateCardManager() {
                             size="sm"
                             variant="destructive"
                             onClick={() => handleDeleteDiscountTier(discount.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
+
+            <TabsContent value="production" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Production Cost Tiers by Quantity</h3>
+                <Dialog open={isProductionDialogOpen} onOpenChange={setIsProductionDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => setEditingProduction(null)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Production Cost Tier
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingProduction ? 'Edit Production Cost Tier' : 'Add New Production Cost Tier'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveProductionTier(new FormData(e.currentTarget));
+                    }} className="space-y-4">
+                      <div>
+                        <Label htmlFor="media_format_id">Media Format</Label>
+                        <Select name="media_format_id" defaultValue={editingProduction?.media_format_id} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select format" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {mediaFormats.map((format) => (
+                              <SelectItem key={format.id} value={format.id}>
+                                {format.format_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="min_quantity">Min Quantity</Label>
+                          <Input
+                            name="min_quantity"
+                            type="number"
+                            defaultValue={editingProduction?.min_quantity}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="max_quantity">Max Quantity</Label>
+                          <Input
+                            name="max_quantity"
+                            type="number"
+                            defaultValue={editingProduction?.max_quantity || ''}
+                            placeholder="Leave empty for unlimited"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="cost_per_unit">Cost per Unit (£)</Label>
+                        <Input
+                          name="cost_per_unit"
+                          type="number"
+                          step="0.01"
+                          defaultValue={editingProduction?.cost_per_unit}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="is_active">Status</Label>
+                        <Select name="is_active" defaultValue={editingProduction?.is_active ? 'true' : 'false'}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Active</SelectItem>
+                            <SelectItem value="false">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={() => setIsProductionDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit">
+                          {editingProduction ? 'Update' : 'Create'} Production Cost Tier
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Format</TableHead>
+                    <TableHead>Min Quantity</TableHead>
+                    <TableHead>Max Quantity</TableHead>
+                    <TableHead>Cost per Unit</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {productionTiers.map((production) => (
+                    <TableRow key={production.id}>
+                      <TableCell>{production.media_formats?.format_name}</TableCell>
+                      <TableCell>{production.min_quantity}</TableCell>
+                      <TableCell>{production.max_quantity || 'Unlimited'}</TableCell>
+                      <TableCell>£{production.cost_per_unit}</TableCell>
+                      <TableCell>
+                        <Badge variant={production.is_active ? 'default' : 'secondary'}>
+                          {production.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setEditingProduction(production);
+                              setIsProductionDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteProductionTier(production.id)}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
