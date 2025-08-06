@@ -16,6 +16,7 @@ export default function CreateAccount() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [hasQuoteData, setHasQuoteData] = useState(false);
+  const [quoteDetails, setQuoteDetails] = useState<any>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -30,6 +31,8 @@ export default function CreateAccount() {
     
     // Check if we have quote data to pre-populate
     const submittedQuoteData = localStorage.getItem('submitted_quote_data');
+    const submittedQuoteDetails = localStorage.getItem('submitted_quote_details');
+    
     if (submittedQuoteData) {
       try {
         const quoteData = JSON.parse(submittedQuoteData);
@@ -43,6 +46,12 @@ export default function CreateAccount() {
           company: quoteData.contact_company || ''
         }));
         setHasQuoteData(true);
+
+        // Also load quote details if available
+        if (submittedQuoteDetails) {
+          const details = JSON.parse(submittedQuoteDetails);
+          setQuoteDetails(details);
+        }
       } catch (error) {
         console.error('Error parsing quote data:', error);
       }
@@ -101,6 +110,7 @@ export default function CreateAccount() {
         
         // Clean up quote data
         localStorage.removeItem('submitted_quote_data');
+        localStorage.removeItem('submitted_quote_details');
         localStorage.removeItem('quote_session_id_submitted');
         
         toast.success('Account created! Please check your email to verify your account.');
@@ -172,7 +182,7 @@ export default function CreateAccount() {
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               {hasQuoteData 
-                ? "We've pre-filled your details from your quote submission. Just set your password to access your dedicated client portal."
+                ? "Just set your password to secure access to your quote and premium client portal features."
                 : "Unlock exclusive benefits, real-time campaign management, and priority support with your dedicated client portal."
               }
             </p>
@@ -180,34 +190,73 @@ export default function CreateAccount() {
 
           <div className="grid lg:grid-cols-3 gap-8">
             
-            {/* Benefits Section */}
+            {/* Quote Summary or Benefits Section */}
             <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" />
-                    Why Create an Account?
-                  </CardTitle>
-                  <CardDescription>
-                    Join hundreds of successful brands managing their OOH campaigns through our platform
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {benefits.map((benefit, index) => (
-                      <div key={index} className="flex items-start gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <benefit.icon className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold mb-1">{benefit.title}</h3>
-                          <p className="text-sm text-muted-foreground">{benefit.description}</p>
-                        </div>
+              {hasQuoteData && quoteDetails ? (
+                // Show Quote Summary
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-primary" />
+                      Your Quote Summary
+                    </CardTitle>
+                    <CardDescription>
+                      Review your submitted campaign details before securing your account
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center p-4 bg-primary/5 rounded-lg border border-primary/10">
+                        <span className="font-semibold text-lg">Total Campaign Cost</span>
+                        <span className="text-2xl font-bold text-primary">£{quoteDetails.total_cost?.toLocaleString()}</span>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                      
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-foreground">Campaign Components:</h4>
+                        {quoteDetails.quote_items?.map((item: any, index: number) => (
+                          <div key={index} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                            <div>
+                              <p className="font-medium">{item.format_name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {item.quantity} units • {item.selected_areas?.length || 0} areas
+                              </p>
+                            </div>
+                            <span className="font-semibold">£{item.total_cost?.toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                // Show Benefits Section
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-primary" />
+                      Why Create an Account?
+                    </CardTitle>
+                    <CardDescription>
+                      Join hundreds of successful brands managing their OOH campaigns through our platform
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {benefits.map((benefit, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <benefit.icon className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold mb-1">{benefit.title}</h3>
+                            <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Social Proof */}
               <Card className="bg-gradient-to-r from-primary/5 to-accent/5">

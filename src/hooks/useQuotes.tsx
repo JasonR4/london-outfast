@@ -233,9 +233,16 @@ export const useQuotes = () => {
 
       setCurrentQuote(prev => prev ? { ...prev, status: 'submitted', ...contactDetails } : null);
       
-      // Store submitted quote data for account creation
+      // Store submitted quote data AND quote details for account creation
       localStorage.setItem('quote_session_id_submitted', sessionId);
       localStorage.setItem('submitted_quote_data', JSON.stringify(contactDetails));
+      if (currentQuote) {
+        localStorage.setItem('submitted_quote_details', JSON.stringify({
+          total_cost: currentQuote.total_cost,
+          quote_items: currentQuote.quote_items || [],
+          id: currentQuote.id
+        }));
+      }
       
       // Clear current session for new quotes
       localStorage.removeItem('quote_session_id');
