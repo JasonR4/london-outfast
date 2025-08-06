@@ -19,43 +19,103 @@ export default function QuoteSubmitted() {
           <h1 className="text-3xl font-bold mb-4">Quote Submitted Successfully!</h1>
           
           <p className="text-lg text-muted-foreground mb-8">
-            Thank you for your quote request. We've received your campaign plan and will get back to you with a detailed quote within 24 hours.
+            Thank you for your quote request. Follow these simple steps to ensure fast delivery and seamless campaign management.
           </p>
 
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="h-5 w-5" />
-                  Email Quote
-                </CardTitle>
-                <CardDescription>
-                  You'll receive a detailed quote via email within 24 hours
-                </CardDescription>
-              </CardHeader>
-            </Card>
+          {/* Step Guide */}
+          <div className="space-y-6 mb-8">
+            <div className="flex items-start gap-4 p-6 bg-primary/5 rounded-lg border border-primary/20">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold">
+                1
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Create Your Account</h3>
+                <p className="text-muted-foreground mb-3">
+                  Unlock premium access to manage your campaigns, track delivery, and access exclusive features.
+                </p>
+                <Button asChild size="sm">
+                  <Link to="/create-account">
+                    Create Account Now
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Phone className="h-5 w-5" />
-                  Expert Consultation
-                </CardTitle>
-                <CardDescription>
-                  Our team may call to discuss your campaign requirements
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <div className="flex items-start gap-4 p-6 bg-muted/30 rounded-lg">
+              <div className="flex-shrink-0 w-8 h-8 bg-muted-foreground text-background rounded-full flex items-center justify-center font-semibold">
+                2
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Review Your Media Plan</h3>
+                <p className="text-muted-foreground">
+                  You'll be emailed when your confirmed media plan is ready within your account for review. Access detailed campaign information, costs, and timelines.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-6 bg-muted/30 rounded-lg">
+              <div className="flex-shrink-0 w-8 h-8 bg-muted-foreground text-background rounded-full flex items-center justify-center font-semibold">
+                3
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Approve or Discuss</h3>
+                <p className="text-muted-foreground">
+                  Approve your campaign, request changes, or speak directly with your dedicated account manager to optimize your media plan.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-6 bg-muted/30 rounded-lg">
+              <div className="flex-shrink-0 w-8 h-8 bg-muted-foreground text-background rounded-full flex items-center justify-center font-semibold">
+                4
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Campaign Goes Live</h3>
+                <p className="text-muted-foreground">
+                  Once confirmed, your campaign launches with real-time tracking, proof of postings, and performance analytics in your portal.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="bg-muted/50 rounded-lg p-6 mb-8">
-            <h3 className="font-semibold mb-2">What happens next?</h3>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• We'll review your campaign requirements</li>
-              <li>• Check availability for your selected periods and locations</li>
-              <li>• Prepare a detailed quote with all costs included</li>
-              <li>• Send you the quote via email within 24 hours</li>
-            </ul>
+          {/* Benefits */}
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Mail className="h-5 w-5" />
+                  Media Plan Access
+                </CardTitle>
+                <CardDescription>
+                  View detailed campaign breakdowns, costs, and scheduling in your personal dashboard
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Phone className="h-5 w-5" />
+                  Campaign Management
+                </CardTitle>
+                <CardDescription>
+                  Real-time campaign tracking, performance metrics, and direct communication with your account team
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CheckCircle className="h-5 w-5" />
+                  Proof of Postings
+                </CardTitle>
+                <CardDescription>
+                  Receive photo evidence of your campaigns live, creative design support, and delivery confirmation
+                </CardDescription>
+              </CardHeader>
+            </Card>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
