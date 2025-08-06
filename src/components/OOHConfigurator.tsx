@@ -114,8 +114,8 @@ const questions: Question[] = [
   {
     id: 'target_audience',
     title: 'Who\'s your target audience?',
-    subtitle: 'Understanding your audience helps us recommend the best locations',
-    type: 'single',
+    subtitle: 'Select all audience groups you want to reach',
+    type: 'multiple',
     options: [
       {
         label: 'Commuters & Office Workers',
