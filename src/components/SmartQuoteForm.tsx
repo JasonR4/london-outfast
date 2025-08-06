@@ -17,6 +17,7 @@ import { useRateCards } from "@/hooks/useRateCards";
 import { useLocationSelector } from "@/hooks/useLocationSelector";
 import { useLocationCapacity } from "@/hooks/useLocationCapacity";
 import { useCreativeCapacity } from "@/hooks/useCreativeCapacity";
+import { useNavigate } from "react-router-dom";
 import { CreativeCapacityIndicator } from "@/components/CreativeCapacityIndicator";
 import { LocationSelector } from "@/components/LocationSelector";
 import { oohFormats, OOHFormat } from "@/data/oohFormats";
@@ -29,6 +30,7 @@ interface SmartQuoteFormProps {
 
 export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { currentQuote, addQuoteItem, submitQuote, createOrGetQuote, loading: quotesLoading } = useQuotes();
   
   // Form state
@@ -285,12 +287,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     }
 
     try {
-      await submitQuote(contactDetails);
-      toast({
-        title: "Quote Submitted Successfully!",
-        description: "We'll review your quote and get back to you within 24 hours.",
-      });
-      onQuoteSubmitted?.();
+      const success = await submitQuote(contactDetails);
+      if (success) {
+        // Navigate to quote submitted page - same as OOH media quote flow
+        navigate('/quote-submitted');
+      }
     } catch (error) {
       toast({
         title: "Error",
