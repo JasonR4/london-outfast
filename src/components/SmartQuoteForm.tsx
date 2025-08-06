@@ -60,10 +60,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     contact_name: "",
     contact_email: "",
     contact_phone: "",
-    company_name: "",
-    campaign_objective: "",
-    budget_range: "",
-    timeline: ""
+    contact_company: "",
+    additional_requirements: "",
+    website: ""
   });
 
   // Location selection
@@ -912,74 +911,34 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                   </div>
 
                   <div>
-                    <Label htmlFor="company_name">Company</Label>
+                    <Label htmlFor="contact_company">Company</Label>
                     <Input
-                      id="company_name"
-                      value={contactDetails.company_name}
-                      onChange={(e) => setContactDetails(prev => ({ ...prev, company_name: e.target.value }))}
+                      id="contact_company"
+                      value={contactDetails.contact_company}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_company: e.target.value }))}
                       placeholder="Your company"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="campaign_objective">Campaign Objective</Label>
-                    <Select
-                      value={contactDetails.campaign_objective}
-                      onValueChange={(value) => setContactDetails(prev => ({ ...prev, campaign_objective: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select objective" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="brand-awareness">Brand Awareness</SelectItem>
-                        <SelectItem value="product-launch">Product Launch</SelectItem>
-                        <SelectItem value="event-promotion">Event Promotion</SelectItem>
-                        <SelectItem value="footfall">Drive Footfall</SelectItem>
-                        <SelectItem value="sales">Increase Sales</SelectItem>
-                        <SelectItem value="recruitment">Recruitment</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      value={contactDetails.website}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, website: e.target.value }))}
+                      placeholder="https://yourwebsite.com"
+                    />
                   </div>
 
                   <div>
-                    <Label htmlFor="budget_range">Budget Range</Label>
-                    <Select
-                      value={contactDetails.budget_range}
-                      onValueChange={(value) => setContactDetails(prev => ({ ...prev, budget_range: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select budget" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="under-1k">Under £1,000</SelectItem>
-                        <SelectItem value="1k-5k">£1,000 - £5,000</SelectItem>
-                        <SelectItem value="5k-10k">£5,000 - £10,000</SelectItem>
-                        <SelectItem value="10k-25k">£10,000 - £25,000</SelectItem>
-                        <SelectItem value="25k-50k">£25,000 - £50,000</SelectItem>
-                        <SelectItem value="50k-100k">£50,000 - £100,000</SelectItem>
-                        <SelectItem value="100k-250k">£100,000 - £250,000</SelectItem>
-                        <SelectItem value="over-250k">Over £250,000</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="timeline">Timeline</Label>
-                    <Select
-                      value={contactDetails.timeline}
-                      onValueChange={(value) => setContactDetails(prev => ({ ...prev, timeline: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="When to go live?" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="asap">ASAP (within 1 week)</SelectItem>
-                        <SelectItem value="2-4-weeks">2-4 weeks</SelectItem>
-                        <SelectItem value="1-2-months">1-2 months</SelectItem>
-                        <SelectItem value="3-6-months">3-6 months</SelectItem>
-                        <SelectItem value="planning">Just planning ahead</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="additional_requirements">Additional Requirements</Label>
+                    <Textarea
+                      id="additional_requirements"
+                      value={contactDetails.additional_requirements}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, additional_requirements: e.target.value }))}
+                      placeholder="Tell us about your campaign objectives, timeline, or any special requirements..."
+                      rows={3}
+                    />
                   </div>
 
                   <Button
