@@ -35,6 +35,9 @@ interface QuoteItem {
   base_cost: number;
   production_cost: number;
   creative_cost: number;
+  discount_percentage?: number;
+  discount_amount?: number;
+  original_cost?: number;
   campaign_start_date?: string;
   campaign_end_date?: string;
   creative_needs?: string;
@@ -277,6 +280,23 @@ export function QuoteDetailsModal({ quote, isOpen, onClose }: QuoteDetailsModalP
                               <span>{formatCurrency(item.creative_cost)}</span>
                             </div>
                           )}
+                          {item.discount_percentage && item.discount_percentage > 0 && (
+                            <>
+                              <div className="flex justify-between text-muted-foreground">
+                                <span>Subtotal:</span>
+                                <span>{formatCurrency((item.original_cost || item.total_cost) + (item.discount_amount || 0))}</span>
+                              </div>
+                              <div className="flex justify-between text-green-600">
+                                <span>Discount ({item.discount_percentage}%):</span>
+                                <span>-{formatCurrency(item.discount_amount || 0)}</span>
+                              </div>
+                              <Separator className="my-1" />
+                            </>
+                          )}
+                          <div className="flex justify-between font-medium border-t pt-1">
+                            <span>Total:</span>
+                            <span>{formatCurrency(item.total_cost)}</span>
+                          </div>
                         </div>
                       </div>
                     </div>

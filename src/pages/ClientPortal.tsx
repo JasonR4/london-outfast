@@ -34,6 +34,9 @@ interface UserQuote {
     base_cost: number;
     production_cost: number;
     creative_cost: number;
+    discount_percentage?: number;
+    discount_amount?: number;
+    original_cost?: number;
     campaign_start_date?: string;
     campaign_end_date?: string;
     creative_needs?: string;
