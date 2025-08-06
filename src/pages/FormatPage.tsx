@@ -18,6 +18,9 @@ import { useQuotes } from '@/hooks/useQuotes';
 import { useLocationCapacity } from '@/hooks/useLocationCapacity';
 import { LocationCapacityIndicator } from '@/components/LocationCapacityIndicator';
 import { UpsellModal } from '@/components/UpsellModal';
+import { CreativeCapacityIndicator } from '@/components/CreativeCapacityIndicator';
+import { CreativeUpsellModal } from '@/components/CreativeUpsellModal';
+import { useCreativeCapacity } from '@/hooks/useCreativeCapacity';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -44,6 +47,7 @@ const FormatPage = () => {
   const [selectedEndDate, setSelectedEndDate] = useState<Date | undefined>();
   const [showUpsellModal, setShowUpsellModal] = useState(false);
   const [upsellContext, setUpsellContext] = useState<{ zoneName?: string; requiredCapacity: number } | null>(null);
+  const [showCreativeUpsellModal, setShowCreativeUpsellModal] = useState(false);
   
   // Use rate cards hook
   const { 
@@ -145,6 +149,23 @@ const FormatPage = () => {
     selectedPeriods,
     selectedAreas,
     basePrice: representativePrice
+  });
+
+  // Creative capacity management
+  const {
+    isOptimal: isCreativeOptimal,
+    efficiency: creativeEfficiency,
+    status: creativeStatus,
+    recommendation: creativeRecommendation,
+    creativesPerSite,
+    generateCreativeUpsellOptions,
+    getCreativeRecommendations
+  } = useCreativeCapacity({
+    sites: quantity,
+    creativeAssets,
+    needsCreative,
+    creativeCostPerAsset: 85,
+    siteCost: representativePrice
   });
 
   useEffect(() => {
@@ -804,6 +825,18 @@ const FormatPage = () => {
                       </div>
                      )}
 
+                     {/* Creative Capacity Indicator */}
+                     <CreativeCapacityIndicator 
+                       sites={quantity}
+                       creativeAssets={creativeAssets}
+                       needsCreative={needsCreative}
+                       efficiency={creativeEfficiency}
+                       status={creativeStatus}
+                       creativesPerSite={creativesPerSite}
+                       recommendations={getCreativeRecommendations()}
+                       onOptimizeClick={() => setShowCreativeUpsellModal(true)}
+                     />
+
                      {/* Date Selection for Non-Incharge Media Only */}
                      {(format.category === 'Bus' || format.category === 'Gorilla' || format.category === 'Ambient') && (
                        <div className="space-y-4">
@@ -1069,6 +1102,28 @@ const FormatPage = () => {
             }
             setShowUpsellModal(false);
             toast.success(`Campaign upgraded! You now have ${option.suggestedValue} ${option.type === 'quantity' ? 'sites' : 'periods'}.`);
+          }}
+        />
+      )}
+
+      {/* Creative Upsell Modal */}
+      {showCreativeUpsellModal && (
+        <CreativeUpsellModal
+          isOpen={showCreativeUpsellModal}
+          onClose={() => setShowCreativeUpsellModal(false)}
+          currentSites={quantity}
+          currentCreatives={creativeAssets}
+          efficiency={creativeEfficiency}
+          status={creativeStatus}
+          options={generateCreativeUpsellOptions()}
+          onSelectOption={(option) => {
+            if (option.type === 'sites') {
+              setQuantity(option.suggestedValue);
+            } else if (option.type === 'creatives') {
+              setCreativeAssets(option.suggestedValue);
+            }
+            setShowCreativeUpsellModal(false);
+            toast.success(`Creative strategy optimized! Updated to ${option.suggestedValue} ${option.type}.`);
           }}
         />
       )}
