@@ -30,7 +30,7 @@ const FormatPage = () => {
   const [creativeAssets, setCreativeAssets] = useState<number>(1);
   
   // Use rate cards hook
-  const { rateCards, calculatePrice, getAvailableLocations, loading: rateLoading, error: rateError } = useRateCards(formatSlug);
+  const { rateCards, calculatePrice, calculateProductionCost, getAvailableLocations, loading: rateLoading, error: rateError } = useRateCards(formatSlug);
 
   useEffect(() => {
     const initializePage = async () => {
@@ -478,10 +478,15 @@ const FormatPage = () => {
                                {(() => {
                                 const priceCalculation = calculatePrice(selectedLocation, incharges);
                                 
-                                if (priceCalculation) {
-                                  const campaignTotal = priceCalculation.totalPrice * quantity;
-                                  const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
-                                  const grandTotal = campaignTotal + creativeTotal;
+                                 if (priceCalculation) {
+                                   const campaignTotal = priceCalculation.totalPrice * quantity;
+                                   
+                                   // Calculate production costs
+                                   const productionCostCalc = calculateProductionCost(selectedLocation, quantity);
+                                   const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
+                                   
+                                   const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
+                                   const grandTotal = campaignTotal + productionTotal + creativeTotal;
                                   
                                   return (
                                     <>
@@ -513,16 +518,22 @@ const FormatPage = () => {
                                           <span>Lower Price Applied</span>
                                         </div>
                                       )}
-                                      <div className="flex justify-between text-sm">
-                                        <span>Campaign Cost ({quantity} × {incharges} incharges):</span>
-                                        <span>£{campaignTotal.toFixed(2)}</span>
-                                      </div>
-                                      {needsCreative && (
-                                        <div className="flex justify-between text-sm">
-                                          <span>Creative Assets ({creativeAssets}):</span>
-                                          <span>£{creativeTotal}</span>
-                                        </div>
-                                      )}
+                                       <div className="flex justify-between text-sm">
+                                         <span>Campaign Cost ({quantity} × {incharges} incharges):</span>
+                                         <span>£{campaignTotal.toFixed(2)}</span>
+                                       </div>
+                                       {productionTotal > 0 && (
+                                         <div className="flex justify-between text-sm">
+                                           <span>Production Cost ({quantity} units):</span>
+                                           <span>£{productionTotal.toFixed(2)}</span>
+                                         </div>
+                                       )}
+                                       {needsCreative && (
+                                         <div className="flex justify-between text-sm">
+                                           <span>Creative Assets ({creativeAssets}):</span>
+                                           <span>£{creativeTotal}</span>
+                                         </div>
+                                       )}
                                       <div className="flex justify-between font-semibold text-base border-t pt-2">
                                         <span>Estimated Total:</span>
                                         <span>£{grandTotal.toFixed(2)}</span>
