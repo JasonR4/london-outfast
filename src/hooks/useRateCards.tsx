@@ -283,11 +283,24 @@ export function useRateCards(formatSlug?: string) {
     };
   };
 
+  // Helper function to map location names to rate card location codes
+  const getLocationCodeForArea = (areaName: string) => {
+    // For now, since we only have one rate card with "GD" (likely Greater London/General District)
+    // We'll map all London areas to "GD"
+    // In a production system, you'd have a proper mapping table
+    console.log('🗺️ Mapping area name to location code:', areaName);
+    return "GD"; // Default to GD for all London areas for now
+  };
+
   const calculatePrice = (locationArea: string, selectedPeriods: number[]) => {
     console.log('🔍 calculatePrice called with:', { locationArea, selectedPeriods });
+    
+    // Map the location area name to the rate card location code
+    const locationCode = getLocationCodeForArea(locationArea);
+    console.log('🗺️ Mapped location code:', locationCode);
     console.log('📊 Available rate cards:', rateCards.map(r => ({ id: r.id, location_area: r.location_area })));
     
-    const rateCard = rateCards.find(r => r.location_area === locationArea);
+    const rateCard = rateCards.find(r => r.location_area === locationCode);
     console.log('🎯 Found rate card:', rateCard);
     
     if (!rateCard || selectedPeriods.length === 0) {
