@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Plus, Trash2, MapPin, Calendar, Package } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, MapPin, Calendar, Package, User, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { QuoteSubmissionForm } from '@/components/QuoteSubmissionForm';
 import { inchargePeriods } from '@/data/inchargePeriods';
@@ -62,18 +62,40 @@ export default function QuotePlan() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Your Campaign Plan</h1>
-            <p className="text-muted-foreground">
-              Review and submit your outdoor media campaign
-            </p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Your Campaign Plan</h1>
+              <p className="text-muted-foreground">
+                Review and submit your outdoor media campaign
+              </p>
+            </div>
           </div>
+          
+          {/* Login Button */}
+          <Card className="bg-gradient-to-r from-primary/10 to-blue-50 border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <User className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-sm">Save Your Campaign</h3>
+                  <p className="text-xs text-muted-foreground">Login to save and manage your campaigns</p>
+                </div>
+                <Button asChild size="sm" className="bg-primary hover:bg-primary/90">
+                  <Link to="/auth">
+                    <Lock className="h-4 w-4 mr-1" />
+                    Login
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
