@@ -617,19 +617,9 @@ const FormatPage = () => {
 
                     
                      {/* Incharge Periods Selection - for incharge media formats */}
-                     {format?.category !== 'Bus' && format?.category !== 'Gorilla' && format?.category !== 'Ambient' && (
+                      {format?.category !== 'Bus' && format?.category !== 'Gorilla' && format?.category !== 'Ambient' && (
                       <div>
                         <Label>Select Campaign Periods</Label>
-                        
-                        {/* DEBUG INFO */}
-                        <div className="text-xs bg-yellow-100 p-2 rounded mb-2">
-                          <div>Debug - inchargePeriods: {inchargePeriods ? inchargePeriods.length : 'null'} periods</div>
-                          <div>Loading: {rateLoading ? 'true' : 'false'}</div>
-                          <div>Error: {rateError || 'none'}</div>
-                          {inchargePeriods && inchargePeriods.length > 0 && (
-                            <div>First period: {JSON.stringify(inchargePeriods[0])}</div>
-                          )}
-                        </div>
                         
                         {inchargePeriods && inchargePeriods.length > 0 ? (
                           <div className="space-y-2 max-h-60 overflow-y-auto">

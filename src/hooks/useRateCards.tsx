@@ -69,7 +69,7 @@ export interface RateCardPeriod {
   rate_card_id: string;
   incharge_period_id: string;
   is_enabled: boolean;
-  incharge_period?: InchargePeriod;
+  incharge_periods?: InchargePeriod;
 }
 
 export function useRateCards(formatSlug?: string) {
@@ -316,10 +316,28 @@ export function useRateCards(formatSlug?: string) {
 
     const enabledPeriods = rateCardPeriods
       .filter(rcp => rcp.rate_card_id === rateCard.id && rcp.is_enabled)
-      .map(rcp => rcp.incharge_period)
+      .map(rcp => rcp.incharge_periods)
       .filter(Boolean);
 
-    return enabledPeriods;
+    return enabledPeriods as InchargePeriod[];
+  };
+
+  // Get all available periods across all locations for this format
+  const getAllAvailablePeriods = () => {
+    const allEnabledPeriods = rateCardPeriods
+      .filter(rcp => rcp.is_enabled)
+      .map(rcp => rcp.incharge_periods)
+      .filter(Boolean);
+
+    // Remove duplicates based on period_number
+    const uniquePeriods = allEnabledPeriods.reduce((acc: InchargePeriod[], period) => {
+      if (period && !acc.some(p => p.period_number === period.period_number)) {
+        acc.push(period);
+      }
+      return acc;
+    }, []);
+
+    return uniquePeriods.sort((a, b) => a.period_number - b.period_number);
   };
 
   const getAvailableLocations = () => {
@@ -332,7 +350,7 @@ export function useRateCards(formatSlug?: string) {
     productionCostTiers,
     creativeCostTiers,
     mediaFormat,
-    inchargePeriods,
+    inchargePeriods: getAllAvailablePeriods(), // Use the periods that are actually available for this format
     rateCardPeriods,
     loading,
     error,
@@ -340,6 +358,7 @@ export function useRateCards(formatSlug?: string) {
     calculateProductionCost,
     calculateCreativeCost,
     getAvailableLocations,
-    getAvailablePeriodsForLocation
+    getAvailablePeriodsForLocation,
+    getAllAvailablePeriods
   };
 }
