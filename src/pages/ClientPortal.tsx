@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { LogOut, FileText, Calendar, BarChart3, Camera, Palette, User, Plus } from 'lucide-react';
+import { LogOut, FileText, Calendar, BarChart3, Camera, Palette, User, Plus, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { QuoteDetailsModal } from '@/components/QuoteDetailsModal';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 interface UserQuote {
@@ -14,11 +15,28 @@ interface UserQuote {
   total_cost: number;
   status: string;
   created_at: string;
+  updated_at: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  contact_company?: string;
+  website?: string;
+  additional_requirements?: string;
+  timeline?: string;
   quote_items: Array<{
+    id: string;
     format_name: string;
+    format_slug: string;
     quantity: number;
     selected_areas: string[];
+    selected_periods: number[];
     total_cost: number;
+    base_cost: number;
+    production_cost: number;
+    creative_cost: number;
+    campaign_start_date?: string;
+    campaign_end_date?: string;
+    creative_needs?: string;
   }>;
 }
 
@@ -27,6 +45,8 @@ export default function ClientPortal() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [quotes, setQuotes] = useState<UserQuote[]>([]);
+  const [selectedQuote, setSelectedQuote] = useState<UserQuote | null>(null);
+  const [showQuoteDetails, setShowQuoteDetails] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -101,11 +121,28 @@ export default function ClientPortal() {
           total_cost,
           status,
           created_at,
+          updated_at,
+          contact_name,
+          contact_email,
+          contact_phone,
+          contact_company,
+          website,
+          additional_requirements,
+          timeline,
           quote_items (
+            id,
             format_name,
+            format_slug,
             quantity,
             selected_areas,
-            total_cost
+            selected_periods,
+            total_cost,
+            base_cost,
+            production_cost,
+            creative_cost,
+            campaign_start_date,
+            campaign_end_date,
+            creative_needs
           )
         `)
         .eq('user_id', userId)
@@ -145,6 +182,11 @@ export default function ClientPortal() {
       case 'active': return 'default';
       default: return 'secondary';
     }
+  };
+
+  const handleViewQuote = (quote: UserQuote) => {
+    setSelectedQuote(quote);
+    setShowQuoteDetails(true);
   };
 
   if (loading) {
@@ -293,7 +335,11 @@ export default function ClientPortal() {
                 ) : (
                   <div className="space-y-4">
                     {quotes.map((quote) => (
-                      <div key={quote.id} className="border rounded-lg p-4">
+                      <div 
+                        key={quote.id} 
+                        className="border rounded-lg p-4 hover:bg-muted/30 transition-colors cursor-pointer"
+                        onClick={() => handleViewQuote(quote)}
+                      >
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <h3 className="font-semibold">Quote #{quote.id.slice(0, 8)}</h3>
@@ -301,11 +347,23 @@ export default function ClientPortal() {
                               {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}
                             </Badge>
                           </div>
-                          <div className="text-right">
-                            <div className="font-semibold">{formatCurrency(quote.total_cost)}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {new Date(quote.created_at).toLocaleDateString('en-GB')}
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <div className="font-semibold">{formatCurrency(quote.total_cost)}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {new Date(quote.created_at).toLocaleDateString('en-GB')}
+                              </div>
                             </div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewQuote(quote);
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
                         
@@ -336,6 +394,16 @@ export default function ClientPortal() {
           </div>
         </div>
       </div>
+
+      {/* Quote Details Modal */}
+      <QuoteDetailsModal
+        quote={selectedQuote}
+        isOpen={showQuoteDetails}
+        onClose={() => {
+          setShowQuoteDetails(false);
+          setSelectedQuote(null);
+        }}
+      />
     </div>
   );
 }
