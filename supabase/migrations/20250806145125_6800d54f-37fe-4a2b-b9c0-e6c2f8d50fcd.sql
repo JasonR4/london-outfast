@@ -1,0 +1,1 @@
+UPDATE profiles SET role = 'client' WHERE email = 'mattj2510@me.com';
