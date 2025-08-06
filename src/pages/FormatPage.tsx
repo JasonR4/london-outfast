@@ -27,7 +27,6 @@ const FormatPage = () => {
   const [incharges, setIncharges] = useState<number>(1);
   const [selectedLocation, setSelectedLocation] = useState<string>('');
   const [needsCreative, setNeedsCreative] = useState<boolean>(false);
-  const [needsProduction, setNeedsProduction] = useState<boolean>(false);
   const [creativeAssets, setCreativeAssets] = useState<number>(1);
   
   // Use rate cards hook
@@ -472,24 +471,6 @@ const FormatPage = () => {
                            </div>
                          )}
 
-                         <div>
-                           <Label>Do you need production costs included?</Label>
-                           <RadioGroup 
-                             value={needsProduction ? "need-production" : "no-production"} 
-                             onValueChange={(value) => setNeedsProduction(value === "need-production")}
-                             className="mt-2"
-                           >
-                             <div className="flex items-center space-x-2">
-                               <RadioGroupItem value="no-production" id="no-production" />
-                               <Label htmlFor="no-production">No production needed</Label>
-                             </div>
-                             <div className="flex items-center space-x-2">
-                               <RadioGroupItem value="need-production" id="need-production" />
-                               <Label htmlFor="need-production">Include production costs</Label>
-                             </div>
-                           </RadioGroup>
-                         </div>
-
                         {/* Pricing Summary */}
                         <div className="border-t pt-4 space-y-2">
                           {selectedLocation && !rateLoading && (
@@ -500,8 +481,8 @@ const FormatPage = () => {
                                  if (priceCalculation) {
                                    const campaignTotal = priceCalculation.totalPrice * quantity;
                                    
-                                   // Calculate production costs only if needed
-                                   const productionCostCalc = needsProduction ? calculateProductionCost(selectedLocation, quantity) : null;
+                                   // Production costs are always calculated
+                                   const productionCostCalc = calculateProductionCost(selectedLocation, quantity);
                                    const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
                                    
                                    const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
@@ -541,12 +522,10 @@ const FormatPage = () => {
                                          <span>Campaign Cost ({quantity} × {incharges} incharges):</span>
                                          <span>£{campaignTotal.toFixed(2)}</span>
                                        </div>
-                                       {productionTotal > 0 && (
-                                         <div className="flex justify-between text-sm">
-                                           <span>Production Cost ({quantity} units):</span>
-                                           <span>£{productionTotal.toFixed(2)}</span>
-                                         </div>
-                                       )}
+                                       <div className="flex justify-between text-sm">
+                                         <span>Production Cost ({quantity} units):</span>
+                                         <span>£{productionTotal.toFixed(2)}</span>
+                                       </div>
                                        {needsCreative && (
                                          <div className="flex justify-between text-sm">
                                            <span>Creative Assets ({creativeAssets}):</span>
