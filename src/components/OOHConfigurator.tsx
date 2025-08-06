@@ -37,9 +37,9 @@ interface OOHRecommendation {
 const questions: Question[] = [
   {
     id: 'campaign_objective',
-    title: 'What\'s your main campaign objective?',
-    subtitle: 'This helps us understand your primary goal',
-    type: 'single',
+    title: 'What are your campaign objectives?',
+    subtitle: 'Select all that apply - you can have multiple goals',
+    type: 'multiple',
     options: [
       {
         label: 'Brand Awareness',
