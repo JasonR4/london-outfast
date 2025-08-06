@@ -86,7 +86,7 @@ export const useCreativeCapacity = ({
     const options: CreativeUpsellOption[] = [];
 
     if (calculations.status === 'under-creative') {
-      // Suggest more creatives
+      // Suggest more creatives (ONLY increases)
       const optimalCreatives = Math.ceil(sites * 0.5); // 1 creative per 2 sites minimum
       const betterCreatives = sites; // 1:1 ratio
       
@@ -125,30 +125,10 @@ export const useCreativeCapacity = ({
           type: 'creatives'
         });
       }
-
-      // Alternative: Reduce sites to match creatives
-      const optimalSites = creativeAssets * 2; // 2 sites per creative max
-      if (optimalSites < sites) {
-        const siteReduction = sites - optimalSites;
-        const costSavings = siteReduction * siteCost;
-        const currentCost = sites * siteCost;
-        const percentageDecrease = Math.round((costSavings / currentCost) * 100);
-
-        options.push({
-          title: `Optimize: Reduce to ${optimalSites} Sites`,
-          description: `Match your ${creativeAssets} creative${creativeAssets > 1 ? 's' : ''} with fewer, more targeted sites`,
-          currentValue: sites,
-          suggestedValue: optimalSites,
-          costIncrease: -costSavings,
-          percentageIncrease: -percentageDecrease,
-          benefitText: `Better creative-to-site ratio with focused targeting`,
-          type: 'sites'
-        });
-      }
     }
 
     if (calculations.status === 'over-creative') {
-      // Suggest more sites or fewer creatives
+      // Suggest more sites to match the creatives (ONLY increases)
       const optimalSites = Math.ceil(creativeAssets / 2); // Max 2 creatives per site
       if (optimalSites > sites) {
         const siteIncrease = optimalSites - sites;
@@ -158,38 +138,18 @@ export const useCreativeCapacity = ({
 
         options.push({
           title: `Scale Up: Add ${siteIncrease} More Site${siteIncrease > 1 ? 's' : ''}`,
-          description: `Increase to ${optimalSites} sites to make full use of your ${creativeAssets} creatives`,
+          description: `Increase to ${optimalSites} sites to maximize your ${creativeAssets} creative investment`,
           currentValue: sites,
           suggestedValue: optimalSites,
           costIncrease,
           percentageIncrease,
-          benefitText: `Maximize your creative investment with broader reach`,
+          benefitText: `Maximize your creative ROI with broader reach and coverage`,
           type: 'sites'
-        });
-      }
-
-      // Alternative: Reduce creatives to match sites
-      const optimalCreatives = Math.max(1, Math.ceil(sites / 2)); // Min 1 creative per 2 sites
-      if (optimalCreatives < creativeAssets) {
-        const creativeReduction = creativeAssets - optimalCreatives;
-        const costSavings = creativeReduction * creativeCostPerAsset;
-        const currentCost = creativeAssets * creativeCostPerAsset;
-        const percentageDecrease = Math.round((costSavings / currentCost) * 100);
-
-        options.push({
-          title: `Optimize: Reduce to ${optimalCreatives} Creative${optimalCreatives > 1 ? 's' : ''}`,
-          description: `Match your ${sites} sites with optimal creative count`,
-          currentValue: creativeAssets,
-          suggestedValue: optimalCreatives,
-          costIncrease: -costSavings,
-          percentageIncrease: -percentageDecrease,
-          benefitText: `Eliminate creative waste while maintaining effectiveness`,
-          type: 'creatives'
         });
       }
     }
 
-    // Sort by cost efficiency (lowest percentage increase first, savings first)
+    // Sort by cost efficiency (lowest percentage increase first)
     return options.sort((a, b) => a.percentageIncrease - b.percentageIncrease);
   };
 
@@ -202,14 +162,15 @@ export const useCreativeCapacity = ({
       recommendations.push(calculations.recommendation);
     }
 
-    // Add specific tactical recommendations
+    // Add specific tactical recommendations focused on growth
     switch (calculations.status) {
       case 'under-creative':
         recommendations.push(`Industry best practice: 1 creative per 1-2 sites for optimal frequency without oversaturation.`);
-        recommendations.push(`Consider A/B testing creatives if budget allows for additional assets.`);
+        recommendations.push(`Consider adding more creatives to maximize campaign impact and audience engagement.`);
         break;
       case 'over-creative':
-        recommendations.push(`You may be over-investing in creatives. Consider reallocating budget to more sites for broader reach.`);
+        recommendations.push(`You have excellent creative assets! Consider scaling up sites to maximize their potential reach.`);
+        recommendations.push(`More sites means broader market penetration with your premium creative content.`);
         break;
       case 'optimal':
         recommendations.push(`Your creative strategy maximizes both reach and frequency for optimal campaign performance.`);
