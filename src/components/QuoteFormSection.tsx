@@ -58,22 +58,27 @@ const QuoteFormSection = ({
   // Fetch incharge periods to display actual dates
   useEffect(() => {
     const fetchInchargePeriods = async () => {
+      console.log('🗓️ Fetching incharge periods for periods:', selectedPeriods);
       try {
         const { data, error } = await supabase
           .from('incharge_periods')
           .select('*')
           .order('period_number', { ascending: true });
         
-        if (error) throw error;
+        if (error) {
+          console.error('❌ Error fetching periods:', error);
+          throw error;
+        }
+        
+        console.log('✅ Fetched incharge periods:', data);
         setInchargePeriods(data || []);
       } catch (error) {
-        console.error('Error fetching incharge periods:', error);
+        console.error('💥 Error fetching incharge periods:', error);
       }
     };
 
-    if (selectedPeriods.length > 0) {
-      fetchInchargePeriods();
-    }
+    // Always fetch periods, not just when selectedPeriods has data
+    fetchInchargePeriods();
   }, [selectedPeriods]);
 
   const handleInputChange = (field: string, value: string) => {
@@ -191,8 +196,18 @@ const QuoteFormSection = ({
                   <div><strong>Audience:</strong> {targetAudience || 'NOT SET'}</div>
                   <div><strong>Locations:</strong> {selectedLocations?.length || 0} selected: {selectedLocations?.join(', ') || 'NONE'}</div>
                   <div><strong>Periods:</strong> {selectedPeriods?.length || 0} selected: {selectedPeriods?.join(', ') || 'NONE'}</div>
+                  <div><strong>Fetched Periods:</strong> {inchargePeriods?.length || 0} periods from DB</div>
                   <div><strong>Creative:</strong> {creativeNeeds || 'NOT SET'}</div>
                   <div><strong>Formats:</strong> {prefilledFormats?.length || 0} selected: {prefilledFormats?.join(', ') || 'NONE'}</div>
+                </div>
+              </div>
+              
+              {/* ALWAYS SHOW PERIODS SECTION FOR DEBUGGING */}
+              <div className="mb-6 p-4 bg-blue-100 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-lg">
+                <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-2">📅 PERIODS DEBUG</h4>
+                <div className="text-xs space-y-1">
+                  <div><strong>Selected Period Numbers:</strong> {selectedPeriods?.join(', ') || 'NONE'}</div>
+                  <div><strong>Available Periods in DB:</strong> {inchargePeriods.map(p => `${p.period_number} (${p.start_date} to ${p.end_date})`).join(', ') || 'LOADING...'}</div>
                 </div>
               </div>
               
