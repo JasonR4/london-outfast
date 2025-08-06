@@ -1,22 +1,77 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuotes } from '@/hooks/useQuotes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Plus, Trash2, MapPin, Calendar, Package, User, Lock } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, MapPin, Calendar, Package, User, Lock, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { QuoteSubmissionForm } from '@/components/QuoteSubmissionForm';
 import { inchargePeriods } from '@/data/inchargePeriods';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 export default function QuotePlan() {
   const { currentQuote, loading, removeQuoteItem, fetchCurrentQuote, recalculateDiscounts } = useQuotes();
   const navigate = useNavigate();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     fetchCurrentQuote();
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch user profile
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setUserProfile(null);
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching profile:', error);
+    } else {
+      setUserProfile(data);
+    }
+  };
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error('Error signing out');
+    } else {
+      toast.success('Signed out successfully');
+    }
+  };
+
 
   if (loading) {
     return (
@@ -76,26 +131,63 @@ export default function QuotePlan() {
             </div>
           </div>
           
-          {/* Login Button */}
-          <Card className="bg-gradient-to-r from-primary/10 to-blue-50 border-primary/20">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-primary/10 p-2 rounded-full">
-                  <User className="h-5 w-5 text-primary" />
+          {/* Auth Section */}
+          {user ? (
+            <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-green-100 p-2 rounded-full">
+                    <User className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-sm text-green-800">
+                      Welcome, {userProfile?.full_name || user.email}
+                    </h3>
+                    <p className="text-xs text-green-700">
+                      {userProfile?.role === 'client' ? 'Access your client portal' : 'You are signed in'}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    {userProfile?.role === 'client' && (
+                      <Button asChild size="sm" variant="outline" className="border-green-300 text-green-700 hover:bg-green-100">
+                        <Link to="/client-portal">
+                          Client Portal
+                        </Link>
+                      </Button>
+                    )}
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      onClick={handleSignOut}
+                      className="text-green-700 hover:bg-green-100"
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-sm">Submit Your Quote</h3>
-                  <p className="text-xs text-foreground/80">If you are already a customer, sign in here to submit your quote</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="bg-gradient-to-r from-primary/10 to-blue-50 border-primary/20">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 p-2 rounded-full">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-sm">Access Client Portal</h3>
+                    <p className="text-xs text-foreground/80">Sign in to submit quotes and manage campaigns</p>
+                  </div>
+                  <Button asChild size="sm" className="bg-primary hover:bg-primary/90">
+                    <Link to="/auth">
+                      <Lock className="h-4 w-4 mr-1" />
+                      Login
+                    </Link>
+                  </Button>
                 </div>
-                <Button asChild size="sm" className="bg-primary hover:bg-primary/90">
-                  <Link to="/auth">
-                    <Lock className="h-4 w-4 mr-1" />
-                    Login
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
