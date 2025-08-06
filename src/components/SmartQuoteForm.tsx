@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { calculateVAT, formatCurrencyWithVAT } from '@/utils/vat';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -691,10 +692,18 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                               <span className="font-medium">-£{pricing.totalDiscount.toLocaleString()}</span>
                             </div>
                           )}
-                          <div className="border-t border-border pt-4">
-                            <div className="flex justify-between items-center text-lg font-semibold">
-                              <span>Total Cost:</span>
-                              <span className="text-primary">£{pricing.totalCost.toLocaleString()}</span>
+                          <div className="border-t border-border pt-4 space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span>Subtotal (exc VAT):</span>
+                              <span className="font-medium">£{pricing.totalCost.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm text-muted-foreground">
+                              <span>VAT (20%):</span>
+                              <span>£{(pricing.totalCost * 0.20).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
+                              <span>Total inc VAT:</span>
+                              <span className="text-primary">£{(pricing.totalCost * 1.20).toLocaleString()}</span>
                             </div>
                           </div>
                         </CardContent>
@@ -750,10 +759,18 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                     </div>
                   </div>
                 ))}
-                <div className="border-t border-border pt-3 mt-3">
-                  <div className="flex justify-between items-center font-semibold">
-                    <span>Total:</span>
-                    <span className="text-primary">£{currentQuote.total_cost?.toLocaleString()}</span>
+                <div className="border-t border-border pt-3 mt-3 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span>Subtotal (exc VAT):</span>
+                    <span className="font-medium">£{currentQuote.total_cost?.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm text-muted-foreground">
+                    <span>VAT (20%):</span>
+                    <span>£{((currentQuote.total_cost || 0) * 0.20).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center font-semibold border-t pt-2">
+                    <span>Total inc VAT:</span>
+                    <span className="text-primary">£{((currentQuote.total_cost || 0) * 1.20).toLocaleString()}</span>
                   </div>
                 </div>
               </CardContent>
