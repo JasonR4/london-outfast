@@ -233,7 +233,11 @@ export const useQuotes = () => {
 
       setCurrentQuote(prev => prev ? { ...prev, status: 'submitted', ...contactDetails } : null);
       
-      // Clear session for new quotes
+      // Store submitted quote data for account creation
+      localStorage.setItem('quote_session_id_submitted', sessionId);
+      localStorage.setItem('submitted_quote_data', JSON.stringify(contactDetails));
+      
+      // Clear current session for new quotes
       localStorage.removeItem('quote_session_id');
       
       toast.success('Quote submitted successfully!');

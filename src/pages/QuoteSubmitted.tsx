@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, ArrowRight, Phone, Mail } from 'lucide-react';
 
 export default function QuoteSubmitted() {
+  const navigate = useNavigate();
+
   useEffect(() => {
     // Update page title
     document.title = 'Quote Submitted - OOH London';
@@ -45,11 +47,17 @@ export default function QuoteSubmitted() {
                     <p className="text-muted-foreground mb-6 text-lg leading-relaxed">
                       Unlock premium access to manage your campaigns, track delivery, and access exclusive features designed for professional media buyers.
                     </p>
-                    <Button asChild size="lg" className="bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all duration-300 hover:scale-105">
-                      <Link to="/create-account">
-                        Create Account Now
-                        <ArrowRight className="h-5 w-5 ml-2" />
-                      </Link>
+                    <Button 
+                      size="lg" 
+                      className="bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all duration-300 hover:scale-105"
+                      onClick={() => {
+                        // Get the most recent submitted quote data from session storage
+                        const sessionId = localStorage.getItem('quote_session_id_submitted') || localStorage.getItem('quote_session_id');
+                        navigate(`/create-account${sessionId ? `?quote=${sessionId}` : ''}`);
+                      }}
+                    >
+                      Create Account Now
+                      <ArrowRight className="h-5 w-5 ml-2" />
                     </Button>
                   </div>
                 </div>
@@ -154,11 +162,17 @@ export default function QuoteSubmitted() {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-            <Button asChild size="lg" className="bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all duration-300 hover:scale-105">
-              <Link to="/create-account">
-                Create Account for Premium Access
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Link>
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all duration-300 hover:scale-105"
+              onClick={() => {
+                // Get the most recent submitted quote data from session storage
+                const sessionId = localStorage.getItem('quote_session_id_submitted') || localStorage.getItem('quote_session_id');
+                navigate(`/create-account${sessionId ? `?quote=${sessionId}` : ''}`);
+              }}
+            >
+              Create Account for Premium Access
+              <ArrowRight className="h-5 w-5 ml-2" />
             </Button>
             
             <Button asChild variant="outline" size="lg" className="border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105">

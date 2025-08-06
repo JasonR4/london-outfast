@@ -15,6 +15,7 @@ export default function CreateAccount() {
   const quoteId = searchParams.get('quote');
   
   const [isLoading, setIsLoading] = useState(false);
+  const [hasQuoteData, setHasQuoteData] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -25,7 +26,27 @@ export default function CreateAccount() {
   });
 
   useEffect(() => {
-    document.title = 'Create Your Account - Media Buying London';
+    document.title = 'Secure Your Quote - Set Your Password - Media Buying London';
+    
+    // Check if we have quote data to pre-populate
+    const submittedQuoteData = localStorage.getItem('submitted_quote_data');
+    if (submittedQuoteData) {
+      try {
+        const quoteData = JSON.parse(submittedQuoteData);
+        const nameParts = quoteData.contact_name?.split(' ') || [];
+        
+        setFormData(prev => ({
+          ...prev,
+          email: quoteData.contact_email || '',
+          firstName: nameParts[0] || '',
+          lastName: nameParts.slice(1).join(' ') || '',
+          company: quoteData.contact_company || ''
+        }));
+        setHasQuoteData(true);
+      } catch (error) {
+        console.error('Error parsing quote data:', error);
+      }
+    }
   }, []);
 
   const handleInputChange = (field: string, value: string) => {
@@ -70,10 +91,17 @@ export default function CreateAccount() {
       }
 
       if (data.user) {
-        // If we have a quote ID, we'll link it to the user account after they confirm email
-        if (quoteId) {
-          localStorage.setItem('pending_quote_link', quoteId);
+        // Link the submitted quote to the user account
+        if (quoteId || hasQuoteData) {
+          const sessionId = quoteId || localStorage.getItem('quote_session_id_submitted');
+          if (sessionId) {
+            localStorage.setItem('pending_quote_link', sessionId);
+          }
         }
+        
+        // Clean up quote data
+        localStorage.removeItem('submitted_quote_data');
+        localStorage.removeItem('quote_session_id_submitted');
         
         toast.success('Account created! Please check your email to verify your account.');
         navigate('/account-created');
@@ -127,14 +155,26 @@ export default function CreateAccount() {
           <div className="text-center mb-12">
             <Badge variant="secondary" className="mb-4">
               <CheckCircle className="h-4 w-4 mr-2" />
-              Quote Submitted Successfully
+              {hasQuoteData ? 'Quote Submitted Successfully' : 'Ready to Create Account'}
             </Badge>
             <h1 className="text-4xl font-bold mb-4">
-              Create Your Client Account for
-              <span className="bg-gradient-primary bg-clip-text text-transparent"> Premium Access</span>
+              {hasQuoteData ? (
+                <>
+                  Secure Your Quote - 
+                  <span className="bg-gradient-primary bg-clip-text text-transparent"> Set Your Password</span>
+                </>
+              ) : (
+                <>
+                  Create Your Client Account for
+                  <span className="bg-gradient-primary bg-clip-text text-transparent"> Premium Access</span>
+                </>
+              )}
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Unlock exclusive benefits, real-time campaign management, and priority support with your dedicated client portal.
+              {hasQuoteData 
+                ? "We've pre-filled your details from your quote submission. Just set your password to access your dedicated client portal."
+                : "Unlock exclusive benefits, real-time campaign management, and priority support with your dedicated client portal."
+              }
             </p>
           </div>
 
@@ -194,12 +234,27 @@ export default function CreateAccount() {
             <div className="lg:col-span-1">
               <Card className="sticky top-8">
                 <CardHeader>
-                  <CardTitle>Create Your Account</CardTitle>
+                  <CardTitle>{hasQuoteData ? 'Secure Your Quote' : 'Create Your Account'}</CardTitle>
                   <CardDescription>
-                    Get instant access to your client portal
+                    {hasQuoteData 
+                      ? 'Your details are pre-filled from your quote submission'
+                      : 'Get instant access to your client portal'
+                    }
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {hasQuoteData && (
+                    <div className="mb-6 p-4 bg-primary/5 border border-primary/10 rounded-lg">
+                      <div className="flex items-center gap-2 text-sm text-primary font-medium mb-2">
+                        <CheckCircle className="h-4 w-4" />
+                        Details from your quote submission
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        We've pre-filled your information. You can edit these if needed.
+                      </p>
+                    </div>
+                  )}
+                  
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
@@ -209,6 +264,7 @@ export default function CreateAccount() {
                           value={formData.firstName}
                           onChange={(e) => handleInputChange('firstName', e.target.value)}
                           required
+                          className={hasQuoteData ? 'bg-muted/30' : ''}
                         />
                       </div>
                       <div className="space-y-2">
@@ -218,6 +274,7 @@ export default function CreateAccount() {
                           value={formData.lastName}
                           onChange={(e) => handleInputChange('lastName', e.target.value)}
                           required
+                          className={hasQuoteData ? 'bg-muted/30' : ''}
                         />
                       </div>
                     </div>
@@ -230,6 +287,7 @@ export default function CreateAccount() {
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         required
+                        className={hasQuoteData ? 'bg-muted/30' : ''}
                       />
                     </div>
 
@@ -240,6 +298,7 @@ export default function CreateAccount() {
                         value={formData.company}
                         onChange={(e) => handleInputChange('company', e.target.value)}
                         placeholder="Your Company Ltd"
+                        className={hasQuoteData ? 'bg-muted/30' : ''}
                       />
                     </div>
 
@@ -272,7 +331,12 @@ export default function CreateAccount() {
                       className="w-full" 
                       disabled={isLoading}
                     >
-                      {isLoading ? 'Creating Account...' : 'Create Account'}
+                      {isLoading 
+                        ? 'Creating Account...' 
+                        : hasQuoteData 
+                          ? 'Secure My Quote' 
+                          : 'Create Account'
+                      }
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
 
