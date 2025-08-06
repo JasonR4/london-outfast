@@ -526,10 +526,16 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                             <Label className="text-base font-medium">Creative Requirements</Label>
                             <p className="text-sm text-muted-foreground">Do you need creative assets produced?</p>
                           </div>
-                          <Switch
-                            checked={needsCreative}
-                            onCheckedChange={setNeedsCreative}
-                          />
+                          <div className="relative">
+                            <Switch
+                              checked={needsCreative}
+                              onCheckedChange={setNeedsCreative}
+                              className="data-[state=checked]:bg-primary data-[state=checked]:shadow-glow scale-110 border-2 border-primary/20"
+                            />
+                            {needsCreative && (
+                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-pulse" />
+                            )}
+                          </div>
                         </div>
                         
                          {needsCreative && (
