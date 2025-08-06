@@ -143,6 +143,9 @@ export default function ClientPortal() {
             base_cost,
             production_cost,
             creative_cost,
+            discount_percentage,
+            discount_amount,
+            original_cost,
             campaign_start_date,
             campaign_end_date,
             creative_needs

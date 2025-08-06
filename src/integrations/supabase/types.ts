@@ -424,9 +424,12 @@ export type Database = {
           created_at: string
           creative_cost: number | null
           creative_needs: string | null
+          discount_amount: number | null
+          discount_percentage: number | null
           format_name: string
           format_slug: string
           id: string
+          original_cost: number | null
           production_cost: number | null
           quantity: number
           quote_id: string
@@ -442,9 +445,12 @@ export type Database = {
           created_at?: string
           creative_cost?: number | null
           creative_needs?: string | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
           format_name: string
           format_slug: string
           id?: string
+          original_cost?: number | null
           production_cost?: number | null
           quantity?: number
           quote_id: string
@@ -460,9 +466,12 @@ export type Database = {
           created_at?: string
           creative_cost?: number | null
           creative_needs?: string | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
           format_name?: string
           format_slug?: string
           id?: string
+          original_cost?: number | null
           production_cost?: number | null
           quantity?: number
           quote_id?: string

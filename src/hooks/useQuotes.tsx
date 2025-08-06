@@ -14,6 +14,9 @@ export interface QuoteItem {
   creative_cost: number;
   base_cost: number;
   total_cost: number;
+  discount_percentage?: number;
+  discount_amount?: number;
+  original_cost?: number;
   campaign_start_date?: string;
   campaign_end_date?: string;
   creative_needs?: string;

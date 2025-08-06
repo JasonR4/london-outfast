@@ -182,6 +182,8 @@ const FormatPage = () => {
     }
 
     const campaignTotal = priceCalculation.totalPrice * quantity;
+    const originalCampaignTotal = priceCalculation.basePrice * priceCalculation.periodsCount * quantity;
+    const discountAmount = (originalCampaignTotal - campaignTotal);
     const productionCostCalc = calculateProductionCost(locationForPricing, quantity, format.category);
     const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
     const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
@@ -211,6 +213,9 @@ const FormatPage = () => {
       creative_cost: creativeTotal,
       base_cost: campaignTotal,
       total_cost: grandTotal,
+      discount_percentage: priceCalculation.discount || 0,
+      discount_amount: discountAmount || 0,
+      original_cost: originalCampaignTotal || campaignTotal,
       campaign_start_date: campaignStartDate,
       campaign_end_date: campaignEndDate,
       creative_needs: needsCreative ? `${creativeAssets} creative asset${creativeAssets > 1 ? 's' : ''} needed` : 'Client has artwork ready'
