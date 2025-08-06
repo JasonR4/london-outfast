@@ -31,6 +31,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const [selectedFormat, setSelectedFormat] = useState<OOHFormat | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedPeriods, setSelectedPeriods] = useState<number[]>([]);
+  console.log('📊 Selected periods state:', selectedPeriods);
   const [contactDetails, setContactDetails] = useState({
     contact_name: "",
     contact_email: "",
