@@ -93,6 +93,9 @@ export function RateCardManager() {
   const [discountTiers, setDiscountTiers] = useState<DiscountTier[]>([]);
   const [productionTiers, setProductionTiers] = useState<ProductionCostTier[]>([]);
   const [creativeTiers, setCreativeTiers] = useState<CreativeDesignCostTier[]>([]);
+  const [inchargePeriods, setInchargePeriods] = useState<any[]>([]);
+  const [rateCardPeriods, setRateCardPeriods] = useState<any[]>([]);
+  const [selectedPeriods, setSelectedPeriods] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingRate, setEditingRate] = useState<RateCard | null>(null);
   const [editingDiscount, setEditingDiscount] = useState<DiscountTier | null>(null);
@@ -109,12 +112,14 @@ export function RateCardManager() {
 
   const fetchData = async () => {
     try {
-      const [formatsRes, ratesRes, discountsRes, productionRes, creativeRes] = await Promise.all([
+      const [formatsRes, ratesRes, discountsRes, productionRes, creativeRes, periodsRes, rateCardPeriodsRes] = await Promise.all([
         supabase.from('media_formats').select('*').order('format_name'),
         supabase.from('rate_cards').select('*, media_formats(format_name)').order('location_area'),
         supabase.from('discount_tiers').select('*, media_formats(format_name)').order('min_periods'),
         supabase.from('production_cost_tiers').select('*, media_formats(format_name)').order('min_quantity'),
-        supabase.from('creative_design_cost_tiers').select('*, media_formats(format_name)').order('min_quantity')
+        supabase.from('creative_design_cost_tiers').select('*, media_formats(format_name)').order('min_quantity'),
+        supabase.from('incharge_periods').select('*').order('period_number'),
+        supabase.from('rate_card_periods').select('*, incharge_periods(*)')
       ]);
 
       if (formatsRes.error) throw formatsRes.error;
@@ -122,12 +127,16 @@ export function RateCardManager() {
       if (discountsRes.error) throw discountsRes.error;
       if (productionRes.error) throw productionRes.error;
       if (creativeRes.error) throw creativeRes.error;
+      if (periodsRes.error) throw periodsRes.error;
+      if (rateCardPeriodsRes.error) throw rateCardPeriodsRes.error;
 
       setMediaFormats(formatsRes.data || []);
       setRateCards(ratesRes.data || []);
       setDiscountTiers(discountsRes.data || []);
       setProductionTiers(productionRes.data || []);
       setCreativeTiers((creativeRes.data as any) || []);
+      setInchargePeriods(periodsRes.data || []);
+      setRateCardPeriods(rateCardPeriodsRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load rate card data');
@@ -380,7 +389,10 @@ export function RateCardManager() {
                 <h3 className="text-lg font-semibold">OOH Media Rate Cards</h3>
                 <Dialog open={isRateDialogOpen} onOpenChange={setIsRateDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button onClick={() => setEditingRate(null)}>
+                    <Button onClick={() => {
+                      setEditingRate(null);
+                      setSelectedPeriods([]);
+                    }}>
                       <Plus className="w-4 h-4 mr-2" />
                       Add Rate Card
                     </Button>
@@ -525,20 +537,35 @@ export function RateCardManager() {
                            </p>
                          </div>
 
-                         {/* Date picker fields */}
-                         <div>
-                           <Label htmlFor="incharge_period">Incharge Period</Label>
-                           <Select name="incharge_period" defaultValue={editingRate?.incharge_period?.toString() || "1"}>
-                             <SelectTrigger>
-                               <SelectValue placeholder="Select period" />
-                             </SelectTrigger>
-                             <SelectContent>
-                               {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26].map(num => (
-                                 <SelectItem key={num} value={num.toString()}>Period {num}</SelectItem>
-                               ))}
-                             </SelectContent>
-                           </Select>
-                         </div>
+                          {/* Incharge Periods Selection */}
+                          <div>
+                            <Label>Available Incharge Periods</Label>
+                            <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
+                              {inchargePeriods.map(period => (
+                                <div key={period.id} className="flex items-center space-x-2">
+                                  <input
+                                    type="checkbox"
+                                    id={`period-${period.id}`}
+                                    checked={selectedPeriods.includes(period.id)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setSelectedPeriods(prev => [...prev, period.id]);
+                                      } else {
+                                        setSelectedPeriods(prev => prev.filter(p => p !== period.id));
+                                      }
+                                    }}
+                                    className="h-4 w-4"
+                                  />
+                                  <Label htmlFor={`period-${period.id}`} className="text-sm">
+                                    Period {period.period_number}: {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
+                                  </Label>
+                                </div>
+                              ))}
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-2">
+                              Select which periods are available for this rate card
+                            </p>
+                          </div>
                          
                          <div>
                            <Label htmlFor="start_date">Start Date</Label>
@@ -639,6 +666,11 @@ export function RateCardManager() {
                             variant="outline"
                             onClick={() => {
                               setEditingRate(rate);
+                              // Load existing periods for this rate card
+                              const existingPeriods = rateCardPeriods
+                                .filter(rcp => rcp.rate_card_id === rate.id)
+                                .map(rcp => rcp.incharge_period_id);
+                              setSelectedPeriods(existingPeriods);
                               setIsRateDialogOpen(true);
                             }}
                           >
