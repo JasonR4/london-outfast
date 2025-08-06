@@ -210,17 +210,6 @@ const QuoteForm = () => {
   return (
     <section id="quote-form" className="py-20 px-4 bg-muted/20">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <Badge variant="secondary" className="mb-6 text-lg px-6 py-2 animate-pulse-glow">
-            GET YOUR CUSTOM QUOTE
-          </Badge>
-          <h2 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent">
-            Choose Your Formats
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Select the OOH formats you're interested in and we'll get you a custom quote within hours
-          </p>
-        </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Format Selection */}
