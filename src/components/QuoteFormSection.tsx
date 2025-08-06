@@ -33,6 +33,17 @@ const QuoteFormSection = ({
 }: QuoteFormSectionProps) => {
   const { toast } = useToast();
   const [inchargePeriods, setInchargePeriods] = useState<any[]>([]);
+  
+  // Debug logging to see what data we're receiving
+  console.log('QuoteFormSection Props:', {
+    prefilledFormats,
+    budgetRange,
+    campaignObjective,
+    targetAudience,
+    selectedLocations,
+    selectedPeriods,
+    creativeNeeds
+  });
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -162,15 +173,29 @@ const QuoteFormSection = ({
             </CardContent>
           </Card>
 
-          {/* Campaign Summary */}
+          {/* Campaign Summary - ALWAYS VISIBLE */}
           <Card className="bg-gradient-card border-border">
             <CardHeader>
-              <CardTitle className="text-xl">Campaign Summary</CardTitle>
+              <CardTitle className="text-xl">🎯 Complete Campaign Summary</CardTitle>
               <p className="text-muted-foreground">
-                Based on your configurator responses
+                All your configurator selections and requirements
               </p>
             </CardHeader>
             <CardContent>
+              {/* DEBUG SECTION - SHOWS ALL DATA */}
+              <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg">
+                <h4 className="font-bold text-red-800 dark:text-red-200 mb-2">🔍 DEBUG: Data Received</h4>
+                <div className="text-xs space-y-1">
+                  <div><strong>Budget:</strong> {budgetRange || 'NOT SET'}</div>
+                  <div><strong>Objectives:</strong> {campaignObjective || 'NOT SET'}</div>
+                  <div><strong>Audience:</strong> {targetAudience || 'NOT SET'}</div>
+                  <div><strong>Locations:</strong> {selectedLocations?.length || 0} selected: {selectedLocations?.join(', ') || 'NONE'}</div>
+                  <div><strong>Periods:</strong> {selectedPeriods?.length || 0} selected: {selectedPeriods?.join(', ') || 'NONE'}</div>
+                  <div><strong>Creative:</strong> {creativeNeeds || 'NOT SET'}</div>
+                  <div><strong>Formats:</strong> {prefilledFormats?.length || 0} selected: {prefilledFormats?.join(', ') || 'NONE'}</div>
+                </div>
+              </div>
+              
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Budget Range</Label>
