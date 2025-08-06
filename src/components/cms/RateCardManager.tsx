@@ -96,6 +96,9 @@ export function RateCardManager() {
   const [inchargePeriods, setInchargePeriods] = useState<any[]>([]);
   const [rateCardPeriods, setRateCardPeriods] = useState<any[]>([]);
   const [selectedPeriods, setSelectedPeriods] = useState<string[]>([]);
+  const [isDateSpecific, setIsDateSpecific] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState<Date | undefined>();
+  const [customEndDate, setCustomEndDate] = useState<Date | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [editingRate, setEditingRate] = useState<RateCard | null>(null);
   const [editingDiscount, setEditingDiscount] = useState<DiscountTier | null>(null);
@@ -157,7 +160,9 @@ export function RateCardManager() {
         location_markup_percentage: parseFloat(formData.get('location_markup_percentage') as string) || 0,
         quantity_per_medium: parseInt(formData.get('quantity_per_medium') as string) || 1,
         is_active: formData.get('is_active') === 'true',
-        is_date_specific: formData.get('is_date_specific') === 'true'
+        is_date_specific: formData.get('is_date_specific') === 'true',
+        start_date: !isDateSpecific && customStartDate ? customStartDate.toISOString().split('T')[0] : null,
+        end_date: !isDateSpecific && customEndDate ? customEndDate.toISOString().split('T')[0] : null
       };
 
       if (editingRate) {
@@ -389,6 +394,9 @@ export function RateCardManager() {
                     <Button onClick={() => {
                       setEditingRate(null);
                       setSelectedPeriods([]);
+                      setIsDateSpecific(false);
+                      setCustomStartDate(undefined);
+                      setCustomEndDate(undefined);
                     }}>
                       <Plus className="w-4 h-4 mr-2" />
                       Add Rate Card
@@ -519,11 +527,13 @@ export function RateCardManager() {
                          {/* Date-specific checkbox */}
                          <div className="col-span-2">
                            <div className="flex items-center space-x-2">
-                             <Checkbox 
-                               id="is_date_specific" 
-                               name="is_date_specific"
-                               defaultChecked={editingRate?.is_date_specific}
-                               value="true"
+                              <Checkbox 
+                                id="is_date_specific" 
+                                name="is_date_specific"
+                                checked={isDateSpecific}
+                                onCheckedChange={(checked) => setIsDateSpecific(checked as boolean)}
+                                defaultChecked={editingRate?.is_date_specific}
+                                value="true"
                              />
                              <Label htmlFor="is_date_specific">
                                This is date-specific media (incharge-based)
@@ -531,38 +541,100 @@ export function RateCardManager() {
                            </div>
                            <p className="text-sm text-muted-foreground mt-1">
                              Check this for media that requires specific start/end dates (not for guerrilla or ambient)
-                           </p>
-                         </div>
-
-                          {/* Incharge Periods Selection */}
-                          <div>
-                            <Label>Available Incharge Periods</Label>
-                            <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
-                              {inchargePeriods.map(period => (
-                                <div key={period.id} className="flex items-center space-x-2">
-                                  <input
-                                    type="checkbox"
-                                    id={`period-${period.id}`}
-                                    checked={selectedPeriods.includes(period.id)}
-                                    onChange={(e) => {
-                                      if (e.target.checked) {
-                                        setSelectedPeriods(prev => [...prev, period.id]);
-                                      } else {
-                                        setSelectedPeriods(prev => prev.filter(p => p !== period.id));
-                                      }
-                                    }}
-                                    className="h-4 w-4"
-                                  />
-                                  <Label htmlFor={`period-${period.id}`} className="text-sm">
-                                    Period {period.period_number}: {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
-                                  </Label>
-                                </div>
-                              ))}
-                            </div>
-                            <p className="text-sm text-muted-foreground mt-2">
-                              Select which periods are available for this rate card
                             </p>
                           </div>
+
+                          {/* Conditional rendering based on date-specific checkbox */}
+                          {isDateSpecific ? (
+                            /* Incharge Periods Selection - when checked */
+                            <div>
+                              <Label>Available Incharge Periods</Label>
+                              <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
+                                {inchargePeriods.map(period => (
+                                  <div key={period.id} className="flex items-center space-x-2">
+                                    <input
+                                      type="checkbox"
+                                      id={`period-${period.id}`}
+                                      checked={selectedPeriods.includes(period.id)}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setSelectedPeriods(prev => [...prev, period.id]);
+                                        } else {
+                                          setSelectedPeriods(prev => prev.filter(p => p !== period.id));
+                                        }
+                                      }}
+                                      className="h-4 w-4"
+                                    />
+                                    <Label htmlFor={`period-${period.id}`} className="text-sm">
+                                      Period {period.period_number}: {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-2">
+                                Select which periods are available for this rate card
+                              </p>
+                            </div>
+                          ) : (
+                            /* Custom Date Selection - when unchecked */
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="start_date">Custom Start Date</Label>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !customStartDate && "text-muted-foreground"
+                                      )}
+                                    >
+                                      <CalendarIcon className="mr-2 h-4 w-4" />
+                                      {customStartDate ? format(customStartDate, "PPP") : <span>Pick start date</span>}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                      mode="single"
+                                      selected={customStartDate}
+                                      onSelect={setCustomStartDate}
+                                      initialFocus
+                                      className={cn("p-3 pointer-events-auto")}
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
+                              
+                              <div>
+                                <Label htmlFor="end_date">Custom End Date</Label>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !customEndDate && "text-muted-foreground"
+                                      )}
+                                    >
+                                      <CalendarIcon className="mr-2 h-4 w-4" />
+                                      {customEndDate ? format(customEndDate, "PPP") : <span>Pick end date</span>}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                      mode="single"
+                                      selected={customEndDate}
+                                      onSelect={setCustomEndDate}
+                                      disabled={(date) => customStartDate ? date < customStartDate : false}
+                                      initialFocus
+                                      className={cn("p-3 pointer-events-auto")}
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
+                            </div>
+                          )}
+                          
                           
                           <div>
                             <Label htmlFor="is_active">Status</Label>
@@ -643,11 +715,23 @@ export function RateCardManager() {
                             variant="outline"
                             onClick={() => {
                               setEditingRate(rate);
-                              // Load existing periods for this rate card
-                              const existingPeriods = rateCardPeriods
-                                .filter(rcp => rcp.rate_card_id === rate.id)
-                                .map(rcp => rcp.incharge_period_id);
-                              setSelectedPeriods(existingPeriods);
+                              setIsDateSpecific(rate.is_date_specific || false);
+                              
+                              if (rate.is_date_specific) {
+                                // Load existing periods for this rate card
+                                const existingPeriods = rateCardPeriods
+                                  .filter(rcp => rcp.rate_card_id === rate.id)
+                                  .map(rcp => rcp.incharge_period_id);
+                                setSelectedPeriods(existingPeriods);
+                                setCustomStartDate(undefined);
+                                setCustomEndDate(undefined);
+                              } else {
+                                // Load custom dates
+                                setSelectedPeriods([]);
+                                setCustomStartDate(rate.start_date ? new Date(rate.start_date) : undefined);
+                                setCustomEndDate(rate.end_date ? new Date(rate.end_date) : undefined);
+                              }
+                              
                               setIsRateDialogOpen(true);
                             }}
                           >
