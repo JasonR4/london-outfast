@@ -711,9 +711,9 @@ const FormatPage = () => {
                         if (priceCalculation) {
                           const campaignTotal = priceCalculation.totalPrice * quantity;
                           
-                          // Production costs are always calculated
-                          const productionCostCalc = calculateProductionCost(locationForPricing, quantity);
-                          const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
+                           // Production costs are always calculated
+                           const productionCostCalc = calculateProductionCost(locationForPricing, quantity, format.category);
+                           const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
                           
                           const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
                           const grandTotal = campaignTotal + productionTotal + creativeTotal;
