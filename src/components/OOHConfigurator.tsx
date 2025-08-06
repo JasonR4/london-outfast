@@ -79,19 +79,34 @@ const questions: Question[] = [
         scores: { 'bus_shelters': 8, 'local_billboards': 7, 'taxi_ads': 9, 'tube_ads': 5, 'digital_billboards': 3 }
       },
       {
-        label: '£5K - £25K',
+        label: '£5K - £10K',
+        value: 'lower_medium',
+        scores: { 'bus_shelters': 9, 'tube_ads': 7, 'billboards': 6, 'digital_billboards': 5, 'taxi_ads': 8 }
+      },
+      {
+        label: '£10K - £15K',
         value: 'medium',
         scores: { 'bus_shelters': 7, 'tube_ads': 8, 'billboards': 7, 'digital_billboards': 6, 'taxi_ads': 8 }
       },
       {
-        label: '£25K - £100K',
-        value: 'high',
-        scores: { 'billboards': 8, 'digital_billboards': 9, 'tube_ads': 9, 'bus_shelters': 6, 'taxi_ads': 7 }
+        label: '£15K - £20K',
+        value: 'upper_medium',
+        scores: { 'tube_ads': 8, 'billboards': 7, 'digital_billboards': 7, 'bus_shelters': 6, 'taxi_ads': 7 }
       },
       {
-        label: '£100K+',
+        label: '£20K - £25K',
+        value: 'high',
+        scores: { 'billboards': 8, 'digital_billboards': 8, 'tube_ads': 8, 'bus_shelters': 6, 'taxi_ads': 7 }
+      },
+      {
+        label: '£25K - £30K',
+        value: 'higher',
+        scores: { 'billboards': 8, 'digital_billboards': 9, 'tube_ads': 8, 'bus_shelters': 5, 'taxi_ads': 6 }
+      },
+      {
+        label: '£30K+',
         value: 'premium',
-        scores: { 'digital_billboards': 10, 'billboards': 9, 'tube_ads': 8, 'bus_shelters': 5, 'taxi_ads': 6 }
+        scores: { 'digital_billboards': 10, 'billboards': 9, 'tube_ads': 8, 'bus_shelters': 4, 'taxi_ads': 6 }
       }
     ]
   },
@@ -507,9 +522,12 @@ export const OOHConfigurator = () => {
     const budget = answers.find(a => a.questionId === 'budget_range')?.value;
     switch(budget) {
       case 'low': return '£1K - £5K';
-      case 'medium': return '£5K - £25K';
-      case 'high': return '£25K - £100K';
-      case 'premium': return '£100K+';
+      case 'lower_medium': return '£5K - £10K';
+      case 'medium': return '£10K - £15K';
+      case 'upper_medium': return '£15K - £20K';
+      case 'high': return '£20K - £25K';
+      case 'higher': return '£25K - £30K';
+      case 'premium': return '£30K+';
       default: return '';
     }
   };
