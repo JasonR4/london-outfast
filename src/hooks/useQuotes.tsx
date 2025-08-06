@@ -102,6 +102,11 @@ export const useQuotes = () => {
       if (error) throw error;
       
       setCurrentQuote(data);
+
+      // If we have a quote with items, recalculate discounts
+      if (data?.id && data.quote_items?.length > 0) {
+        await updateQuoteTotalCost(data.id);
+      }
     } catch (err: any) {
       console.error('Error fetching current quote:', err);
       setError(err.message);
