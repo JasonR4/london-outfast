@@ -621,22 +621,10 @@ const FormatPage = () => {
                       <div>
                         <Label>Select Campaign Periods</Label>
                         
-                        {/* DETAILED DEBUG INFO */}
-                        <div className="text-xs bg-red-100 p-3 rounded mb-2 border">
-                          <div><strong>🔍 PERIODS DEBUG:</strong></div>
-                          <div>inchargePeriods: {inchargePeriods ? `${inchargePeriods.length} periods` : 'null/undefined'}</div>
-                          <div>rateLoading: {rateLoading ? 'true' : 'false'}</div>
-                          <div>rateError: {rateError || 'none'}</div>
-                          <div>formatSlug: {formatSlug}</div>
-                          {inchargePeriods && inchargePeriods.length > 0 && (
-                            <div>Sample period: {JSON.stringify(inchargePeriods[0], null, 2)}</div>
-                          )}
-                        </div>
-                        
-                        {inchargePeriods && inchargePeriods.length > 0 ? (
+                        {Array.isArray(inchargePeriods) && inchargePeriods.length > 0 ? (
                           <div className="space-y-2 max-h-60 overflow-y-auto">
-                            {inchargePeriods.map(period => (
-                              <div key={period.id || period.period_number} className="flex items-center space-x-2">
+                            {inchargePeriods.map((period, index) => (
+                              <div key={period.id || period.period_number || index} className="flex items-center space-x-2">
                                 <Checkbox
                                   id={`period-${period.period_number}`}
                                   checked={selectedPeriods.includes(period.period_number)}
