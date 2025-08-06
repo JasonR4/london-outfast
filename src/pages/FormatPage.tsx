@@ -621,6 +621,18 @@ const FormatPage = () => {
                       <div>
                         <Label>Select Campaign Periods</Label>
                         
+                        {/* DETAILED DEBUG INFO */}
+                        <div className="text-xs bg-red-100 p-3 rounded mb-2 border">
+                          <div><strong>🔍 PERIODS DEBUG:</strong></div>
+                          <div>inchargePeriods: {inchargePeriods ? `${inchargePeriods.length} periods` : 'null/undefined'}</div>
+                          <div>rateLoading: {rateLoading ? 'true' : 'false'}</div>
+                          <div>rateError: {rateError || 'none'}</div>
+                          <div>formatSlug: {formatSlug}</div>
+                          {inchargePeriods && inchargePeriods.length > 0 && (
+                            <div>Sample period: {JSON.stringify(inchargePeriods[0], null, 2)}</div>
+                          )}
+                        </div>
+                        
                         {inchargePeriods && inchargePeriods.length > 0 ? (
                           <div className="space-y-2 max-h-60 overflow-y-auto">
                             {inchargePeriods.map(period => (

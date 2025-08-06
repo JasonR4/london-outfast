@@ -116,6 +116,12 @@ export function useRateCards(formatSlug?: string) {
         .select('*')
         .order('period_number');
 
+      console.log('🔍 INCHARGE PERIODS DEBUG:', {
+        periodsData,
+        periodsError,
+        periodsLength: periodsData?.length
+      });
+
       if (periodsError) throw periodsError;
       setInchargePeriods(periodsData || []);
 
