@@ -7,11 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, MapPin, Zap, Calculator, CheckCircle2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { Search, MapPin, Zap, Calculator, CheckCircle2, AlertTriangle, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuotes } from "@/hooks/useQuotes";
 import { useRateCards } from "@/hooks/useRateCards";
 import { useLocationSelector } from "@/hooks/useLocationSelector";
+import { useLocationCapacity } from "@/hooks/useLocationCapacity";
 import { LocationSelector } from "@/components/LocationSelector";
 import { oohFormats, OOHFormat } from "@/data/oohFormats";
 import { londonAreas } from "@/data/londonAreas";
@@ -31,6 +35,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const [selectedFormat, setSelectedFormat] = useState<OOHFormat | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedPeriods, setSelectedPeriods] = useState<number[]>([]);
+  const [needsCreative, setNeedsCreative] = useState(false);
+  const [creativeCategory, setCreativeCategory] = useState('Standard Design');
   console.log('📊 Selected periods state:', selectedPeriods);
   const [contactDetails, setContactDetails] = useState({
     contact_name: "",
@@ -49,6 +55,14 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     clearAllLocations,
     getSelectedLocationsByZone
   } = useLocationSelector();
+
+  // Location capacity logic
+  const locationCapacity = useLocationCapacity({
+    quantity,
+    selectedPeriods,
+    selectedAreas: selectedLocations,
+    basePrice: 1000
+  });
 
   // Rate cards for selected format
   const { 
@@ -116,8 +130,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         
         const mediaPrice = calculatePrice(location, selectedPeriods);
         const productionPrice = calculateProductionCost(location, quantity);
-        // Try to get creative cost using "Standard Design" as default category
-        const creativePrice = calculateCreativeCost(location, quantity, "Standard Design");
+        // Calculate creative cost only if needed
+        const creativePrice = needsCreative ? calculateCreativeCost(location, quantity, creativeCategory) : null;
         
         console.log(`💰 Media price result:`, mediaPrice);
         console.log(`🏭 Production price result:`, productionPrice);
@@ -147,8 +161,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
           console.log(`➕ Added production cost: ${productionPrice.totalCost}, total: ${totalProductionCost}`);
         }
 
-        // Handle creative price
-        if (creativePrice && creativePrice.totalCost !== undefined) {
+        // Handle creative price (only if needed)
+        if (needsCreative && creativePrice && creativePrice.totalCost !== undefined) {
           totalCreativeCost += creativePrice.totalCost;
           console.log(`➕ Added creative cost: ${creativePrice.totalCost}, total: ${totalCreativeCost}`);
         }
@@ -189,6 +203,16 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       return;
     }
 
+    // Check location capacity
+    if (locationCapacity.isOverCapacity) {
+      toast({
+        title: "Location capacity exceeded",
+        description: `You've selected ${locationCapacity.locationCapacityUsed} locations but only have capacity for ${locationCapacity.maxLocationCapacity}. Please reduce selections or upgrade your package.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       await addQuoteItem({
         format_slug: selectedFormat.slug,
@@ -197,7 +221,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         selected_periods: selectedPeriods,
         selected_areas: selectedLocations,
         production_cost: pricing.productionCost,
-        creative_cost: pricing.creativeCost,
+        creative_cost: needsCreative ? pricing.creativeCost : 0,
         base_cost: pricing.mediaPrice,
         total_cost: pricing.totalCost
       });
@@ -359,7 +383,12 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
                       {/* Quantity */}
                       <div className="space-y-2">
-                        <Label>Quantity</Label>
+                        <Label className="text-base font-medium">
+                          Quantity - {selectedFormat?.name?.includes('Digital') ? 'Sites' : 'Units'} per Incharge Period
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Each {selectedFormat?.name?.includes('Digital') ? 'site' : 'unit'} can display across multiple locations during rotation periods
+                        </p>
                         <Select value={quantity.toString()} onValueChange={(value) => setQuantity(parseInt(value))}>
                           <SelectTrigger>
                             <SelectValue />
@@ -371,6 +400,43 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           </SelectContent>
                         </Select>
                       </div>
+
+                      {/* Capacity Information */}
+                      <Card className="border-2" style={{
+                        borderColor: locationCapacity.capacityStatus === 'over-limit' ? 'hsl(var(--destructive))' :
+                                   locationCapacity.capacityStatus === 'warning' ? 'hsl(var(--warning))' : 
+                                   locationCapacity.capacityStatus === 'at-limit' ? 'hsl(var(--primary))' : 
+                                   'hsl(var(--border))'
+                      }}>
+                        <CardContent className="pt-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              {locationCapacity.capacityStatus === 'over-limit' && <AlertTriangle className="w-4 h-4 text-destructive" />}
+                              {locationCapacity.capacityStatus === 'at-limit' && <CheckCircle2 className="w-4 h-4 text-primary" />}
+                              {locationCapacity.capacityStatus === 'warning' && <Info className="w-4 h-4 text-warning" />}
+                              <span className="font-medium">Location Capacity</span>
+                            </div>
+                            <Badge variant={locationCapacity.capacityStatus === 'over-limit' ? 'destructive' : 'secondary'}>
+                              {locationCapacity.locationCapacityUsed}/{locationCapacity.maxLocationCapacity}
+                            </Badge>
+                          </div>
+                          <Progress 
+                            value={Math.min(locationCapacity.capacityUtilization, 100)} 
+                            className="mb-2"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            {quantity} {selectedFormat?.name?.includes('Digital') ? 'sites' : 'units'} × {selectedPeriods.length} periods = {locationCapacity.maxLocationCapacity} total location slots
+                          </p>
+                          {locationCapacity.capacityStatus === 'over-limit' && (
+                            <Alert className="mt-3 border-destructive">
+                              <AlertTriangle className="w-4 h-4" />
+                              <AlertDescription className="text-sm">
+                                You've selected more locations than your current capacity allows. Please reduce selections or increase quantity/periods.
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                        </CardContent>
+                      </Card>
 
                       {/* Location Selection */}
                       <div className="space-y-4">
@@ -385,6 +451,36 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           showSelectedSummary={true}
                           maxHeight="300px"
                         />
+                      </div>
+
+                      {/* Creative Services */}
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label className="text-base font-medium">Creative Services</Label>
+                            <p className="text-sm text-muted-foreground">Do you need creative design services?</p>
+                          </div>
+                          <Switch
+                            checked={needsCreative}
+                            onCheckedChange={setNeedsCreative}
+                          />
+                        </div>
+                        
+                        {needsCreative && (
+                          <div>
+                            <Label className="text-sm font-medium">Creative Category</Label>
+                            <Select value={creativeCategory} onValueChange={setCreativeCategory}>
+                              <SelectTrigger className="mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Standard Design">Standard Design</SelectItem>
+                                <SelectItem value="Premium Design">Premium Design</SelectItem>
+                                <SelectItem value="Animation">Animation</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
                       </div>
 
                       {/* Campaign Periods */}
@@ -474,9 +570,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                             <span>Production Costs:</span>
                             <span className="font-medium">£{pricing.productionCost.toLocaleString()}</span>
                           </div>
-                          {pricing.creativeCost > 0 && (
+                          {needsCreative && pricing.creativeCost > 0 && (
                             <div className="flex justify-between items-center">
-                              <span>Creative Costs:</span>
+                              <span>Creative Costs ({creativeCategory}):</span>
                               <span className="font-medium">£{pricing.creativeCost.toLocaleString()}</span>
                             </div>
                           )}
