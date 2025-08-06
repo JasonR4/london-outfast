@@ -20,8 +20,8 @@ export interface RateCard {
 export interface DiscountTier {
   id: string;
   media_format_id: string;
-  min_incharges: number;
-  max_incharges: number | null;
+  min_periods: number;
+  max_periods: number | null;
   discount_percentage: number;
   is_active: boolean;
 }
@@ -57,12 +57,29 @@ export interface MediaFormat {
   is_active: boolean;
 }
 
+export interface InchargePeriod {
+  id: string;
+  period_number: number;
+  start_date: string;
+  end_date: string;
+}
+
+export interface RateCardPeriod {
+  id: string;
+  rate_card_id: string;
+  incharge_period_id: string;
+  is_enabled: boolean;
+  incharge_period?: InchargePeriod;
+}
+
 export function useRateCards(formatSlug?: string) {
   const [rateCards, setRateCards] = useState<RateCard[]>([]);
   const [discountTiers, setDiscountTiers] = useState<DiscountTier[]>([]);
   const [productionCostTiers, setProductionCostTiers] = useState<ProductionCostTier[]>([]);
   const [creativeCostTiers, setCreativeCostTiers] = useState<CreativeCostTier[]>([]);
   const [mediaFormat, setMediaFormat] = useState<MediaFormat | null>(null);
+  const [inchargePeriods, setInchargePeriods] = useState<InchargePeriod[]>([]);
+  const [rateCardPeriods, setRateCardPeriods] = useState<RateCardPeriod[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,6 +110,15 @@ export function useRateCards(formatSlug?: string) {
 
       setMediaFormat(formatData);
 
+      // Get incharge periods
+      const { data: periodsData, error: periodsError } = await supabase
+        .from('incharge_periods')
+        .select('*')
+        .order('period_number');
+
+      if (periodsError) throw periodsError;
+      setInchargePeriods(periodsData || []);
+
       // Get rate cards for this format
       const { data: ratesData, error: ratesError } = await supabase
         .from('rate_cards')
@@ -104,13 +130,34 @@ export function useRateCards(formatSlug?: string) {
       if (ratesError) throw ratesError;
       setRateCards(ratesData || []);
 
+      // Get rate card periods with incharge period details
+      const { data: rateCardPeriodsData, error: rateCardPeriodsError } = await supabase
+        .from('rate_card_periods')
+        .select(`
+          id,
+          rate_card_id,
+          incharge_period_id,
+          is_enabled,
+          incharge_periods!inner(
+            id,
+            period_number,
+            start_date,
+            end_date
+          )
+        `)
+        .eq('rate_card_periods.is_enabled', true)
+        .in('rate_card_id', (ratesData || []).map(r => r.id));
+
+      if (rateCardPeriodsError) throw rateCardPeriodsError;
+      setRateCardPeriods(rateCardPeriodsData || []);
+
       // Get discount tiers for this format
       const { data: discountsData, error: discountsError } = await supabase
         .from('discount_tiers')
         .select('*')
         .eq('media_format_id', formatData.id)
         .eq('is_active', true)
-        .order('min_incharges');
+        .order('min_periods');
 
       if (discountsError) throw discountsError;
       setDiscountTiers(discountsData || []);
@@ -219,9 +266,9 @@ export function useRateCards(formatSlug?: string) {
     };
   };
 
-  const calculatePrice = (locationArea: string, incharges: number) => {
+  const calculatePrice = (locationArea: string, selectedPeriods: number[]) => {
     const rateCard = rateCards.find(r => r.location_area === locationArea);
-    if (!rateCard) return null;
+    if (!rateCard || selectedPeriods.length === 0) return null;
 
     // Apply location markup to base rate
     const baseRate = rateCard.base_rate_per_incharge;
@@ -230,11 +277,11 @@ export function useRateCards(formatSlug?: string) {
 
     // Check for sale or reduced price first
     const finalRate = rateCard.sale_price || rateCard.reduced_price || adjustedRate;
-    let totalPrice = finalRate * incharges;
+    let totalPrice = finalRate * selectedPeriods.length;
 
-    // Apply discount tiers
+    // Apply discount tiers based on number of periods
     const applicableDiscount = discountTiers
-      .filter(d => d.min_incharges <= incharges && (!d.max_incharges || incharges <= d.max_incharges))
+      .filter(d => d.min_periods <= selectedPeriods.length && (!d.max_periods || selectedPeriods.length <= d.max_periods))
       .sort((a, b) => b.discount_percentage - a.discount_percentage)[0]; // Get highest discount
 
     if (applicableDiscount) {
@@ -248,8 +295,21 @@ export function useRateCards(formatSlug?: string) {
       discount: applicableDiscount?.discount_percentage || 0,
       locationMarkup: rateCard.location_markup_percentage,
       isOnSale: !!rateCard.sale_price,
-      isReduced: !!rateCard.reduced_price && !rateCard.sale_price
+      isReduced: !!rateCard.reduced_price && !rateCard.sale_price,
+      periodsCount: selectedPeriods.length
     };
+  };
+
+  const getAvailablePeriodsForLocation = (locationArea: string) => {
+    const rateCard = rateCards.find(r => r.location_area === locationArea);
+    if (!rateCard) return [];
+
+    const enabledPeriods = rateCardPeriods
+      .filter(rcp => rcp.rate_card_id === rateCard.id && rcp.is_enabled)
+      .map(rcp => rcp.incharge_period)
+      .filter(Boolean);
+
+    return enabledPeriods;
   };
 
   const getAvailableLocations = () => {
@@ -262,11 +322,14 @@ export function useRateCards(formatSlug?: string) {
     productionCostTiers,
     creativeCostTiers,
     mediaFormat,
+    inchargePeriods,
+    rateCardPeriods,
     loading,
     error,
     calculatePrice,
     calculateProductionCost,
     calculateCreativeCost,
-    getAvailableLocations
+    getAvailableLocations,
+    getAvailablePeriodsForLocation
   };
 }

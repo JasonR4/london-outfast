@@ -50,8 +50,8 @@ interface RateCard {
 interface DiscountTier {
   id: string;
   media_format_id: string;
-  min_incharges: number;
-  max_incharges: number | null;
+  min_periods: number;
+  max_periods: number | null;
   discount_percentage: number;
   is_active: boolean;
   media_formats?: {
@@ -112,7 +112,7 @@ export function RateCardManager() {
       const [formatsRes, ratesRes, discountsRes, productionRes, creativeRes] = await Promise.all([
         supabase.from('media_formats').select('*').order('format_name'),
         supabase.from('rate_cards').select('*, media_formats(format_name)').order('location_area'),
-        supabase.from('discount_tiers').select('*, media_formats(format_name)').order('min_incharges'),
+        supabase.from('discount_tiers').select('*, media_formats(format_name)').order('min_periods'),
         supabase.from('production_cost_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('creative_design_cost_tiers').select('*, media_formats(format_name)').order('min_quantity')
       ]);
@@ -182,8 +182,8 @@ export function RateCardManager() {
     try {
       const discountData = {
         media_format_id: formData.get('media_format_id') as string,
-        min_incharges: parseInt(formData.get('min_incharges') as string),
-        max_incharges: formData.get('max_incharges') ? parseInt(formData.get('max_incharges') as string) : null,
+        min_periods: parseInt(formData.get('min_periods') as string),
+        max_periods: formData.get('max_periods') ? parseInt(formData.get('max_periods') as string) : null,
         discount_percentage: parseFloat(formData.get('discount_percentage') as string),
         is_active: formData.get('is_active') === 'true'
       };
@@ -696,20 +696,20 @@ export function RateCardManager() {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="min_incharges">Min Incharges</Label>
+                          <Label htmlFor="min_periods">Min Periods</Label>
                           <Input
-                            name="min_incharges"
+                            name="min_periods"
                             type="number"
-                            defaultValue={editingDiscount?.min_incharges}
+                            defaultValue={editingDiscount?.min_periods}
                             required
                           />
                         </div>
                         <div>
-                          <Label htmlFor="max_incharges">Max Incharges</Label>
+                          <Label htmlFor="max_periods">Max Periods</Label>
                           <Input
-                            name="max_incharges"
+                            name="max_periods"
                             type="number"
-                            defaultValue={editingDiscount?.max_incharges || ''}
+                            defaultValue={editingDiscount?.max_periods || ''}
                             placeholder="Leave empty for unlimited"
                           />
                         </div>
@@ -764,8 +764,8 @@ export function RateCardManager() {
                   {discountTiers.map((discount) => (
                     <TableRow key={discount.id}>
                       <TableCell>{discount.media_formats?.format_name}</TableCell>
-                      <TableCell>{discount.min_incharges}</TableCell>
-                      <TableCell>{discount.max_incharges || 'Unlimited'}</TableCell>
+                      <TableCell>{discount.min_periods}</TableCell>
+                      <TableCell>{discount.max_periods || 'Unlimited'}</TableCell>
                       <TableCell>{discount.discount_percentage}%</TableCell>
                       <TableCell>
                         <Badge variant={discount.is_active ? 'default' : 'secondary'}>

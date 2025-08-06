@@ -31,7 +31,7 @@ const FormatPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [quantity, setQuantity] = useState<number>(1);
-  const [incharges, setIncharges] = useState<number>(1);
+  const [selectedPeriods, setSelectedPeriods] = useState<number[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>('');
   const [needsCreative, setNeedsCreative] = useState<boolean>(false);
   const [creativeAssets, setCreativeAssets] = useState<number>(1);
@@ -39,7 +39,16 @@ const FormatPage = () => {
   const [selectedEndDate, setSelectedEndDate] = useState<Date | undefined>();
   
   // Use rate cards hook
-  const { rateCards, calculatePrice, calculateProductionCost, getAvailableLocations, loading: rateLoading, error: rateError } = useRateCards(formatSlug);
+  const { 
+    rateCards, 
+    calculatePrice, 
+    calculateProductionCost, 
+    getAvailableLocations, 
+    getAvailablePeriodsForLocation, 
+    inchargePeriods,
+    loading: rateLoading, 
+    error: rateError 
+  } = useRateCards(formatSlug);
   
   // Use location selector hook for multiple area selection in pricing
   const {
@@ -424,19 +433,36 @@ const FormatPage = () => {
                       </Select>
                     </div>
 
-                    <div>
-                      <Label htmlFor="incharges">Number of Incharges (2-week periods)</Label>
-                      <Select value={incharges.toString()} onValueChange={(value) => setIncharges(parseInt(value))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select incharges" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[1,2,3,4,6,8,10,12,16,20,24,26].map(num => (
-                            <SelectItem key={num} value={num.toString()}>{num} incharge{num > 1 ? 's' : ''} ({num * 2} weeks)</SelectItem>
+                    
+                    {/* Incharge Periods Selection - only for non-bus, non-gorilla, non-ambient */}
+                    {format?.category !== 'Bus' && format?.category !== 'Gorilla' && format?.category !== 'Ambient' && (
+                      <div>
+                        <Label>Select Campaign Periods</Label>
+                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                          {inchargePeriods.map(period => (
+                            <div key={period.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`period-${period.period_number}`}
+                                checked={selectedPeriods.includes(period.period_number)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedPeriods(prev => [...prev, period.period_number]);
+                                  } else {
+                                    setSelectedPeriods(prev => prev.filter(p => p !== period.period_number));
+                                  }
+                                }}
+                              />
+                              <Label htmlFor={`period-${period.period_number}`} className="text-sm">
+                                Period {period.period_number}: {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
+                              </Label>
+                            </div>
                           ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Selected {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    )}
 
                     <div>
                       <div className="flex items-center justify-between mb-2">
@@ -641,9 +667,9 @@ const FormatPage = () => {
 
                      <div className="pt-4 border-t space-y-2">
                        <div className="flex justify-between text-sm">
-                         <span>Campaign Duration:</span>
-                         <span>{incharges} incharge{incharges > 1 ? 's' : ''} ({incharges * 2} weeks)</span>
-                       </div>
+                          <span>Campaign Duration:</span>
+                          <span>{selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''} ({selectedPeriods.length * 2} weeks)</span>
+                        </div>
                        <div className="flex justify-between text-sm">
                          <span>Sites Selected:</span>
                          <span>{quantity}</span>
@@ -680,7 +706,7 @@ const FormatPage = () => {
                         ) || availableLocations[0]; // Fallback to first available location
                         
                         const locationForPricing = matchingLocation || representativeArea;
-                        const priceCalculation = calculatePrice(locationForPricing, incharges);
+                        const priceCalculation = calculatePrice(locationForPricing, selectedPeriods);
                         
                         if (priceCalculation) {
                           const campaignTotal = priceCalculation.totalPrice * quantity;
@@ -704,13 +730,13 @@ const FormatPage = () => {
                                   {priceCalculation.locationMarkup > 0 && (
                                     <div className="flex justify-between text-sm text-blue-600">
                                       <span>Location Markup ({priceCalculation.locationMarkup}%):</span>
-                                      <span>+£{((priceCalculation.adjustedRate - priceCalculation.basePrice) * incharges * quantity).toFixed(2)}</span>
+                                      <span>+£{((priceCalculation.adjustedRate - priceCalculation.basePrice) * selectedPeriods.length * quantity).toFixed(2)}</span>
                                     </div>
                                   )}
                                   {priceCalculation.discount > 0 && (
                                     <div className="flex justify-between text-sm text-green-600">
                                       <span>Volume Discount ({priceCalculation.discount}%):</span>
-                                      <span>-£{((priceCalculation.adjustedRate - (priceCalculation.totalPrice / incharges)) * incharges * quantity).toFixed(2)}</span>
+                                      <span>-£{((priceCalculation.adjustedRate - (priceCalculation.totalPrice / selectedPeriods.length)) * selectedPeriods.length * quantity).toFixed(2)}</span>
                                     </div>
                                   )}
                                 </div>
@@ -732,7 +758,7 @@ const FormatPage = () => {
                               
                               <div className="border-t pt-3 space-y-2">
                                 <div className="flex justify-between text-base">
-                                  <span>Campaign Cost ({quantity} × {incharges} incharges):</span>
+                                  <span>Campaign Cost ({quantity} × {selectedPeriods.length} periods):</span>
                                   <span>£{campaignTotal.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-base">
