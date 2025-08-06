@@ -27,7 +27,6 @@ interface RateCard {
   media_format_id: string;
   location_area: string;
   base_rate_per_incharge: number;
-  production_cost: number;
   sale_price: number | null;
   reduced_price: number | null;
   location_markup_percentage: number;
@@ -43,6 +42,18 @@ interface DiscountTier {
   min_incharges: number;
   max_incharges: number | null;
   discount_percentage: number;
+  is_active: boolean;
+  media_formats?: {
+    format_name: string;
+  };
+}
+
+interface ProductionCostTier {
+  id: string;
+  media_format_id: string;
+  min_quantity: number;
+  max_quantity: number | null;
+  cost_per_unit: number;
   is_active: boolean;
   media_formats?: {
     format_name: string;

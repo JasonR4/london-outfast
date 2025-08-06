@@ -250,6 +250,53 @@ export type Database = {
         }
         Relationships: []
       }
+      production_cost_tiers: {
+        Row: {
+          cost_per_unit: number
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          max_quantity: number | null
+          media_format_id: string
+          min_quantity: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          cost_per_unit: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          max_quantity?: number | null
+          media_format_id: string
+          min_quantity: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          cost_per_unit?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          max_quantity?: number | null
+          media_format_id?: string
+          min_quantity?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_cost_tiers_media_format_id_fkey"
+            columns: ["media_format_id"]
+            isOneToOne: false
+            referencedRelation: "media_formats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -293,7 +340,6 @@ export type Database = {
           location_area: string
           location_markup_percentage: number | null
           media_format_id: string
-          production_cost: number
           reduced_price: number | null
           sale_price: number | null
           updated_at: string
@@ -308,7 +354,6 @@ export type Database = {
           location_area: string
           location_markup_percentage?: number | null
           media_format_id: string
-          production_cost?: number
           reduced_price?: number | null
           sale_price?: number | null
           updated_at?: string
@@ -323,7 +368,6 @@ export type Database = {
           location_area?: string
           location_markup_percentage?: number | null
           media_format_id?: string
-          production_cost?: number
           reduced_price?: number | null
           sale_price?: number | null
           updated_at?: string

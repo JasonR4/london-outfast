@@ -6,9 +6,9 @@ export interface RateCard {
   media_format_id: string;
   location_area: string;
   base_rate_per_incharge: number;
-  production_cost: number;
   sale_price: number | null;
   reduced_price: number | null;
+  location_markup_percentage: number;
   is_active: boolean;
 }
 
