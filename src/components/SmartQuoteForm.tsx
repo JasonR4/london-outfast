@@ -335,30 +335,45 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                       {selectedLocations.length > 0 && (
                         <div className="space-y-2">
                           <Label>Campaign Periods</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Select one or more campaign periods for your advertising
+                          </p>
                           <div className="grid grid-cols-2 gap-2">
-                          {getAllAvailablePeriods().map(period => (
-                            <Card
-                              key={period.id}
-                              className={`cursor-pointer transition-all ${
-                                selectedPeriods.includes(Number(period.id)) ? 'ring-2 ring-primary bg-primary/5' : ''
-                              }`}
-                              onClick={() => {
-                                setSelectedPeriods(prev =>
-                                  prev.includes(Number(period.id))
-                                    ? prev.filter(p => p !== Number(period.id))
-                                    : [...prev, Number(period.id)]
-                                );
-                              }}
-                            >
-                              <CardContent className="p-3">
-                                <div className="text-sm font-medium">Period {period.period_number}</div>
-                                <div className="text-xs text-muted-foreground">
-                                  {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
+                            {getAllAvailablePeriods().map(period => (
+                              <Card
+                                key={period.id}
+                                className={`cursor-pointer transition-all ${
+                                  selectedPeriods.includes(Number(period.id)) ? 'ring-2 ring-primary bg-primary/5' : ''
+                                }`}
+                                onClick={() => {
+                                  setSelectedPeriods(prev =>
+                                    prev.includes(Number(period.id))
+                                      ? prev.filter(p => p !== Number(period.id))
+                                      : [...prev, Number(period.id)]
+                                  );
+                                }}
+                              >
+                                <CardContent className="p-3">
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <div className="text-sm font-medium">Period {period.period_number}</div>
+                                      <div className="text-xs text-muted-foreground">
+                                        {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
+                                      </div>
+                                    </div>
+                                    {selectedPeriods.includes(Number(period.id)) && (
+                                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
                           </div>
+                          {selectedPeriods.length > 0 && (
+                            <div className="text-sm text-muted-foreground">
+                              {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''} selected
+                            </div>
+                          )}
                         </div>
                       )}
                     </>
