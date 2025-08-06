@@ -84,8 +84,8 @@ export default function QuotePlan() {
                   <User className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-sm">Save Your Campaign</h3>
-                  <p className="text-xs text-muted-foreground">Login to save and manage your campaigns</p>
+                  <h3 className="font-semibold text-sm">Submit Your Quote</h3>
+                  <p className="text-xs text-muted-foreground">Sign in to submit your quote (or login if already registered)</p>
                 </div>
                 <Button asChild size="sm" className="bg-primary hover:bg-primary/90">
                   <Link to="/auth">
