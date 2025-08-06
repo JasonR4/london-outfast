@@ -54,13 +54,6 @@ const Services = () => {
                   >
                     Learn More
                   </Button>
-                  <Button 
-                    size="sm" 
-                    className="w-full"
-                    onClick={() => navigate('/quote')}
-                  >
-                    Get Quote
-                  </Button>
                 </div>
               </CardContent>
             </Card>
