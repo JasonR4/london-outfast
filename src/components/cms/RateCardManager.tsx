@@ -150,6 +150,8 @@ export function RateCardManager() {
 
   const handleSaveRateCard = async (formData: FormData) => {
     try {
+      const isDateSpecificValue = formData.get('is_date_specific') === 'true';
+      
       const rateData = {
         media_format_id: formData.get('media_format_id') as string,
         location_area: formData.get('location_area') as string,
@@ -159,10 +161,12 @@ export function RateCardManager() {
         location_markup_percentage: parseFloat(formData.get('location_markup_percentage') as string) || 0,
         quantity_per_medium: parseInt(formData.get('quantity_per_medium') as string) || 1,
         is_active: formData.get('is_active') === 'true',
-        is_date_specific: formData.get('is_date_specific') === 'true',
-        start_date: !isDateSpecific && customStartDate ? customStartDate.toISOString().split('T')[0] : null,
-        end_date: !isDateSpecific && customEndDate ? customEndDate.toISOString().split('T')[0] : null
+        is_date_specific: isDateSpecificValue,
+        start_date: !isDateSpecificValue && customStartDate ? customStartDate.toISOString().split('T')[0] : null,
+        end_date: !isDateSpecificValue && customEndDate ? customEndDate.toISOString().split('T')[0] : null
       };
+
+      let rateCardId: string;
 
       if (editingRate) {
         const { error } = await supabase
@@ -170,17 +174,44 @@ export function RateCardManager() {
           .update(rateData)
           .eq('id', editingRate.id);
         if (error) throw error;
-        toast.success('Rate card updated successfully');
+        rateCardId = editingRate.id;
+        
+        // Delete existing rate card periods for this rate card
+        await supabase
+          .from('rate_card_periods')
+          .delete()
+          .eq('rate_card_id', rateCardId);
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('rate_cards')
-          .insert(rateData);
+          .insert(rateData)
+          .select()
+          .single();
         if (error) throw error;
-        toast.success('Rate card created successfully');
+        rateCardId = data.id;
       }
 
+      // Save selected incharge periods if date-specific
+      if (isDateSpecificValue && selectedPeriods.length > 0) {
+        const periodInserts = selectedPeriods.map(periodId => ({
+          rate_card_id: rateCardId,
+          incharge_period_id: periodId
+        }));
+
+        const { error: periodsError } = await supabase
+          .from('rate_card_periods')
+          .insert(periodInserts);
+        
+        if (periodsError) throw periodsError;
+      }
+
+      toast.success(editingRate ? 'Rate card updated successfully' : 'Rate card created successfully');
       setIsRateDialogOpen(false);
       setEditingRate(null);
+      setSelectedPeriods([]);
+      setIsDateSpecific(false);
+      setCustomStartDate(undefined);
+      setCustomEndDate(undefined);
       fetchData();
     } catch (error) {
       console.error('Error saving rate card:', error);
@@ -526,14 +557,13 @@ export function RateCardManager() {
                          {/* Date-specific checkbox */}
                          <div className="col-span-2">
                            <div className="flex items-center space-x-2">
-                              <Checkbox 
-                                id="is_date_specific" 
-                                name="is_date_specific"
-                                checked={isDateSpecific}
-                                onCheckedChange={(checked) => setIsDateSpecific(checked as boolean)}
-                                defaultChecked={editingRate?.is_date_specific}
-                                value="true"
-                             />
+                               <Checkbox 
+                                 id="is_date_specific" 
+                                 name="is_date_specific"
+                                 checked={isDateSpecific}
+                                 onCheckedChange={(checked) => setIsDateSpecific(checked as boolean)}
+                                 value="true"
+                              />
                              <Label htmlFor="is_date_specific">
                                This is date-specific media (incharge-based)
                              </Label>
