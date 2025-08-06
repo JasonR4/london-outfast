@@ -11,7 +11,7 @@ import { QuoteSubmissionForm } from '@/components/QuoteSubmissionForm';
 import { inchargePeriods } from '@/data/inchargePeriods';
 
 export default function QuotePlan() {
-  const { currentQuote, loading, removeQuoteItem, fetchCurrentQuote } = useQuotes();
+  const { currentQuote, loading, removeQuoteItem, fetchCurrentQuote, recalculateDiscounts } = useQuotes();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,20 +103,28 @@ export default function QuotePlan() {
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Selected Formats</CardTitle>
-                    <CardDescription>
-                      {currentQuote.quote_items?.length} format{currentQuote.quote_items?.length !== 1 ? 's' : ''} in your campaign
-                    </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Selected Formats</CardTitle>
+                      <CardDescription>
+                        {currentQuote.quote_items?.length} format{currentQuote.quote_items?.length !== 1 ? 's' : ''} in your campaign
+                      </CardDescription>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={async () => {
+                        await recalculateDiscounts?.();
+                        toast.success('Discounts recalculated!');
+                      }}>
+                        Refresh Discounts
+                      </Button>
+                      <Button asChild variant="outline">
+                        <Link to="/outdoor-media">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add More
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
-                  <Button asChild variant="outline">
-                    <Link to="/outdoor-media">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add More
-                    </Link>
-                  </Button>
-                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 {currentQuote.quote_items?.map((item, index) => (

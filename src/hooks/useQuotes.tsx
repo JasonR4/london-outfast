@@ -384,6 +384,13 @@ export const useQuotes = () => {
     addQuoteItem,
     removeQuoteItem,
     submitQuote,
-    fetchCurrentQuote
+    fetchCurrentQuote,
+    // Add a manual recalculation function for debugging
+    recalculateDiscounts: async () => {
+      if (currentQuote?.id) {
+        await updateQuoteTotalCost(currentQuote.id);
+        await fetchCurrentQuote();
+      }
+    }
   };
 };
