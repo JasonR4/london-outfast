@@ -138,18 +138,23 @@ export function useRateCards(formatSlug?: string) {
           rate_card_id,
           incharge_period_id,
           is_enabled,
-          incharge_periods!inner(
+          incharge_periods(
             id,
             period_number,
             start_date,
             end_date
           )
         `)
-        .eq('rate_card_periods.is_enabled', true)
+        .eq('is_enabled', true)
         .in('rate_card_id', (ratesData || []).map(r => r.id));
 
-      if (rateCardPeriodsError) throw rateCardPeriodsError;
-      setRateCardPeriods(rateCardPeriodsData || []);
+      if (rateCardPeriodsError) {
+        console.error('Rate card periods error:', rateCardPeriodsError);
+        // Don't throw, just log and continue with empty array
+        setRateCardPeriods([]);
+      } else {
+        setRateCardPeriods(rateCardPeriodsData || []);
+      }
 
       // Get discount tiers for this format
       const { data: discountsData, error: discountsError } = await supabase
@@ -171,8 +176,13 @@ export function useRateCards(formatSlug?: string) {
         .order('location_area', { nullsFirst: true })
         .order('min_quantity');
 
-      if (productionError) throw productionError;
-      setProductionCostTiers(productionData || []);
+      if (productionError) {
+        console.error('Production cost tiers error:', productionError);
+        setProductionCostTiers([]);
+      } else {
+        console.log('✅ Production cost tiers loaded:', productionData);
+        setProductionCostTiers(productionData || []);
+      }
 
       // Get creative cost tiers for this format
       const { data: creativeData, error: creativeError } = await supabase
