@@ -496,6 +496,7 @@ export type Database = {
           updated_at: string
           user_id: string | null
           user_session_id: string
+          website: string | null
         }
         Insert: {
           additional_requirements?: string | null
@@ -511,6 +512,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           user_session_id: string
+          website?: string | null
         }
         Update: {
           additional_requirements?: string | null
@@ -526,6 +528,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           user_session_id?: string
+          website?: string | null
         }
         Relationships: []
       }
