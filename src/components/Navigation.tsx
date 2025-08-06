@@ -2,15 +2,18 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Menu, Phone, ChevronDown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Menu, Phone, ChevronDown, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import useGlobalSettings from '@/hooks/useGlobalSettings';
+import { useQuotes } from '@/hooks/useQuotes';
 
 const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const { navigation, loading } = useGlobalSettings();
+  const { currentQuote } = useQuotes();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -62,6 +65,23 @@ const Navigation = () => {
                 {item.label}
               </button>
             ))}
+            
+            {/* Your Plan Button */}
+            {currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0 && (
+              <Button 
+                onClick={() => handleNavigation('/quote-plan')}
+                variant={isActive('/quote-plan') ? "default" : "outline"}
+                size="sm"
+                className="relative"
+              >
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Your Plan
+                <Badge variant="secondary" className="ml-2 text-xs">
+                  {currentQuote.quote_items.length}
+                </Badge>
+              </Button>
+            )}
+            
             {navigation.phone && (
               <Button 
                 onClick={() => window.location.href = `tel:${navigation.phone.replace(/\s/g, '')}`}
@@ -122,6 +142,19 @@ const Navigation = () => {
                     </button>
                   );
                 })}
+                
+                {/* Mobile Your Plan Button */}
+                {currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0 && (
+                  <Button 
+                    onClick={() => handleNavigation('/quote-plan')}
+                    variant={isActive('/quote-plan') ? "default" : "outline"}
+                    className="w-full mt-4"
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Your Plan ({currentQuote.quote_items.length})
+                  </Button>
+                )}
+                
                 {navigation.phone && (
                   <Button 
                     onClick={() => window.location.href = `tel:${navigation.phone.replace(/\s/g, '')}`}
