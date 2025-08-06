@@ -565,18 +565,28 @@ export function QuoteManager() {
                           <div>
                             <div className="flex items-center gap-1 mb-2">
                               <Calendar className="h-4 w-4" />
-                              <span className="font-medium">Periods ({item.selected_periods.length}):</span>
+                              <span className="font-medium">Campaign Duration:</span>
                             </div>
-                            <div className="flex flex-wrap gap-1">
-                              {item.selected_periods.slice(0, 4).map((period) => (
-                                <Badge key={period} variant="outline" className="text-xs">
-                                  P{period}
-                                </Badge>
-                              ))}
-                              {item.selected_periods.length > 4 && (
-                                <Badge variant="outline" className="text-xs">
-                                  +{item.selected_periods.length - 4} more
-                                </Badge>
+                            <div className="space-y-1">
+                              <div className="text-sm">
+                                {item.selected_periods.length} period{item.selected_periods.length !== 1 ? 's' : ''} ({item.selected_periods.length * 2} weeks)
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {item.selected_periods.slice(0, 4).map((period) => (
+                                  <Badge key={period} variant="outline" className="text-xs">
+                                    P{period}
+                                  </Badge>
+                                ))}
+                                {item.selected_periods.length > 4 && (
+                                  <Badge variant="outline" className="text-xs">
+                                    +{item.selected_periods.length - 4} more
+                                  </Badge>
+                                )}
+                              </div>
+                              {item.campaign_start_date && item.campaign_end_date && (
+                                <div className="text-xs text-muted-foreground">
+                                  {new Date(item.campaign_start_date).toLocaleDateString('en-GB')} - {new Date(item.campaign_end_date).toLocaleDateString('en-GB')}
+                                </div>
                               )}
                             </div>
                           </div>
