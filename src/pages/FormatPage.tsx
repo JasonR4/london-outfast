@@ -966,12 +966,19 @@ const FormatPage = () => {
                                       <span>+£{((priceCalculation.adjustedRate - priceCalculation.basePrice) * selectedPeriods.length * quantity).toFixed(2)}</span>
                                     </div>
                                   )}
-                                  {priceCalculation.discount > 0 && (
-                                    <div className="flex justify-between text-sm text-green-600">
-                                      <span>Volume Discount ({priceCalculation.discount}%):</span>
-                                      <span>-£{((priceCalculation.adjustedRate - (priceCalculation.totalPrice / selectedPeriods.length)) * selectedPeriods.length * quantity).toFixed(2)}</span>
-                                    </div>
-                                  )}
+                                   <div className="flex justify-between text-sm">
+                                     {priceCalculation.discount > 0 ? (
+                                       <>
+                                         <span className="text-green-600">Volume Discount ({priceCalculation.discount}%):</span>
+                                         <span className="text-green-600">-£{((priceCalculation.adjustedRate - (priceCalculation.totalPrice / selectedPeriods.length)) * selectedPeriods.length * quantity).toFixed(2)}</span>
+                                       </>
+                                     ) : (
+                                       <>
+                                         <span className="text-muted-foreground">Volume Discount:</span>
+                                         <span className="text-muted-foreground">No discount applied</span>
+                                       </>
+                                     )}
+                                   </div>
                                 </div>
                                 <div className="space-y-2">
                                   {priceCalculation.isOnSale && (
