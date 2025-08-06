@@ -57,11 +57,35 @@ export const useQuotes = () => {
 
   const sessionId = getSessionId();
 
+  // Link session quotes to authenticated user
+  const linkSessionQuotesToUser = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Update existing session-based quotes to include the user_id
+        const { error } = await supabase
+          .from('quotes')
+          .update({ user_id: user.id })
+          .eq('user_session_id', sessionId)
+          .is('user_id', null);
+
+        if (error) {
+          console.error('Error linking session quotes to user:', error);
+        }
+      }
+    } catch (err) {
+      console.error('Error linking quotes:', err);
+    }
+  };
+
   // Fetch current quote for this session
   const fetchCurrentQuote = async () => {
     try {
       setLoading(true);
       setError(null);
+
+      // First, try to link any session quotes to the authenticated user
+      await linkSessionQuotesToUser();
 
       const { data, error } = await supabase
         .from('quotes')
@@ -263,6 +287,20 @@ export const useQuotes = () => {
   useEffect(() => {
     fetchCurrentQuote();
   }, [sessionId]);
+
+  // Listen for auth state changes to refresh quotes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        // Small delay to ensure auth state is fully updated
+        setTimeout(() => {
+          fetchCurrentQuote();
+        }, 100);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return {
     currentQuote,
