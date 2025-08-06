@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { 
   FileText, 
@@ -72,6 +73,9 @@ export function QuoteManager() {
   const [statusUpdate, setStatusUpdate] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
+  const [showBulkConfirm, setShowBulkConfirm] = useState(false);
+  const [bulkAction, setBulkAction] = useState('');
 
   useEffect(() => {
     fetchQuotes();
@@ -184,6 +188,67 @@ export function QuoteManager() {
     } catch (err) {
       console.error('Error deleting quote:', err);
       toast.error('Failed to delete quote');
+    }
+  };
+
+  const handleSelectQuote = (quoteId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedQuoteIds(prev => [...prev, quoteId]);
+    } else {
+      setSelectedQuoteIds(prev => prev.filter(id => id !== quoteId));
+    }
+  };
+
+  const handleSelectAll = (quotes: Quote[], checked: boolean) => {
+    if (checked) {
+      setSelectedQuoteIds(quotes.map(q => q.id));
+    } else {
+      setSelectedQuoteIds([]);
+    }
+  };
+
+  const handleBulkAction = async (action: string) => {
+    if (selectedQuoteIds.length === 0) {
+      toast.error('Please select at least one quote');
+      return;
+    }
+
+    setBulkAction(action);
+    setShowBulkConfirm(true);
+  };
+
+  const executeBulkAction = async () => {
+    try {
+      if (bulkAction === 'delete') {
+        // Delete quote items first, then quotes
+        for (const quoteId of selectedQuoteIds) {
+          await supabase.from('quote_items').delete().eq('quote_id', quoteId);
+          await supabase.from('quotes').delete().eq('id', quoteId);
+        }
+        toast.success(`${selectedQuoteIds.length} quotes deleted successfully`);
+      } else {
+        // Update status for selected quotes
+        const updateData: any = { 
+          status: bulkAction,
+          [`${bulkAction}_at`]: new Date().toISOString()
+        };
+
+        const { error } = await supabase
+          .from('quotes')
+          .update(updateData)
+          .in('id', selectedQuoteIds);
+
+        if (error) throw error;
+        toast.success(`${selectedQuoteIds.length} quotes updated to ${bulkAction} successfully`);
+      }
+
+      await fetchQuotes();
+      setSelectedQuoteIds([]);
+      setShowBulkConfirm(false);
+      setBulkAction('');
+    } catch (err) {
+      console.error('Error executing bulk action:', err);
+      toast.error('Failed to execute bulk action');
     }
   };
 
@@ -312,16 +377,55 @@ export function QuoteManager() {
               </CardContent>
             </Card>
           ) : (
-            submittedQuotes.map((quote) => (
-              <QuoteCard 
-                key={quote.id} 
-                quote={quote} 
-                onViewDetails={(q) => {
-                  setSelectedQuote(q);
-                  setShowQuoteDetails(true);
-                }} 
-              />
-            ))
+            <>
+              {/* Bulk Actions */}
+              <Card className="bg-muted/30">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center gap-4">
+                      <Checkbox
+                        checked={selectedQuoteIds.length === submittedQuotes.length && submittedQuotes.length > 0}
+                        onCheckedChange={(checked) => handleSelectAll(submittedQuotes, checked as boolean)}
+                      />
+                      <span className="text-sm font-medium">
+                        {selectedQuoteIds.length > 0 ? `${selectedQuoteIds.length} selected` : 'Select all'}
+                      </span>
+                    </div>
+                    
+                    {selectedQuoteIds.length > 0 && (
+                      <div className="flex gap-2 flex-wrap">
+                        <Button size="sm" onClick={() => handleBulkAction('confirmed')}>
+                          Confirm ({selectedQuoteIds.length})
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleBulkAction('approved')}>
+                          Approve ({selectedQuoteIds.length})
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleBulkAction('active')}>
+                          Make Active ({selectedQuoteIds.length})
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleBulkAction('delete')}>
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete ({selectedQuoteIds.length})
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {submittedQuotes.map((quote) => (
+                <QuoteCard 
+                  key={quote.id} 
+                  quote={quote} 
+                  onViewDetails={(q) => {
+                    setSelectedQuote(q);
+                    setShowQuoteDetails(true);
+                  }}
+                  isSelected={selectedQuoteIds.includes(quote.id)}
+                  onSelect={(checked) => handleSelectQuote(quote.id, checked)}
+                />
+              ))}
+            </>
           )}
         </TabsContent>
 
@@ -687,12 +791,48 @@ export function QuoteManager() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Action Confirmation Dialog */}
+      <Dialog open={showBulkConfirm} onOpenChange={setShowBulkConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Bulk Action</DialogTitle>
+            <DialogDescription>
+              {bulkAction === 'delete' 
+                ? `Are you sure you want to delete ${selectedQuoteIds.length} quotes? This action cannot be undone.`
+                : `Are you sure you want to ${bulkAction} ${selectedQuoteIds.length} quotes?`
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowBulkConfirm(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant={bulkAction === 'delete' ? 'destructive' : 'default'}
+              onClick={executeBulkAction}
+            >
+              {bulkAction === 'delete' ? 'Delete' : 'Confirm'} {selectedQuoteIds.length} Quotes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
 // Quote Card Component
-function QuoteCard({ quote, onViewDetails }: { quote: Quote; onViewDetails: (quote: Quote) => void }) {
+function QuoteCard({ 
+  quote, 
+  onViewDetails, 
+  isSelected = false, 
+  onSelect 
+}: { 
+  quote: Quote; 
+  onViewDetails: (quote: Quote) => void;
+  isSelected?: boolean;
+  onSelect?: (checked: boolean) => void;
+}) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',
@@ -713,38 +853,50 @@ function QuoteCard({ quote, onViewDetails }: { quote: Quote; onViewDetails: (quo
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => onViewDetails(quote)}>
+    <Card className="hover:shadow-md transition-shadow">
       <CardContent className="pt-6">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="font-semibold text-lg">Quote #{quote.id.slice(0, 8)}</h3>
-            <p className="text-sm text-muted-foreground">
-              {quote.contact_name} • {quote.contact_company}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {new Date(quote.created_at).toLocaleDateString('en-GB', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </p>
+        <div className="flex items-start gap-4">
+          {onSelect && (
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={onSelect}
+              className="mt-1"
+            />
+          )}
+          
+          <div className="flex-1 cursor-pointer" onClick={() => onViewDetails(quote)}>
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="font-semibold text-lg">Quote #{quote.id.slice(0, 8)}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {quote.contact_name} • {quote.contact_company}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(quote.created_at).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="font-bold text-xl">{formatCurrency(quote.total_cost)}</div>
+                <Badge className={getStatusColor(quote.status)}>
+                  {quote.status}
+                </Badge>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>{quote.quote_items.length} format{quote.quote_items.length !== 1 ? 's' : ''}</span>
+              <Button variant="ghost" size="sm">
+                <Eye className="h-4 w-4 mr-1" />
+                View Details
+              </Button>
+            </div>
           </div>
-          <div className="text-right">
-            <div className="font-bold text-xl">{formatCurrency(quote.total_cost)}</div>
-            <Badge className={getStatusColor(quote.status)}>
-              {quote.status}
-            </Badge>
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>{quote.quote_items.length} format{quote.quote_items.length !== 1 ? 's' : ''}</span>
-          <Button variant="ghost" size="sm">
-            <Eye className="h-4 w-4 mr-1" />
-            View Details
-          </Button>
         </div>
       </CardContent>
     </Card>
