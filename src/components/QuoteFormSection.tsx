@@ -34,16 +34,6 @@ const QuoteFormSection = ({
   const { toast } = useToast();
   const [inchargePeriods, setInchargePeriods] = useState<any[]>([]);
   
-  // Debug logging to see what data we're receiving
-  console.log('QuoteFormSection Props:', {
-    prefilledFormats,
-    budgetRange,
-    campaignObjective,
-    targetAudience,
-    selectedLocations,
-    selectedPeriods,
-    creativeNeeds
-  });
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -58,22 +48,16 @@ const QuoteFormSection = ({
   // Fetch incharge periods to display actual dates
   useEffect(() => {
     const fetchInchargePeriods = async () => {
-      console.log('🗓️ Fetching incharge periods for periods:', selectedPeriods);
       try {
         const { data, error } = await supabase
           .from('incharge_periods')
           .select('*')
           .order('period_number', { ascending: true });
         
-        if (error) {
-          console.error('❌ Error fetching periods:', error);
-          throw error;
-        }
-        
-        console.log('✅ Fetched incharge periods:', data);
+        if (error) throw error;
         setInchargePeriods(data || []);
       } catch (error) {
-        console.error('💥 Error fetching incharge periods:', error);
+        console.error('Error fetching incharge periods:', error);
       }
     };
 
@@ -187,44 +171,6 @@ const QuoteFormSection = ({
               </p>
             </CardHeader>
             <CardContent>
-              {/* DEBUG SECTION - SHOWS ALL DATA */}
-              <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg">
-                <h4 className="font-bold text-red-800 dark:text-red-200 mb-2">🔍 DEBUG: Data Received</h4>
-                <div className="text-xs space-y-1">
-                  <div><strong>Budget:</strong> {budgetRange || 'NOT SET'}</div>
-                  <div><strong>Objectives:</strong> {campaignObjective || 'NOT SET'}</div>
-                  <div><strong>Audience:</strong> {targetAudience || 'NOT SET'}</div>
-                  <div><strong>Locations:</strong> {selectedLocations?.length || 0} selected: {selectedLocations?.join(', ') || 'NONE'}</div>
-                  <div><strong>Periods:</strong> {selectedPeriods?.length || 0} selected: {selectedPeriods?.join(', ') || 'NONE'}</div>
-                  <div><strong>Fetched Periods:</strong> {inchargePeriods?.length || 0} periods from DB</div>
-                  <div><strong>Creative:</strong> {creativeNeeds || 'NOT SET'}</div>
-                  <div><strong>Formats:</strong> {prefilledFormats?.length || 0} selected: {prefilledFormats?.join(', ') || 'NONE'}</div>
-                </div>
-              </div>
-              
-              {/* SHOW ONLY CHOSEN PERIODS */}
-              <div className="mb-6 p-4 bg-blue-100 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-lg">
-                <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-2">📅 YOUR SELECTED PERIODS</h4>
-                <div className="text-xs space-y-2">
-                  <div><strong>Selected Period Numbers:</strong> {selectedPeriods?.join(', ') || 'NONE'}</div>
-                  {selectedPeriods?.length > 0 && (
-                    <div>
-                      <strong>Period Details:</strong>
-                      <div className="mt-1 space-y-1">
-                        {selectedPeriods.map(periodNum => {
-                          const period = inchargePeriods.find(p => p.period_number === periodNum);
-                          return (
-                            <div key={periodNum} className="ml-2">
-                              • Period {periodNum}: {period ? `${period.start_date} to ${period.end_date}` : 'Date not found'}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Budget Range</Label>
