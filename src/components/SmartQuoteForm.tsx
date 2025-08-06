@@ -31,12 +31,15 @@ interface SmartQuoteFormProps {
 }
 
 export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
+  console.log('🚀 SmartQuoteForm component rendering');
+  
   const { toast } = useToast();
   const navigate = useNavigate();
   const { currentQuote, addQuoteItem, submitQuote, createOrGetQuote, loading: quotesLoading } = useQuotes();
   
   // Auth state
   const [user, setUser] = useState<User | null>(null);
+  console.log('👤 Current user state:', user?.email || 'Not authenticated');
 
   // Form state
   const [activeTab, setActiveTab] = useState("search");
