@@ -729,7 +729,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         className="w-full"
                         disabled={quotesLoading}
                       >
-                        {quotesLoading ? "Adding..." : "Add to Quote"}
+                        {quotesLoading ? "Adding..." : "Add More Media Options"}
                       </Button>
                     </>
                   )}
