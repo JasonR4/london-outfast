@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Calendar } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuoteFormSectionProps {
   prefilledFormats: string[];
@@ -31,6 +32,7 @@ const QuoteFormSection = ({
   onBack 
 }: QuoteFormSectionProps) => {
   const { toast } = useToast();
+  const [inchargePeriods, setInchargePeriods] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -41,6 +43,27 @@ const QuoteFormSection = ({
     timeline: "",
     additionalDetails: ""
   });
+
+  // Fetch incharge periods to display actual dates
+  useEffect(() => {
+    const fetchInchargePeriods = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('incharge_periods')
+          .select('*')
+          .order('period_number', { ascending: true });
+        
+        if (error) throw error;
+        setInchargePeriods(data || []);
+      } catch (error) {
+        console.error('Error fetching incharge periods:', error);
+      }
+    };
+
+    if (selectedPeriods.length > 0) {
+      fetchInchargePeriods();
+    }
+  }, [selectedPeriods]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -186,22 +209,45 @@ const QuoteFormSection = ({
                 
                 {selectedPeriods.length > 0 && (
                   <div className="md:col-span-2">
-                    <Label className="text-sm font-medium text-muted-foreground">Campaign Periods</Label>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {selectedPeriods.slice(0, 6).map((period, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          Period {period}
-                        </Badge>
-                      ))}
-                      {selectedPeriods.length > 6 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{selectedPeriods.length - 6} more
-                        </Badge>
+                    <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Campaign Periods & Dates
+                    </Label>
+                    <div className="space-y-2 mt-2">
+                      {selectedPeriods.slice(0, 4).map((periodNum, index) => {
+                        const period = inchargePeriods.find(p => p.period_number === periodNum);
+                        return (
+                          <div key={index} className="flex items-center justify-between bg-muted/50 p-3 rounded-lg">
+                            <div>
+                              <div className="font-medium text-sm">Period {periodNum}</div>
+                              {period && (
+                                <div className="text-xs text-muted-foreground">
+                                  {new Date(period.start_date).toLocaleDateString('en-GB', { 
+                                    day: 'numeric', 
+                                    month: 'short' 
+                                  })} - {new Date(period.end_date).toLocaleDateString('en-GB', { 
+                                    day: 'numeric', 
+                                    month: 'short', 
+                                    year: 'numeric' 
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                            <Badge variant="secondary" className="text-xs">
+                              2 weeks
+                            </Badge>
+                          </div>
+                        );
+                      })}
+                      {selectedPeriods.length > 4 && (
+                        <div className="text-sm text-muted-foreground text-center py-2">
+                          +{selectedPeriods.length - 4} more periods selected
+                        </div>
                       )}
+                      <div className="text-sm text-muted-foreground mt-2 pt-2 border-t">
+                        <strong>Total: {selectedPeriods.length} periods</strong> ({selectedPeriods.length * 2} weeks)
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {selectedPeriods.length} periods selected
-                    </p>
                   </div>
                 )}
                 
