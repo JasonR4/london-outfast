@@ -48,6 +48,16 @@ export const LocationSelector = ({
 
   const selectedByZone = getSelectedLocationsByZone();
 
+  const addAllAreas = () => {
+    const allAreas = filteredAreas.flatMap(zone => zone.areas);
+    onSelectionChange([...new Set([...selectedLocations, ...allAreas])]);
+  };
+
+  const addZoneAreas = (zoneAreas: string[]) => {
+    const newAreas = [...new Set([...selectedLocations, ...zoneAreas])];
+    onSelectionChange(newAreas);
+  };
+
   return (
     <Card>
       <CardHeader className="pb-4">
@@ -93,23 +103,46 @@ export const LocationSelector = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search London areas..."
-            value={locationSearch}
-            onChange={(e) => setLocationSearch(e.target.value)}
-            className="pl-9"
-          />
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search London areas..."
+              value={locationSearch}
+              onChange={(e) => setLocationSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          
+          <div className="flex justify-end">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={addAllAreas}
+              className="h-7 px-3 text-xs"
+            >
+              Add All Areas
+            </Button>
+          </div>
         </div>
 
         <ScrollArea className="rounded-md border" style={{ height: maxHeight }}>
           <div className="p-4 space-y-4">
             {filteredAreas.map((zone) => (
               <div key={zone.zone} className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${zone.color}`} />
-                  <h4 className="font-medium text-sm">{zone.zone}</h4>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${zone.color}`} />
+                    <h4 className="font-medium text-sm">{zone.zone}</h4>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => addZoneAreas(zone.areas)}
+                    className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Add All
+                  </Button>
                 </div>
                 
                 <div className="grid grid-cols-1 gap-2 ml-5">
