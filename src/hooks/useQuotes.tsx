@@ -195,6 +195,8 @@ export const useQuotes = () => {
 
       if (error) throw error;
 
+      console.log('🔍 All quote items for discount calculation:', items);
+
       // Group items by format to calculate total periods per format
       const formatGroups: Record<string, QuoteItem[]> = {};
       items?.forEach(item => {
@@ -204,10 +206,14 @@ export const useQuotes = () => {
         formatGroups[item.format_slug].push(item);
       });
 
+      console.log('📊 Format groups:', formatGroups);
+
       // Recalculate discounts for each format group
       const updatedItems: QuoteItem[] = [];
       for (const [formatSlug, formatItems] of Object.entries(formatGroups)) {
         const totalPeriods = formatItems.reduce((sum, item) => sum + item.selected_periods.length, 0);
+        
+        console.log(`🎯 Format ${formatSlug}: ${formatItems.length} items, ${totalPeriods} total periods`);
         
         // Get discount tier for this format
         const { data: discountTiers, error: discountError } = await supabase
@@ -225,20 +231,34 @@ export const useQuotes = () => {
           ?.filter(d => d.min_periods <= totalPeriods && (!d.max_periods || totalPeriods <= d.max_periods))
           ?.sort((a, b) => b.discount_percentage - a.discount_percentage)[0];
 
+        console.log(`💰 Applicable discount for ${formatSlug}:`, applicableDiscount);
+
         // Update each item in this format group with the bulk discount
         for (const item of formatItems) {
-          const originalCost = item.original_cost || item.base_cost;
-          let newBaseCost = originalCost;
+          const baseItemCost = (item.original_cost && item.original_cost > 0) ? 
+            item.original_cost - item.production_cost - item.creative_cost : 
+            item.base_cost;
+          
+          let newBaseCost = baseItemCost;
           let discountPercentage = 0;
           let discountAmount = 0;
+          const originalCost = baseItemCost + item.production_cost + item.creative_cost;
 
-          if (applicableDiscount && applicableDiscount.discount_percentage > (item.discount_percentage || 0)) {
+          if (applicableDiscount && applicableDiscount.discount_percentage > 0) {
             discountPercentage = applicableDiscount.discount_percentage;
-            discountAmount = originalCost * (discountPercentage / 100);
-            newBaseCost = originalCost - discountAmount;
+            discountAmount = baseItemCost * (discountPercentage / 100);
+            newBaseCost = baseItemCost - discountAmount;
           }
 
           const newTotalCost = newBaseCost + item.production_cost + item.creative_cost;
+
+          console.log(`🔧 Updating item ${item.id}:`, {
+            originalBaseCost: baseItemCost,
+            discountPercentage,
+            discountAmount,
+            newBaseCost,
+            newTotalCost
+          });
 
           // Update the item in the database
           await supabase
@@ -269,6 +289,8 @@ export const useQuotes = () => {
         .from('quotes')
         .update({ total_cost: totalCost })
         .eq('id', quoteId);
+
+      console.log('✅ Discount recalculation complete. Total cost:', totalCost);
 
       // Update the current quote state with recalculated items
       setCurrentQuote(prev => prev ? {
