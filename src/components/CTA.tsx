@@ -26,22 +26,38 @@ const CTA = () => {
           {content?.description || "Join hundreds of brands who trust us with their Out-of-Home media buying in London"}
         </p>
         
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button 
-            size="lg" 
-            className="text-lg px-8 py-6 shadow-glow"
-            onClick={() => navigate('/quote')}
-          >
-            {content?.primary_button_text || "GET INSTANT QUOTE"}
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="text-lg px-8 py-6"
-            onClick={() => navigate('/quote')}
-          >
-            {content?.secondary_button_text || "SPEAK TO AN EXPERT"}
-          </Button>
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              className="text-lg px-8 py-6 shadow-glow"
+              onClick={() => navigate('/quote')}
+            >
+              I Know What I Want
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="text-lg px-8 py-6"
+              onClick={() => navigate('/configurator')}
+            >
+              I Need Guidance
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="lg" 
+              className="text-lg px-8 py-6 text-accent hover:text-accent-foreground"
+              onClick={() => navigate('/outdoor-media')}
+            >
+              I'm Just Exploring
+            </Button>
+          </div>
+          
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              Choose your path: Direct quote • Smart recommendations • Browse options
+            </p>
+          </div>
         </div>
       </div>
     </section>

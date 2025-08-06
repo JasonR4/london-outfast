@@ -57,7 +57,7 @@ const Hero = () => {
         </p>
         
         
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
           <Button 
             size="lg" 
             className="text-lg px-8 py-6 shadow-glow"
@@ -75,13 +75,21 @@ const Hero = () => {
           </Button>
         </div>
         
-        <div className="flex justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+          <Button 
+            variant="ghost" 
+            className="text-accent hover:text-accent-foreground"
+            onClick={() => navigate('/configurator')}
+          >
+            Not Sure? Find My Format →
+          </Button>
+          <span className="text-muted-foreground">|</span>
           <Button 
             variant="ghost" 
             className="text-accent hover:text-accent-foreground"
             onClick={() => navigate('/outdoor-media')}
           >
-            Browse All OOH Formats →
+            Browse All Formats
           </Button>
         </div>
       </div>

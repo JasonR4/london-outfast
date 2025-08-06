@@ -31,13 +31,13 @@ const Services = () => {
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {services.map((service: any, index: number) => (
-            <Card key={index} className="bg-card border-border hover:shadow-card transition-all duration-300">
+            <Card key={index} className="bg-card border-border hover:shadow-card transition-all duration-300 group">
               <CardHeader>
                 <CardTitle className="text-xl text-foreground">{service.title}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">{service.description}</p>
-                <ul className="space-y-2">
+                <ul className="space-y-2 mb-6">
                   {service.formats?.map((format: string, formatIndex: number) => (
                     <li key={formatIndex} className="text-sm text-muted-foreground flex items-center">
                       <div className="w-2 h-2 bg-london-blue rounded-full mr-3 flex-shrink-0"></div>
@@ -45,9 +45,39 @@ const Services = () => {
                     </li>
                   ))}
                 </ul>
+                <div className="flex flex-col gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => navigate('/outdoor-media')}
+                  >
+                    Learn More
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => navigate('/quote')}
+                  >
+                    Get Quote
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
+        </div>
+
+        <div className="text-center mb-8">
+          <p className="text-muted-foreground mb-4">
+            Not sure which category fits your needs?
+          </p>
+          <Button 
+            variant="ghost"
+            onClick={() => navigate('/configurator')}
+            className="text-accent hover:text-accent-foreground"
+          >
+            Try Our Format Finder →
+          </Button>
         </div>
         
         <div className="text-center">
