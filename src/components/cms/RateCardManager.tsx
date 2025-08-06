@@ -201,7 +201,7 @@ export function RateCardManager() {
     try {
       const productionData = {
         media_format_id: formData.get('media_format_id') as string,
-        location_area: formData.get('location_area') as string || null,
+        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
         category: formData.get('category') as string,
         min_quantity: parseInt(formData.get('min_quantity') as string),
         max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
@@ -237,7 +237,7 @@ export function RateCardManager() {
     try {
       const creativeData = {
         media_format_id: formData.get('media_format_id') as string,
-        location_area: formData.get('location_area') as string || null,
+        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
         category: formData.get('category') as string,
         min_quantity: parseInt(formData.get('min_quantity') as string),
         max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
@@ -739,12 +739,12 @@ export function RateCardManager() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="location_area">Location Area (Optional)</Label>
-                          <Select name="location_area" defaultValue={editingProduction?.location_area || ''}>
+                          <Select name="location_area" defaultValue={editingProduction?.location_area || 'global'}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select location area (leave empty for global)" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Global (All Areas)</SelectItem>
+                              <SelectItem value="global">Global (All Areas)</SelectItem>
                               <SelectItem value="GD">GD (General Distribution)</SelectItem>
                               {londonAreas.flatMap(area => 
                                 area.areas.map(borough => (
@@ -922,12 +922,12 @@ export function RateCardManager() {
                         </div>
                         <div>
                           <Label htmlFor="location_area">Location Area (Optional)</Label>
-                          <Select name="location_area" defaultValue={editingCreative?.location_area || ''}>
+                          <Select name="location_area" defaultValue={editingCreative?.location_area || 'global'}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select location area (leave empty for global)" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Global (All Areas)</SelectItem>
+                              <SelectItem value="global">Global (All Areas)</SelectItem>
                               <SelectItem value="GD">GD (General Distribution)</SelectItem>
                               {londonAreas.flatMap(area => 
                                 area.areas.map(borough => (
