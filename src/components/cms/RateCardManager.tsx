@@ -153,7 +153,6 @@ export function RateCardManager() {
       const rateData = {
         media_format_id: formData.get('media_format_id') as string,
         location_area: formData.get('location_area') as string,
-        category: formData.get('category') as string,
         base_rate_per_incharge: parseFloat(formData.get('base_rate_per_incharge') as string),
         sale_price: formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null,
         reduced_price: formData.get('reduced_price') ? parseFloat(formData.get('reduced_price') as string) : null,
