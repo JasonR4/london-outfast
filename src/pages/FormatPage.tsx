@@ -604,8 +604,8 @@ const FormatPage = () => {
                       </div>
                      )}
 
-                     {/* Date Selection for Incharge-Based Media */}
-                     {format.category !== 'Ambient / Guerrilla OOH' && (
+                     {/* Date Selection for Non-Incharge Media Only */}
+                     {(format.category === 'Bus' || format.category === 'Gorilla' || format.category === 'Ambient') && (
                        <div className="space-y-4">
                          <div>
                            <Label>Campaign Start Date</Label>
