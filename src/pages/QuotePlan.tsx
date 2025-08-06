@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Plus, Trash2, MapPin, Calendar, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { QuoteSubmissionForm } from '@/components/QuoteSubmissionForm';
+import { inchargePeriods } from '@/data/inchargePeriods';
 
 export default function QuotePlan() {
   const { currentQuote, loading, removeQuoteItem, fetchCurrentQuote } = useQuotes();
@@ -105,17 +106,35 @@ export default function QuotePlan() {
                           <Badge variant="secondary">Qty: {item.quantity}</Badge>
                         </div>
                         
-                        <div className="grid md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+                        <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <MapPin className="h-4 w-4" />
                             <span>{item.selected_areas.length} location{item.selected_areas.length !== 1 ? 's' : ''}</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>{item.selected_periods.length} period{item.selected_periods.length !== 1 ? 's' : ''}</span>
-                          </div>
                           <div className="font-semibold text-foreground">
                             {formatCurrency(item.total_cost)}
+                          </div>
+                        </div>
+
+                        {/* Campaign Periods */}
+                        <div className="mt-3">
+                          <div className="flex items-center gap-1 mb-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm font-medium">Campaign Periods:</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {item.selected_periods.map((periodNum) => {
+                              const period = inchargePeriods.find(p => p.period_number === periodNum);
+                              return period ? (
+                                <Badge key={periodNum} variant="outline" className="text-xs">
+                                  {period.label}
+                                </Badge>
+                              ) : (
+                                <Badge key={periodNum} variant="outline" className="text-xs">
+                                  Period {periodNum}
+                                </Badge>
+                              );
+                            })}
                           </div>
                         </div>
 
