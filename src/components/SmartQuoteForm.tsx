@@ -89,11 +89,23 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     let totalProductionCost = 0;
 
     selectedLocations.forEach(location => {
-      const mediaPrice = calculatePrice(location, selectedPeriods);
-      const productionPrice = calculateProductionCost(location, quantity);
-      
-      totalMediaPrice += typeof mediaPrice === 'number' ? mediaPrice : mediaPrice.totalPrice;
-      totalProductionCost += productionPrice.totalCost;
+      try {
+        const mediaPrice = calculatePrice(location, selectedPeriods);
+        const productionPrice = calculateProductionCost(location, quantity);
+        
+        // Handle null/undefined responses from calculatePrice
+        if (mediaPrice !== null && mediaPrice !== undefined) {
+          totalMediaPrice += typeof mediaPrice === 'number' ? mediaPrice : (mediaPrice.totalPrice || 0);
+        }
+        
+        // Handle null/undefined responses from calculateProductionCost
+        if (productionPrice && productionPrice.totalCost !== undefined) {
+          totalProductionCost += productionPrice.totalCost;
+        }
+      } catch (error) {
+        console.warn(`Error calculating price for location ${location}:`, error);
+        // Continue with other locations even if one fails
+      }
     });
 
     return {
