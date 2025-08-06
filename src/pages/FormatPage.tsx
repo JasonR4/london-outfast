@@ -978,6 +978,12 @@ const FormatPage = () => {
                                       <span>+£{((priceCalculation.adjustedRate - priceCalculation.basePrice) * selectedPeriods.length * quantity).toFixed(2)}</span>
                                     </div>
                                   )}
+                                  {priceCalculation.discount > 0 && (
+                                    <div className="flex justify-between text-sm text-green-600">
+                                      <span>Total Volume Savings ({priceCalculation.discount}%):</span>
+                                      <span>-£{((priceCalculation.adjustedRate - (priceCalculation.totalPrice / selectedPeriods.length)) * selectedPeriods.length * quantity).toFixed(2)}</span>
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="space-y-2">
                                   {priceCalculation.isOnSale && (
