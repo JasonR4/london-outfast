@@ -65,7 +65,8 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
     const success = await submitQuote(submissionData);
     
     if (success) {
-      navigate('/quote-submitted');
+      // Authenticated users go to client portal, not quote-submitted page
+      navigate('/client-portal');
     }
     
     setIsSubmitting(false);
