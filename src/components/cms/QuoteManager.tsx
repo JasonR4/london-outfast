@@ -22,7 +22,8 @@ import {
   User,
   Phone,
   Mail,
-  Building
+  Building,
+  Trash2
 } from 'lucide-react';
 
 interface QuoteItem {
@@ -70,6 +71,7 @@ export function QuoteManager() {
   const [showQuoteDetails, setShowQuoteDetails] = useState(false);
   const [statusUpdate, setStatusUpdate] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     fetchQuotes();
@@ -154,6 +156,34 @@ export function QuoteManager() {
     } catch (err) {
       console.error('Error updating quote:', err);
       toast.error('Failed to update quote status');
+    }
+  };
+
+  const deleteQuote = async (quoteId: string) => {
+    try {
+      // First delete quote items (due to foreign key constraints)
+      const { error: itemsError } = await supabase
+        .from('quote_items')
+        .delete()
+        .eq('quote_id', quoteId);
+
+      if (itemsError) throw itemsError;
+
+      // Then delete the quote
+      const { error: quoteError } = await supabase
+        .from('quotes')
+        .delete()
+        .eq('id', quoteId);
+
+      if (quoteError) throw quoteError;
+
+      toast.success('Quote deleted successfully');
+      await fetchQuotes();
+      setShowQuoteDetails(false);
+      setShowDeleteConfirm(false);
+    } catch (err) {
+      console.error('Error deleting quote:', err);
+      toast.error('Failed to delete quote');
     }
   };
 
@@ -405,10 +435,21 @@ export function QuoteManager() {
                       Submitted on {new Date(selectedQuote.created_at).toLocaleDateString('en-GB')}
                     </DialogDescription>
                   </div>
-                  <Badge className={getStatusColor(selectedQuote.status)}>
-                    {getStatusIcon(selectedQuote.status)}
-                    <span className="ml-1 capitalize">{selectedQuote.status}</span>
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge className={getStatusColor(selectedQuote.status)}>
+                      {getStatusIcon(selectedQuote.status)}
+                      <span className="ml-1 capitalize">{selectedQuote.status}</span>
+                    </Badge>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="flex items-center gap-1"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </Button>
+                  </div>
                 </div>
               </DialogHeader>
 
@@ -620,6 +661,30 @@ export function QuoteManager() {
               </Card>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Quote</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this quote? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => selectedQuote && deleteQuote(selectedQuote.id)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Quote
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
