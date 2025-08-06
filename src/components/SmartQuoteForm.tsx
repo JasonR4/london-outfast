@@ -295,7 +295,91 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-4 gap-8">
+        {/* Capacity & Status Panel - Always Visible */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-8 space-y-6">
+            {/* Location Capacity Information */}
+            {selectedFormat && (
+              <Card className="border-2" style={{
+                borderColor: locationCapacity.capacityStatus === 'over-limit' ? 'hsl(var(--destructive))' :
+                           locationCapacity.capacityStatus === 'warning' ? 'hsl(var(--warning))' : 
+                           locationCapacity.capacityStatus === 'at-limit' ? 'hsl(var(--primary))' : 
+                           'hsl(var(--border))'
+              }}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    {locationCapacity.capacityStatus === 'over-limit' && <AlertTriangle className="w-5 h-5 text-destructive" />}
+                    {locationCapacity.capacityStatus === 'at-limit' && <CheckCircle2 className="w-5 h-5 text-primary" />}
+                    {locationCapacity.capacityStatus === 'warning' && <Info className="w-5 h-5 text-warning" />}
+                    Location Capacity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Usage</span>
+                    <Badge variant={locationCapacity.capacityStatus === 'over-limit' ? 'destructive' : 'secondary'}>
+                      {locationCapacity.locationCapacityUsed}/{locationCapacity.maxLocationCapacity}
+                    </Badge>
+                  </div>
+                  <Progress 
+                    value={Math.min(locationCapacity.capacityUtilization, 100)} 
+                    className="h-3"
+                  />
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p>{quantity} {selectedFormat?.name?.includes('Digital') ? 'sites' : 'units'} × {selectedPeriods.length} periods = {locationCapacity.maxLocationCapacity} total slots</p>
+                    <p>{locationCapacity.remainingCapacity} slots remaining</p>
+                  </div>
+                  {locationCapacity.capacityStatus === 'over-limit' && (
+                    <Alert className="border-destructive">
+                      <AlertTriangle className="w-4 h-4" />
+                      <AlertDescription className="text-xs">
+                        You've selected more locations than your current capacity allows. Please reduce selections or increase quantity/periods.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Creative Capacity Information */}
+            {needsCreative && (
+              <CreativeCapacityIndicator
+                sites={quantity}
+                creativeAssets={creativeAssets}
+                needsCreative={needsCreative}
+                efficiency={creativeCapacity.efficiency}
+                status={creativeCapacity.status}
+                creativesPerSite={creativeCapacity.creativesPerSite}
+                recommendations={creativeCapacity.getCreativeRecommendations()}
+                onOptimizeClick={() => {
+                  const recommendations = creativeCapacity.getCreativeRecommendations();
+                  toast({
+                    title: "Creative Optimization",
+                    description: recommendations[0] || "Consider optimizing your creative strategy for better efficiency."
+                  });
+                }}
+              />
+            )}
+
+            {/* Quick Summary */}
+            {selectedFormat && (
+              <Card className="bg-muted/20">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Quick Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  <div><strong>Format:</strong> {selectedFormat.name}</div>
+                  <div><strong>Quantity:</strong> {quantity}</div>
+                  <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
+                  <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
+                  {needsCreative && <div><strong>Creative Assets:</strong> {creativeAssets}</div>}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+
         {/* Main Configuration */}
         <div className="lg:col-span-2">
           <Card className="bg-gradient-card border-border">
@@ -413,43 +497,6 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         </Select>
                       </div>
 
-                      {/* Capacity Information */}
-                      <Card className="border-2" style={{
-                        borderColor: locationCapacity.capacityStatus === 'over-limit' ? 'hsl(var(--destructive))' :
-                                   locationCapacity.capacityStatus === 'warning' ? 'hsl(var(--warning))' : 
-                                   locationCapacity.capacityStatus === 'at-limit' ? 'hsl(var(--primary))' : 
-                                   'hsl(var(--border))'
-                      }}>
-                        <CardContent className="pt-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              {locationCapacity.capacityStatus === 'over-limit' && <AlertTriangle className="w-4 h-4 text-destructive" />}
-                              {locationCapacity.capacityStatus === 'at-limit' && <CheckCircle2 className="w-4 h-4 text-primary" />}
-                              {locationCapacity.capacityStatus === 'warning' && <Info className="w-4 h-4 text-warning" />}
-                              <span className="font-medium">Location Capacity</span>
-                            </div>
-                            <Badge variant={locationCapacity.capacityStatus === 'over-limit' ? 'destructive' : 'secondary'}>
-                              {locationCapacity.locationCapacityUsed}/{locationCapacity.maxLocationCapacity}
-                            </Badge>
-                          </div>
-                          <Progress 
-                            value={Math.min(locationCapacity.capacityUtilization, 100)} 
-                            className="mb-2"
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            {quantity} {selectedFormat?.name?.includes('Digital') ? 'sites' : 'units'} × {selectedPeriods.length} periods = {locationCapacity.maxLocationCapacity} total location slots
-                          </p>
-                          {locationCapacity.capacityStatus === 'over-limit' && (
-                            <Alert className="mt-3 border-destructive">
-                              <AlertTriangle className="w-4 h-4" />
-                              <AlertDescription className="text-sm">
-                                You've selected more locations than your current capacity allows. Please reduce selections or increase quantity/periods.
-                              </AlertDescription>
-                            </Alert>
-                          )}
-                        </CardContent>
-                      </Card>
-
                       {/* Location Selection */}
                       <div className="space-y-4">
                         <LocationSelector
@@ -508,25 +555,6 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 </SelectContent>
                               </Select>
                             </div>
-
-                            {/* Creative Capacity Indicator */}
-                            <CreativeCapacityIndicator
-                              sites={quantity}
-                              creativeAssets={creativeAssets}
-                              needsCreative={needsCreative}
-                              efficiency={creativeCapacity.efficiency}
-                              status={creativeCapacity.status}
-                              creativesPerSite={creativeCapacity.creativesPerSite}
-                              recommendations={creativeCapacity.getCreativeRecommendations()}
-                              onOptimizeClick={() => {
-                                // Handle optimization click
-                                const recommendations = creativeCapacity.getCreativeRecommendations();
-                                toast({
-                                  title: "Creative Optimization",
-                                  description: recommendations[0] || "Consider optimizing your creative strategy for better efficiency."
-                                });
-                              }}
-                            />
                           </div>
                         )}
                       </div>
