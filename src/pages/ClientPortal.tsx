@@ -101,78 +101,66 @@ export default function ClientPortal() {
   }, [navigate]);
 
   const linkPendingQuote = async (userId: string) => {
-    const pendingQuoteId = localStorage.getItem('pending_quote_link');
-    const sessionQuoteId = localStorage.getItem('quote_session_id');
-    const submittedSessionId = localStorage.getItem('quote_session_id_submitted');
-    
-    // Try to link quotes by any session IDs we have stored
-    const sessionIds = [pendingQuoteId, sessionQuoteId, submittedSessionId].filter(Boolean);
-    
-    // Also try to find any unlinked quotes that might be orphaned
     try {
-      // Get all unlinked quotes for this user's potential sessions
-      const { data: allUnlinkedQuotes, error: fetchAllError } = await supabase
+      // COMPREHENSIVE APPROACH: Get ALL quotes for this user that need to be submitted
+      
+      // 1. Find any quotes already linked to this user that are still draft
+      const { data: userDraftQuotes, error: userError } = await supabase
+        .from('quotes')
+        .select('id, status, user_session_id, total_cost')
+        .eq('user_id', userId)
+        .eq('status', 'draft');
+
+      // 2. Find any unlinked quotes that might belong to this user
+      const { data: unlinkedQuotes, error: unlinkedError } = await supabase
         .from('quotes')
         .select('id, status, user_session_id, total_cost')
         .is('user_id', null)
         .in('status', ['draft', 'submitted']);
 
-      if (fetchAllError) {
-        console.error('Error fetching unlinked quotes:', fetchAllError);
+      if (userError || unlinkedError) {
+        console.error('Error fetching quotes:', userError || unlinkedError);
         return;
       }
 
-      // Also get quotes from known session IDs
-      let quotesToLink = allUnlinkedQuotes || [];
-      
-      if (sessionIds.length > 0) {
-        const { data: sessionQuotes, error: sessionError } = await supabase
-          .from('quotes')
-          .select('id, status, user_session_id, total_cost')
-          .in('user_session_id', sessionIds)
-          .in('status', ['draft', 'submitted'])
-          .is('user_id', null);
+      let quotesToUpdate = userDraftQuotes || [];
+      let quotesToLink = unlinkedQuotes || [];
 
-        if (!sessionError && sessionQuotes) {
-          // Merge and deduplicate quotes
-          const allQuotes = [...quotesToLink, ...sessionQuotes];
-          quotesToLink = allQuotes.filter((quote, index, self) => 
-            index === self.findIndex(q => q.id === quote.id)
-          );
+      console.log('User draft quotes to submit:', quotesToUpdate);
+      console.log('Unlinked quotes to link:', quotesToLink);
+
+      // Update user's draft quotes to submitted
+      if (quotesToUpdate.length > 0) {
+        for (const quote of quotesToUpdate) {
+          await supabase
+            .from('quotes')
+            .update({ status: 'submitted' })
+            .eq('id', quote.id);
         }
       }
 
+      // Link unlinked quotes to user and submit them
       if (quotesToLink.length > 0) {
-        console.log('Found quotes to link:', quotesToLink);
-        
-        // Link all quotes to the user and update draft quotes to submitted
         for (const quote of quotesToLink) {
-          const updateData = { 
-            user_id: userId,
-            ...(quote.status === 'draft' ? { status: 'submitted' } : {})
-          };
-          
           await supabase
             .from('quotes')
-            .update(updateData)
+            .update({ 
+              user_id: userId,
+              status: 'submitted'
+            })
             .eq('id', quote.id);
         }
+      }
 
+      const totalQuotes = quotesToUpdate.length + quotesToLink.length;
+      
+      if (totalQuotes > 0) {
         // Clean up localStorage
         localStorage.removeItem('pending_quote_link');
         localStorage.removeItem('quote_session_id');
         localStorage.removeItem('quote_session_id_submitted');
         
-        const draftCount = quotesToLink.filter(q => q.status === 'draft').length;
-        const submittedCount = quotesToLink.filter(q => q.status === 'submitted').length;
-        
-        if (draftCount > 0 && submittedCount > 0) {
-          toast.success(`${draftCount + submittedCount} quotes have been linked to your account! ${draftCount} submitted automatically.`);
-        } else if (draftCount > 0) {
-          toast.success(`${draftCount} quote${draftCount > 1 ? 's have' : ' has'} been submitted and linked to your account!`);
-        } else if (submittedCount > 0) {
-          toast.success(`${submittedCount} quote${submittedCount > 1 ? 's have' : ' has'} been linked to your account!`);
-        }
+        toast.success(`${totalQuotes} quote${totalQuotes > 1 ? 's have' : ' has'} been submitted to your account!`);
         
         // Refresh quotes after linking
         fetchUserQuotes(userId);
