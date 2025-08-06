@@ -22,7 +22,20 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate('/cms');
+        // Check user role and redirect accordingly
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (profile?.role === 'client') {
+          navigate('/client-portal');
+        } else if (['super_admin', 'admin', 'editor'].includes(profile?.role)) {
+          navigate('/cms');
+        } else {
+          navigate('/');
+        }
       }
     };
     checkUser();
@@ -63,7 +76,7 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -75,7 +88,20 @@ const Auth = () => {
         variant: "destructive"
       });
     } else {
-      navigate('/cms');
+      // Check user role and redirect accordingly
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', data.user.id)
+        .single();
+      
+      if (profile?.role === 'client') {
+        navigate('/client-portal');
+      } else if (['super_admin', 'admin', 'editor'].includes(profile?.role)) {
+        navigate('/cms');
+      } else {
+        navigate('/');
+      }
     }
 
     setLoading(false);
