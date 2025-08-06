@@ -580,73 +580,130 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         />
                       </div>
 
-                      {/* Creative Services */}
-                      <div className="space-y-4 p-4 border-2 border-primary/30 rounded-lg bg-primary/5">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label className="text-lg font-semibold text-foreground">Creative Requirements</Label>
-                            <p className="text-sm text-muted-foreground mt-1">Do you need creative assets produced?</p>
-                          </div>
-                          <div className="relative p-2 bg-background rounded-lg border-2 border-primary shadow-lg">
-                            <Switch
-                              checked={needsCreative}
-                              onCheckedChange={setNeedsCreative}
-                              className="scale-125 data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted-foreground/30 border-2 border-primary/50"
-                            />
-                            {needsCreative && (
-                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full animate-pulse shadow-md" />
-                            )}
-                          </div>
-                        </div>
-                        
+                       {/* Creative & Production */}
+                       <div className="space-y-4 p-4 border-2 border-primary/30 rounded-lg bg-primary/5">
+                         <div className="flex items-center gap-2">
+                           <Palette className="w-5 h-5 text-primary" />
+                           <h3 className="text-lg font-semibold">Creative & Production</h3>
+                         </div>
+                         
+                         <div className="space-y-3">
+                           <Label className="text-base font-medium">Do you have artwork or need creative?</Label>
+                           <div className="space-y-2">
+                             <div className="flex items-center space-x-2">
+                               <input
+                                 type="radio"
+                                 id="artwork-ready"
+                                 name="creative-readiness"
+                                 value="ready"
+                                 checked={creativeReadiness === 'ready'}
+                                 onChange={(e) => {
+                                   setCreativeReadiness('ready');
+                                   setNeedsCreative(false);
+                                 }}
+                                 className="w-4 h-4 text-primary"
+                               />
+                               <Label htmlFor="artwork-ready" className="text-sm cursor-pointer">
+                                 I have artwork ready
+                               </Label>
+                             </div>
+                             <div className="flex items-center space-x-2">
+                               <input
+                                 type="radio"
+                                 id="need-creative"
+                                 name="creative-readiness"
+                                 value="development"
+                                 checked={creativeReadiness === 'development'}
+                                 onChange={(e) => {
+                                   setCreativeReadiness('development');
+                                   setNeedsCreative(true);
+                                 }}
+                                 className="w-4 h-4 text-primary"
+                               />
+                               <Label htmlFor="need-creative" className="text-sm cursor-pointer">
+                                 I need creative design
+                               </Label>
+                             </div>
+                           </div>
+                         </div>
+
                          {needsCreative && (
-                           <div className="space-y-4">
-                             <div>
-                               <Label className="text-sm font-medium">Creative Design Level</Label>
-                               <p className="text-xs text-muted-foreground mb-2">Choose the level of creative design service you need</p>
-                               <Select value={creativeLevel} onValueChange={setCreativeLevel}>
-                                 <SelectTrigger>
-                                   <SelectValue placeholder="Select creative level" />
+                           <>
+                             <div className="space-y-2">
+                               <Label className="text-sm font-medium">Number of creative assets needed</Label>
+                               <Select
+                                 value={creativeAssets.toString()}
+                                 onValueChange={(value) => setCreativeAssets(parseInt(value))}
+                               >
+                                 <SelectTrigger className="border-red-500">
+                                   <SelectValue />
                                  </SelectTrigger>
                                  <SelectContent>
-                                   {getAvailableCreativeCategories().map((category) => (
-                                     <SelectItem key={category} value={category}>
-                                       {category}
+                                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                                     <SelectItem key={num} value={num.toString()}>
+                                       {num} asset{num > 1 ? 's' : ''}
                                      </SelectItem>
                                    ))}
                                  </SelectContent>
                                </Select>
+                               {dynamicCreativeCost && (
+                                 <p className="text-sm text-muted-foreground">
+                                   £{dynamicCreativeCost.costPerUnit} per creative asset
+                                 </p>
+                               )}
                              </div>
-                             
-                             <div>
-                               <Label className="text-sm font-medium">Creative Readiness</Label>
-                               <Select value={creativeReadiness} onValueChange={(value: 'ready' | 'adjustments' | 'development') => setCreativeReadiness(value)}>
-                                 <SelectTrigger className="mt-1">
-                                   <SelectValue />
-                                 </SelectTrigger>
-                                 <SelectContent>
-                                   <SelectItem value="ready">Ready to go</SelectItem>
-                                   <SelectItem value="adjustments">Need minor adjustments</SelectItem>
-                                   <SelectItem value="development">Need full creative development</SelectItem>
-                                 </SelectContent>
-                               </Select>
+
+                             <div className="space-y-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                               <div className="flex items-center gap-2">
+                                 <div className="w-4 h-4 rounded-full bg-red-500 flex items-center justify-center">
+                                   <CheckCircle2 className="w-3 h-3 text-white" />
+                                 </div>
+                                 <h4 className="font-medium text-red-700">Creative Strategy Analysis</h4>
+                                 <Badge variant="destructive" className="text-xs">Optimal</Badge>
+                               </div>
+                               
+                               <div className="space-y-2">
+                                 <div className="flex justify-between items-center">
+                                   <span className="text-sm text-red-700">Creative Efficiency</span>
+                                   <span className="text-sm font-medium text-red-700">{Math.round(creativeCapacity.efficiency)}%</span>
+                                 </div>
+                                 <div className="w-full bg-red-200 rounded-full h-2">
+                                   <div 
+                                     className="bg-red-500 h-2 rounded-full transition-all duration-300" 
+                                     style={{ width: `${Math.min(creativeCapacity.efficiency, 100)}%` }}
+                                   />
+                                 </div>
+                                 <div className="grid grid-cols-2 gap-4 text-center">
+                                   <div>
+                                     <div className="text-lg font-semibold text-red-700">{creativeAssets}</div>
+                                     <div className="text-xs text-red-600">creative{creativeAssets > 1 ? 's' : ''}</div>
+                                   </div>
+                                   <div>
+                                     <div className="text-lg font-semibold text-red-700">{quantity}</div>
+                                     <div className="text-xs text-red-600">site{quantity > 1 ? 's' : ''}</div>
+                                   </div>
+                                 </div>
+                                 <div className="grid grid-cols-2 gap-4 text-center text-sm">
+                                   <div>
+                                     <div className="font-medium text-red-700">{creativeCapacity.creativesPerSite.toFixed(2)}</div>
+                                     <div className="text-xs text-red-600">Creatives per Site</div>
+                                   </div>
+                                   <div>
+                                     <div className="font-medium text-red-700">{(quantity / creativeAssets).toFixed(1)}</div>
+                                     <div className="text-xs text-red-600">Sites per Creative</div>
+                                   </div>
+                                 </div>
+                               </div>
+
+                               <div className="space-y-2">
+                                 <h5 className="text-sm font-medium text-red-700">Smart Recommendations:</h5>
+                                 <div className="text-xs text-red-600 space-y-1">
+                                   <p>Excellent! Your {creativeAssets} creative{creativeAssets > 1 ? 's' : ''} provide optimal coverage for {quantity} site{quantity > 1 ? 's' : ''}.</p>
+                                   <p>Your creative strategy maximizes both reach and frequency for optimal campaign performance.</p>
+                                 </div>
+                               </div>
                              </div>
-                             
-                             <div>
-                               <Label className="text-sm font-medium">Number of Creative Assets</Label>
-                               <p className="text-xs text-muted-foreground mb-2">How many different creative designs do you need?</p>
-                               <Select value={creativeAssets.toString()} onValueChange={(value) => setCreativeAssets(parseInt(value))}>
-                                 <SelectTrigger>
-                                   <SelectValue />
-                                 </SelectTrigger>
-                                 <SelectContent>
-                                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20].map(num => (
-                                     <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                                   ))}
-                                 </SelectContent>
-                               </Select>
-                             </div>
-                           </div>
+                           </>
                          )}
                       </div>
 
