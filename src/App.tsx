@@ -19,6 +19,8 @@ import NotFound from "./pages/NotFound";
 import IndustryPage from "./pages/IndustryPage";
 import Industries from "./pages/Industries";
 import Configurator from "./pages/Configurator";
+import QuotePlan from "./pages/QuotePlan";
+import QuoteSubmitted from "./pages/QuoteSubmitted";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +36,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/quote" element={<Quote />} />
+            <Route path="/quote-plan" element={<QuotePlan />} />
+            <Route path="/quote-submitted" element={<QuoteSubmitted />} />
             <Route path="/configurator" element={<Configurator />} />
             <Route path="/outdoor-media" element={<FormatDirectory />} />
             <Route path="/outdoor-media/:formatSlug" element={<FormatPage />} />

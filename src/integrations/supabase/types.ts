@@ -416,6 +416,119 @@ export type Database = {
         }
         Relationships: []
       }
+      quote_items: {
+        Row: {
+          base_cost: number | null
+          campaign_end_date: string | null
+          campaign_start_date: string | null
+          created_at: string
+          creative_cost: number | null
+          creative_needs: string | null
+          format_name: string
+          format_slug: string
+          id: string
+          production_cost: number | null
+          quantity: number
+          quote_id: string
+          selected_areas: string[]
+          selected_periods: number[]
+          total_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          base_cost?: number | null
+          campaign_end_date?: string | null
+          campaign_start_date?: string | null
+          created_at?: string
+          creative_cost?: number | null
+          creative_needs?: string | null
+          format_name: string
+          format_slug: string
+          id?: string
+          production_cost?: number | null
+          quantity?: number
+          quote_id: string
+          selected_areas?: string[]
+          selected_periods?: number[]
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          base_cost?: number | null
+          campaign_end_date?: string | null
+          campaign_start_date?: string | null
+          created_at?: string
+          creative_cost?: number | null
+          creative_needs?: string | null
+          format_name?: string
+          format_slug?: string
+          id?: string
+          production_cost?: number | null
+          quantity?: number
+          quote_id?: string
+          selected_areas?: string[]
+          selected_periods?: number[]
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          additional_requirements: string | null
+          contact_company: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          status: string
+          timeline: string | null
+          total_cost: number | null
+          updated_at: string
+          user_id: string | null
+          user_session_id: string
+        }
+        Insert: {
+          additional_requirements?: string | null
+          contact_company?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          timeline?: string | null
+          total_cost?: number | null
+          updated_at?: string
+          user_id?: string | null
+          user_session_id: string
+        }
+        Update: {
+          additional_requirements?: string | null
+          contact_company?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          timeline?: string | null
+          total_cost?: number | null
+          updated_at?: string
+          user_id?: string | null
+          user_session_id?: string
+        }
+        Relationships: []
+      }
       rate_card_periods: {
         Row: {
           created_at: string

@@ -14,6 +14,8 @@ import { updateMetaTags, generateStructuredData, getSEODataForPage } from '@/uti
 import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone, CalendarIcon } from 'lucide-react';
 import { useRateCards } from '@/hooks/useRateCards';
 import { useLocationSelector } from '@/hooks/useLocationSelector';
+import { useQuotes } from '@/hooks/useQuotes';
+import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calendar } from '@/components/ui/calendar';
@@ -148,6 +150,64 @@ const FormatPage = () => {
 
   const handleCallNow = () => {
     window.location.href = 'tel:+442080680220';
+  };
+
+  const { addQuoteItem } = useQuotes();
+
+  const handleBuildPlan = async () => {
+    // Validate required selections
+    if (selectedAreas.length === 0) {
+      toast.error('Please select at least one location area');
+      return;
+    }
+
+    if (format?.category !== 'Bus' && format?.category !== 'Gorilla' && format?.category !== 'Ambient' && selectedPeriods.length === 0) {
+      toast.error('Please select at least one campaign period');
+      return;
+    }
+
+    // Calculate costs for the quote item
+    const representativeArea = selectedAreas[0];
+    const availableLocations = getAvailableLocations();
+    const matchingLocation = availableLocations.find(loc => 
+      selectedAreas.some(area => loc.toLowerCase().includes(area.toLowerCase()) || area.toLowerCase().includes(loc.toLowerCase()))
+    ) || availableLocations[0];
+    
+    const locationForPricing = matchingLocation || representativeArea;
+    const priceCalculation = calculatePrice(locationForPricing, selectedPeriods);
+    
+    if (!priceCalculation) {
+      toast.error('Unable to calculate pricing for selected areas');
+      return;
+    }
+
+    const campaignTotal = priceCalculation.totalPrice * quantity;
+    const productionCostCalc = calculateProductionCost(locationForPricing, quantity, format.category);
+    const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
+    const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
+    const grandTotal = campaignTotal + productionTotal + creativeTotal;
+
+    // Create quote item
+    const quoteItem = {
+      format_name: format.name,
+      format_slug: formatSlug || '',
+      quantity,
+      selected_periods: selectedPeriods,
+      selected_areas: selectedAreas,
+      production_cost: productionTotal,
+      creative_cost: creativeTotal,
+      base_cost: campaignTotal,
+      total_cost: grandTotal,
+      campaign_start_date: selectedStartDate?.toISOString().split('T')[0],
+      campaign_end_date: selectedEndDate?.toISOString().split('T')[0],
+      creative_needs: needsCreative ? `${creativeAssets} creative asset${creativeAssets > 1 ? 's' : ''} needed` : 'Client has artwork ready'
+    };
+
+    const success = await addQuoteItem(quoteItem);
+    
+    if (success) {
+      navigate('/quote-plan');
+    }
   };
 
   if (loading) {
@@ -777,9 +837,14 @@ const FormatPage = () => {
                                 </div>
                               </div>
 
-                              <Button onClick={handleGetQuote} size="lg" className="w-full mt-4 bg-gradient-primary hover:opacity-90">
-                                Request Custom Quote ({quantity} site{quantity > 1 ? 's' : ''} in {selectedAreas.length} area{selectedAreas.length > 1 ? 's' : ''}{needsCreative ? ` + ${creativeAssets} creative${creativeAssets > 1 ? 's' : ''}` : ''})
-                              </Button>
+                              <div className="grid grid-cols-2 gap-2 mt-4">
+                                <Button onClick={handleGetQuote} variant="outline" size="lg" className="w-full">
+                                  Request Quote
+                                </Button>
+                                <Button onClick={handleBuildPlan} size="lg" className="w-full bg-gradient-primary hover:opacity-90">
+                                  Build My Plan
+                                </Button>
+                              </div>
                             </div>
                           );
                         }
