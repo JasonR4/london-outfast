@@ -653,55 +653,55 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                )}
                              </div>
 
-                             <div className="space-y-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                             <div className="space-y-3 p-3 bg-black border border-red-500 rounded-lg">
                                <div className="flex items-center gap-2">
                                  <div className="w-4 h-4 rounded-full bg-red-500 flex items-center justify-center">
                                    <CheckCircle2 className="w-3 h-3 text-white" />
                                  </div>
-                                 <h4 className="font-medium text-red-700">Creative Strategy Analysis</h4>
+                                 <h4 className="font-medium text-red-500">Creative Strategy Analysis</h4>
                                  <Badge variant="destructive" className="text-xs">Optimal</Badge>
                                </div>
                                
-                               <div className="space-y-2">
-                                 <div className="flex justify-between items-center">
-                                   <span className="text-sm text-red-700">Creative Efficiency</span>
-                                   <span className="text-sm font-medium text-red-700">{Math.round(creativeCapacity.efficiency)}%</span>
-                                 </div>
-                                 <div className="w-full bg-red-200 rounded-full h-2">
-                                   <div 
-                                     className="bg-red-500 h-2 rounded-full transition-all duration-300" 
-                                     style={{ width: `${Math.min(creativeCapacity.efficiency, 100)}%` }}
-                                   />
-                                 </div>
-                                 <div className="grid grid-cols-2 gap-4 text-center">
-                                   <div>
-                                     <div className="text-lg font-semibold text-red-700">{creativeAssets}</div>
-                                     <div className="text-xs text-red-600">creative{creativeAssets > 1 ? 's' : ''}</div>
-                                   </div>
-                                   <div>
-                                     <div className="text-lg font-semibold text-red-700">{quantity}</div>
-                                     <div className="text-xs text-red-600">site{quantity > 1 ? 's' : ''}</div>
-                                   </div>
-                                 </div>
-                                 <div className="grid grid-cols-2 gap-4 text-center text-sm">
-                                   <div>
-                                     <div className="font-medium text-red-700">{creativeCapacity.creativesPerSite.toFixed(2)}</div>
-                                     <div className="text-xs text-red-600">Creatives per Site</div>
-                                   </div>
-                                   <div>
-                                     <div className="font-medium text-red-700">{(quantity / creativeAssets).toFixed(1)}</div>
-                                     <div className="text-xs text-red-600">Sites per Creative</div>
-                                   </div>
-                                 </div>
-                               </div>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm text-red-500">Creative Efficiency</span>
+                                    <span className="text-sm font-medium text-red-500">{Math.round(creativeCapacity.efficiency)}%</span>
+                                  </div>
+                                  <div className="w-full bg-red-900/30 rounded-full h-2">
+                                    <div 
+                                      className="bg-red-500 h-2 rounded-full transition-all duration-300" 
+                                      style={{ width: `${Math.min(creativeCapacity.efficiency, 100)}%` }}
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                      <div className="text-lg font-semibold text-red-500">{creativeAssets}</div>
+                                      <div className="text-xs text-red-400">creative{creativeAssets > 1 ? 's' : ''}</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-lg font-semibold text-red-500">{quantity}</div>
+                                      <div className="text-xs text-red-400">site{quantity > 1 ? 's' : ''}</div>
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4 text-center text-sm">
+                                    <div>
+                                      <div className="font-medium text-red-500">{creativeCapacity.creativesPerSite.toFixed(2)}</div>
+                                      <div className="text-xs text-red-400">Creatives per Site</div>
+                                    </div>
+                                    <div>
+                                      <div className="font-medium text-red-500">{(quantity / creativeAssets).toFixed(1)}</div>
+                                      <div className="text-xs text-red-400">Sites per Creative</div>
+                                    </div>
+                                  </div>
+                                </div>
 
-                               <div className="space-y-2">
-                                 <h5 className="text-sm font-medium text-red-700">Smart Recommendations:</h5>
-                                 <div className="text-xs text-red-600 space-y-1">
-                                   <p>Excellent! Your {creativeAssets} creative{creativeAssets > 1 ? 's' : ''} provide optimal coverage for {quantity} site{quantity > 1 ? 's' : ''}.</p>
-                                   <p>Your creative strategy maximizes both reach and frequency for optimal campaign performance.</p>
-                                 </div>
-                               </div>
+                                <div className="space-y-2">
+                                  <h5 className="text-sm font-medium text-red-500">Smart Recommendations:</h5>
+                                  <div className="text-xs text-red-400 space-y-1">
+                                    <p>Excellent! Your {creativeAssets} creative{creativeAssets > 1 ? 's' : ''} provide optimal coverage for {quantity} site{quantity > 1 ? 's' : ''}.</p>
+                                    <p>Your creative strategy maximizes both reach and frequency for optimal campaign performance.</p>
+                                  </div>
+                                </div>
                              </div>
                            </>
                          )}
