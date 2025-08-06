@@ -520,20 +520,20 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                       </div>
 
                       {/* Creative Services */}
-                      <div className="space-y-4">
+                      <div className="space-y-4 p-4 border-2 border-primary/30 rounded-lg bg-primary/5">
                         <div className="flex items-center justify-between">
                           <div>
-                            <Label className="text-base font-medium">Creative Requirements</Label>
-                            <p className="text-sm text-muted-foreground">Do you need creative assets produced?</p>
+                            <Label className="text-lg font-semibold text-foreground">Creative Requirements</Label>
+                            <p className="text-sm text-muted-foreground mt-1">Do you need creative assets produced?</p>
                           </div>
-                          <div className="relative">
+                          <div className="relative p-2 bg-background rounded-lg border-2 border-primary shadow-lg">
                             <Switch
                               checked={needsCreative}
                               onCheckedChange={setNeedsCreative}
-                              className="data-[state=checked]:bg-primary data-[state=checked]:shadow-glow scale-110 border-2 border-primary/20"
+                              className="scale-125 data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted-foreground/30 border-2 border-primary/50"
                             />
                             {needsCreative && (
-                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-pulse" />
+                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full animate-pulse shadow-md" />
                             )}
                           </div>
                         </div>
