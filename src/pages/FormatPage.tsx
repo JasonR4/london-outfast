@@ -368,234 +368,250 @@ const FormatPage = () => {
                 </p>
               </div>
 
-              <div className="grid lg:grid-cols-2 gap-12 items-start">
-                {/* Pricing Column */}
-                <div className="space-y-8">
-                  <Card className="p-8">
-                    <CardHeader className="text-center pb-6">
-                      <CardTitle className="text-2xl">Pricing Information</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="text-center">
-                        <p className="text-lg mb-2">
-                          <strong>Typical {format.shortName} pricing:</strong>
-                        </p>
-                        <p className="text-2xl font-bold text-primary mb-6">
-                          {format.priceRange}
-                        </p>
-                        <p className="text-muted-foreground mb-6">
-                          Pricing varies by location, duration, and availability. We leverage our volume buying power to secure the best rates for our clients.
+              {/* Rate Card in Two Columns */}
+              <div className="grid lg:grid-cols-2 gap-8 mb-8">
+                {/* Left Column - Configuration */}
+                <Card className="p-6">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-xl">Campaign Configuration</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="quantity">Quantity</Label>
+                      <Select value={quantity.toString()} onValueChange={(value) => setQuantity(parseInt(value))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select quantity" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[1,2,3,4,5,6,7,8,9,10,15,20,25,30].map(num => (
+                            <SelectItem key={num} value={num.toString()}>{num} site{num > 1 ? 's' : ''}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="incharges">Number of Incharges (2-week periods)</Label>
+                      <Select value={incharges.toString()} onValueChange={(value) => setIncharges(parseInt(value))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select incharges" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[1,2,3,4,6,8,10,12,16,20,24,26].map(num => (
+                            <SelectItem key={num} value={num.toString()}>{num} incharge{num > 1 ? 's' : ''} ({num * 2} weeks)</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {!rateLoading && getAvailableLocations().length > 0 && (
+                      <div>
+                        <Label htmlFor="location">Location Area</Label>
+                        <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select location area" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getAvailableLocations().map(location => (
+                              <SelectItem key={location} value={location}>{location}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Right Column - Creative & Production */}
+                <Card className="p-6">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-xl">Creative & Production</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label>Do you have artwork or need creative?</Label>
+                      <RadioGroup 
+                        value={needsCreative ? "need-creative" : "have-artwork"} 
+                        onValueChange={(value) => setNeedsCreative(value === "need-creative")}
+                        className="mt-2"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="have-artwork" id="have-artwork" />
+                          <Label htmlFor="have-artwork">I have artwork ready</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="need-creative" id="need-creative" />
+                          <Label htmlFor="need-creative">I need creative design</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+
+                    {needsCreative && (
+                      <div>
+                        <Label htmlFor="creative-assets">Number of creative assets needed</Label>
+                        <Select value={creativeAssets.toString()} onValueChange={(value) => setCreativeAssets(parseInt(value))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select assets" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[1,2,3,4,5,6,7,8,9,10].map(num => (
+                              <SelectItem key={num} value={num.toString()}>{num} asset{num > 1 ? 's' : ''}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          £85 per creative asset
                         </p>
                       </div>
-                      
-                      {/* Dynamic Pricing Fields */}
-                      <div className="space-y-4 border-t pt-6">
-                        <div>
-                          <Label htmlFor="quantity">Quantity</Label>
-                          <Select value={quantity.toString()} onValueChange={(value) => setQuantity(parseInt(value))}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select quantity" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {[1,2,3,4,5,6,7,8,9,10,15,20,25,30].map(num => (
-                                <SelectItem key={num} value={num.toString()}>{num} site{num > 1 ? 's' : ''}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                    )}
 
-                        <div>
-                          <Label htmlFor="incharges">Number of Incharges (2-week periods)</Label>
-                          <Select value={incharges.toString()} onValueChange={(value) => setIncharges(parseInt(value))}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select incharges" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {[1,2,3,4,6,8,10,12,16,20,24,26].map(num => (
-                                <SelectItem key={num} value={num.toString()}>{num} incharge{num > 1 ? 's' : ''} ({num * 2} weeks)</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                    <div className="pt-4 border-t space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Campaign Duration:</span>
+                        <span>{incharges} incharge{incharges > 1 ? 's' : ''} ({incharges * 2} weeks)</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Sites Selected:</span>
+                        <span>{quantity}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Lead Time:</span>
+                        <span>5-10 working days</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-                        {!rateLoading && getAvailableLocations().length > 0 && (
-                          <div>
-                            <Label htmlFor="location">Location Area</Label>
-                            <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select location area" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {getAvailableLocations().map(location => (
-                                  <SelectItem key={location} value={location}>{location}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )}
-
-                        <div>
-                          <Label>Do you have artwork or need creative?</Label>
-                          <RadioGroup 
-                            value={needsCreative ? "need-creative" : "have-artwork"} 
-                            onValueChange={(value) => setNeedsCreative(value === "need-creative")}
-                            className="mt-2"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="have-artwork" id="have-artwork" />
-                              <Label htmlFor="have-artwork">I have artwork ready</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="need-creative" id="need-creative" />
-                              <Label htmlFor="need-creative">I need creative design</Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-
-                        {needsCreative && (
-                          <div>
-                            <Label htmlFor="creative-assets">Number of creative assets needed</Label>
-                            <Select value={creativeAssets.toString()} onValueChange={(value) => setCreativeAssets(parseInt(value))}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select assets" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {[1,2,3,4,5,6,7,8,9,10].map(num => (
-                                  <SelectItem key={num} value={num.toString()}>{num} asset{num > 1 ? 's' : ''}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              £85 per creative asset
-                            </p>
-                           </div>
-                         )}
-
-                        {/* Pricing Summary */}
-                        <div className="border-t pt-4 space-y-2">
-                          {selectedLocation && !rateLoading && (
-                            <>
-                               {(() => {
-                                const priceCalculation = calculatePrice(selectedLocation, incharges);
-                                
-                                 if (priceCalculation) {
-                                   const campaignTotal = priceCalculation.totalPrice * quantity;
-                                   
-                                   // Production costs are always calculated
-                                   const productionCostCalc = calculateProductionCost(selectedLocation, quantity);
-                                   const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
-                                   
-                                   const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
-                                   const grandTotal = campaignTotal + productionTotal + creativeTotal;
-                                  
-                                  return (
-                                    <>
-                                      <div className="flex justify-between text-sm">
-                                        <span>Base Rate per Incharge:</span>
-                                        <span>£{priceCalculation.basePrice.toFixed(2)}</span>
-                                      </div>
-                                      {priceCalculation.locationMarkup > 0 && (
-                                        <div className="flex justify-between text-sm text-blue-600">
-                                          <span>Location Markup ({priceCalculation.locationMarkup}%):</span>
-                                          <span>+£{((priceCalculation.adjustedRate - priceCalculation.basePrice) * incharges * quantity).toFixed(2)}</span>
-                                        </div>
-                                      )}
-                                      {priceCalculation.discount > 0 && (
-                                        <div className="flex justify-between text-sm text-green-600">
-                                          <span>Volume Discount ({priceCalculation.discount}%):</span>
-                                          <span>-£{((priceCalculation.adjustedRate - (priceCalculation.totalPrice / incharges)) * incharges * quantity).toFixed(2)}</span>
-                                        </div>
-                                      )}
-                                      {priceCalculation.isOnSale && (
-                                        <div className="flex justify-between text-sm text-green-600">
-                                          <span>⚡ Special Offer:</span>
-                                          <span>Sale Price Applied</span>
-                                        </div>
-                                      )}
-                                      {priceCalculation.isReduced && (
-                                        <div className="flex justify-between text-sm text-blue-600">
-                                          <span>💰 Reduced Rate:</span>
-                                          <span>Lower Price Applied</span>
-                                        </div>
-                                      )}
-                                       <div className="flex justify-between text-sm">
-                                         <span>Campaign Cost ({quantity} × {incharges} incharges):</span>
-                                         <span>£{campaignTotal.toFixed(2)}</span>
-                                       </div>
-                                       <div className="flex justify-between text-sm">
-                                         <span>Production Cost ({quantity} units):</span>
-                                         <span>£{productionTotal.toFixed(2)}</span>
-                                       </div>
-                                       {needsCreative && (
-                                         <div className="flex justify-between text-sm">
-                                           <span>Creative Assets ({creativeAssets}):</span>
-                                           <span>£{creativeTotal}</span>
-                                         </div>
-                                       )}
-                                      <div className="flex justify-between font-semibold text-base border-t pt-2">
-                                        <span>Estimated Total:</span>
-                                        <span>£{grandTotal.toFixed(2)}</span>
-                                      </div>
-                                    </>
-                                  );
-                                }
-                                return null;
-                              })()}
-                            </>
-                          )}
+              {/* Cost Output Box */}
+              <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-2">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xl text-center">Estimated Campaign Costs</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {selectedLocation && !rateLoading ? (
+                    <>
+                      {(() => {
+                        const priceCalculation = calculatePrice(selectedLocation, incharges);
+                        
+                        if (priceCalculation) {
+                          const campaignTotal = priceCalculation.totalPrice * quantity;
                           
-                          <div className="flex justify-between text-sm">
-                            <span>Campaign Duration:</span>
-                            <span>{incharges} incharge{incharges > 1 ? 's' : ''} ({incharges * 2} weeks)</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Sites Selected:</span>
-                            <span>{quantity}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Lead Time:</span>
-                            <span>5-10 working days</span>
-                          </div>
-                        </div>
-                      </div>
+                          // Production costs are always calculated
+                          const productionCostCalc = calculateProductionCost(selectedLocation, quantity);
+                          const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
+                          
+                          const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
+                          const grandTotal = campaignTotal + productionTotal + creativeTotal;
+                          
+                          return (
+                            <div className="space-y-3">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <div className="flex justify-between text-sm">
+                                    <span>Base Rate per Incharge:</span>
+                                    <span>£{priceCalculation.basePrice.toFixed(2)}</span>
+                                  </div>
+                                  {priceCalculation.locationMarkup > 0 && (
+                                    <div className="flex justify-between text-sm text-blue-600">
+                                      <span>Location Markup ({priceCalculation.locationMarkup}%):</span>
+                                      <span>+£{((priceCalculation.adjustedRate - priceCalculation.basePrice) * incharges * quantity).toFixed(2)}</span>
+                                    </div>
+                                  )}
+                                  {priceCalculation.discount > 0 && (
+                                    <div className="flex justify-between text-sm text-green-600">
+                                      <span>Volume Discount ({priceCalculation.discount}%):</span>
+                                      <span>-£{((priceCalculation.adjustedRate - (priceCalculation.totalPrice / incharges)) * incharges * quantity).toFixed(2)}</span>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="space-y-2">
+                                  {priceCalculation.isOnSale && (
+                                    <div className="flex justify-between text-sm text-green-600">
+                                      <span>⚡ Special Offer:</span>
+                                      <span>Sale Price Applied</span>
+                                    </div>
+                                  )}
+                                  {priceCalculation.isReduced && (
+                                    <div className="flex justify-between text-sm text-blue-600">
+                                      <span>💰 Reduced Rate:</span>
+                                      <span>Lower Price Applied</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="border-t pt-3 space-y-2">
+                                <div className="flex justify-between text-base">
+                                  <span>Campaign Cost ({quantity} × {incharges} incharges):</span>
+                                  <span>£{campaignTotal.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-base">
+                                  <span>Production Cost ({quantity} units):</span>
+                                  <span>£{productionTotal.toFixed(2)}</span>
+                                </div>
+                                {needsCreative && (
+                                  <div className="flex justify-between text-base">
+                                    <span>Creative Assets ({creativeAssets}):</span>
+                                    <span>£{creativeTotal.toFixed(2)}</span>
+                                  </div>
+                                )}
+                                <div className="flex justify-between font-bold text-lg border-t pt-3 bg-primary/10 -mx-2 px-2 py-2 rounded">
+                                  <span>Estimated Total:</span>
+                                  <span>£{grandTotal.toFixed(2)}</span>
+                                </div>
+                              </div>
 
-                      <Button onClick={handleGetQuote} size="lg" className="w-full bg-gradient-primary hover:opacity-90">
-                        Request Custom Quote ({quantity} site{quantity > 1 ? 's' : ''}{needsCreative ? ` + ${creativeAssets} creative${creativeAssets > 1 ? 's' : ''}` : ''})
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Location Selector Column */}
-                <div>
-                  <LocationSelector
-                    selectedLocations={selectedAreas}
-                    onSelectionChange={setSelectedAreas}
-                    title={`${format.shortName} Coverage Areas`}
-                    description="Select areas to explore availability"
-                    showSelectedSummary={true}
-                    maxHeight="400px"
-                  />
-
-                  {selectedAreas.length > 0 && (
-                    <Card className="p-6 mt-6">
-                      <h4 className="text-lg font-semibold mb-3">Coverage in Selected Areas</h4>
-                      <p className="text-muted-foreground text-sm mb-4">
-                        {format.shortName} advertising is available in {selectedAreas.length} selected area{selectedAreas.length !== 1 ? 's' : ''}. 
-                        Our network provides excellent reach and frequency across these locations.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <Button onClick={handleGetQuote} className="flex-1">
-                          Get Quote for Selected Areas
-                        </Button>
-                        <Button variant="outline" onClick={handleCallNow}>
-                          <Phone className="w-4 h-4 mr-2" />
-                          Discuss Coverage
-                        </Button>
-                      </div>
-                    </Card>
+                              <Button onClick={handleGetQuote} size="lg" className="w-full mt-4 bg-gradient-primary hover:opacity-90">
+                                Request Custom Quote ({quantity} site{quantity > 1 ? 's' : ''}{needsCreative ? ` + ${creativeAssets} creative${creativeAssets > 1 ? 's' : ''}` : ''})
+                              </Button>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="text-center text-muted-foreground">
+                            <p>Select all options above to see pricing estimate</p>
+                          </div>
+                        );
+                      })()}
+                    </>
+                  ) : (
+                    <div className="text-center text-muted-foreground">
+                      <p>Select location and configuration to see pricing estimate</p>
+                    </div>
                   )}
-                </div>
+                </CardContent>
+              </Card>
+
+              {/* Coverage Areas - Separate Section */}
+              <div className="mt-12">
+                <LocationSelector
+                  selectedLocations={selectedAreas}
+                  onSelectionChange={setSelectedAreas}
+                  title={`${format.shortName} Coverage Areas`}
+                  description="Select areas to explore availability"
+                  showSelectedSummary={true}
+                  maxHeight="400px"
+                />
+
+                {selectedAreas.length > 0 && (
+                  <Card className="p-6 mt-6">
+                    <h4 className="text-lg font-semibold mb-3">Coverage in Selected Areas</h4>
+                    <p className="text-muted-foreground text-sm mb-4">
+                      {format.shortName} advertising is available in {selectedAreas.length} selected area{selectedAreas.length !== 1 ? 's' : ''}. 
+                      Our network provides excellent reach and frequency across these locations.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button onClick={handleGetQuote} className="flex-1">
+                        Get Quote for Selected Areas
+                      </Button>
+                      <Button variant="outline" onClick={handleCallNow}>
+                        <Phone className="w-4 h-4 mr-2" />
+                        Discuss Coverage
+                      </Button>
+                    </div>
+                  </Card>
+                )}
               </div>
             </div>
           </section>
