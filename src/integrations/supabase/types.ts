@@ -399,6 +399,7 @@ export type Database = {
           location_area: string
           location_markup_percentage: number | null
           media_format_id: string
+          quantity_per_medium: number | null
           reduced_price: number | null
           sale_price: number | null
           updated_at: string
@@ -413,6 +414,7 @@ export type Database = {
           location_area: string
           location_markup_percentage?: number | null
           media_format_id: string
+          quantity_per_medium?: number | null
           reduced_price?: number | null
           sale_price?: number | null
           updated_at?: string
@@ -427,6 +429,7 @@ export type Database = {
           location_area?: string
           location_markup_percentage?: number | null
           media_format_id?: string
+          quantity_per_medium?: number | null
           reduced_price?: number | null
           sale_price?: number | null
           updated_at?: string

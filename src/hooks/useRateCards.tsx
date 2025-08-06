@@ -9,6 +9,7 @@ export interface RateCard {
   sale_price: number | null;
   reduced_price: number | null;
   location_markup_percentage: number;
+  quantity_per_medium: number;
   is_active: boolean;
 }
 

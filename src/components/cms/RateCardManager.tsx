@@ -31,6 +31,7 @@ interface RateCard {
   sale_price: number | null;
   reduced_price: number | null;
   location_markup_percentage: number;
+  quantity_per_medium: number;
   is_active: boolean;
   media_formats?: {
     format_name: string;
@@ -136,6 +137,7 @@ export function RateCardManager() {
         sale_price: formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null,
         reduced_price: formData.get('reduced_price') ? parseFloat(formData.get('reduced_price') as string) : null,
         location_markup_percentage: parseFloat(formData.get('location_markup_percentage') as string) || 0,
+        quantity_per_medium: parseInt(formData.get('quantity_per_medium') as string) || 1,
         is_active: formData.get('is_active') === 'true'
       };
 
@@ -460,17 +462,27 @@ export function RateCardManager() {
                              defaultValue={editingRate?.location_markup_percentage || 0}
                              placeholder="0"
                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="quantity_per_medium">Quantity per Medium</Label>
+                            <Input
+                              name="quantity_per_medium"
+                              type="number"
+                              min="1"
+                              defaultValue={editingRate?.quantity_per_medium || 1}
+                              required
+                            />
+                          </div>
+                         <div>
+                           <Label htmlFor="sale_price">Sale Price (£)</Label>
+                           <Input
+                             name="sale_price"
+                             type="number"
+                             step="0.01"
+                             defaultValue={editingRate?.sale_price || ''}
+                             placeholder="Optional special sale price"
+                           />
                          </div>
-                        <div>
-                          <Label htmlFor="sale_price">Sale Price (£)</Label>
-                          <Input
-                            name="sale_price"
-                            type="number"
-                            step="0.01"
-                            defaultValue={editingRate?.sale_price || ''}
-                            placeholder="Optional special sale price"
-                          />
-                        </div>
                         <div>
                           <Label htmlFor="reduced_price">Reduced Price (£)</Label>
                           <Input
@@ -510,12 +522,13 @@ export function RateCardManager() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Format</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Base Rate</TableHead>
-                    <TableHead>Location Markup</TableHead>
-                    <TableHead>Sale Price</TableHead>
-                    <TableHead>Reduced Price</TableHead>
+                     <TableHead>Format</TableHead>
+                     <TableHead>Location</TableHead>
+                     <TableHead>Base Rate</TableHead>
+                     <TableHead>Quantity</TableHead>
+                     <TableHead>Location Markup</TableHead>
+                     <TableHead>Sale Price</TableHead>
+                     <TableHead>Reduced Price</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -523,12 +536,13 @@ export function RateCardManager() {
                 <TableBody>
                   {rateCards.map((rate) => (
                     <TableRow key={rate.id}>
-                      <TableCell>{rate.media_formats?.format_name}</TableCell>
-                      <TableCell>{rate.location_area}</TableCell>
-                      <TableCell>£{rate.base_rate_per_incharge}</TableCell>
-                      <TableCell>{rate.location_markup_percentage}%</TableCell>
-                      <TableCell>{rate.sale_price ? `£${rate.sale_price}` : '-'}</TableCell>
-                      <TableCell>{rate.reduced_price ? `£${rate.reduced_price}` : '-'}</TableCell>
+                       <TableCell>{rate.media_formats?.format_name}</TableCell>
+                       <TableCell>{rate.location_area}</TableCell>
+                       <TableCell>£{rate.base_rate_per_incharge}</TableCell>
+                       <TableCell>{rate.quantity_per_medium}</TableCell>
+                       <TableCell>{rate.location_markup_percentage}%</TableCell>
+                       <TableCell>{rate.sale_price ? `£${rate.sale_price}` : '-'}</TableCell>
+                       <TableCell>{rate.reduced_price ? `£${rate.reduced_price}` : '-'}</TableCell>
                       <TableCell>
                         <Badge variant={rate.is_active ? 'default' : 'secondary'}>
                           {rate.is_active ? 'Active' : 'Inactive'}
