@@ -291,8 +291,17 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   };
 
   const handleSubmitQuote = async () => {
+    console.log('🚀 handleSubmitQuote called');
+    console.log('📊 Current state:', {
+      user: user?.email,
+      currentQuote: currentQuote?.id,
+      quoteItemsLength: currentQuote?.quote_items?.length,
+      contactDetails
+    });
+
     // Only check for quote items if user is not authenticated
     if (!user && (!currentQuote || currentQuote.quote_items?.length === 0)) {
+      console.log('❌ No quote items for non-authenticated user');
       toast({
         title: "No Items in Quote",
         description: "Please add at least one item to your quote before submitting.",
@@ -303,6 +312,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
     // For authenticated users, we don't need contact details validation
     if (!user && (!contactDetails.contact_name || !contactDetails.contact_email)) {
+      console.log('❌ Missing contact details for non-authenticated user');
       toast({
         title: "Missing Contact Information",
         description: "Please provide your name and email to submit the quote.",
@@ -312,16 +322,29 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     }
 
     try {
+      console.log('📤 Submitting quote...');
       const success = await submitQuote(contactDetails);
+      console.log('✅ Submit result:', success);
+      
       if (success) {
         // Navigate based on authentication status
         if (user) {
+          console.log('🔄 Navigating to client portal');
           navigate('/client-portal');
         } else {
+          console.log('🔄 Navigating to quote submitted');
           navigate('/quote-submitted');
         }
+      } else {
+        console.log('❌ Submit returned false');
+        toast({
+          title: "Submission Failed",
+          description: "Quote submission was not successful. Please try again.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
+      console.error('💥 Submit error:', error);
       toast({
         title: "Error",
         description: "Failed to submit quote. Please try again.",
