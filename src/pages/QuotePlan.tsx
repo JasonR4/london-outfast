@@ -85,7 +85,7 @@ export default function QuotePlan() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-sm">Submit Your Quote</h3>
-                  <p className="text-xs text-muted-foreground">If you are already a customer, sign in here to submit your quote</p>
+                  <p className="text-xs text-foreground/80">If you are already a customer, sign in here to submit your quote</p>
                 </div>
                 <Button asChild size="sm" className="bg-primary hover:bg-primary/90">
                   <Link to="/auth">
