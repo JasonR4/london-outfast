@@ -284,8 +284,16 @@ export function useRateCards(formatSlug?: string) {
   };
 
   const calculatePrice = (locationArea: string, selectedPeriods: number[]) => {
+    console.log('🔍 calculatePrice called with:', { locationArea, selectedPeriods });
+    console.log('📊 Available rate cards:', rateCards.map(r => ({ id: r.id, location_area: r.location_area })));
+    
     const rateCard = rateCards.find(r => r.location_area === locationArea);
-    if (!rateCard || selectedPeriods.length === 0) return null;
+    console.log('🎯 Found rate card:', rateCard);
+    
+    if (!rateCard || selectedPeriods.length === 0) {
+      console.log('❌ No rate card found or no periods selected');
+      return null;
+    }
 
     // Apply location markup to base rate
     const baseRate = rateCard.base_rate_per_incharge;
@@ -296,16 +304,26 @@ export function useRateCards(formatSlug?: string) {
     const finalRate = rateCard.sale_price || rateCard.reduced_price || adjustedRate;
     let totalPrice = finalRate * selectedPeriods.length;
 
+    console.log('💰 Pricing calculation:', {
+      baseRate,
+      markupMultiplier,
+      adjustedRate,
+      finalRate,
+      periodsCount: selectedPeriods.length,
+      totalPrice
+    });
+
     // Apply discount tiers based on number of periods
     const applicableDiscount = discountTiers
       .filter(d => d.min_periods <= selectedPeriods.length && (!d.max_periods || selectedPeriods.length <= d.max_periods))
       .sort((a, b) => b.discount_percentage - a.discount_percentage)[0]; // Get highest discount
 
     if (applicableDiscount) {
+      console.log('🎫 Applying discount:', applicableDiscount);
       totalPrice = totalPrice * (1 - applicableDiscount.discount_percentage / 100);
     }
 
-    return {
+    const result = {
       basePrice: baseRate,
       adjustedRate,
       totalPrice,
@@ -315,6 +333,9 @@ export function useRateCards(formatSlug?: string) {
       isReduced: !!rateCard.reduced_price && !rateCard.sale_price,
       periodsCount: selectedPeriods.length
     };
+
+    console.log('✅ Final price calculation result:', result);
+    return result;
   };
 
   const getAvailablePeriodsForLocation = (locationArea: string) => {
