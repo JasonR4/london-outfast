@@ -910,7 +910,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                     </Card>
                   ) : null}
 
-                  {/* Campaign Summary */}
+                  {/* Campaign Summary and Add to Quote - only show for current configuration */}
+                  {selectedFormat && selectedLocations.length > 0 && selectedPeriods.length > 0 && (
+                    <>
                       <Card className="bg-muted/20 border-border">
                         <CardHeader>
                           <CardTitle className="text-lg">Campaign Summary</CardTitle>
