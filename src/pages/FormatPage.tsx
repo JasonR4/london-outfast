@@ -12,8 +12,11 @@ import { Separator } from '@/components/ui/separator';
 import { getFormatBySlug } from '@/data/oohFormats';
 import { updateMetaTags, generateStructuredData, getSEODataForPage } from '@/utils/seo';
 import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone } from 'lucide-react';
-import { LocationSelector } from '@/components/LocationSelector';
 import { useRateCards } from '@/hooks/useRateCards';
+import { useLocationSelector } from '@/hooks/useLocationSelector';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Search, X } from 'lucide-react';
 
 const FormatPage = () => {
   const { formatSlug } = useParams();
@@ -31,6 +34,31 @@ const FormatPage = () => {
   
   // Use rate cards hook
   const { rateCards, calculatePrice, calculateProductionCost, getAvailableLocations, loading: rateLoading, error: rateError } = useRateCards(formatSlug);
+  
+  // Use location selector hook for multiple area selection in pricing
+  const {
+    locationSearch,
+    setLocationSearch,
+    filteredAreas,
+    handleLocationToggle: baseHandleLocationToggle,
+    clearAllLocations: baseClearAllLocations,
+    getSelectedLocationsByZone
+  } = useLocationSelector(selectedAreas);
+
+  const handleLocationToggle = (location: string) => {
+    baseHandleLocationToggle(location);
+    const newLocations = selectedAreas.includes(location) 
+      ? selectedAreas.filter(l => l !== location)
+      : [...selectedAreas, location];
+    setSelectedAreas(newLocations);
+  };
+
+  const clearAllLocations = () => {
+    baseClearAllLocations();
+    setSelectedAreas([]);
+  };
+
+  const selectedByZone = getSelectedLocationsByZone();
 
   useEffect(() => {
     const initializePage = async () => {
@@ -404,21 +432,107 @@ const FormatPage = () => {
                       </Select>
                     </div>
 
-                    {!rateLoading && getAvailableLocations().length > 0 && (
-                      <div>
-                        <Label htmlFor="location">Location Area</Label>
-                        <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select location area" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {getAvailableLocations().map(location => (
-                              <SelectItem key={location} value={location}>{location}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <Label className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4" />
+                          Location Areas
+                        </Label>
+                        {selectedAreas.length > 0 && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={clearAllLocations}
+                            className="h-6 px-2 text-xs"
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            Clear all
+                          </Button>
+                        )}
                       </div>
-                    )}
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Select areas for your campaign coverage
+                      </p>
+                      
+                      {selectedAreas.length > 0 && (
+                        <div className="mb-3 p-2 bg-muted/30 rounded">
+                          <div className="text-xs font-medium mb-1">
+                            {selectedAreas.length} area{selectedAreas.length !== 1 ? 's' : ''} selected
+                          </div>
+                          <div className="space-y-1">
+                            {Object.entries(selectedByZone).map(([zone, areas]) => (
+                              <div key={zone} className="text-xs">
+                                <span className="font-medium text-muted-foreground">{zone}:</span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {areas.map(area => (
+                                    <Badge key={area} variant="secondary" className="text-xs">
+                                      {area}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="relative mb-3">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                        <Input
+                          placeholder="Search London areas..."
+                          value={locationSearch}
+                          onChange={(e) => setLocationSearch(e.target.value)}
+                          className="pl-9"
+                        />
+                      </div>
+
+                      <ScrollArea className="rounded-md border h-48">
+                        <div className="p-3 space-y-3">
+                          {filteredAreas.map((zone) => (
+                            <div key={zone.zone} className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${zone.color}`} />
+                                <h4 className="font-medium text-xs">{zone.zone}</h4>
+                              </div>
+                              
+                              <div className="grid grid-cols-1 gap-1 ml-4">
+                                {zone.areas.map((area) => (
+                                  <div key={area} className="flex items-center space-x-2">
+                                    <Checkbox
+                                      id={`location-${area}`}
+                                      checked={selectedAreas.includes(area)}
+                                      onCheckedChange={() => handleLocationToggle(area)}
+                                    />
+                                    <label
+                                      htmlFor={`location-${area}`}
+                                      className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                    >
+                                      {area}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+
+                      {!rateLoading && getAvailableLocations().length > 0 && (
+                        <div className="mt-3">
+                          <Label htmlFor="pricing-location" className="text-xs">Pricing Location (for cost estimate)</Label>
+                          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                            <SelectTrigger className="mt-1">
+                              <SelectValue placeholder="Select for pricing" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getAvailableLocations().map(location => (
+                                <SelectItem key={location} value={location}>{location}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -583,36 +697,6 @@ const FormatPage = () => {
                 </CardContent>
               </Card>
 
-              {/* Coverage Areas - Separate Section */}
-              <div className="mt-12">
-                <LocationSelector
-                  selectedLocations={selectedAreas}
-                  onSelectionChange={setSelectedAreas}
-                  title={`${format.shortName} Coverage Areas`}
-                  description="Select areas to explore availability"
-                  showSelectedSummary={true}
-                  maxHeight="400px"
-                />
-
-                {selectedAreas.length > 0 && (
-                  <Card className="p-6 mt-6">
-                    <h4 className="text-lg font-semibold mb-3">Coverage in Selected Areas</h4>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      {format.shortName} advertising is available in {selectedAreas.length} selected area{selectedAreas.length !== 1 ? 's' : ''}. 
-                      Our network provides excellent reach and frequency across these locations.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Button onClick={handleGetQuote} className="flex-1">
-                        Get Quote for Selected Areas
-                      </Button>
-                      <Button variant="outline" onClick={handleCallNow}>
-                        <Phone className="w-4 h-4 mr-2" />
-                        Discuss Coverage
-                      </Button>
-                    </div>
-                  </Card>
-                )}
-              </div>
             </div>
           </section>
 
