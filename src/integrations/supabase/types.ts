@@ -435,8 +435,12 @@ export type Database = {
           quote_id: string
           selected_areas: string[]
           selected_periods: number[]
+          subtotal: number | null
           total_cost: number | null
+          total_inc_vat: number | null
           updated_at: string
+          vat_amount: number | null
+          vat_rate: number | null
         }
         Insert: {
           base_cost?: number | null
@@ -456,8 +460,12 @@ export type Database = {
           quote_id: string
           selected_areas?: string[]
           selected_periods?: number[]
+          subtotal?: number | null
           total_cost?: number | null
+          total_inc_vat?: number | null
           updated_at?: string
+          vat_amount?: number | null
+          vat_rate?: number | null
         }
         Update: {
           base_cost?: number | null
@@ -477,8 +485,12 @@ export type Database = {
           quote_id?: string
           selected_areas?: string[]
           selected_periods?: number[]
+          subtotal?: number | null
           total_cost?: number | null
+          total_inc_vat?: number | null
           updated_at?: string
+          vat_amount?: number | null
+          vat_rate?: number | null
         }
         Relationships: [
           {
@@ -507,11 +519,15 @@ export type Database = {
           rejected_at: string | null
           rejection_reason: string | null
           status: string
+          subtotal: number | null
           timeline: string | null
           total_cost: number | null
+          total_inc_vat: number | null
           updated_at: string
           user_id: string | null
           user_session_id: string
+          vat_amount: number | null
+          vat_rate: number | null
           website: string | null
         }
         Insert: {
@@ -530,11 +546,15 @@ export type Database = {
           rejected_at?: string | null
           rejection_reason?: string | null
           status?: string
+          subtotal?: number | null
           timeline?: string | null
           total_cost?: number | null
+          total_inc_vat?: number | null
           updated_at?: string
           user_id?: string | null
           user_session_id: string
+          vat_amount?: number | null
+          vat_rate?: number | null
           website?: string | null
         }
         Update: {
@@ -553,11 +573,15 @@ export type Database = {
           rejected_at?: string | null
           rejection_reason?: string | null
           status?: string
+          subtotal?: number | null
           timeline?: string | null
           total_cost?: number | null
+          total_inc_vat?: number | null
           updated_at?: string
           user_id?: string | null
           user_session_id?: string
+          vat_amount?: number | null
+          vat_rate?: number | null
           website?: string | null
         }
         Relationships: []

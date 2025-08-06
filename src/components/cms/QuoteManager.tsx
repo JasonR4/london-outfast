@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatCurrencyWithVAT } from '@/utils/vat';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,10 @@ interface QuoteItem {
 interface Quote {
   id: string;
   total_cost: number;
+  total_inc_vat?: number;
+  vat_amount?: number;
+  subtotal?: number;
+  vat_rate?: number;
   status: string;
   created_at: string;
   updated_at: string;
@@ -89,6 +94,10 @@ export function QuoteManager() {
         .select(`
           id,
           total_cost,
+          total_inc_vat,
+          vat_amount,
+          subtotal,
+          vat_rate,
           status,
           created_at,
           updated_at,
@@ -731,8 +740,13 @@ export function QuoteManager() {
                     <CardTitle>Quote Summary</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold mb-2">
-                      {formatCurrency(selectedQuote.total_cost)}
+                    <div className="space-y-2">
+                      <div className="text-lg text-muted-foreground">
+                        {formatCurrency(selectedQuote.total_cost)} <span className="text-sm">exc VAT</span>
+                      </div>
+                      <div className="text-3xl font-bold">
+                        {formatCurrencyWithVAT(selectedQuote.total_inc_vat || selectedQuote.total_cost * 1.2, true)}
+                      </div>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
                       {selectedQuote.quote_items.length} format{selectedQuote.quote_items.length !== 1 ? 's' : ''} in campaign
@@ -1010,8 +1024,13 @@ function QuoteCard({
                   })}
                 </p>
               </div>
-              <div className="text-right">
-                <div className="font-bold text-xl">{formatCurrency(quote.total_cost)}</div>
+              <div className="text-right space-y-1">
+                <div className="text-sm text-muted-foreground">
+                  {formatCurrency(quote.total_cost)} <span className="text-xs">exc VAT</span>
+                </div>
+                <div className="font-bold text-xl">
+                  {formatCurrencyWithVAT(quote.total_inc_vat || quote.total_cost * 1.2, true)}
+                </div>
                 <Badge className={getStatusColor(quote.status)}>
                   {quote.status}
                 </Badge>

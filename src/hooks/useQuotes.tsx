@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { calculateVAT } from '@/utils/vat';
 
 export interface QuoteItem {
   id?: string;
@@ -151,11 +152,18 @@ export const useQuotes = () => {
       const quoteId = await createOrGetQuote();
       if (!quoteId) return false;
 
+      // Calculate VAT for the item
+      const vatCalc = calculateVAT(item.total_cost);
+      
       const { data, error } = await supabase
         .from('quote_items')
         .insert({
           quote_id: quoteId,
-          ...item
+          ...item,
+          subtotal: vatCalc.subtotal,
+          vat_rate: vatCalc.vatRate,
+          vat_amount: vatCalc.vatAmount,
+          total_inc_vat: vatCalc.totalIncVat
         })
         .select()
         .single();
@@ -260,6 +268,9 @@ export const useQuotes = () => {
             newTotalCost
           });
 
+          // Calculate VAT for the updated total cost
+          const vatCalc = calculateVAT(newTotalCost);
+          
           // Update the item in the database
           await supabase
             .from('quote_items')
@@ -268,7 +279,11 @@ export const useQuotes = () => {
               total_cost: newTotalCost,
               discount_percentage: discountPercentage,
               discount_amount: discountAmount,
-              original_cost: originalCost
+              original_cost: originalCost,
+              subtotal: vatCalc.subtotal,
+              vat_rate: vatCalc.vatRate,
+              vat_amount: vatCalc.vatAmount,
+              total_inc_vat: vatCalc.totalIncVat
             })
             .eq('id', item.id);
 
@@ -284,10 +299,19 @@ export const useQuotes = () => {
       }
 
       const totalCost = updatedItems.reduce((sum, item) => sum + Number(item.total_cost), 0);
+      
+      // Calculate VAT for the total quote
+      const quoteTotalVAT = calculateVAT(totalCost);
 
       await supabase
         .from('quotes')
-        .update({ total_cost: totalCost })
+        .update({ 
+          total_cost: totalCost,
+          subtotal: quoteTotalVAT.subtotal,
+          vat_rate: quoteTotalVAT.vatRate,
+          vat_amount: quoteTotalVAT.vatAmount,
+          total_inc_vat: quoteTotalVAT.totalIncVat
+        })
         .eq('id', quoteId);
 
       console.log('✅ Discount recalculation complete. Total cost:', totalCost);

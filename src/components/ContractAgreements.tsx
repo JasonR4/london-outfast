@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatCurrencyWithVAT } from '@/utils/vat';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,9 +42,10 @@ export function ContractAgreements({ quote, onStatusUpdate }: ContractAgreements
 
   const contractDetails = quote.contract_details || {};
 
-  // Calculate deposit (typically 50% of total)
-  const depositAmount = quote.total_cost * 0.5;
-  const remainingAmount = quote.total_cost - depositAmount;
+  // Calculate deposit (typically 50% of total including VAT)
+  const totalIncVat = quote.total_inc_vat || quote.total_cost * 1.2;
+  const depositAmount = totalIncVat * 0.5;
+  const remainingAmount = totalIncVat - depositAmount;
 
   return (
     <div className="space-y-6">
@@ -80,9 +82,12 @@ export function ContractAgreements({ quote, onStatusUpdate }: ContractAgreements
               </div>
             </div>
             <div className="flex items-center justify-end">
-              <div className="text-right">
+              <div className="text-right space-y-1">
+                <div className="text-lg text-muted-foreground">
+                  {formatCurrency(quote.total_cost)} <span className="text-sm">exc VAT</span>
+                </div>
                 <div className="text-2xl font-bold text-green-600">
-                  {formatCurrency(quote.total_cost)}
+                  {formatCurrencyWithVAT(quote.total_inc_vat || quote.total_cost * 1.2, true)}
                 </div>
                 <div className="text-sm text-muted-foreground">Total Contract Value</div>
               </div>

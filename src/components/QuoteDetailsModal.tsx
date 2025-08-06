@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatCurrencyWithVAT } from '@/utils/vat';
 import { 
   Dialog, 
   DialogContent, 
@@ -48,6 +49,10 @@ interface QuoteItem {
 interface QuoteDetails {
   id: string;
   total_cost: number;
+  total_inc_vat?: number;
+  vat_amount?: number;
+  subtotal?: number;
+  vat_rate?: number;
   status: string;
   created_at: string;
   updated_at: string;
@@ -194,9 +199,12 @@ export function QuoteDetailsModal({ quote, isOpen, onClose }: QuoteDetailsModalP
                   )}
                 </div>
                 <div className="flex items-center justify-end">
-                  <div className="text-right">
+                  <div className="text-right space-y-1">
+                    <div className="text-lg text-muted-foreground">
+                      {formatCurrency(quote.total_cost)} <span className="text-sm">exc VAT</span>
+                    </div>
                     <div className="text-2xl font-bold text-primary">
-                      {formatCurrency(quote.total_cost)}
+                      {formatCurrencyWithVAT(quote.total_inc_vat || quote.total_cost * 1.2, true)}
                     </div>
                     <div className="text-sm text-muted-foreground">Total Campaign Cost</div>
                   </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatCurrencyWithVAT } from '@/utils/vat';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -142,14 +143,17 @@ export function ConfirmedMediaSchedule({ quote, onStatusUpdate }: ConfirmedMedia
                 <span className="font-mono">{quote.id.slice(0, 8)}...</span>
               </div>
             </div>
-            <div className="flex items-center justify-end">
-              <div className="text-right">
-                <div className="text-2xl font-bold text-primary">
-                  {formatCurrency(quote.total_cost)}
+                <div className="flex items-center justify-end">
+                  <div className="text-right space-y-1">
+                    <div className="text-lg text-muted-foreground">
+                      {formatCurrency(quote.total_cost)} <span className="text-sm">exc VAT</span>
+                    </div>
+                    <div className="text-2xl font-bold text-primary">
+                      {formatCurrencyWithVAT(quote.total_inc_vat || quote.total_cost * 1.2, true)}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Total Campaign Cost</div>
+                  </div>
                 </div>
-                <div className="text-sm text-muted-foreground">Total Campaign Cost</div>
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>

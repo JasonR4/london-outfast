@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { calculateVAT, VATCalculation } from '@/utils/vat';
 
 export interface RateCard {
   id: string;
@@ -252,7 +253,8 @@ export function useRateCards(formatSlug?: string) {
     const result = {
       costPerUnit: bestTier.cost_per_unit,
       totalCost: bestTier.cost_per_unit * quantity,
-      tier: bestTier
+      tier: bestTier,
+      ...calculateVAT(bestTier.cost_per_unit * quantity) // Add VAT calculations
     };
 
     console.log('💰 Production Cost Result:', result);
@@ -279,7 +281,8 @@ export function useRateCards(formatSlug?: string) {
     return {
       costPerUnit: bestTier.cost_per_unit,
       totalCost: bestTier.cost_per_unit * quantity,
-      tier: bestTier
+      tier: bestTier,
+      ...calculateVAT(bestTier.cost_per_unit * quantity) // Add VAT calculations
     };
   };
 
@@ -344,7 +347,8 @@ export function useRateCards(formatSlug?: string) {
       locationMarkup: rateCard.location_markup_percentage,
       isOnSale: !!rateCard.sale_price,
       isReduced: !!rateCard.reduced_price && !rateCard.sale_price,
-      periodsCount: selectedPeriods.length
+      periodsCount: selectedPeriods.length,
+      ...calculateVAT(totalPrice) // Add VAT calculations
     };
 
     console.log('✅ Final price calculation result:', result);
