@@ -560,11 +560,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                       </div>
 
                       {/* Campaign Periods */}
-                      {selectedLocations.length > 0 && (
+                      {selectedFormat && (
                         <div className="space-y-2">
                           <Label>Campaign Periods</Label>
                           <p className="text-sm text-muted-foreground">
-                            Select one or more campaign periods for your advertising
+                            Select campaign periods first, then choose your locations
                           </p>
                           <div className="grid grid-cols-2 gap-2">
                             {getAllAvailablePeriods().map(period => {
@@ -611,6 +611,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           {selectedPeriods.length > 0 && (
                             <div className="text-sm text-muted-foreground">
                               {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''} selected
+                              <br />
+                              <span className="text-xs">Now you can select up to {quantity * selectedPeriods.length} locations</span>
                             </div>
                           )}
                         </div>
