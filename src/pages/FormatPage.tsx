@@ -621,14 +621,6 @@ const FormatPage = () => {
                           
                           return (
                             <div className="space-y-3">
-                              <div className="text-center mb-4 p-2 bg-blue-50 dark:bg-blue-950/20 rounded">
-                                <p className="text-sm text-blue-600 dark:text-blue-400">
-                                  Pricing calculated for {selectedAreas.length} area{selectedAreas.length > 1 ? 's' : ''}: {selectedAreas.slice(0, 3).join(', ')}{selectedAreas.length > 3 ? ` +${selectedAreas.length - 3} more` : ''}
-                                </p>
-                                <p className="text-xs text-blue-500 dark:text-blue-300 mt-1">
-                                  Representative pricing using: {locationForPricing}
-                                </p>
-                              </div>
                               
                               <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
