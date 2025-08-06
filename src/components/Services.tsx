@@ -49,7 +49,7 @@ const Services = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="w-full"
                     onClick={() => navigate('/outdoor-media')}
                   >
                     Learn More
