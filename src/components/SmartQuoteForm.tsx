@@ -855,7 +855,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                   </div>
                   
                   <Button
-                    onClick={handleSubmitQuote}
+                    onClick={(e) => {
+                      console.log('🖱️ Submit button clicked for authenticated user');
+                      e.preventDefault();
+                      handleSubmitQuote();
+                    }}
                     size="lg"
                     className="w-full"
                     disabled={quotesLoading}
