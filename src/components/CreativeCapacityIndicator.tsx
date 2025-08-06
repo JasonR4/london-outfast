@@ -32,40 +32,40 @@ export const CreativeCapacityIndicator: React.FC<CreativeCapacityIndicatorProps>
       case 'optimal':
         return {
           icon: CheckCircle,
-          color: 'text-primary',
-          bgColor: 'bg-primary/5 border-primary/20',
+          color: 'text-green-600',
+          bgColor: 'bg-green-50 border-green-200',
           badge: 'Optimal',
           badgeVariant: 'default' as const
         };
       case 'under-creative':
         return {
           icon: AlertTriangle,
-          color: 'text-destructive',
-          bgColor: 'bg-destructive/5 border-destructive/20',
+          color: 'text-orange-600',
+          bgColor: 'bg-orange-50 border-orange-200',
           badge: 'Under-Creative',
           badgeVariant: 'destructive' as const
         };
       case 'over-creative':
         return {
           icon: TrendingUp,
-          color: 'text-primary',
-          bgColor: 'bg-primary/5 border-primary/20',
+          color: 'text-blue-600',
+          bgColor: 'bg-blue-50 border-blue-200',
           badge: 'Over-Creative',
           badgeVariant: 'secondary' as const
         };
       case 'warning':
         return {
           icon: Target,
-          color: 'text-muted-foreground',
-          bgColor: 'bg-muted/20 border-border',
+          color: 'text-yellow-600',
+          bgColor: 'bg-yellow-50 border-yellow-200',
           badge: 'Can Optimize',
           badgeVariant: 'outline' as const
         };
       default:
         return {
           icon: Palette,
-          color: 'text-muted-foreground',
-          bgColor: 'bg-muted/20 border-border',
+          color: 'text-gray-600',
+          bgColor: 'bg-gray-50 border-gray-200',
           badge: 'Standard',
           badgeVariant: 'outline' as const
         };
@@ -76,7 +76,7 @@ export const CreativeCapacityIndicator: React.FC<CreativeCapacityIndicatorProps>
   const StatusIcon = statusConfig.icon;
 
   return (
-    <Card className={`${statusConfig.bgColor} border-2`}>
+    <Card className={`${statusConfig.bgColor} border-l-4`}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between text-lg">
           <div className="flex items-center gap-2">
@@ -104,11 +104,11 @@ export const CreativeCapacityIndicator: React.FC<CreativeCapacityIndicatorProps>
 
         {/* Ratio Display */}
         <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="text-center p-2 rounded-lg bg-muted/50">
+          <div className="text-center p-2 rounded-lg bg-background/50">
             <div className="font-semibold text-lg">{creativesPerSite.toFixed(2)}</div>
             <div className="text-muted-foreground text-xs">Creatives per Site</div>
           </div>
-          <div className="text-center p-2 rounded-lg bg-muted/50">
+          <div className="text-center p-2 rounded-lg bg-background/50">
             <div className="font-semibold text-lg">{(sites / creativeAssets).toFixed(1)}</div>
             <div className="text-muted-foreground text-xs">Sites per Creative</div>
           </div>
@@ -130,7 +130,7 @@ export const CreativeCapacityIndicator: React.FC<CreativeCapacityIndicatorProps>
 
         {/* Optimize Button */}
         {status !== 'optimal' && (
-          <div className="pt-2 border-t border-border">
+          <div className="pt-2 border-t">
             <button
               onClick={onOptimizeClick}
               className="w-full text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center justify-center gap-1"
