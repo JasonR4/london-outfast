@@ -343,68 +343,100 @@ const FormatPage = () => {
             </div>
           </section>
 
-          {/* Pricing & Booking Info */}
+          {/* Combined Pricing & Coverage Section */}
           <section className="py-20 px-4 bg-muted/20">
             <div className="max-w-6xl mx-auto">
               <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold mb-4">
-                  {format.name} Costs in London
+                  {format.name} Costs & Coverage in London
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                  Pricing varies by location, duration, and availability. We leverage our volume buying power to secure the best rates for our clients.
+                  Explore pricing and available locations for {format.name.toLowerCase()} advertising across London.
                 </p>
               </div>
 
-              <div className="text-center">
-                <p className="text-lg mb-6">
-                  <strong>Typical {format.shortName} pricing:</strong> {format.priceRange}
-                </p>
-                <Button onClick={handleGetQuote} size="lg" className="bg-gradient-primary hover:opacity-90">
-                  Request a Custom Quote for {format.shortName}
-                </Button>
-              </div>
-            </div>
-          </section>
+              <div className="grid lg:grid-cols-2 gap-12 items-start">
+                {/* Pricing Column */}
+                <div className="space-y-8">
+                  <Card className="p-8">
+                    <CardHeader className="text-center pb-6">
+                      <CardTitle className="text-2xl">Pricing Information</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="text-center">
+                        <p className="text-lg mb-2">
+                          <strong>Typical {format.shortName} pricing:</strong>
+                        </p>
+                        <p className="text-2xl font-bold text-primary mb-6">
+                          {format.priceRange}
+                        </p>
+                        <p className="text-muted-foreground mb-6">
+                          Pricing varies by location, duration, and availability. We leverage our volume buying power to secure the best rates for our clients.
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center py-2 border-b">
+                          <span className="text-muted-foreground">Campaign Duration</span>
+                          <span className="font-medium">2 weeks minimum</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b">
+                          <span className="text-muted-foreground">Lead Time</span>
+                          <span className="font-medium">5-10 working days</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b">
+                          <span className="text-muted-foreground">Production</span>
+                          <span className="font-medium">Available</span>
+                        </div>
+                      </div>
 
-          {/* Coverage Section with Location Selector */}
-          <section className="py-20 px-4">
-            <div className="max-w-6xl mx-auto">
-              <h2 className="text-3xl font-bold text-center mb-4">
-                Where Can You Book {format.shortName} in London?
-              </h2>
-              <p className="text-lg text-muted-foreground text-center mb-12 max-w-3xl mx-auto">
-                Explore the areas where {format.name.toLowerCase()} advertising is available across London. Select areas of interest to see coverage details.
-              </p>
-              
-              <div className="max-w-2xl mx-auto">
-                <LocationSelector
-                  selectedLocations={selectedAreas}
-                  onSelectionChange={setSelectedAreas}
-                  title={`${format.shortName} Coverage Areas`}
-                  description="Select areas to explore where this format is available"
-                  showSelectedSummary={true}
-                  maxHeight="500px"
-                />
-              </div>
-
-              {selectedAreas.length > 0 && (
-                <div className="mt-8 p-6 bg-card rounded-lg border max-w-2xl mx-auto">
-                  <h3 className="text-xl font-semibold mb-4">Coverage in Selected Areas</h3>
-                  <p className="text-muted-foreground mb-4">
-                    {format.shortName} advertising is available in {selectedAreas.length} selected area{selectedAreas.length !== 1 ? 's' : ''}. 
-                    Our network provides excellent reach and frequency across these locations.
-                  </p>
-                  <div className="flex gap-4">
-                    <Button onClick={handleGetQuote} className="flex-1">
-                      Get Quote for Selected Areas
-                    </Button>
-                    <Button variant="outline" onClick={handleCallNow}>
-                      <Phone className="w-4 h-4 mr-2" />
-                      Discuss Coverage
-                    </Button>
-                  </div>
+                      <Button onClick={handleGetQuote} size="lg" className="w-full bg-gradient-primary hover:opacity-90">
+                        Request a Custom Quote for {format.shortName}
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
-              )}
+
+                {/* Location Selector Column */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-4 text-center lg:text-left">
+                      Where Can You Book {format.shortName}?
+                    </h3>
+                    <p className="text-muted-foreground mb-6 text-center lg:text-left">
+                      Select areas to explore where this format is available across London.
+                    </p>
+                  </div>
+                  
+                  <LocationSelector
+                    selectedLocations={selectedAreas}
+                    onSelectionChange={setSelectedAreas}
+                    title={`${format.shortName} Coverage Areas`}
+                    description="Select areas to explore availability"
+                    showSelectedSummary={true}
+                    maxHeight="400px"
+                  />
+
+                  {selectedAreas.length > 0 && (
+                    <Card className="p-6">
+                      <h4 className="text-lg font-semibold mb-3">Coverage in Selected Areas</h4>
+                      <p className="text-muted-foreground text-sm mb-4">
+                        {format.shortName} advertising is available in {selectedAreas.length} selected area{selectedAreas.length !== 1 ? 's' : ''}. 
+                        Our network provides excellent reach and frequency across these locations.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button onClick={handleGetQuote} className="flex-1">
+                          Get Quote for Selected Areas
+                        </Button>
+                        <Button variant="outline" onClick={handleCallNow}>
+                          <Phone className="w-4 h-4 mr-2" />
+                          Discuss Coverage
+                        </Button>
+                      </div>
+                    </Card>
+                  )}
+                </div>
+              </div>
             </div>
           </section>
 
