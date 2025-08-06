@@ -116,9 +116,9 @@ export type Database = {
           discount_percentage: number
           id: string
           is_active: boolean
-          max_incharges: number | null
+          max_periods: number | null
           media_format_id: string
-          min_incharges: number
+          min_periods: number | null
           updated_at: string
           updated_by: string | null
         }
@@ -128,9 +128,9 @@ export type Database = {
           discount_percentage: number
           id?: string
           is_active?: boolean
-          max_incharges?: number | null
+          max_periods?: number | null
           media_format_id: string
-          min_incharges: number
+          min_periods?: number | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -140,9 +140,9 @@ export type Database = {
           discount_percentage?: number
           id?: string
           is_active?: boolean
-          max_incharges?: number | null
+          max_periods?: number | null
           media_format_id?: string
-          min_incharges?: number
+          min_periods?: number | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -222,6 +222,33 @@ export type Database = {
           section_key?: string
           updated_at?: string
           updated_by?: string
+        }
+        Relationships: []
+      }
+      incharge_periods: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          period_number: number
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          period_number: number
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          period_number?: number
+          start_date?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -388,6 +415,48 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      rate_card_periods: {
+        Row: {
+          created_at: string
+          id: string
+          incharge_period_id: string
+          is_enabled: boolean
+          rate_card_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          incharge_period_id: string
+          is_enabled?: boolean
+          rate_card_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          incharge_period_id?: string
+          is_enabled?: boolean
+          rate_card_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rate_card_periods_incharge_period_id_fkey"
+            columns: ["incharge_period_id"]
+            isOneToOne: false
+            referencedRelation: "incharge_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rate_card_periods_rate_card_id_fkey"
+            columns: ["rate_card_id"]
+            isOneToOne: false
+            referencedRelation: "rate_cards"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rate_cards: {
         Row: {
