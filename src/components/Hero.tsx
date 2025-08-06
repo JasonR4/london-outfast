@@ -50,9 +50,6 @@ const Hero = () => {
           we buy media that gets noticed. Fast turnarounds, insider rates, zero delay.
         </p>
         
-        <p className="text-xl font-medium mb-12 text-accent">
-          Buy smarter. Plan faster. Cut out the middle.
-        </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
           <Button 
