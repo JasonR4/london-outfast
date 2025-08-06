@@ -26,6 +26,7 @@ interface RateCard {
   id: string;
   media_format_id: string;
   location_area: string;
+  category?: string;
   base_rate_per_incharge: number;
   sale_price: number | null;
   reduced_price: number | null;
@@ -109,6 +110,7 @@ export function RateCardManager() {
       const rateData = {
         media_format_id: formData.get('media_format_id') as string,
         location_area: formData.get('location_area') as string,
+        category: formData.get('category') as string,
         base_rate_per_incharge: parseFloat(formData.get('base_rate_per_incharge') as string),
         sale_price: formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null,
         reduced_price: formData.get('reduced_price') ? parseFloat(formData.get('reduced_price') as string) : null,
@@ -332,27 +334,53 @@ export function RateCardManager() {
                               )}
                             </SelectContent>
                           </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="base_rate_per_incharge">Base Rate per Incharge (£)</Label>
-                          <Input
-                            name="base_rate_per_incharge"
-                            type="number"
-                            step="0.01"
-                            defaultValue={editingRate?.base_rate_per_incharge}
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="location_markup_percentage">Location Markup (%)</Label>
-                          <Input
-                            name="location_markup_percentage"
-                            type="number"
-                            step="0.01"
-                            defaultValue={editingRate?.location_markup_percentage || 0}
-                            placeholder="0"
-                          />
-                        </div>
+                         </div>
+                       </div>
+                       <div>
+                         <Label htmlFor="category">OOH Category</Label>
+                         <Select name="category" defaultValue={editingRate?.category} required>
+                           <SelectTrigger>
+                             <SelectValue placeholder="Select category" />
+                           </SelectTrigger>
+                           <SelectContent>
+                             <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
+                             <SelectItem value="London Underground">London Underground</SelectItem>
+                             <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
+                             <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
+                             <SelectItem value="Airports">Airports</SelectItem>
+                             <SelectItem value="Ambient">Ambient</SelectItem>
+                             <SelectItem value="Railway Stations">Railway Stations</SelectItem>
+                             <SelectItem value="Shopping Centres">Shopping Centres</SelectItem>
+                             <SelectItem value="Digital Out of Home">Digital Out of Home</SelectItem>
+                             <SelectItem value="Street Furniture">Street Furniture</SelectItem>
+                             <SelectItem value="Transit">Transit</SelectItem>
+                             <SelectItem value="Experiential">Experiential</SelectItem>
+                             <SelectItem value="Cinema">Cinema</SelectItem>
+                             <SelectItem value="Radio">Radio</SelectItem>
+                           </SelectContent>
+                         </Select>
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                         <div>
+                           <Label htmlFor="base_rate_per_incharge">Base Rate per Incharge (£)</Label>
+                           <Input
+                             name="base_rate_per_incharge"
+                             type="number"
+                             step="0.01"
+                             defaultValue={editingRate?.base_rate_per_incharge}
+                             required
+                           />
+                         </div>
+                         <div>
+                           <Label htmlFor="location_markup_percentage">Location Markup (%)</Label>
+                           <Input
+                             name="location_markup_percentage"
+                             type="number"
+                             step="0.01"
+                             defaultValue={editingRate?.location_markup_percentage || 0}
+                             placeholder="0"
+                           />
+                         </div>
                         <div>
                           <Label htmlFor="sale_price">Sale Price (£)</Label>
                           <Input
