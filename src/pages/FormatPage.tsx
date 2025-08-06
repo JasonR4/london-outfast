@@ -4,6 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { getFormatBySlug } from '@/data/oohFormats';
 import { updateMetaTags, generateStructuredData, getSEODataForPage } from '@/utils/seo';
@@ -18,6 +22,9 @@ const FormatPage = () => {
   const [seoData, setSeoData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [quantity, setQuantity] = useState<number>(1);
+  const [needsCreative, setNeedsCreative] = useState<boolean>(false);
+  const [creativeAssets, setCreativeAssets] = useState<number>(1);
 
   useEffect(() => {
     const initializePage = async () => {
@@ -375,23 +382,84 @@ const FormatPage = () => {
                         </p>
                       </div>
                       
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center py-2 border-b">
-                          <span className="text-muted-foreground">Campaign Duration</span>
-                          <span className="font-medium">2 weeks minimum</span>
+                      {/* Dynamic Pricing Fields */}
+                      <div className="space-y-4 border-t pt-6">
+                        <div>
+                          <Label htmlFor="quantity">Quantity</Label>
+                          <Select value={quantity.toString()} onValueChange={(value) => setQuantity(parseInt(value))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select quantity" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[1,2,3,4,5,6,7,8,9,10,15,20,25,30].map(num => (
+                                <SelectItem key={num} value={num.toString()}>{num} site{num > 1 ? 's' : ''}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
-                        <div className="flex justify-between items-center py-2 border-b">
-                          <span className="text-muted-foreground">Lead Time</span>
-                          <span className="font-medium">5-10 working days</span>
+
+                        <div>
+                          <Label>Do you have artwork or need creative?</Label>
+                          <RadioGroup 
+                            value={needsCreative ? "need-creative" : "have-artwork"} 
+                            onValueChange={(value) => setNeedsCreative(value === "need-creative")}
+                            className="mt-2"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="have-artwork" id="have-artwork" />
+                              <Label htmlFor="have-artwork">I have artwork ready</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="need-creative" id="need-creative" />
+                              <Label htmlFor="need-creative">I need creative design</Label>
+                            </div>
+                          </RadioGroup>
                         </div>
-                        <div className="flex justify-between items-center py-2 border-b">
-                          <span className="text-muted-foreground">Production</span>
-                          <span className="font-medium">Available</span>
+
+                        {needsCreative && (
+                          <div>
+                            <Label htmlFor="creative-assets">Number of creative assets needed</Label>
+                            <Select value={creativeAssets.toString()} onValueChange={(value) => setCreativeAssets(parseInt(value))}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select assets" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {[1,2,3,4,5,6,7,8,9,10].map(num => (
+                                  <SelectItem key={num} value={num.toString()}>{num} asset{num > 1 ? 's' : ''}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              £85 per creative asset
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Pricing Summary */}
+                        <div className="border-t pt-4 space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Campaign Duration:</span>
+                            <span>2 weeks minimum</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Sites Selected:</span>
+                            <span>{quantity}</span>
+                          </div>
+                          {needsCreative && (
+                            <div className="flex justify-between text-sm">
+                              <span>Creative Assets:</span>
+                              <span>{creativeAssets} × £85 = £{creativeAssets * 85}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between text-sm">
+                            <span>Lead Time:</span>
+                            <span>5-10 working days</span>
+                          </div>
                         </div>
                       </div>
 
                       <Button onClick={handleGetQuote} size="lg" className="w-full bg-gradient-primary hover:opacity-90">
-                        Request a Custom Quote for {format.shortName}
+                        Request Custom Quote ({quantity} site{quantity > 1 ? 's' : ''}{needsCreative ? ` + ${creativeAssets} creative${creativeAssets > 1 ? 's' : ''}` : ''})
                       </Button>
                     </CardContent>
                   </Card>
