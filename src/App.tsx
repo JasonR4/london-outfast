@@ -36,6 +36,7 @@ const App = () => (
             <Route path="/configurator" element={<Configurator />} />
             <Route path="/outdoor-media" element={<FormatDirectory />} />
             <Route path="/outdoor-media/:formatSlug" element={<FormatPage />} />
+            <Route path="/outdoor-media/industries/:industrySlug" element={<IndustryPage />} />
             <Route path="/industries/:industrySlug" element={<IndustryPage />} />
             <Route path="/about" element={<About />} />
             <Route path="/faqs" element={<FAQs />} />
