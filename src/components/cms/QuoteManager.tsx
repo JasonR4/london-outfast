@@ -568,26 +568,41 @@ export function QuoteManager() {
                               <span className="font-medium">Campaign Duration:</span>
                             </div>
                             <div className="space-y-1">
-                              <div className="text-sm">
-                                {item.selected_periods.length} period{item.selected_periods.length !== 1 ? 's' : ''} ({item.selected_periods.length * 2} weeks)
-                              </div>
-                              <div className="flex flex-wrap gap-1">
-                                {item.selected_periods.slice(0, 4).map((period) => (
-                                  <Badge key={period} variant="outline" className="text-xs">
-                                    P{period}
-                                  </Badge>
-                                ))}
-                                {item.selected_periods.length > 4 && (
-                                  <Badge variant="outline" className="text-xs">
-                                    +{item.selected_periods.length - 4} more
-                                  </Badge>
+                              <div className="text-sm font-medium">
+                                {item.selected_periods?.length > 0 ? (
+                                  <>
+                                    {item.selected_periods.length} period{item.selected_periods.length !== 1 ? 's' : ''} ({item.selected_periods.length * 2} weeks)
+                                  </>
+                                ) : (
+                                  <span className="text-destructive">No periods selected</span>
                                 )}
                               </div>
+                              
+                              {item.selected_periods?.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  {item.selected_periods.slice(0, 6).map((period) => (
+                                    <Badge key={period} variant="secondary" className="text-xs font-medium">
+                                      Period {period}
+                                    </Badge>
+                                  ))}
+                                  {item.selected_periods.length > 6 && (
+                                    <Badge variant="outline" className="text-xs">
+                                      +{item.selected_periods.length - 6} more
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
+                              
                               {item.campaign_start_date && item.campaign_end_date && (
                                 <div className="text-xs text-muted-foreground">
                                   {new Date(item.campaign_start_date).toLocaleDateString('en-GB')} - {new Date(item.campaign_end_date).toLocaleDateString('en-GB')}
                                 </div>
                               )}
+                              
+                              {/* Debug info - remove after testing */}
+                              <div className="text-xs text-muted-foreground bg-muted/50 p-1 rounded">
+                                Debug: periods = {JSON.stringify(item.selected_periods)}
+                              </div>
                             </div>
                           </div>
                         </div>
