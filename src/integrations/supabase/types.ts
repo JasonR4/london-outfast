@@ -291,6 +291,7 @@ export type Database = {
           id: string
           is_active: boolean
           location_area: string
+          location_markup_percentage: number | null
           media_format_id: string
           production_cost: number
           reduced_price: number | null
@@ -305,6 +306,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           location_area: string
+          location_markup_percentage?: number | null
           media_format_id: string
           production_cost?: number
           reduced_price?: number | null
@@ -319,6 +321,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           location_area?: string
+          location_markup_percentage?: number | null
           media_format_id?: string
           production_cost?: number
           reduced_price?: number | null

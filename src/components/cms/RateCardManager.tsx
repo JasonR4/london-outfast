@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { londonAreas } from '@/data/londonAreas';
 
 interface MediaFormat {
   id: string;
@@ -29,6 +30,7 @@ interface RateCard {
   production_cost: number;
   sale_price: number | null;
   reduced_price: number | null;
+  location_markup_percentage: number;
   is_active: boolean;
   media_formats?: {
     format_name: string;
