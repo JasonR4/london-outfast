@@ -291,7 +291,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   };
 
   const handleSubmitQuote = async () => {
-    if (!currentQuote || currentQuote.quote_items?.length === 0) {
+    // Only check for quote items if user is not authenticated
+    if (!user && (!currentQuote || currentQuote.quote_items?.length === 0)) {
       toast({
         title: "No Items in Quote",
         description: "Please add at least one item to your quote before submitting.",
@@ -834,7 +835,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                     onClick={handleSubmitQuote}
                     size="lg"
                     className="w-full"
-                    disabled={quotesLoading || !currentQuote?.quote_items?.length}
+                    disabled={quotesLoading}
                   >
                     {quotesLoading ? "Submitting..." : "Submit Quote to Portal"}
                   </Button>
