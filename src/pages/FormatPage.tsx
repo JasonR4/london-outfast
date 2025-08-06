@@ -15,6 +15,9 @@ import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone, CalendarI
 import { useRateCards } from '@/hooks/useRateCards';
 import { useLocationSelector } from '@/hooks/useLocationSelector';
 import { useQuotes } from '@/hooks/useQuotes';
+import { useLocationCapacity } from '@/hooks/useLocationCapacity';
+import { LocationCapacityIndicator } from '@/components/LocationCapacityIndicator';
+import { UpsellModal } from '@/components/UpsellModal';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -39,6 +42,8 @@ const FormatPage = () => {
   const [creativeAssets, setCreativeAssets] = useState<number>(1);
   const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>();
   const [selectedEndDate, setSelectedEndDate] = useState<Date | undefined>();
+  const [showUpsellModal, setShowUpsellModal] = useState(false);
+  const [upsellContext, setUpsellContext] = useState<{ zoneName?: string; requiredCapacity: number } | null>(null);
   
   // Use rate cards hook
   const { 
@@ -66,6 +71,14 @@ const FormatPage = () => {
   } = useLocationSelector(selectedAreas);
 
   const handleLocationToggle = (location: string) => {
+    // Check capacity before allowing selection
+    if (!selectedAreas.includes(location) && !canSelectLocation(location)) {
+      const requiredCapacity = selectedAreas.length + 1;
+      setUpsellContext({ requiredCapacity });
+      setShowUpsellModal(true);
+      return;
+    }
+
     baseHandleLocationToggle(location);
     const newLocations = selectedAreas.includes(location) 
       ? selectedAreas.filter(l => l !== location)
@@ -74,16 +87,27 @@ const FormatPage = () => {
   };
 
   const handleZoneToggle = (zoneName: string) => {
-    baseHandleZoneToggle(zoneName);
-    // Update selectedAreas state to match the hook's internal state
     const zone = filteredAreas.find(z => z.zone === zoneName);
     if (!zone) return;
     
     const allZoneAreasSelected = zone.areas.every(area => selectedAreas.includes(area));
     
     if (allZoneAreasSelected) {
+      // Deselect all - this is always allowed
+      baseHandleZoneToggle(zoneName);
       setSelectedAreas(prev => prev.filter(location => !zone.areas.includes(location)));
     } else {
+      // Check capacity before selecting all
+      const zoneInfo = getZoneSelectionInfo(zoneName);
+      if (zoneInfo && !zoneInfo.canSelect) {
+        const requiredCapacity = selectedAreas.length + zoneInfo.unselectedAreas;
+        setUpsellContext({ zoneName, requiredCapacity });
+        setShowUpsellModal(true);
+        return;
+      }
+
+      // Select all areas in zone
+      baseHandleZoneToggle(zoneName);
       setSelectedAreas(prev => {
         const newSelections = [...prev];
         zone.areas.forEach(area => {
@@ -102,6 +126,26 @@ const FormatPage = () => {
   };
 
   const selectedByZone = getSelectedLocationsByZone();
+
+  // Location capacity management
+  const representativePrice = 1000; // Base price for calculations
+  const {
+    maxLocationCapacity,
+    locationCapacityUsed,
+    remainingCapacity,
+    isOverCapacity,
+    capacityStatus,
+    canSelectLocation,
+    canSelectZone,
+    getZoneSelectionInfo,
+    generateUpsellOptions,
+    getSmartRecommendations
+  } = useLocationCapacity({
+    quantity,
+    selectedPeriods,
+    selectedAreas,
+    basePrice: representativePrice
+  });
 
   useEffect(() => {
     const initializePage = async () => {
@@ -189,6 +233,13 @@ const FormatPage = () => {
 
     if (format?.category !== 'Bus' && format?.category !== 'Gorilla' && format?.category !== 'Ambient' && selectedPeriods.length === 0) {
       toast.error('Please select at least one campaign period');
+      return;
+    }
+
+    // Check if over capacity
+    if (isOverCapacity) {
+      setUpsellContext({ requiredCapacity: selectedAreas.length });
+      setShowUpsellModal(true);
       return;
     }
 
@@ -590,6 +641,17 @@ const FormatPage = () => {
                         Select areas for your campaign coverage
                       </p>
                       
+                      {/* Location Capacity Indicator */}
+                      {maxLocationCapacity > 0 && (
+                        <div className="mb-3">
+                          <LocationCapacityIndicator 
+                            capacity={maxLocationCapacity}
+                            used={locationCapacityUsed}
+                            status={capacityStatus}
+                          />
+                        </div>
+                      )}
+
                       {selectedAreas.length > 0 && (
                         <div className="mb-3 p-2 bg-muted/30 rounded">
                           <div className="text-xs font-medium mb-1">
@@ -609,6 +671,15 @@ const FormatPage = () => {
                               </div>
                             ))}
                           </div>
+                        </div>
+                      )}
+
+                      {/* Smart Recommendations */}
+                      {getSmartRecommendations().length > 0 && (
+                        <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
+                          {getSmartRecommendations().map((rec, idx) => (
+                            <p key={idx}>{rec}</p>
+                          ))}
                         </div>
                       )}
 
@@ -635,7 +706,7 @@ const FormatPage = () => {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleZoneToggle(zone.zone)}
-                                  className="h-6 px-2 text-xs"
+                                  className={`h-6 px-2 text-xs ${!canSelectZone(zone.zone) && !isZoneFullySelected(zone.zone) ? 'opacity-50' : ''}`}
                                 >
                                   {isZoneFullySelected(zone.zone) ? (
                                     <>
@@ -645,7 +716,7 @@ const FormatPage = () => {
                                   ) : (
                                     <>
                                       <CheckCircle className="h-3 w-3 mr-1" />
-                                      Select All
+                                      {canSelectZone(zone.zone) ? 'Select All' : `Select All (${zone.areas.length})`}
                                     </>
                                   )}
                                 </Button>
@@ -657,11 +728,16 @@ const FormatPage = () => {
                                     <Checkbox
                                       id={`location-${area}`}
                                       checked={selectedAreas.includes(area)}
+                                      disabled={!canSelectLocation(area) && !selectedAreas.includes(area)}
                                       onCheckedChange={() => handleLocationToggle(area)}
                                     />
                                     <label
                                       htmlFor={`location-${area}`}
-                                      className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                      className={`text-xs font-medium leading-none cursor-pointer ${
+                                        !canSelectLocation(area) && !selectedAreas.includes(area) 
+                                          ? 'opacity-50 cursor-not-allowed' 
+                                          : ''
+                                      }`}
                                     >
                                       {area}
                                     </label>
@@ -967,6 +1043,35 @@ const FormatPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Upsell Modal */}
+      {showUpsellModal && upsellContext && (
+        <UpsellModal
+          isOpen={showUpsellModal}
+          onClose={() => setShowUpsellModal(false)}
+          currentCapacity={maxLocationCapacity}
+          requiredCapacity={upsellContext.requiredCapacity}
+          selectedLocations={upsellContext.requiredCapacity}
+          zoneName={upsellContext.zoneName}
+          options={generateUpsellOptions(upsellContext.requiredCapacity)}
+          onSelectOption={(option) => {
+            if (option.type === 'quantity') {
+              setQuantity(option.suggestedValue);
+            } else if (option.type === 'periods') {
+              // Add more periods to reach suggested value
+              const additionalPeriods = option.suggestedValue - selectedPeriods.length;
+              const availablePeriods = inchargePeriods
+                .filter(p => !selectedPeriods.includes(p.period_number))
+                .slice(0, additionalPeriods)
+                .map(p => p.period_number);
+              
+              setSelectedPeriods(prev => [...prev, ...availablePeriods]);
+            }
+            setShowUpsellModal(false);
+            toast.success(`Campaign upgraded! You now have ${option.suggestedValue} ${option.type === 'quantity' ? 'sites' : 'periods'}.`);
+          }}
+        />
+      )}
     </>
   );
 };
