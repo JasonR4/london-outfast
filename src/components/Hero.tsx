@@ -57,40 +57,38 @@ const Hero = () => {
         </p>
         
         
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-          <Button 
-            size="lg" 
-            className="text-lg px-8 py-6 shadow-glow"
-            onClick={() => navigate('/quote')}
-          >
-            GET MY MEDIA QUOTE
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="text-lg px-8 py-6"
-            onClick={() => navigate('/quote')}
-          >
-            REQUEST CALLBACK
-          </Button>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-          <Button 
-            variant="ghost" 
-            className="text-accent hover:text-accent-foreground"
-            onClick={() => navigate('/configurator')}
-          >
-            Not Sure? Find My Format →
-          </Button>
-          <span className="text-muted-foreground">|</span>
-          <Button 
-            variant="ghost" 
-            className="text-accent hover:text-accent-foreground"
-            onClick={() => navigate('/outdoor-media')}
-          >
-            Browse All Formats
-          </Button>
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              className="text-lg px-8 py-6 shadow-glow"
+              onClick={() => navigate('/quote')}
+            >
+              I Know What I Want
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="text-lg px-8 py-6"
+              onClick={() => navigate('/configurator')}
+            >
+              I Need Guidance
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="lg" 
+              className="text-lg px-8 py-6 text-accent hover:text-accent-foreground"
+              onClick={() => navigate('/outdoor-media')}
+            >
+              I'm Just Exploring
+            </Button>
+          </div>
+          
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              Choose your path: Direct quote • Smart recommendations • Browse options
+            </p>
+          </div>
         </div>
       </div>
       
