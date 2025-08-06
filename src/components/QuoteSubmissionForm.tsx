@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuotes, Quote } from '@/hooks/useQuotes';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, User, ArrowRight } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface QuoteSubmissionFormProps {
   quote: Quote;
@@ -18,6 +18,8 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -28,6 +30,48 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
     additional_requirements: ''
   });
 
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      setLoading(false);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Handle authenticated user submission
+  const handleAuthenticatedSubmit = async () => {
+    setIsSubmitting(true);
+    
+    const submissionData = {
+      contact_name: user.user_metadata?.full_name || user.email,
+      contact_email: user.email,
+      contact_phone: '',
+      contact_company: '',
+      additional_requirements: '',
+      website: ''
+    };
+    
+    const success = await submitQuote(submissionData);
+    
+    if (success) {
+      navigate('/quote-submitted');
+    }
+    
+    setIsSubmitting(false);
+  };
+
+  // Handle form submission for non-authenticated users
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -63,6 +107,18 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  if (loading) {
+    return (
+      <Card className="sticky top-8">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (isSubmitted) {
     return (
       <Card className="sticky top-8">
@@ -82,6 +138,48 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
     );
   }
 
+  // Authenticated user - simple submit flow
+  if (user) {
+    return (
+      <Card className="sticky top-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Submit Your Plan
+          </CardTitle>
+          <CardDescription>
+            Ready to submit! Your plan will be processed within 24 hours.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="bg-muted p-4 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                Signed in as {user.email}
+              </div>
+            </div>
+            
+            <Button 
+              onClick={handleAuthenticatedSubmit} 
+              size="lg" 
+              className="w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Submitting Plan...' : 'Submit Plan'}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            
+            <p className="text-xs text-muted-foreground text-center">
+              Your quote will be sent to {user.email}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Non-authenticated user - full form flow
   return (
     <Card className="sticky top-8">
       <CardHeader>
@@ -157,7 +255,7 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="additional_requirements">Campaign Details & Requirements</Label>
+            <Label htmlFor="additional_requirements">Additional Requirements</Label>
             <Textarea
               id="additional_requirements"
               value={formData.additional_requirements}
@@ -167,37 +265,26 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
             />
           </div>
 
-          {/* Disclaimer */}
-          <div className="bg-muted/50 rounded-lg p-4 border border-border">
-            <div className="flex items-start gap-2">
-              <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <div className="h-2 w-2 rounded-full bg-primary/60"></div>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <p className="font-medium text-foreground mb-1">Important Quote Information:</p>
-                <ul className="space-y-1 text-xs">
-                  <li>• This quote is subject to validation based on precise media location selection and availability</li>
-                  <li>• Final pricing may vary depending on specific site availability and campaign dates</li>
-                  <li>• This quote is valid for 30 days from the date of issue</li>
-                  <li>• No booking is confirmed until a signed contract is returned and deposit received</li>
-                  <li>• All campaigns are subject to our standard terms and conditions</li>
-                </ul>
-              </div>
-            </div>
-          </div>
+          <Button 
+            type="submit" 
+            size="lg" 
+            className="w-full" 
+            disabled={isSubmitting || !formData.first_name || !formData.last_name || !formData.contact_email}
+          >
+            {isSubmitting ? 'Submitting Quote Request...' : 'Submit Quote Request'}
+          </Button>
 
-          <div className="pt-4">
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isSubmitting || !formData.first_name || !formData.last_name || !formData.contact_email}
-            >
-              {isSubmitting ? 'Submitting Quote Request...' : 'Submit Quote Request'}
-            </Button>
-          </div>
-
-          <div className="text-xs text-muted-foreground text-center">
-            By submitting this request, you agree to receive communication regarding your quote and our services.
+          <div className="text-center pt-2">
+            <p className="text-sm text-muted-foreground">
+              Have an account?{' '}
+              <Button 
+                variant="link" 
+                className="p-0 h-auto font-semibold text-primary" 
+                onClick={() => navigate('/auth')}
+              >
+                Sign in for faster checkout
+              </Button>
+            </p>
           </div>
         </form>
       </CardContent>
