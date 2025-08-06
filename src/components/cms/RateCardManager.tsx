@@ -344,19 +344,15 @@ export function RateCardManager() {
                            </SelectTrigger>
                            <SelectContent>
                              <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
-                             <SelectItem value="London Underground">London Underground</SelectItem>
+                             <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
+                             <SelectItem value="National Rail & Commuter Rail">National Rail & Commuter Rail</SelectItem>
                              <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
                              <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
+                             <SelectItem value="Retail & Leisure Environments">Retail & Leisure Environments</SelectItem>
                              <SelectItem value="Airports">Airports</SelectItem>
-                             <SelectItem value="Ambient">Ambient</SelectItem>
-                             <SelectItem value="Railway Stations">Railway Stations</SelectItem>
-                             <SelectItem value="Shopping Centres">Shopping Centres</SelectItem>
-                             <SelectItem value="Digital Out of Home">Digital Out of Home</SelectItem>
                              <SelectItem value="Street Furniture">Street Furniture</SelectItem>
-                             <SelectItem value="Transit">Transit</SelectItem>
-                             <SelectItem value="Experiential">Experiential</SelectItem>
-                             <SelectItem value="Cinema">Cinema</SelectItem>
-                             <SelectItem value="Radio">Radio</SelectItem>
+                             <SelectItem value="Programmatic DOOH (pDOOH)">Programmatic DOOH (pDOOH)</SelectItem>
+                             <SelectItem value="Ambient / Guerrilla OOH">Ambient / Guerrilla OOH</SelectItem>
                            </SelectContent>
                          </Select>
                        </div>
@@ -684,21 +680,15 @@ export function RateCardManager() {
                            </SelectTrigger>
                            <SelectContent>
                              <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
-                             <SelectItem value="London Underground">London Underground</SelectItem>
+                             <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
+                             <SelectItem value="National Rail & Commuter Rail">National Rail & Commuter Rail</SelectItem>
                              <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
                              <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
+                             <SelectItem value="Retail & Leisure Environments">Retail & Leisure Environments</SelectItem>
                              <SelectItem value="Airports">Airports</SelectItem>
-                             <SelectItem value="Ambient">Ambient</SelectItem>
-                             <SelectItem value="Railway Stations">Railway Stations</SelectItem>
-                             <SelectItem value="Shopping Centres">Shopping Centres</SelectItem>
-                             <SelectItem value="Digital Out of Home">Digital Out of Home</SelectItem>
                              <SelectItem value="Street Furniture">Street Furniture</SelectItem>
-                             <SelectItem value="Transit">Transit</SelectItem>
-                             <SelectItem value="Experiential">Experiential</SelectItem>
-                             <SelectItem value="Cinema">Cinema</SelectItem>
-                             <SelectItem value="Radio">Radio</SelectItem>
-                             <SelectItem value="Creative Production">Creative Production</SelectItem>
-                             <SelectItem value="Installation & Maintenance">Installation & Maintenance</SelectItem>
+                             <SelectItem value="Programmatic DOOH (pDOOH)">Programmatic DOOH (pDOOH)</SelectItem>
+                             <SelectItem value="Ambient / Guerrilla OOH">Ambient / Guerrilla OOH</SelectItem>
                            </SelectContent>
                          </Select>
                        </div>
