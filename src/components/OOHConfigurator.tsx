@@ -363,7 +363,11 @@ const formatDescriptions = {
   }
 };
 
-export const OOHConfigurator = () => {
+interface OOHConfiguratorProps {
+  onComplete?: () => void;
+}
+
+export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [selectedValues, setSelectedValues] = useState<(string | number)[]>([]);
@@ -764,7 +768,10 @@ export const OOHConfigurator = () => {
               <Button onClick={restart} variant="outline" className="flex-1">
                 Start Over
               </Button>
-              <Button onClick={() => setShowQuoteForm(true)} className="flex-1">
+              <Button onClick={() => {
+                setShowQuoteForm(true);
+                onComplete?.();
+              }} className="flex-1">
                 Get Detailed Quote
               </Button>
             </div>
