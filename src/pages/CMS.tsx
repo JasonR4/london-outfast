@@ -16,7 +16,8 @@ import { SEOManager } from '@/components/cms/SEOManager';
 import IndustryContentManager from '@/components/cms/IndustryContentManager';
 import HomepageContentManager from '@/components/cms/HomepageContentManager';
 import { RateCardManager } from '@/components/cms/RateCardManager';
-import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator } from 'lucide-react';
+import { QuoteManager } from '@/components/cms/QuoteManager';
+import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator, ClipboardList } from 'lucide-react';
 
 const CMS = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -159,8 +160,12 @@ const CMS = () => {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="homepage" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-10">
+        <Tabs defaultValue="quotes" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-11">
+            <TabsTrigger value="quotes" className="flex items-center gap-2">
+              <ClipboardList className="w-4 h-4" />
+              Quotes
+            </TabsTrigger>
             <TabsTrigger value="homepage" className="flex items-center gap-2">
               <Home className="w-4 h-4" />
               Homepage
@@ -202,6 +207,10 @@ const CMS = () => {
               Team
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="quotes">
+            <QuoteManager />
+          </TabsContent>
 
           <TabsContent value="homepage">
             <Card>
