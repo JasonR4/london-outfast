@@ -246,13 +246,57 @@ export default function QuotePlan() {
                 <CardTitle>Cost Summary</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {currentQuote.quote_items?.map((item, index) => (
-                    <div key={item.id || index} className="flex justify-between text-sm">
-                      <span>{item.format_name} (×{item.quantity})</span>
-                      <span>{formatCurrency(item.total_cost)}</span>
+                    <div key={item.id || index} className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>{item.format_name} (×{item.quantity})</span>
+                        <span>{formatCurrency(item.total_cost)}</span>
+                      </div>
+                      
+                      {/* Show discount breakdown if discount exists */}
+                      {item.discount_percentage && item.discount_percentage > 0 && (
+                        <div className="ml-4 space-y-1 text-xs text-muted-foreground border-l-2 border-green-200 pl-2">
+                          <div className="flex justify-between">
+                            <span>Original cost:</span>
+                            <span>{formatCurrency(item.original_cost || item.base_cost + item.production_cost + item.creative_cost)}</span>
+                          </div>
+                          <div className="flex justify-between text-green-600">
+                            <span>Volume discount ({item.discount_percentage}%):</span>
+                            <span>-{formatCurrency(item.discount_amount || 0)}</span>
+                          </div>
+                          <div className="flex justify-between font-medium">
+                            <span>After discount:</span>
+                            <span>{formatCurrency(item.total_cost)}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
+                  
+                  {/* Total discount summary */}
+                  {currentQuote.quote_items?.some(item => item.discount_percentage && item.discount_percentage > 0) && (
+                    <div className="pt-2 border-t">
+                      <div className="bg-green-50 p-3 rounded-lg">
+                        <div className="text-sm font-medium text-green-800 mb-1">
+                          Volume Discount Applied!
+                        </div>
+                        <div className="text-xs text-green-700">
+                          Total periods: {currentQuote.quote_items?.reduce((sum, item) => sum + item.selected_periods.length, 0)} periods
+                          {currentQuote.quote_items?.reduce((sum, item) => sum + item.selected_periods.length, 0) >= 4 && (
+                            <span className="ml-1">(4+ periods qualifies for bulk discount)</span>
+                          )}
+                        </div>
+                        <div className="flex justify-between text-sm font-medium text-green-800 mt-1">
+                          <span>Total savings:</span>
+                          <span>-{formatCurrency(
+                            currentQuote.quote_items?.reduce((sum, item) => sum + (item.discount_amount || 0), 0) || 0
+                          )}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   <Separator />
                   <div className="flex justify-between font-semibold text-lg">
                     <span>Total Campaign Cost</span>
