@@ -15,10 +15,6 @@ const Quote = () => {
         </div>
         
         <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
-          <Badge variant="secondary" className="mb-6 text-lg px-6 py-2">
-            FREE CUSTOM QUOTE
-          </Badge>
-          
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent leading-tight">
             Get Your London OOH Quote
           </h1>
