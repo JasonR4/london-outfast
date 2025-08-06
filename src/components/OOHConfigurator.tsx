@@ -631,25 +631,54 @@ export const OOHConfigurator = () => {
   };
 
   const getCampaignObjective = (): string => {
-    const objective = answers.find(a => a.questionId === 'campaign_objective')?.value;
-    switch(objective) {
-      case 'awareness': return 'Brand Awareness';
-      case 'traffic': return 'Drive Traffic/Sales';
-      case 'local': return 'Local Presence';
-      case 'event': return 'Event Promotion';
-      default: return '';
+    const objectiveAnswer = answers.find(a => a.questionId === 'campaign_objective')?.value;
+    if (Array.isArray(objectiveAnswer)) {
+      // Handle multiple objectives
+      return objectiveAnswer.map(obj => {
+        switch(obj) {
+          case 'awareness': return 'Brand Awareness';
+          case 'traffic': return 'Drive Traffic/Sales';
+          case 'local': return 'Local Presence';
+          case 'event': return 'Event Promotion';
+          default: return obj;
+        }
+      }).join(' + ');
+    } else {
+      // Handle single objective
+      switch(objectiveAnswer) {
+        case 'awareness': return 'Brand Awareness';
+        case 'traffic': return 'Drive Traffic/Sales';
+        case 'local': return 'Local Presence';
+        case 'event': return 'Event Promotion';
+        default: return '';
+      }
     }
   };
 
   const getTargetAudience = (): string => {
-    const audience = answers.find(a => a.questionId === 'target_audience')?.value;
-    switch(audience) {
-      case 'commuters': return 'Commuters & Office Workers';
-      case 'shoppers': return 'Shoppers & Consumers';
-      case 'tourists': return 'Tourists & Visitors';
-      case 'residents': return 'Local Residents';
-      case 'young': return 'Young Demographics (18-35)';
-      default: return '';
+    const audienceAnswer = answers.find(a => a.questionId === 'target_audience')?.value;
+    if (Array.isArray(audienceAnswer)) {
+      // Handle multiple audiences
+      return audienceAnswer.map(aud => {
+        switch(aud) {
+          case 'commuters': return 'Commuters & Office Workers';
+          case 'shoppers': return 'Shoppers & Consumers';
+          case 'tourists': return 'Tourists & Visitors';
+          case 'residents': return 'Local Residents';
+          case 'young': return 'Young Demographics (18-35)';
+          default: return aud;
+        }
+      }).join(' + ');
+    } else {
+      // Handle single audience
+      switch(audienceAnswer) {
+        case 'commuters': return 'Commuters & Office Workers';
+        case 'shoppers': return 'Shoppers & Consumers';
+        case 'tourists': return 'Tourists & Visitors';
+        case 'residents': return 'Local Residents';
+        case 'young': return 'Young Demographics (18-35)';
+        default: return '';
+      }
     }
   };
 
