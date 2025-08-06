@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ArrowRight, Target, Users, MapPin, Clock, DollarSign, Eye, Zap } from 'lucide-react';
 import QuoteFormSection from './QuoteFormSection';
+import { LocationSelector } from './LocationSelector';
 
 interface Answer {
   questionId: string;
@@ -169,35 +170,9 @@ const questions: Question[] = [
   {
     id: 'preferred_locations',
     title: 'Which London areas are most important?',
-    subtitle: 'Select up to 3 priority locations',
-    type: 'multiple',
-    options: [
-      {
-        label: 'Central London',
-        value: 'central',
-        scores: { 'tube_ads': 9, 'billboards': 8, 'digital_billboards': 8, 'bus_shelters': 7, 'taxi_ads': 9 }
-      },
-      {
-        label: 'Financial District',
-        value: 'financial',
-        scores: { 'tube_ads': 10, 'billboards': 7, 'digital_billboards': 8, 'bus_shelters': 6, 'taxi_ads': 8 }
-      },
-      {
-        label: 'Shopping Districts',
-        value: 'shopping',
-        scores: { 'bus_shelters': 9, 'digital_billboards': 8, 'billboards': 7, 'tube_ads': 7, 'taxi_ads': 7 }
-      },
-      {
-        label: 'Residential Areas',
-        value: 'residential',
-        scores: { 'bus_shelters': 10, 'local_billboards': 9, 'taxi_ads': 6, 'tube_ads': 5, 'digital_billboards': 5 }
-      },
-      {
-        label: 'Transport Hubs',
-        value: 'transport',
-        scores: { 'tube_ads': 10, 'digital_billboards': 9, 'billboards': 6, 'bus_shelters': 8, 'taxi_ads': 7 }
-      }
-    ]
+    subtitle: 'Select your priority locations for maximum impact',
+    type: 'location',
+    options: [] // Will be handled by LocationSelector
   },
   {
     id: 'urgency',
@@ -382,13 +357,67 @@ export const OOHConfigurator = () => {
     }
   };
 
+  const handleLocationChange = (locations: string[]) => {
+    setSelectedValues(locations);
+  };
+
+  const calculateLocationScores = (locations: string[]): Record<string, number> => {
+    // Base scoring system for different location types
+    const locationScores: Record<string, number> = {
+      'billboards': 0,
+      'digital_billboards': 0, 
+      'bus_shelters': 0,
+      'tube_ads': 0,
+      'taxi_ads': 0,
+      'local_billboards': 0
+    };
+
+    // Central/Premium locations favor high-impact formats
+    const centralAreas = ['Westminster', 'City of London', 'Covent Garden', 'Soho', 'Mayfair'];
+    const residentialAreas = ['Hampstead', 'Chelsea', 'Kensington', 'Fulham', 'Hammersmith'];
+    const businessAreas = ['Canary Wharf', 'Barbican', 'Farringdon', 'King\'s Cross'];
+
+    locations.forEach(location => {
+      if (centralAreas.some(area => location.includes(area))) {
+        locationScores['billboards'] += 8;
+        locationScores['digital_billboards'] += 9;
+        locationScores['tube_ads'] += 8;
+        locationScores['bus_shelters'] += 6;
+        locationScores['taxi_ads'] += 8;
+      } else if (businessAreas.some(area => location.includes(area))) {
+        locationScores['tube_ads'] += 10;
+        locationScores['digital_billboards'] += 8;
+        locationScores['billboards'] += 7;
+        locationScores['bus_shelters'] += 6;
+        locationScores['taxi_ads'] += 9;
+      } else if (residentialAreas.some(area => location.includes(area))) {
+        locationScores['bus_shelters'] += 9;
+        locationScores['local_billboards'] += 8;
+        locationScores['taxi_ads'] += 7;
+        locationScores['tube_ads'] += 5;
+        locationScores['billboards'] += 6;
+      } else {
+        // Default scoring for other areas
+        locationScores['bus_shelters'] += 7;
+        locationScores['billboards'] += 6;
+        locationScores['tube_ads'] += 6;
+        locationScores['digital_billboards'] += 5;
+        locationScores['taxi_ads'] += 6;
+      }
+    });
+
+    return locationScores;
+  };
+
   const goNext = () => {
     if (selectedValues.length === 0) return;
 
     // Calculate scores for this answer
     let combinedScores: Record<string, number> = {};
     
-    if (currentQuestion.type === 'multiple') {
+    if (currentQuestion.type === 'location') {
+      combinedScores = calculateLocationScores(selectedValues as string[]);
+    } else if (currentQuestion.type === 'multiple') {
       selectedValues.forEach(value => {
         const option = currentQuestion.options.find(opt => opt.value === value);
         if (option) {
@@ -406,7 +435,7 @@ export const OOHConfigurator = () => {
 
     const newAnswer: Answer = {
       questionId: currentQuestion.id,
-      value: currentQuestion.type === 'multiple' ? selectedValues : selectedValues[0],
+      value: currentQuestion.type === 'multiple' || currentQuestion.type === 'location' ? selectedValues : selectedValues[0],
       scores: combinedScores
     };
 
@@ -644,45 +673,55 @@ export const OOHConfigurator = () => {
           )}
         </CardHeader>
         <CardContent className="space-y-3">
-          {currentQuestion.options.map((option, index) => {
-            const isSelected = selectedValues.includes(option.value);
-            return (
-              <button
-                key={index}
-                onClick={() => handleAnswer(option)}
-                className={`w-full p-4 text-left border rounded-lg transition-all hover:border-primary ${
-                  isSelected ? 'border-primary bg-primary/5' : 'border-border'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  {option.icon && (
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      {option.icon === 'Target' && <Target className="w-4 h-4 text-primary" />}
-                      {option.icon === 'Users' && <Users className="w-4 h-4 text-primary" />}
-                      {option.icon === 'MapPin' && <MapPin className="w-4 h-4 text-primary" />}
-                      {option.icon === 'Clock' && <Clock className="w-4 h-4 text-primary" />}
-                      {option.icon === 'DollarSign' && <DollarSign className="w-4 h-4 text-primary" />}
-                      {option.icon === 'Eye' && <Eye className="w-4 h-4 text-primary" />}
-                      {option.icon === 'Zap' && <Zap className="w-4 h-4 text-primary" />}
+          {currentQuestion.type === 'location' ? (
+            <LocationSelector
+              selectedLocations={selectedValues as string[]}
+              onSelectionChange={handleLocationChange}
+              title="Select Priority Areas"
+              description="Choose the London areas most important for your campaign"
+              maxHeight="300px"
+            />
+          ) : (
+            currentQuestion.options.map((option, index) => {
+              const isSelected = selectedValues.includes(option.value);
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleAnswer(option)}
+                  className={`w-full p-4 text-left border rounded-lg transition-all hover:border-primary ${
+                    isSelected ? 'border-primary bg-primary/5' : 'border-border'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    {option.icon && (
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        {option.icon === 'Target' && <Target className="w-4 h-4 text-primary" />}
+                        {option.icon === 'Users' && <Users className="w-4 h-4 text-primary" />}
+                        {option.icon === 'MapPin' && <MapPin className="w-4 h-4 text-primary" />}
+                        {option.icon === 'Clock' && <Clock className="w-4 h-4 text-primary" />}
+                        {option.icon === 'DollarSign' && <DollarSign className="w-4 h-4 text-primary" />}
+                        {option.icon === 'Eye' && <Eye className="w-4 h-4 text-primary" />}
+                        {option.icon === 'Zap' && <Zap className="w-4 h-4 text-primary" />}
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <div className="font-medium">{option.label}</div>
+                      {currentQuestion.type === 'multiple' && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Select multiple options
+                        </div>
+                      )}
                     </div>
-                  )}
-                  <div className="flex-1">
-                    <div className="font-medium">{option.label}</div>
-                    {currentQuestion.type === 'multiple' && (
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Select multiple options
+                    {isSelected && (
+                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full" />
                       </div>
                     )}
                   </div>
-                  {isSelected && (
-                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                      <div className="w-2 h-2 bg-white rounded-full" />
-                    </div>
-                  )}
-                </div>
-              </button>
-            );
-          })}
+                </button>
+              );
+            })
+          )}
         </CardContent>
       </Card>
 
