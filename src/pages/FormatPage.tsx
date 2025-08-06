@@ -517,19 +517,12 @@ const FormatPage = () => {
                         </div>
                       </ScrollArea>
 
-                      {!rateLoading && getAvailableLocations().length > 0 && (
+                      {!rateLoading && getAvailableLocations().length > 0 && selectedAreas.length > 0 && (
                         <div className="mt-3">
-                          <Label htmlFor="pricing-location" className="text-xs">Pricing Location (for cost estimate)</Label>
-                          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                            <SelectTrigger className="mt-1">
-                              <SelectValue placeholder="Select for pricing" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {getAvailableLocations().map(location => (
-                                <SelectItem key={location} value={location}>{location}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <Label className="text-xs">Pricing based on selected areas</Label>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Cost estimate using: {selectedAreas.slice(0, 3).join(', ')}{selectedAreas.length > 3 ? ` +${selectedAreas.length - 3} more` : ''}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -603,16 +596,24 @@ const FormatPage = () => {
                   <CardTitle className="text-xl text-center">Estimated Campaign Costs</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {selectedLocation && !rateLoading ? (
+                  {selectedAreas.length > 0 && !rateLoading ? (
                     <>
                       {(() => {
-                        const priceCalculation = calculatePrice(selectedLocation, incharges);
+                        // Use the first selected area for pricing calculation as a representative area
+                        const representativeArea = selectedAreas[0];
+                        const availableLocations = getAvailableLocations();
+                        const matchingLocation = availableLocations.find(loc => 
+                          selectedAreas.some(area => loc.toLowerCase().includes(area.toLowerCase()) || area.toLowerCase().includes(loc.toLowerCase()))
+                        ) || availableLocations[0]; // Fallback to first available location
+                        
+                        const locationForPricing = matchingLocation || representativeArea;
+                        const priceCalculation = calculatePrice(locationForPricing, incharges);
                         
                         if (priceCalculation) {
                           const campaignTotal = priceCalculation.totalPrice * quantity;
                           
                           // Production costs are always calculated
-                          const productionCostCalc = calculateProductionCost(selectedLocation, quantity);
+                          const productionCostCalc = calculateProductionCost(locationForPricing, quantity);
                           const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
                           
                           const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
@@ -620,6 +621,15 @@ const FormatPage = () => {
                           
                           return (
                             <div className="space-y-3">
+                              <div className="text-center mb-4 p-2 bg-blue-50 dark:bg-blue-950/20 rounded">
+                                <p className="text-sm text-blue-600 dark:text-blue-400">
+                                  Pricing calculated for {selectedAreas.length} area{selectedAreas.length > 1 ? 's' : ''}: {selectedAreas.slice(0, 3).join(', ')}{selectedAreas.length > 3 ? ` +${selectedAreas.length - 3} more` : ''}
+                                </p>
+                                <p className="text-xs text-blue-500 dark:text-blue-300 mt-1">
+                                  Representative pricing using: {locationForPricing}
+                                </p>
+                              </div>
+                              
                               <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                   <div className="flex justify-between text-sm">
@@ -677,21 +687,21 @@ const FormatPage = () => {
                               </div>
 
                               <Button onClick={handleGetQuote} size="lg" className="w-full mt-4 bg-gradient-primary hover:opacity-90">
-                                Request Custom Quote ({quantity} site{quantity > 1 ? 's' : ''}{needsCreative ? ` + ${creativeAssets} creative${creativeAssets > 1 ? 's' : ''}` : ''})
+                                Request Custom Quote ({quantity} site{quantity > 1 ? 's' : ''} in {selectedAreas.length} area{selectedAreas.length > 1 ? 's' : ''}{needsCreative ? ` + ${creativeAssets} creative${creativeAssets > 1 ? 's' : ''}` : ''})
                               </Button>
                             </div>
                           );
                         }
                         return (
                           <div className="text-center text-muted-foreground">
-                            <p>Select all options above to see pricing estimate</p>
+                            <p>Unable to calculate pricing for selected areas</p>
                           </div>
                         );
                       })()}
                     </>
                   ) : (
                     <div className="text-center text-muted-foreground">
-                      <p>Select location and configuration to see pricing estimate</p>
+                      <p>Select location areas above to see pricing estimate</p>
                     </div>
                   )}
                 </CardContent>
