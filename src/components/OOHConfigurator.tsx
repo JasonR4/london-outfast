@@ -508,14 +508,20 @@ export const OOHConfigurator = () => {
 
     if (currentQuestionIndex < visibleQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
+      // Scroll to top when moving to next question
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       setShowResults(true);
+      // Scroll to top when showing results
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const goBack = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
+      // Scroll to top when going back
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       // Restore previous answer
       const prevQuestion = visibleQuestions[currentQuestionIndex - 1];
       const prevAnswer = answers.find(a => a.questionId === prevQuestion.id);
