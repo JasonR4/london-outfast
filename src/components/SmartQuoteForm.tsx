@@ -116,9 +116,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         
         const mediaPrice = calculatePrice(location, selectedPeriods);
         const productionPrice = calculateProductionCost(location, quantity);
-        // Try to get creative cost, but don't fail if format category doesn't exist
-        const creativePrice = selectedFormat?.category ? 
-          calculateCreativeCost(location, quantity, selectedFormat.category) : null;
+        // Try to get creative cost using "Standard Design" as default category
+        const creativePrice = calculateCreativeCost(location, quantity, "Standard Design");
         
         console.log(`💰 Media price result:`, mediaPrice);
         console.log(`🏭 Production price result:`, productionPrice);
