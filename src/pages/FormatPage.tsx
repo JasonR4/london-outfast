@@ -58,6 +58,9 @@ const FormatPage = () => {
     setLocationSearch,
     filteredAreas,
     handleLocationToggle: baseHandleLocationToggle,
+    handleZoneToggle: baseHandleZoneToggle,
+    isZoneFullySelected,
+    isZonePartiallySelected,
     clearAllLocations: baseClearAllLocations,
     getSelectedLocationsByZone
   } = useLocationSelector(selectedAreas);
@@ -68,6 +71,29 @@ const FormatPage = () => {
       ? selectedAreas.filter(l => l !== location)
       : [...selectedAreas, location];
     setSelectedAreas(newLocations);
+  };
+
+  const handleZoneToggle = (zoneName: string) => {
+    baseHandleZoneToggle(zoneName);
+    // Update selectedAreas state to match the hook's internal state
+    const zone = filteredAreas.find(z => z.zone === zoneName);
+    if (!zone) return;
+    
+    const allZoneAreasSelected = zone.areas.every(area => selectedAreas.includes(area));
+    
+    if (allZoneAreasSelected) {
+      setSelectedAreas(prev => prev.filter(location => !zone.areas.includes(location)));
+    } else {
+      setSelectedAreas(prev => {
+        const newSelections = [...prev];
+        zone.areas.forEach(area => {
+          if (!newSelections.includes(area)) {
+            newSelections.push(area);
+          }
+        });
+        return newSelections;
+      });
+    }
   };
 
   const clearAllLocations = () => {
@@ -600,9 +626,29 @@ const FormatPage = () => {
                         <div className="p-3 space-y-3">
                           {filteredAreas.map((zone) => (
                             <div key={zone.zone} className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <div className={`w-2 h-2 rounded-full ${zone.color}`} />
-                                <h4 className="font-medium text-xs">{zone.zone}</h4>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-2 h-2 rounded-full ${zone.color}`} />
+                                  <h4 className="font-medium text-xs">{zone.zone}</h4>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleZoneToggle(zone.zone)}
+                                  className="h-6 px-2 text-xs"
+                                >
+                                  {isZoneFullySelected(zone.zone) ? (
+                                    <>
+                                      <X className="h-3 w-3 mr-1" />
+                                      Deselect All
+                                    </>
+                                  ) : (
+                                    <>
+                                      <CheckCircle className="h-3 w-3 mr-1" />
+                                      Select All
+                                    </>
+                                  )}
+                                </Button>
                               </div>
                               
                               <div className="grid grid-cols-1 gap-1 ml-4">

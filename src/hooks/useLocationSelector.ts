@@ -24,6 +24,41 @@ export const useLocationSelector = (initialSelected: string[] = []) => {
     );
   };
 
+  const handleZoneToggle = (zoneName: string) => {
+    const zone = londonAreas.find(z => z.zone === zoneName);
+    if (!zone) return;
+    
+    const allZoneAreasSelected = zone.areas.every(area => selectedLocations.includes(area));
+    
+    if (allZoneAreasSelected) {
+      // Deselect all areas in this zone
+      setSelectedLocations(prev => prev.filter(location => !zone.areas.includes(location)));
+    } else {
+      // Select all areas in this zone
+      setSelectedLocations(prev => {
+        const newSelections = [...prev];
+        zone.areas.forEach(area => {
+          if (!newSelections.includes(area)) {
+            newSelections.push(area);
+          }
+        });
+        return newSelections;
+      });
+    }
+  };
+
+  const isZoneFullySelected = (zoneName: string) => {
+    const zone = londonAreas.find(z => z.zone === zoneName);
+    if (!zone) return false;
+    return zone.areas.every(area => selectedLocations.includes(area));
+  };
+
+  const isZonePartiallySelected = (zoneName: string) => {
+    const zone = londonAreas.find(z => z.zone === zoneName);
+    if (!zone) return false;
+    return zone.areas.some(area => selectedLocations.includes(area)) && !isZoneFullySelected(zoneName);
+  };
+
   const clearAllLocations = () => {
     setSelectedLocations([]);
   };
@@ -48,6 +83,9 @@ export const useLocationSelector = (initialSelected: string[] = []) => {
     setLocationSearch,
     filteredAreas,
     handleLocationToggle,
+    handleZoneToggle,
+    isZoneFullySelected,
+    isZonePartiallySelected,
     clearAllLocations,
     getSelectedLocationsByZone
   };
