@@ -512,8 +512,8 @@ const FormatPage = () => {
                     </div>
 
                     
-                    {/* Incharge Periods Selection - only for non-bus, non-gorilla, non-ambient */}
-                    {format?.category !== 'Bus' && format?.category !== 'Gorilla' && format?.category !== 'Ambient' && (
+                     {/* Incharge Periods Selection - for incharge media formats */}
+                     {format?.category !== 'Bus' && format?.category !== 'Gorilla' && format?.category !== 'Ambient' && inchargePeriods && inchargePeriods.length > 0 && (
                       <div>
                         <Label>Select Campaign Periods</Label>
                         <div className="space-y-2 max-h-60 overflow-y-auto">
