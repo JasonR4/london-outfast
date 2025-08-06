@@ -257,10 +257,16 @@ const FormatPage = () => {
       return;
     }
 
-    // Check if over capacity
+    // Check if over location capacity
     if (isOverCapacity) {
       setUpsellContext({ requiredCapacity: selectedAreas.length });
       setShowUpsellModal(true);
+      return;
+    }
+
+    // Check if creative capacity is not optimal (and needs creative)
+    if (needsCreative && !isCreativeOptimal) {
+      setShowCreativeUpsellModal(true);
       return;
     }
 
