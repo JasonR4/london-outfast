@@ -89,6 +89,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     getAvailablePeriodsForLocation,
     getAllAvailablePeriods,
     getAvailableCreativeCategories,
+    creativeCostTiers,
     loading: rateCardsLoading 
   } = useRateCards(selectedFormat?.slug);
 
@@ -650,9 +651,17 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                  </SelectContent>
                                </Select>
                                {dynamicCreativeCost && (
-                                 <p className="text-sm text-muted-foreground">
-                                   £{dynamicCreativeCost.costPerUnit} per creative asset
-                                 </p>
+                                 <>
+                                   {console.log('🎨 Creative cost debug:', {
+                                     costPerUnit: dynamicCreativeCost.costPerUnit,
+                                     creativeCostTiers: creativeCostTiers,
+                                     creativeLevel,
+                                     creativeAssets
+                                   })}
+                                   <p className="text-sm text-muted-foreground">
+                                     £{dynamicCreativeCost.costPerUnit} per creative asset
+                                   </p>
+                                 </>
                                )}
                              </div>
 
