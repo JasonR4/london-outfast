@@ -75,7 +75,7 @@ export const LocationCapacityIndicator: React.FC<LocationCapacityIndicatorProps>
         
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span>Used: {used} of {capacity} slots</span>
+            <span>Used: {used} of {capacity} locations</span>
             <span>{percentage.toFixed(0)}%</span>
           </div>
           <Progress value={percentage} className="h-2" />
