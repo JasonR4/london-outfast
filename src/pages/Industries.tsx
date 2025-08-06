@@ -24,7 +24,7 @@ const industries: Industry[] = [
     displayName: "Automotive",
     description: "Drive sales with targeted outdoor advertising campaigns for car dealerships, manufacturers, and automotive services.",
     icon: Car,
-    color: "bg-blue-50 border-blue-200 hover:bg-blue-100"
+    color: "bg-gradient-to-br from-purple-900 to-purple-700 text-white border-purple-600 hover:from-purple-800 hover:to-purple-600"
   },
   { 
     slug: "agencies", 
@@ -32,7 +32,7 @@ const industries: Industry[] = [
     displayName: "Agencies & In-House Teams",
     description: "Partner with us for seamless OOH campaign execution and media planning expertise.",
     icon: Building2,
-    color: "bg-purple-50 border-purple-200 hover:bg-purple-100"
+    color: "bg-gradient-to-br from-red-900 to-red-700 text-white border-red-600 hover:from-red-800 hover:to-red-600"
   },
   { 
     slug: "beauty", 
@@ -40,7 +40,7 @@ const industries: Industry[] = [
     displayName: "Beauty & Wellness",
     description: "Showcase beauty brands and wellness services with stunning outdoor advertising displays.",
     icon: Palette,
-    color: "bg-pink-50 border-pink-200 hover:bg-pink-100"
+    color: "bg-gradient-to-br from-purple-800 to-pink-700 text-white border-purple-500 hover:from-purple-700 hover:to-pink-600"
   },
   { 
     slug: "construction", 
@@ -48,7 +48,7 @@ const industries: Industry[] = [
     displayName: "Construction & Trade",
     description: "Build your brand presence with targeted advertising for construction and trade businesses.",
     icon: Hammer,
-    color: "bg-orange-50 border-orange-200 hover:bg-orange-100"
+    color: "bg-gradient-to-br from-slate-900 to-slate-700 text-white border-slate-600 hover:from-slate-800 hover:to-slate-600"
   },
   { 
     slug: "education", 
@@ -56,7 +56,7 @@ const industries: Industry[] = [
     displayName: "Education",
     description: "Reach students and educators with strategic outdoor advertising for educational institutions.",
     icon: GraduationCap,
-    color: "bg-green-50 border-green-200 hover:bg-green-100"
+    color: "bg-gradient-to-br from-purple-900 to-indigo-800 text-white border-purple-600 hover:from-purple-800 hover:to-indigo-700"
   },
   { 
     slug: "entertainment", 
@@ -64,7 +64,7 @@ const industries: Industry[] = [
     displayName: "Entertainment",
     description: "Promote shows, films, and entertainment venues with high-impact outdoor advertising.",
     icon: Clapperboard,
-    color: "bg-red-50 border-red-200 hover:bg-red-100"
+    color: "bg-gradient-to-br from-red-800 to-pink-700 text-white border-red-600 hover:from-red-700 hover:to-pink-600"
   },
   { 
     slug: "events", 
@@ -72,7 +72,7 @@ const industries: Industry[] = [
     displayName: "Events & Entertainment",
     description: "Create buzz for events and entertainment with strategic outdoor advertising campaigns.",
     icon: Calendar,
-    color: "bg-yellow-50 border-yellow-200 hover:bg-yellow-100"
+    color: "bg-gradient-to-br from-purple-700 to-purple-500 text-white border-purple-500 hover:from-purple-600 hover:to-purple-400"
   },
   { 
     slug: "fashion", 
@@ -80,7 +80,7 @@ const industries: Industry[] = [
     displayName: "Fashion & Lifestyle",
     description: "Showcase fashion brands and lifestyle products with premium outdoor advertising spaces.",
     icon: Shirt,
-    color: "bg-indigo-50 border-indigo-200 hover:bg-indigo-100"
+    color: "bg-gradient-to-br from-slate-800 to-slate-600 text-white border-slate-600 hover:from-slate-700 hover:to-slate-500"
   },
   { 
     slug: "financial-services", 
@@ -88,7 +88,7 @@ const industries: Industry[] = [
     displayName: "Financial Services",
     description: "Build trust and awareness for financial services with professional outdoor advertising.",
     icon: CreditCard,
-    color: "bg-slate-50 border-slate-200 hover:bg-slate-100"
+    color: "bg-gradient-to-br from-red-900 to-red-800 text-white border-red-700 hover:from-red-800 hover:to-red-700"
   },
   { 
     slug: "food", 
@@ -96,7 +96,7 @@ const industries: Industry[] = [
     displayName: "Food & Drink",
     description: "Drive footfall to restaurants and food brands with appetizing outdoor advertising campaigns.",
     icon: UtensilsCrossed,
-    color: "bg-amber-50 border-amber-200 hover:bg-amber-100"
+    color: "bg-gradient-to-br from-purple-800 to-red-700 text-white border-purple-600 hover:from-purple-700 hover:to-red-600"
   },
   { 
     slug: "government", 
@@ -104,7 +104,7 @@ const industries: Industry[] = [
     displayName: "Government & Public Sector",
     description: "Communicate public messages effectively with outdoor advertising for government initiatives.",
     icon: Landmark,
-    color: "bg-cyan-50 border-cyan-200 hover:bg-cyan-100"
+    color: "bg-gradient-to-br from-slate-900 to-gray-800 text-white border-slate-700 hover:from-slate-800 hover:to-gray-700"
   },
   { 
     slug: "healthcare", 
@@ -112,7 +112,7 @@ const industries: Industry[] = [
     displayName: "Healthcare",
     description: "Promote healthcare services and medical facilities with trusted outdoor advertising solutions.",
     icon: Heart,
-    color: "bg-rose-50 border-rose-200 hover:bg-rose-100"
+    color: "bg-gradient-to-br from-red-800 to-red-600 text-white border-red-600 hover:from-red-700 hover:to-red-500"
   },
   { 
     slug: "property", 
@@ -120,7 +120,7 @@ const industries: Industry[] = [
     displayName: "Property & Real Estate",
     description: "Showcase properties and real estate services with high-visibility outdoor advertising.",
     icon: Home,
-    color: "bg-emerald-50 border-emerald-200 hover:bg-emerald-100"
+    color: "bg-gradient-to-br from-purple-900 to-slate-800 text-white border-purple-700 hover:from-purple-800 hover:to-slate-700"
   },
   { 
     slug: "recruitment", 
@@ -128,7 +128,7 @@ const industries: Industry[] = [
     displayName: "Recruitment",
     description: "Attract top talent with strategic outdoor advertising for recruitment agencies and job opportunities.",
     icon: Users,
-    color: "bg-violet-50 border-violet-200 hover:bg-violet-100"
+    color: "bg-gradient-to-br from-slate-800 to-purple-800 text-white border-slate-600 hover:from-slate-700 hover:to-purple-700"
   },
   { 
     slug: "retail", 
@@ -136,7 +136,7 @@ const industries: Industry[] = [
     displayName: "Retail",
     description: "Drive store visits and sales with compelling outdoor advertising for retail brands.",
     icon: ShoppingBag,
-    color: "bg-teal-50 border-teal-200 hover:bg-teal-100"
+    color: "bg-gradient-to-br from-red-900 to-purple-800 text-white border-red-700 hover:from-red-800 hover:to-purple-700"
   },
   { 
     slug: "startups", 
@@ -144,7 +144,7 @@ const industries: Industry[] = [
     displayName: "Startups & Scaleups",
     description: "Build brand awareness for startups and growing companies with cost-effective outdoor advertising.",
     icon: Rocket,
-    color: "bg-lime-50 border-lime-200 hover:bg-lime-100"
+    color: "bg-gradient-to-br from-purple-700 to-red-600 text-white border-purple-600 hover:from-purple-600 hover:to-red-500"
   },
   { 
     slug: "technology", 
@@ -152,7 +152,7 @@ const industries: Industry[] = [
     displayName: "Technology",
     description: "Promote tech products and services with innovative outdoor advertising campaigns.",
     icon: Monitor,
-    color: "bg-sky-50 border-sky-200 hover:bg-sky-100"
+    color: "bg-gradient-to-br from-slate-900 to-purple-900 text-white border-slate-700 hover:from-slate-800 hover:to-purple-800"
   },
   { 
     slug: "travel", 
@@ -160,7 +160,7 @@ const industries: Industry[] = [
     displayName: "Travel & Hospitality",
     description: "Inspire wanderlust and promote travel destinations with captivating outdoor advertising.",
     icon: Plane,
-    color: "bg-fuchsia-50 border-fuchsia-200 hover:bg-fuchsia-100"
+    color: "bg-gradient-to-br from-purple-800 to-slate-700 text-white border-purple-600 hover:from-purple-700 hover:to-slate-600"
   },
 ];
 
@@ -211,17 +211,17 @@ const Industries = () => {
                 >
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        <IconComponent className="h-6 w-6 text-primary" />
+                      <div className="p-2 bg-white/20 rounded-lg">
+                        <IconComponent className="h-6 w-6 text-white" />
                       </div>
-                      <CardTitle className="text-lg">{industry.displayName}</CardTitle>
+                      <CardTitle className="text-lg text-white">{industry.displayName}</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
+                    <p className="text-white/90 text-sm mb-4 line-clamp-3">
                       {industry.description}
                     </p>
-                    <Button variant="ghost" size="sm" className="group p-0 h-auto text-primary hover:text-primary">
+                    <Button variant="ghost" size="sm" className="group p-0 h-auto text-white hover:text-white/80 bg-white/10 hover:bg-white/20 px-3 py-1 rounded">
                       Learn More 
                       <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Button>
