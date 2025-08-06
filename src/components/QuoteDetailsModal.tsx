@@ -20,9 +20,11 @@ import {
   Globe,
   MessageSquare,
   Copy,
-  Check
+  Check,
+  Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { inchargePeriods } from '@/data/inchargePeriods';
 
 interface QuoteItem {
   id: string;
@@ -73,6 +75,36 @@ export function QuoteDetailsModal({ quote, isOpen, onClose }: QuoteDetailsModalP
       style: 'currency',
       currency: 'GBP',
     }).format(amount);
+  };
+
+  const getInchargePeriodDates = (periodNumbers: number[]) => {
+    const selectedPeriods = inchargePeriods.filter(p => 
+      periodNumbers.includes(p.period_number)
+    );
+    
+    if (selectedPeriods.length === 0) return null;
+    
+    // Sort by period number to get earliest start and latest end
+    selectedPeriods.sort((a, b) => a.period_number - b.period_number);
+    
+    const startDate = selectedPeriods[0].start_date;
+    const endDate = selectedPeriods[selectedPeriods.length - 1].end_date;
+    
+    return { startDate, endDate, periods: selectedPeriods };
+  };
+
+  const formatDateRange = (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    return `${start.toLocaleDateString('en-GB', { 
+      day: 'numeric', 
+      month: 'short' 
+    })} - ${end.toLocaleDateString('en-GB', { 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric' 
+    })}`;
   };
 
   const getStatusColor = (status: string) => {
@@ -259,6 +291,26 @@ export function QuoteDetailsModal({ quote, isOpen, onClose }: QuoteDetailsModalP
                           <span className="font-medium">Periods:</span>
                           <span>{item.selected_periods.length} periods</span>
                         </div>
+                        
+                        {/* Campaign Dates */}
+                        {(() => {
+                          const campaignDates = item.campaign_start_date && item.campaign_end_date 
+                            ? { 
+                                startDate: item.campaign_start_date, 
+                                endDate: item.campaign_end_date 
+                              }
+                            : getInchargePeriodDates(item.selected_periods);
+                          
+                          return campaignDates ? (
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">Campaign Dates:</span>
+                              <span className="text-primary font-medium">
+                                {formatDateRange(campaignDates.startDate, campaignDates.endDate)}
+                              </span>
+                            </div>
+                          ) : null;
+                        })()}
                       </div>
                       
                       <div className="space-y-2">
@@ -282,12 +334,12 @@ export function QuoteDetailsModal({ quote, isOpen, onClose }: QuoteDetailsModalP
                           )}
                           {item.discount_percentage && item.discount_percentage > 0 && (
                             <>
-                              <div className="flex justify-between text-muted-foreground">
-                                <span>Subtotal:</span>
-                                <span>{formatCurrency((item.original_cost || item.total_cost) + (item.discount_amount || 0))}</span>
+                              <div className="flex justify-between text-muted-foreground line-through">
+                                <span>Original Price:</span>
+                                <span>{formatCurrency(item.original_cost || (item.total_cost + (item.discount_amount || 0)))}</span>
                               </div>
-                              <div className="flex justify-between text-green-600">
-                                <span>Discount ({item.discount_percentage}%):</span>
+                              <div className="flex justify-between text-green-600 font-medium">
+                                <span>Discount ({item.discount_percentage.toFixed(1)}%):</span>
                                 <span>-{formatCurrency(item.discount_amount || 0)}</span>
                               </div>
                               <Separator className="my-1" />
