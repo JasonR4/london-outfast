@@ -950,7 +950,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                     onClick={handleSubmitQuote}
                     size="lg"
                     className="w-full"
-                    disabled={quotesLoading || !currentQuote?.quote_items?.length}
+                    disabled={quotesLoading}
                   >
                     {quotesLoading ? "Submitting..." : "Submit Quote Request"}
                   </Button>
