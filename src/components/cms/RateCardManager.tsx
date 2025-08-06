@@ -52,6 +52,7 @@ interface DiscountTier {
 interface ProductionCostTier {
   id: string;
   media_format_id: string;
+  location_area?: string | null;
   category?: string;
   min_quantity: number;
   max_quantity: number | null;
@@ -65,6 +66,7 @@ interface ProductionCostTier {
 interface CreativeDesignCostTier {
   id: string;
   media_format_id: string;
+  location_area?: string | null;
   category?: string;
   min_quantity: number;
   max_quantity: number | null;
@@ -199,6 +201,7 @@ export function RateCardManager() {
     try {
       const productionData = {
         media_format_id: formData.get('media_format_id') as string,
+        location_area: formData.get('location_area') as string || null,
         category: formData.get('category') as string,
         min_quantity: parseInt(formData.get('min_quantity') as string),
         max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
@@ -234,6 +237,7 @@ export function RateCardManager() {
     try {
       const creativeData = {
         media_format_id: formData.get('media_format_id') as string,
+        location_area: formData.get('location_area') as string || null,
         category: formData.get('category') as string,
         min_quantity: parseInt(formData.get('min_quantity') as string),
         max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
@@ -734,6 +738,45 @@ export function RateCardManager() {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
+                          <Label htmlFor="location_area">Location Area (Optional)</Label>
+                          <Select name="location_area" defaultValue={editingProduction?.location_area || ''}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select location area (leave empty for global)" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Global (All Areas)</SelectItem>
+                              <SelectItem value="GD">GD (General Distribution)</SelectItem>
+                              {londonAreas.flatMap(area => 
+                                area.areas.map(borough => (
+                                  <SelectItem key={borough} value={borough}>{borough}</SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="category">Production Category</Label>
+                          <Select name="category" defaultValue={editingProduction?.category} required>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
+                              <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
+                              <SelectItem value="National Rail & Commuter Rail">National Rail & Commuter Rail</SelectItem>
+                              <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
+                              <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
+                              <SelectItem value="Retail & Leisure Environments">Retail & Leisure Environments</SelectItem>
+                              <SelectItem value="Airports">Airports</SelectItem>
+                              <SelectItem value="Street Furniture">Street Furniture</SelectItem>
+                              <SelectItem value="Programmatic DOOH (pDOOH)">Programmatic DOOH (pDOOH)</SelectItem>
+                              <SelectItem value="Ambient / Guerrilla OOH">Ambient / Guerrilla OOH</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
                           <Label htmlFor="min_quantity">Min Quantity</Label>
                           <Input
                             name="min_quantity"
@@ -752,26 +795,6 @@ export function RateCardManager() {
                           />
                         </div>
                       </div>
-                       <div>
-                         <Label htmlFor="category">Production Category</Label>
-                         <Select name="category" defaultValue={editingProduction?.category} required>
-                           <SelectTrigger>
-                             <SelectValue placeholder="Select category" />
-                           </SelectTrigger>
-                           <SelectContent>
-                             <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
-                             <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
-                             <SelectItem value="National Rail & Commuter Rail">National Rail & Commuter Rail</SelectItem>
-                             <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
-                             <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
-                             <SelectItem value="Retail & Leisure Environments">Retail & Leisure Environments</SelectItem>
-                             <SelectItem value="Airports">Airports</SelectItem>
-                             <SelectItem value="Street Furniture">Street Furniture</SelectItem>
-                             <SelectItem value="Programmatic DOOH (pDOOH)">Programmatic DOOH (pDOOH)</SelectItem>
-                             <SelectItem value="Ambient / Guerrilla OOH">Ambient / Guerrilla OOH</SelectItem>
-                           </SelectContent>
-                         </Select>
-                       </div>
                        <div>
                          <Label htmlFor="cost_per_unit">Cost per Unit (£)</Label>
                          <Input
@@ -811,6 +834,8 @@ export function RateCardManager() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Format</TableHead>
+                    <TableHead>Location Area</TableHead>
+                    <TableHead>Category</TableHead>
                     <TableHead>Min Quantity</TableHead>
                     <TableHead>Max Quantity</TableHead>
                     <TableHead>Cost per Unit</TableHead>
@@ -822,6 +847,8 @@ export function RateCardManager() {
                   {productionTiers.map((production) => (
                     <TableRow key={production.id}>
                       <TableCell>{production.media_formats?.format_name}</TableCell>
+                      <TableCell>{production.location_area || 'Global'}</TableCell>
+                      <TableCell>{production.category}</TableCell>
                       <TableCell>{production.min_quantity}</TableCell>
                       <TableCell>{production.max_quantity || 'Unlimited'}</TableCell>
                       <TableCell>£{production.cost_per_unit}</TableCell>
@@ -894,32 +921,49 @@ export function RateCardManager() {
                           </Select>
                         </div>
                         <div>
-                          <Label htmlFor="category">OOH Category</Label>
-                          <Select name="category" defaultValue={editingCreative?.category} required>
+                          <Label htmlFor="location_area">Location Area (Optional)</Label>
+                          <Select name="location_area" defaultValue={editingCreative?.location_area || ''}>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select category" />
+                              <SelectValue placeholder="Select location area (leave empty for global)" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
-                              <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
-                              <SelectItem value="National Rail & Commuter Rail">National Rail & Commuter Rail</SelectItem>
-                              <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
-                              <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
-                              <SelectItem value="Retail & Leisure Environments">Retail & Leisure Environments</SelectItem>
-                              <SelectItem value="Airports">Airports</SelectItem>
-                              <SelectItem value="Street Furniture">Street Furniture</SelectItem>
-                              <SelectItem value="Programmatic DOOH (pDOOH)">Programmatic DOOH (pDOOH)</SelectItem>
-                              <SelectItem value="Ambient / Guerrilla OOH">Ambient / Guerrilla OOH</SelectItem>
-                              <SelectItem value="Sampling, Stunts & Flash Mob Advertising">Sampling, Stunts & Flash Mob Advertising</SelectItem>
-                              <SelectItem value="Brand Experience & Pop-Up Activations">Brand Experience & Pop-Up Activations</SelectItem>
-                              <SelectItem value="Mobile Advertising Solutions">Mobile Advertising Solutions</SelectItem>
-                              <SelectItem value="Aerial Advertising">Aerial Advertising</SelectItem>
-                              <SelectItem value="Cinema Advertising">Cinema Advertising</SelectItem>
-                              <SelectItem value="Sports Ground & Stadium Advertising">Sports Ground & Stadium Advertising</SelectItem>
-                              <SelectItem value="Radio">Radio</SelectItem>
+                              <SelectItem value="">Global (All Areas)</SelectItem>
+                              <SelectItem value="GD">GD (General Distribution)</SelectItem>
+                              {londonAreas.flatMap(area => 
+                                area.areas.map(borough => (
+                                  <SelectItem key={borough} value={borough}>{borough}</SelectItem>
+                                ))
+                              )}
                             </SelectContent>
                           </Select>
                         </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="category">OOH Category</Label>
+                        <Select name="category" defaultValue={editingCreative?.category} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
+                            <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
+                            <SelectItem value="National Rail & Commuter Rail">National Rail & Commuter Rail</SelectItem>
+                            <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
+                            <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
+                            <SelectItem value="Retail & Leisure Environments">Retail & Leisure Environments</SelectItem>
+                            <SelectItem value="Airports">Airports</SelectItem>
+                            <SelectItem value="Street Furniture">Street Furniture</SelectItem>
+                            <SelectItem value="Programmatic DOOH (pDOOH)">Programmatic DOOH (pDOOH)</SelectItem>
+                            <SelectItem value="Ambient / Guerrilla OOH">Ambient / Guerrilla OOH</SelectItem>
+                            <SelectItem value="Sampling, Stunts & Flash Mob Advertising">Sampling, Stunts & Flash Mob Advertising</SelectItem>
+                            <SelectItem value="Brand Experience & Pop-Up Activations">Brand Experience & Pop-Up Activations</SelectItem>
+                            <SelectItem value="Mobile Advertising Solutions">Mobile Advertising Solutions</SelectItem>
+                            <SelectItem value="Aerial Advertising">Aerial Advertising</SelectItem>
+                            <SelectItem value="Cinema Advertising">Cinema Advertising</SelectItem>
+                            <SelectItem value="Sports Ground & Stadium Advertising">Sports Ground & Stadium Advertising</SelectItem>
+                            <SelectItem value="Radio">Radio</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -982,6 +1026,7 @@ export function RateCardManager() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Media Format</TableHead>
+                    <TableHead>Location Area</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Min Quantity</TableHead>
                     <TableHead>Max Quantity</TableHead>
@@ -994,6 +1039,7 @@ export function RateCardManager() {
                   {creativeTiers.map((tier) => (
                     <TableRow key={tier.id}>
                       <TableCell>{tier.media_formats?.format_name || 'N/A'}</TableCell>
+                      <TableCell>{tier.location_area || 'Global'}</TableCell>
                       <TableCell>{tier.category}</TableCell>
                       <TableCell>{tier.min_quantity}</TableCell>
                       <TableCell>{tier.max_quantity || 'Unlimited'}</TableCell>
