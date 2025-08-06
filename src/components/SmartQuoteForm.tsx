@@ -82,7 +82,16 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
   // Calculate total pricing
   const calculateTotalPrice = () => {
+    console.log('💰 calculateTotalPrice called');
+    console.log('📊 Current state:', {
+      selectedFormat: selectedFormat?.name,
+      selectedLocations,
+      selectedPeriods,
+      quantity
+    });
+
     if (!selectedFormat || selectedLocations.length === 0 || selectedPeriods.length === 0) {
+      console.log('❌ Missing requirements for pricing');
       return { mediaPrice: 0, productionCost: 0, totalCost: 0 };
     }
 
@@ -91,29 +100,40 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
     selectedLocations.forEach(location => {
       try {
+        console.log(`🏙️ Calculating price for location: ${location}`);
+        console.log(`📅 Selected periods: ${selectedPeriods}`);
+        
         const mediaPrice = calculatePrice(location, selectedPeriods);
         const productionPrice = calculateProductionCost(location, quantity);
         
-        // Handle null/undefined responses from calculatePrice
+        console.log(`💰 Media price result:`, mediaPrice);
+        console.log(`🏭 Production price result:`, productionPrice);
+        
+        // Handle media price
         if (mediaPrice !== null && mediaPrice !== undefined) {
-          totalMediaPrice += typeof mediaPrice === 'number' ? mediaPrice : (mediaPrice.totalPrice || 0);
+          const priceToAdd = typeof mediaPrice === 'number' ? mediaPrice : (mediaPrice.totalPrice || 0);
+          totalMediaPrice += priceToAdd;
+          console.log(`➕ Added media price: ${priceToAdd}, total: ${totalMediaPrice}`);
         }
         
-        // Handle null/undefined responses from calculateProductionCost
+        // Handle production price
         if (productionPrice && productionPrice.totalCost !== undefined) {
           totalProductionCost += productionPrice.totalCost;
+          console.log(`➕ Added production cost: ${productionPrice.totalCost}, total: ${totalProductionCost}`);
         }
       } catch (error) {
-        console.warn(`Error calculating price for location ${location}:`, error);
-        // Continue with other locations even if one fails
+        console.warn(`⚠️ Error calculating price for location ${location}:`, error);
       }
     });
 
-    return {
+    const result = {
       mediaPrice: totalMediaPrice,
       productionCost: totalProductionCost,
       totalCost: totalMediaPrice + totalProductionCost
     };
+    
+    console.log('🎯 Final pricing result:', result);
+    return result;
   };
 
   const pricing = calculateTotalPrice();
