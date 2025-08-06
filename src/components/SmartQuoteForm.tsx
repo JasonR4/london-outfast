@@ -35,7 +35,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { currentQuote, addQuoteItem, submitQuote, createOrGetQuote, loading: quotesLoading } = useQuotes();
+  const { currentQuote, addQuoteItem, removeQuoteItem, submitQuote, createOrGetQuote, loading: quotesLoading } = useQuotes();
   
   console.log('✅ useQuotes hook loaded successfully');
   
@@ -950,18 +950,55 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
               <CardHeader>
                 <CardTitle className="text-lg">Your Quote ({currentQuote.quote_items.length} items)</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {currentQuote.quote_items.map((item) => (
-                  <div key={item.id} className="bg-muted/50 p-3 rounded-lg">
-                    <div className="font-medium text-sm">{item.format_name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {item.selected_areas?.length} areas • {item.selected_periods?.length} periods
-                    </div>
-                    <div className="text-sm font-medium text-primary">
-                      £{item.total_cost?.toLocaleString()}
-                    </div>
-                  </div>
-                ))}
+               <CardContent className="space-y-4">
+                 {currentQuote.quote_items.map((item) => (
+                   <div key={item.id} className="bg-muted/50 p-4 rounded-lg border">
+                     <div className="flex justify-between items-start mb-3">
+                       <div className="flex-1">
+                         <div className="font-medium">{item.format_name}</div>
+                         <div className="text-sm text-muted-foreground">
+                           Qty: {item.quantity} • {item.selected_areas?.length} areas • {item.selected_periods?.length} periods
+                         </div>
+                       </div>
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => removeQuoteItem(item.id)}
+                         className="text-muted-foreground hover:text-destructive"
+                       >
+                         Remove
+                       </Button>
+                     </div>
+                     
+                     {/* Detailed cost breakdown */}
+                     <div className="space-y-2 text-sm">
+                       <div className="flex justify-between">
+                         <span>Media Cost:</span>
+                         <span>£{(item.base_cost || 0).toLocaleString()}</span>
+                       </div>
+                       <div className="flex justify-between">
+                         <span>Production Cost:</span>
+                         <span>£{(item.production_cost || 0).toLocaleString()}</span>
+                       </div>
+                       {(item.creative_cost || 0) > 0 && (
+                         <div className="flex justify-between">
+                           <span>Creative Development:</span>
+                           <span>£{(item.creative_cost || 0).toLocaleString()}</span>
+                         </div>
+                       )}
+                       {(item.discount_amount || 0) > 0 && (
+                         <div className="flex justify-between text-green-600 dark:text-green-400">
+                           <span>Discount ({item.discount_percentage}%):</span>
+                           <span>-£{(item.discount_amount || 0).toLocaleString()}</span>
+                         </div>
+                       )}
+                       <div className="border-t pt-2 flex justify-between font-medium">
+                         <span>Subtotal:</span>
+                         <span>£{(item.total_cost || 0).toLocaleString()}</span>
+                       </div>
+                     </div>
+                   </div>
+                 ))}
                 <div className="border-t border-border pt-3 mt-3 space-y-2">
                   <div className="flex justify-between items-center">
                     <span>Subtotal (exc VAT):</span>
