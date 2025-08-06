@@ -95,6 +95,7 @@ export function RateCardManager() {
         production_cost: parseFloat(formData.get('production_cost') as string) || 0,
         sale_price: formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null,
         reduced_price: formData.get('reduced_price') ? parseFloat(formData.get('reduced_price') as string) : null,
+        location_markup_percentage: parseFloat(formData.get('location_markup_percentage') as string) || 0,
         is_active: formData.get('is_active') === 'true'
       };
 
@@ -247,12 +248,19 @@ export function RateCardManager() {
                         </div>
                         <div>
                           <Label htmlFor="location_area">Location Area</Label>
-                          <Input
-                            name="location_area"
-                            defaultValue={editingRate?.location_area}
-                            placeholder="e.g., Central London"
-                            required
-                          />
+                          <Select name="location_area" defaultValue={editingRate?.location_area} required>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select location area" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="GD">GD (General Distribution)</SelectItem>
+                              {londonAreas.flatMap(area => 
+                                area.areas.map(borough => (
+                                  <SelectItem key={borough} value={borough}>{borough}</SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div>
                           <Label htmlFor="base_rate_per_incharge">Base Rate per Incharge (£)</Label>
@@ -262,6 +270,16 @@ export function RateCardManager() {
                             step="0.01"
                             defaultValue={editingRate?.base_rate_per_incharge}
                             required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="location_markup_percentage">Location Markup (%)</Label>
+                          <Input
+                            name="location_markup_percentage"
+                            type="number"
+                            step="0.01"
+                            defaultValue={editingRate?.location_markup_percentage || 0}
+                            placeholder="0"
                           />
                         </div>
                         <div>
