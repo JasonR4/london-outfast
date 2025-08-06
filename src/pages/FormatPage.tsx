@@ -187,6 +187,19 @@ const FormatPage = () => {
     const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
     const grandTotal = campaignTotal + productionTotal + creativeTotal;
 
+    // Calculate campaign dates from selected periods
+    let campaignStartDate = null;
+    let campaignEndDate = null;
+    
+    if (selectedPeriods.length > 0) {
+      const sortedPeriods = [...selectedPeriods].sort((a, b) => a - b);
+      const firstPeriod = inchargePeriods.find(p => p.period_number === sortedPeriods[0]);
+      const lastPeriod = inchargePeriods.find(p => p.period_number === sortedPeriods[sortedPeriods.length - 1]);
+      
+      if (firstPeriod) campaignStartDate = firstPeriod.start_date;
+      if (lastPeriod) campaignEndDate = lastPeriod.end_date;
+    }
+
     // Create quote item
     const quoteItem = {
       format_name: format.name,
@@ -198,8 +211,8 @@ const FormatPage = () => {
       creative_cost: creativeTotal,
       base_cost: campaignTotal,
       total_cost: grandTotal,
-      campaign_start_date: selectedStartDate?.toISOString().split('T')[0],
-      campaign_end_date: selectedEndDate?.toISOString().split('T')[0],
+      campaign_start_date: campaignStartDate,
+      campaign_end_date: campaignEndDate,
       creative_needs: needsCreative ? `${creativeAssets} creative asset${creativeAssets > 1 ? 's' : ''} needed` : 'Client has artwork ready'
     };
 
