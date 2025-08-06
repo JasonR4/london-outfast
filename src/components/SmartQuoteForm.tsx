@@ -37,9 +37,13 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const navigate = useNavigate();
   const { currentQuote, addQuoteItem, submitQuote, createOrGetQuote, loading: quotesLoading } = useQuotes();
   
+  console.log('✅ useQuotes hook loaded successfully');
+  
   // Auth state
   const [user, setUser] = useState<User | null>(null);
   console.log('👤 Current user state:', user?.email || 'Not authenticated');
+  
+  console.log('📋 Current quote state:', currentQuote?.id || 'No quote');
 
   // Form state
   const [activeTab, setActiveTab] = useState("search");
