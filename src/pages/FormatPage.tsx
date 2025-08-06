@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { calculateVAT, formatCurrencyWithVAT } from '@/utils/vat';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -1060,9 +1061,17 @@ const FormatPage = () => {
                                     <span>£{creativeTotal.toFixed(2)}</span>
                                   </div>
                                 )}
-                                <div className="flex justify-between font-bold text-lg border-t pt-3 bg-primary/10 -mx-2 px-2 py-2 rounded">
-                                  <span>Estimated Total:</span>
+                                <div className="flex justify-between font-bold text-lg border-t pt-3 bg-muted/30 -mx-2 px-2 py-2 rounded">
+                                  <span>Subtotal (exc VAT):</span>
                                   <span>£{grandTotal.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-base text-muted-foreground">
+                                  <span>VAT (20%):</span>
+                                  <span>£{(grandTotal * 0.20).toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between font-bold text-xl border-t pt-2 bg-primary/10 -mx-2 px-2 py-2 rounded text-primary">
+                                  <span>Total inc VAT:</span>
+                                  <span>£{(grandTotal * 1.20).toFixed(2)}</span>
                                 </div>
                               </div>
 
