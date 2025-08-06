@@ -14,6 +14,9 @@ interface QuoteFormSectionProps {
   budgetRange: string;
   campaignObjective: string;
   targetAudience: string;
+  selectedLocations?: string[];
+  selectedPeriods?: number[];
+  creativeNeeds?: string;
   onBack: () => void;
 }
 
@@ -21,7 +24,10 @@ const QuoteFormSection = ({
   prefilledFormats, 
   budgetRange, 
   campaignObjective, 
-  targetAudience, 
+  targetAudience,
+  selectedLocations = [],
+  selectedPeriods = [],
+  creativeNeeds = "",
   onBack 
 }: QuoteFormSectionProps) => {
   const { toast } = useToast();
@@ -142,7 +148,7 @@ const QuoteFormSection = ({
               </p>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Budget Range</Label>
                   <p className="text-lg font-semibold">{budgetRange}</p>
@@ -159,6 +165,52 @@ const QuoteFormSection = ({
                   <Label className="text-sm font-medium text-muted-foreground">Format Count</Label>
                   <p className="text-lg font-semibold">{prefilledFormats.length} formats</p>
                 </div>
+                
+                {selectedLocations.length > 0 && (
+                  <div className="md:col-span-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Priority Locations</Label>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {selectedLocations.slice(0, 8).map((location, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {location}
+                        </Badge>
+                      ))}
+                      {selectedLocations.length > 8 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{selectedLocations.length - 8} more
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {selectedPeriods.length > 0 && (
+                  <div className="md:col-span-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Campaign Periods</Label>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {selectedPeriods.slice(0, 6).map((period, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          Period {period}
+                        </Badge>
+                      ))}
+                      {selectedPeriods.length > 6 && (
+                        <Badge variant="secondary" className="text-xs">
+                          +{selectedPeriods.length - 6} more
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedPeriods.length} periods selected
+                    </p>
+                  </div>
+                )}
+                
+                {creativeNeeds && (
+                  <div className="md:col-span-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Creative Requirements</Label>
+                    <p className="text-sm mt-1">{creativeNeeds}</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

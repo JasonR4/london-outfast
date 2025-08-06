@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ArrowRight, Target, Users, MapPin, Clock, DollarSign, Eye, Zap } from 'lucide-react';
 import QuoteFormSection from './QuoteFormSection';
 import { LocationSelector } from './LocationSelector';
+import { Checkbox } from '@/components/ui/checkbox';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Answer {
   questionId: string;
@@ -17,7 +19,7 @@ interface Question {
   id: string;
   title: string;
   subtitle?: string;
-  type: 'single' | 'multiple' | 'range' | 'location';
+  type: 'single' | 'multiple' | 'range' | 'location' | 'periods';
   options: Array<{
     label: string;
     value: string | number;
@@ -173,6 +175,36 @@ const questions: Question[] = [
     subtitle: 'Select your priority locations for maximum impact',
     type: 'location',
     options: [] // Will be handled by LocationSelector
+  },
+  {
+    id: 'campaign_periods',
+    title: 'Select your campaign periods',
+    subtitle: 'Choose the incharge periods for your campaign',
+    type: 'periods',
+    options: [] // Will be handled by period selector
+  },
+  {
+    id: 'creative_needs',
+    title: 'What are your creative requirements?',
+    subtitle: 'This helps us understand your design and creative needs',
+    type: 'single',
+    options: [
+      {
+        label: 'I have my creative assets ready',
+        value: 'ready',
+        scores: { 'billboards': 2, 'digital_billboards': 2, 'bus_shelters': 2, 'tube_ads': 2, 'taxi_ads': 2 }
+      },
+      {
+        label: 'I need design assistance',
+        value: 'design_help',
+        scores: { 'billboards': 1, 'digital_billboards': 1, 'bus_shelters': 1, 'tube_ads': 1, 'taxi_ads': 1 }
+      },
+      {
+        label: 'I need full creative development',
+        value: 'full_creative',
+        scores: { 'billboards': 0, 'digital_billboards': 0, 'bus_shelters': 0, 'tube_ads': 0, 'taxi_ads': 0 }
+      }
+    ]
   },
   {
     id: 'urgency',
@@ -337,6 +369,26 @@ export const OOHConfigurator = () => {
   const [selectedValues, setSelectedValues] = useState<(string | number)[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [showQuoteForm, setShowQuoteForm] = useState(false);
+  const [inchargePeriods, setInchargePeriods] = useState<any[]>([]);
+
+  // Fetch incharge periods on component mount
+  useEffect(() => {
+    const fetchInchargePeriods = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('incharge_periods')
+          .select('*')
+          .order('period_number', { ascending: true });
+        
+        if (error) throw error;
+        setInchargePeriods(data || []);
+      } catch (error) {
+        console.error('Error fetching incharge periods:', error);
+      }
+    };
+
+    fetchInchargePeriods();
+  }, []);
 
   const getVisibleQuestions = () => {
     return questions.filter(q => !q.condition || q.condition(answers));
@@ -417,6 +469,17 @@ export const OOHConfigurator = () => {
     
     if (currentQuestion.type === 'location') {
       combinedScores = calculateLocationScores(selectedValues as string[]);
+    } else if (currentQuestion.type === 'periods') {
+      // For periods, add scoring based on campaign length
+      const periodCount = selectedValues.length;
+      combinedScores = {
+        'billboards': periodCount >= 3 ? 5 : 3,
+        'digital_billboards': periodCount >= 2 ? 6 : 4,
+        'bus_shelters': periodCount >= 4 ? 7 : 5,
+        'tube_ads': periodCount >= 2 ? 6 : 4,
+        'taxi_ads': periodCount >= 1 ? 5 : 3,
+        'local_billboards': periodCount >= 4 ? 6 : 4
+      };
     } else if (currentQuestion.type === 'multiple') {
       selectedValues.forEach(value => {
         const option = currentQuestion.options.find(opt => opt.value === value);
@@ -584,12 +647,35 @@ export const OOHConfigurator = () => {
     }
   };
 
+  const getSelectedLocations = (): string[] => {
+    const locationsAnswer = answers.find(a => a.questionId === 'preferred_locations')?.value;
+    return Array.isArray(locationsAnswer) ? locationsAnswer as string[] : [];
+  };
+
+  const getSelectedPeriods = (): number[] => {
+    const periodsAnswer = answers.find(a => a.questionId === 'campaign_periods')?.value;
+    return Array.isArray(periodsAnswer) ? periodsAnswer as number[] : [];
+  };
+
+  const getCreativeNeeds = (): string => {
+    const creativeAnswer = answers.find(a => a.questionId === 'creative_needs')?.value;
+    switch(creativeAnswer) {
+      case 'ready': return 'Creative assets ready';
+      case 'design_help': return 'Need design assistance';
+      case 'full_creative': return 'Need full creative development';
+      default: return '';
+    }
+  };
+
   if (showQuoteForm) {
     return <QuoteFormSection 
       prefilledFormats={getSelectedFormats()}
       budgetRange={getBudgetRange()}
       campaignObjective={getCampaignObjective()}
       targetAudience={getTargetAudience()}
+      selectedLocations={getSelectedLocations()}
+      selectedPeriods={getSelectedPeriods()}
+      creativeNeeds={getCreativeNeeds()}
       onBack={() => setShowQuoteForm(false)}
     />;
   }
@@ -681,6 +767,33 @@ export const OOHConfigurator = () => {
               description="Choose the London areas most important for your campaign"
               maxHeight="300px"
             />
+          ) : currentQuestion.type === 'periods' ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">Select multiple periods for your campaign</p>
+              <div className="grid gap-2 max-h-64 overflow-y-auto">
+                {inchargePeriods.map((period) => (
+                  <div key={period.id} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50">
+                    <Checkbox
+                      id={`period-${period.id}`}
+                      checked={selectedValues.includes(period.period_number)}
+                      onCheckedChange={(checked) => {
+                        const newValues = checked 
+                          ? [...selectedValues, period.period_number]
+                          : selectedValues.filter(v => v !== period.period_number);
+                        setSelectedValues(newValues);
+                      }}
+                    />
+                    <label htmlFor={`period-${period.id}`} className="flex-1 cursor-pointer">
+                      <div className="font-medium">Period {period.period_number}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {new Date(period.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - {' '}
+                        {new Date(period.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </div>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : (
             currentQuestion.options.map((option, index) => {
               const isSelected = selectedValues.includes(option.value);
