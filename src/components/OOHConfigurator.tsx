@@ -609,6 +609,32 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
     return recommendations;
   };
 
+  // Helper functions to extract data from answers
+  const getSelectedLocations = (): string[] => {
+    const locationAnswer = answers.find(a => a.questionId === 'preferred_locations');
+    if (!locationAnswer) return [];
+    const value = locationAnswer.value;
+    return Array.isArray(value) ? value.map(String) : [String(value)];
+  };
+
+  const getSelectedPeriods = (): number[] => {
+    const periodsAnswer = answers.find(a => a.questionId === 'campaign_periods');
+    if (!periodsAnswer) return [];
+    const value = periodsAnswer.value;
+    return Array.isArray(value) ? value.map(Number) : [Number(value)];
+  };
+
+  const getCreativeNeeds = (): string => {
+    const creativeAnswer = answers.find(a => a.questionId === 'creative_needs');
+    if (!creativeAnswer) return '';
+    switch(creativeAnswer.value) {
+      case 'ready': return 'Creative assets ready';
+      case 'design_help': return 'Need design assistance';
+      case 'full_creative': return 'Need full creative development';
+      default: return String(creativeAnswer.value);
+    }
+  };
+
   const restart = () => {
     setCurrentQuestionIndex(0);
     setAnswers([]);
@@ -691,25 +717,6 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
     }
   };
 
-  const getSelectedLocations = (): string[] => {
-    const locationsAnswer = answers.find(a => a.questionId === 'preferred_locations')?.value;
-    return Array.isArray(locationsAnswer) ? locationsAnswer as string[] : [];
-  };
-
-  const getSelectedPeriods = (): number[] => {
-    const periodsAnswer = answers.find(a => a.questionId === 'campaign_periods')?.value;
-    return Array.isArray(periodsAnswer) ? periodsAnswer as number[] : [];
-  };
-
-  const getCreativeNeeds = (): string => {
-    const creativeAnswer = answers.find(a => a.questionId === 'creative_needs')?.value;
-    switch(creativeAnswer) {
-      case 'ready': return 'Creative assets ready';
-      case 'design_help': return 'Need design assistance';
-      case 'full_creative': return 'Need full creative development';
-      default: return '';
-    }
-  };
 
   if (showQuoteForm) {
     return <QuoteFormSection 
