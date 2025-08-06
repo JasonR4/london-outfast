@@ -54,6 +54,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const { 
     calculatePrice, 
     calculateProductionCost, 
+    calculateCreativeCost,
     getAvailablePeriodsForLocation,
     getAllAvailablePeriods,
     loading: rateCardsLoading 
@@ -92,11 +93,21 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
     if (!selectedFormat || selectedLocations.length === 0 || selectedPeriods.length === 0) {
       console.log('❌ Missing requirements for pricing');
-      return { mediaPrice: 0, productionCost: 0, totalCost: 0 };
+      return { 
+        mediaPrice: 0, 
+        productionCost: 0, 
+        creativeCost: 0, 
+        totalCost: 0, 
+        totalDiscount: 0,
+        originalCost: 0 
+      };
     }
 
     let totalMediaPrice = 0;
     let totalProductionCost = 0;
+    let totalCreativeCost = 0;
+    let totalDiscount = 0;
+    let originalMediaCost = 0;
 
     selectedLocations.forEach(location => {
       try {
@@ -105,15 +116,28 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         
         const mediaPrice = calculatePrice(location, selectedPeriods);
         const productionPrice = calculateProductionCost(location, quantity);
+        const creativePrice = calculateCreativeCost(location, quantity, selectedFormat.category);
         
         console.log(`💰 Media price result:`, mediaPrice);
         console.log(`🏭 Production price result:`, productionPrice);
+        console.log(`🎨 Creative price result:`, creativePrice);
         
-        // Handle media price
+        // Handle media price and discount
         if (mediaPrice !== null && mediaPrice !== undefined) {
           const priceToAdd = typeof mediaPrice === 'number' ? mediaPrice : (mediaPrice.totalPrice || 0);
+          const originalPrice = typeof mediaPrice === 'object' ? 
+            (mediaPrice.basePrice || mediaPrice.adjustedRate || 0) * selectedPeriods.length : priceToAdd;
+          
           totalMediaPrice += priceToAdd;
-          console.log(`➕ Added media price: ${priceToAdd}, total: ${totalMediaPrice}`);
+          originalMediaCost += originalPrice;
+          
+          // Calculate discount amount
+          if (typeof mediaPrice === 'object' && mediaPrice.discount > 0) {
+            const discountAmount = originalPrice * (mediaPrice.discount / 100);
+            totalDiscount += discountAmount;
+          }
+          
+          console.log(`➕ Added media price: ${priceToAdd}, original: ${originalPrice}, total: ${totalMediaPrice}`);
         }
         
         // Handle production price
@@ -121,15 +145,25 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
           totalProductionCost += productionPrice.totalCost;
           console.log(`➕ Added production cost: ${productionPrice.totalCost}, total: ${totalProductionCost}`);
         }
+
+        // Handle creative price
+        if (creativePrice && creativePrice.totalCost !== undefined) {
+          totalCreativeCost += creativePrice.totalCost;
+          console.log(`➕ Added creative cost: ${creativePrice.totalCost}, total: ${totalCreativeCost}`);
+        }
       } catch (error) {
         console.warn(`⚠️ Error calculating price for location ${location}:`, error);
       }
     });
 
+    const subtotal = totalMediaPrice + totalProductionCost + totalCreativeCost;
     const result = {
       mediaPrice: totalMediaPrice,
       productionCost: totalProductionCost,
-      totalCost: totalMediaPrice + totalProductionCost
+      creativeCost: totalCreativeCost,
+      totalCost: subtotal,
+      totalDiscount,
+      originalCost: originalMediaCost + totalProductionCost + totalCreativeCost
     };
     
     console.log('🎯 Final pricing result:', result);
@@ -162,7 +196,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         selected_periods: selectedPeriods,
         selected_areas: selectedLocations,
         production_cost: pricing.productionCost,
-        creative_cost: 0,
+        creative_cost: pricing.creativeCost,
         base_cost: pricing.mediaPrice,
         total_cost: pricing.totalCost
       });
@@ -421,6 +455,16 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           <CardTitle className="text-lg">Pricing Breakdown</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                          {pricing.totalDiscount > 0 && (
+                            <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg">
+                              <div className="text-sm font-medium text-green-800 dark:text-green-200">
+                                💰 Volume Discount Applied
+                              </div>
+                              <div className="text-xs text-green-600 dark:text-green-300">
+                                You saved £{pricing.totalDiscount.toLocaleString()} with this selection
+                              </div>
+                            </div>
+                          )}
                           <div className="flex justify-between items-center">
                             <span>Media Costs:</span>
                             <span className="font-medium">£{pricing.mediaPrice.toLocaleString()}</span>
@@ -429,6 +473,18 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                             <span>Production Costs:</span>
                             <span className="font-medium">£{pricing.productionCost.toLocaleString()}</span>
                           </div>
+                          {pricing.creativeCost > 0 && (
+                            <div className="flex justify-between items-center">
+                              <span>Creative Costs:</span>
+                              <span className="font-medium">£{pricing.creativeCost.toLocaleString()}</span>
+                            </div>
+                          )}
+                          {pricing.totalDiscount > 0 && (
+                            <div className="flex justify-between items-center text-green-600 dark:text-green-400">
+                              <span>Discount:</span>
+                              <span className="font-medium">-£{pricing.totalDiscount.toLocaleString()}</span>
+                            </div>
+                          )}
                           <div className="border-t border-border pt-4">
                             <div className="flex justify-between items-center text-lg font-semibold">
                               <span>Total Cost:</span>
