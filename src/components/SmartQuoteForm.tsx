@@ -872,20 +872,20 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                             </div>
                           </div>
                         )}
-                        <div className="flex justify-between items-center">
-                          <span>Media Costs:</span>
-                          <span className="font-medium">£{pricing.mediaPrice.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span>Production Costs:</span>
-                          <span className="font-medium">£{pricing.productionCost.toLocaleString()}</span>
-                        </div>
-                        {needsCreative && pricing.creativeCost > 0 && (
-                          <div className="flex justify-between items-center">
-                            <span>Creative Development ({creativeAssets} assets):</span>
-                            <span className="font-medium">£{pricing.creativeCost.toLocaleString()}</span>
-                          </div>
-                        )}
+                         <div className="flex justify-between items-center">
+                           <span>Media Costs:</span>
+                           <span className="font-medium">£{(pricing.mediaPrice * quantity).toLocaleString()}</span>
+                         </div>
+                         <div className="flex justify-between items-center">
+                           <span>Production Costs:</span>
+                           <span className="font-medium">£{(pricing.productionCost * quantity).toLocaleString()}</span>
+                         </div>
+                         {needsCreative && pricing.creativeCost > 0 && (
+                           <div className="flex justify-between items-center">
+                             <span>Creative Development ({creativeAssets} assets):</span>
+                             <span className="font-medium">£{pricing.creativeCost.toLocaleString()}</span>
+                           </div>
+                         )}
                         {pricing.totalDiscount > 0 && (
                           <div className="flex justify-between items-center text-green-600 dark:text-green-400">
                             <span>Discount:</span>
