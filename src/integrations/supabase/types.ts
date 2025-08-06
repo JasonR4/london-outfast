@@ -96,7 +96,15 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "creative_design_cost_tiers_media_format_id_fkey"
+            columns: ["media_format_id"]
+            isOneToOne: false
+            referencedRelation: "media_formats"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       discount_tiers: {
         Row: {
