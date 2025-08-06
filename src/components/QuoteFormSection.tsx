@@ -202,12 +202,26 @@ const QuoteFormSection = ({
                 </div>
               </div>
               
-              {/* ALWAYS SHOW PERIODS SECTION FOR DEBUGGING */}
+              {/* SHOW ONLY CHOSEN PERIODS */}
               <div className="mb-6 p-4 bg-blue-100 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-lg">
-                <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-2">📅 PERIODS DEBUG</h4>
-                <div className="text-xs space-y-1">
+                <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-2">📅 YOUR SELECTED PERIODS</h4>
+                <div className="text-xs space-y-2">
                   <div><strong>Selected Period Numbers:</strong> {selectedPeriods?.join(', ') || 'NONE'}</div>
-                  <div><strong>Available Periods in DB:</strong> {inchargePeriods.map(p => `${p.period_number} (${p.start_date} to ${p.end_date})`).join(', ') || 'LOADING...'}</div>
+                  {selectedPeriods?.length > 0 && (
+                    <div>
+                      <strong>Period Details:</strong>
+                      <div className="mt-1 space-y-1">
+                        {selectedPeriods.map(periodNum => {
+                          const period = inchargePeriods.find(p => p.period_number === periodNum);
+                          return (
+                            <div key={periodNum} className="ml-2">
+                              • Period {periodNum}: {period ? `${period.start_date} to ${period.end_date}` : 'Date not found'}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               
