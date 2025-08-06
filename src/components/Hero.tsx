@@ -3,10 +3,12 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { getSEODataForPage, updateMetaTags } from "@/utils/seo";
+import { useHomepageContent } from "@/hooks/useHomepageContent";
 import londonHero from "@/assets/london-hero.jpg";
 
 const Hero = () => {
   const navigate = useNavigate();
+  const { content, loading } = useHomepageContent('hero');
 
   useEffect(() => {
     const loadHomepageSEO = async () => {
@@ -20,6 +22,10 @@ const Hero = () => {
 
     loadHomepageSEO();
   }, []);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">

@@ -1,84 +1,58 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useHomepageContent } from "@/hooks/useHomepageContent";
 
 const HowItWorks = () => {
-  const steps = [
-    {
-      number: "01",
-      title: "Submit your brief",
-      description: "Format, location, timing, budget"
-    },
-    {
-      number: "02",
-      title: "Get a quote same-day",
-      description: "We'll show you what's live and what performs"
-    },
-    {
-      number: "03",
-      title: "Approve & book",
-      description: "We handle all logistics and confirmations"
-    },
-    {
-      number: "04",
-      title: "Go live",
-      description: "With full Proof of Posting (POP) and campaign support"
-    }
-  ];
+  const { content, loading } = useHomepageContent('how_it_works');
 
-  const addOns = [
-    "Creative production (print or motion)",
-    "Audience targeting by postcode, footfall or Mosaic type",
-    "Programmatic DOOH campaigns with live optimisation"
-  ];
+  if (loading) {
+    return <div className="py-20 px-4 text-center">Loading...</div>;
+  }
+
+  const steps = content?.steps || [];
+  const addons = content?.addons || [];
 
   return (
-    <section className="py-20 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* How It Works */}
+    <section className="py-20 px-4 bg-background">
+      <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-4 text-lg px-6 py-2">
-            HOW IT WORKS
+            {content?.badge_text || "SIMPLE 4-STEP PROCESS"}
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Simple. Fast. Effective.
+            {content?.title || "How We Get Your Campaign Live"}
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            From brief to billboard in record time
+            {content?.description || "From brief to live campaign in record time"}
           </p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-          {steps.map((step, index) => (
-            <Card key={index} className="bg-gradient-card border-border hover:shadow-card transition-all duration-300 relative overflow-hidden group">
-              <div className="absolute top-4 right-4 text-6xl font-bold text-london-red/20 group-hover:text-london-red/40 transition-colors">
-                {step.number}
-              </div>
-              <CardHeader className="relative z-10">
-                <CardTitle className="text-xl text-foreground mb-4">{step.title}</CardTitle>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+          {steps.map((step: any, index: number) => (
+            <Card key={index} className="bg-card border-border hover:shadow-card transition-all duration-300 text-center">
+              <CardHeader>
+                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-primary-foreground">{step.number}</span>
+                </div>
+                <CardTitle className="text-xl text-foreground">{step.title}</CardTitle>
               </CardHeader>
-              <CardContent className="relative z-10">
+              <CardContent>
                 <p className="text-muted-foreground">{step.description}</p>
               </CardContent>
             </Card>
           ))}
         </div>
-
-        {/* Add-ons */}
-        <div className="bg-muted/30 rounded-2xl p-8 md:p-12">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              Optional Add-ons
-            </h3>
-            <p className="text-muted-foreground">
-              Enhanced services to maximise your campaign performance
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {addOns.map((addon, index) => (
-              <div key={index} className="bg-card p-6 rounded-lg border border-border hover:border-accent transition-colors">
+        
+        <div className="text-center">
+          <h3 className="text-2xl font-bold mb-8 text-foreground">
+            {content?.addons_title || "Optional Add-Ons"}
+          </h3>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            {addons.map((addon: string, index: number) => (
+              <div key={index} className="bg-muted/30 p-4 rounded-lg border border-border">
                 <div className="flex items-center gap-3">
-                  <span className="text-lg">{addon}</span>
+                  <div className="w-2 h-2 bg-accent rounded-full flex-shrink-0"></div>
+                  <span className="text-foreground">{addon}</span>
                 </div>
               </div>
             ))}

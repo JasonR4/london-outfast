@@ -92,6 +92,39 @@ export type Database = {
         }
         Relationships: []
       }
+      homepage_content: {
+        Row: {
+          content: Json
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          section_key: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          section_key: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          section_key?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: []
+      }
       media_library: {
         Row: {
           alt_text: string | null

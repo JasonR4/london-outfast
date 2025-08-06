@@ -1,36 +1,35 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useHomepageContent } from "@/hooks/useHomepageContent";
 
 const FormatLinks = () => {
   const navigate = useNavigate();
+  const { content, loading } = useHomepageContent('format_links');
 
-  const popularFormats = [
-    { name: "6 Sheet Tube Panel", slug: "6-sheet-tube-panel" },
-    { name: "Digital 48 Sheet", slug: "digital-48-sheet" },
-    { name: "Bus Superside", slug: "bus-superside" },
-    { name: "Phone Kiosk Panels", slug: "phone-kiosk-panels" },
-    { name: "Digital Escalator Panels", slug: "digital-escalator-panels" },
-    { name: "Mega 6 Roadside", slug: "mega-6-roadside" }
-  ];
+  if (loading) {
+    return <div className="py-16 px-4 text-center">Loading formats...</div>;
+  }
+
+  const popularFormats = content?.formats || [];
 
   return (
     <section className="py-16 px-4 bg-muted/20">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <Badge variant="secondary" className="mb-4">
-            POPULAR OOH FORMATS
+            {content?.badge_text || "POPULAR OOH FORMATS"}
           </Badge>
           <h2 className="text-3xl font-bold mb-4">
-            Quick Links to London OOH Advertising
+            {content?.title || "Quick Links to London OOH Advertising"}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Explore our most popular Out-of-Home advertising formats across London
+            {content?.description || "Explore our most popular Out-of-Home advertising formats across London"}
           </p>
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {popularFormats.map((format) => (
+          {popularFormats.map((format: any) => (
             <Button
               key={format.slug}
               variant="outline"
@@ -47,7 +46,7 @@ const FormatLinks = () => {
             onClick={() => navigate('/outdoor-media')}
             variant="default"
           >
-            View All Format Options
+            {content?.view_all_text || "View All Format Options"}
           </Button>
         </div>
       </div>

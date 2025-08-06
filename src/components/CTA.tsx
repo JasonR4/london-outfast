@@ -1,80 +1,47 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import oohNetwork from "@/assets/ooh-network.jpg";
+import { useHomepageContent } from "@/hooks/useHomepageContent";
 
 const CTA = () => {
   const navigate = useNavigate();
-  
-  const taglines = [
-    "We're Media Buyers and Planners. And We're Very, Very Good at It.",
-    "Buy Smarter. Plan Faster. Cut Out the Middle.",
-    "OOH in London, Without the Agency Overhead.",
-    "Same-Day Quotes. Best Price Guarantee. Zero Delay."
-  ];
+  const { content, loading } = useHomepageContent('cta');
+
+  if (loading) {
+    return <div className="py-20 px-4 text-center">Loading...</div>;
+  }
 
   return (
-    <section className="py-20 px-4 relative overflow-hidden">
-      {/* Background */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
-        style={{ backgroundImage: `url(${oohNetwork})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-background" />
-      </div>
-      
-      <div className="relative z-10 max-w-6xl mx-auto text-center">
+    <section className="py-20 px-4 bg-gradient-cta">
+      <div className="max-w-4xl mx-auto text-center">
         <Badge variant="secondary" className="mb-6 text-lg px-6 py-2">
-          READY TO LAUNCH?
+          {content?.badge_text || "READY TO GET STARTED?"}
         </Badge>
         
-        <h2 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent">
-          Get Your Quote Today
+        <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+          {content?.title || "Get Your London OOH Quote Today"}
         </h2>
         
-        <p className="text-xl md:text-2xl text-foreground font-semibold mb-4">
-          We don't do "rate cards." We do real-time pricing, on your terms.
+        <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
+          {content?.description || "Join hundreds of brands who trust us with their Out-of-Home media buying in London"}
         </p>
         
-        <p className="text-lg text-muted-foreground mb-12 max-w-3xl mx-auto">
-          Get a custom OOH quote today — no obligation, no pressure.
-        </p>
-        
-        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button 
             size="lg" 
-            className="text-xl px-12 py-8 shadow-glow animate-pulse-glow"
+            className="text-lg px-8 py-6 shadow-glow"
             onClick={() => navigate('/quote')}
           >
-            GET MY MEDIA QUOTE
+            {content?.primary_button_text || "GET INSTANT QUOTE"}
           </Button>
           <Button 
             variant="outline" 
             size="lg" 
-            className="text-xl px-12 py-8"
+            className="text-lg px-8 py-6"
             onClick={() => navigate('/quote')}
           >
-            REQUEST CALLBACK
+            {content?.secondary_button_text || "SPEAK TO AN EXPERT"}
           </Button>
-        </div>
-        
-        {/* Taglines */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
-          {taglines.map((tagline, index) => (
-            <div key={index} className="bg-gradient-card p-6 rounded-lg border border-border">
-              <p className="text-lg font-medium text-accent">{tagline}</p>
-            </div>
-          ))}
-        </div>
-        
-        {/* Contact Info */}
-        <div className="mt-16 pt-8 border-t border-border">
-          <p className="text-muted-foreground mb-2">
-            Same-day quotes • Best price guarantee • 100% London coverage
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Media Buying London - London's fastest media planners and buyers
-          </p>
         </div>
       </div>
     </section>
