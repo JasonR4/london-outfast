@@ -214,7 +214,7 @@ export const useQuotes = () => {
     contact_phone?: string;
     contact_company?: string;
     additional_requirements?: string;
-    timeline?: string;
+    website?: string;
   }): Promise<boolean> => {
     try {
       if (!currentQuote?.id) {

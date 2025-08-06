@@ -19,24 +19,34 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState({
-    contact_name: '',
+    first_name: '',
+    last_name: '',
     contact_email: '',
     contact_phone: '',
-    contact_company: '',
-    timeline: '',
+    company_name: '',
+    website: '',
     additional_requirements: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.contact_name || !formData.contact_email) {
+    if (!formData.first_name || !formData.last_name || !formData.contact_email) {
       return;
     }
 
     setIsSubmitting(true);
     
-    const success = await submitQuote(formData);
+    const submissionData = {
+      contact_name: `${formData.first_name} ${formData.last_name}`.trim(),
+      contact_email: formData.contact_email,
+      contact_phone: formData.contact_phone,
+      contact_company: formData.company_name,
+      additional_requirements: formData.additional_requirements,
+      website: formData.website
+    };
+    
+    const success = await submitQuote(submissionData);
     
     if (success) {
       setIsSubmitted(true);
@@ -82,18 +92,29 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="contact_name">Full Name *</Label>
-            <Input
-              id="contact_name"
-              value={formData.contact_name}
-              onChange={(e) => handleInputChange('contact_name', e.target.value)}
-              required
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="first_name">First Name *</Label>
+              <Input
+                id="first_name"
+                value={formData.first_name}
+                onChange={(e) => handleInputChange('first_name', e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="last_name">Last Name *</Label>
+              <Input
+                id="last_name"
+                value={formData.last_name}
+                onChange={(e) => handleInputChange('last_name', e.target.value)}
+                required
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="contact_email">Email *</Label>
+            <Label htmlFor="contact_email">Email Address *</Label>
             <Input
               id="contact_email"
               type="email"
@@ -110,57 +131,73 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
               type="tel"
               value={formData.contact_phone}
               onChange={(e) => handleInputChange('contact_phone', e.target.value)}
+              placeholder="+44 20 1234 5678"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="contact_company">Company</Label>
+            <Label htmlFor="company_name">Company Name</Label>
             <Input
-              id="contact_company"
-              value={formData.contact_company}
-              onChange={(e) => handleInputChange('contact_company', e.target.value)}
+              id="company_name"
+              value={formData.company_name}
+              onChange={(e) => handleInputChange('company_name', e.target.value)}
+              placeholder="Your Company Ltd"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="timeline">Campaign Timeline</Label>
-            <Select value={formData.timeline} onValueChange={(value) => handleInputChange('timeline', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="When do you want to start?" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="asap">As soon as possible</SelectItem>
-                <SelectItem value="1-2weeks">1-2 weeks</SelectItem>
-                <SelectItem value="1month">Within 1 month</SelectItem>
-                <SelectItem value="2-3months">2-3 months</SelectItem>
-                <SelectItem value="planning">Just planning ahead</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="website">Website</Label>
+            <Input
+              id="website"
+              type="url"
+              value={formData.website}
+              onChange={(e) => handleInputChange('website', e.target.value)}
+              placeholder="https://www.yourcompany.com"
+            />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="additional_requirements">Additional Requirements</Label>
+            <Label htmlFor="additional_requirements">Campaign Details & Requirements</Label>
             <Textarea
               id="additional_requirements"
               value={formData.additional_requirements}
               onChange={(e) => handleInputChange('additional_requirements', e.target.value)}
-              placeholder="Tell us about your campaign goals, target audience, or any special requirements..."
+              placeholder="Tell us about your campaign objectives, target audience, creative requirements, or any specific needs..."
               rows={3}
             />
+          </div>
+
+          {/* Disclaimer */}
+          <div className="bg-muted/50 rounded-lg p-4 border border-border">
+            <div className="flex items-start gap-2">
+              <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="h-2 w-2 rounded-full bg-primary/60"></div>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <p className="font-medium text-foreground mb-1">Important Quote Information:</p>
+                <ul className="space-y-1 text-xs">
+                  <li>• This quote is subject to validation based on precise media location selection and availability</li>
+                  <li>• Final pricing may vary depending on specific site availability and campaign dates</li>
+                  <li>• This quote is valid for 30 days from the date of issue</li>
+                  <li>• No booking is confirmed until a signed contract is returned and deposit received</li>
+                  <li>• All campaigns are subject to our standard terms and conditions</li>
+                </ul>
+              </div>
+            </div>
           </div>
 
           <div className="pt-4">
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isSubmitting || !formData.contact_name || !formData.contact_email}
+              disabled={isSubmitting || !formData.first_name || !formData.last_name || !formData.contact_email}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Quote Request'}
+              {isSubmitting ? 'Submitting Quote Request...' : 'Submit Quote Request'}
             </Button>
           </div>
 
           <div className="text-xs text-muted-foreground text-center">
-            By submitting, you agree to receive communication about your quote request.
+            By submitting this request, you agree to receive communication regarding your quote and our services.
           </div>
         </form>
       </CardContent>
