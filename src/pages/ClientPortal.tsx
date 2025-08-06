@@ -71,14 +71,20 @@ export default function ClientPortal() {
     const pendingQuoteId = localStorage.getItem('pending_quote_link');
     if (pendingQuoteId) {
       try {
+        // Link quote by session ID (which is what we stored)
         const { error } = await supabase
           .from('quotes')
           .update({ user_id: userId })
-          .eq('id', pendingQuoteId);
+          .eq('user_session_id', pendingQuoteId)
+          .eq('status', 'submitted');
 
         if (!error) {
           localStorage.removeItem('pending_quote_link');
           toast.success('Your quote has been linked to your account!');
+          // Refresh quotes after linking
+          fetchUserQuotes(userId);
+        } else {
+          console.error('Error linking quote:', error);
         }
       } catch (err) {
         console.error('Error linking quote:', err);
