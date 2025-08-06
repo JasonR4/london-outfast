@@ -400,6 +400,11 @@ export function useRateCards(formatSlug?: string) {
     return rateCards.map(r => r.location_area);
   };
 
+  const getAvailableCreativeCategories = () => {
+    const categories = [...new Set(creativeCostTiers.map(tier => tier.category))];
+    return categories.length > 0 ? categories : ['Basic Design', 'Standard Design', 'Premium Design'];
+  };
+
   return {
     rateCards,
     discountTiers,
@@ -415,6 +420,7 @@ export function useRateCards(formatSlug?: string) {
     calculateCreativeCost,
     getAvailableLocations,
     getAvailablePeriodsForLocation,
-    getAllAvailablePeriods
+    getAllAvailablePeriods,
+    getAvailableCreativeCategories
   };
 }

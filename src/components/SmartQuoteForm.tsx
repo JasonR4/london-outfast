@@ -39,6 +39,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const [selectedPeriods, setSelectedPeriods] = useState<number[]>([]);
   const [needsCreative, setNeedsCreative] = useState(false);
   const [creativeAssets, setCreativeAssets] = useState(1);
+  const [creativeLevel, setCreativeLevel] = useState("Basic Design");
   const [creativeReadiness, setCreativeReadiness] = useState<'ready' | 'adjustments' | 'development'>('ready');
   console.log('📊 Selected periods state:', selectedPeriods);
   const [contactDetails, setContactDetails] = useState({
@@ -67,15 +68,6 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     basePrice: 1000
   });
 
-  // Creative capacity logic
-  const creativeCapacity = useCreativeCapacity({
-    sites: quantity,
-    creativeAssets,
-    needsCreative,
-    creativeCostPerAsset: 85,
-    siteCost: 1000
-  });
-
   // Rate cards for selected format
   const { 
     calculatePrice, 
@@ -83,8 +75,23 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     calculateCreativeCost,
     getAvailablePeriodsForLocation,
     getAllAvailablePeriods,
+    getAvailableCreativeCategories,
     loading: rateCardsLoading 
   } = useRateCards(selectedFormat?.slug);
+
+  // Get dynamic creative cost per asset from CMS
+  const dynamicCreativeCost = selectedFormat && selectedLocations.length > 0 && creativeAssets > 0 
+    ? calculateCreativeCost(selectedLocations[0], creativeAssets, creativeLevel)
+    : null;
+  
+  // Creative capacity logic
+  const creativeCapacity = useCreativeCapacity({
+    sites: quantity,
+    creativeAssets,
+    needsCreative,
+    creativeCostPerAsset: dynamicCreativeCost?.costPerUnit || 0,
+    siteCost: 1000
+  });
 
   // Initialize quote on component mount
   useEffect(() => {
@@ -142,8 +149,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         
         const mediaPrice = calculatePrice(location, selectedPeriods);
         const productionPrice = calculateProductionCost(location, quantity);
-        // Calculate creative cost based on creative assets and readiness
-        const creativePrice = needsCreative ? calculateCreativeCost(location, creativeAssets, 'Standard Design') : null;
+        // Calculate creative cost based on creative assets and selected level
+        const creativePrice = needsCreative ? calculateCreativeCost(location, creativeAssets, creativeLevel) : null;
         
         console.log(`💰 Media price result:`, mediaPrice);
         console.log(`🏭 Production price result:`, productionPrice);
@@ -525,38 +532,55 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           />
                         </div>
                         
-                        {needsCreative && (
-                          <div className="space-y-4">
-                            <div>
-                              <Label className="text-sm font-medium">Creative Readiness</Label>
-                              <Select value={creativeReadiness} onValueChange={(value: 'ready' | 'adjustments' | 'development') => setCreativeReadiness(value)}>
-                                <SelectTrigger className="mt-1">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="ready">Ready to go</SelectItem>
-                                  <SelectItem value="adjustments">Need minor adjustments</SelectItem>
-                                  <SelectItem value="development">Need full creative development</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            
-                            <div>
-                              <Label className="text-sm font-medium">Number of Creative Assets</Label>
-                              <p className="text-xs text-muted-foreground mb-2">How many different creative designs do you need?</p>
-                              <Select value={creativeAssets.toString()} onValueChange={(value) => setCreativeAssets(parseInt(value))}>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20].map(num => (
-                                    <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        )}
+                         {needsCreative && (
+                           <div className="space-y-4">
+                             <div>
+                               <Label className="text-sm font-medium">Creative Design Level</Label>
+                               <p className="text-xs text-muted-foreground mb-2">Choose the level of creative design service you need</p>
+                               <Select value={creativeLevel} onValueChange={setCreativeLevel}>
+                                 <SelectTrigger>
+                                   <SelectValue placeholder="Select creative level" />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                   {getAvailableCreativeCategories().map((category) => (
+                                     <SelectItem key={category} value={category}>
+                                       {category}
+                                     </SelectItem>
+                                   ))}
+                                 </SelectContent>
+                               </Select>
+                             </div>
+                             
+                             <div>
+                               <Label className="text-sm font-medium">Creative Readiness</Label>
+                               <Select value={creativeReadiness} onValueChange={(value: 'ready' | 'adjustments' | 'development') => setCreativeReadiness(value)}>
+                                 <SelectTrigger className="mt-1">
+                                   <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                   <SelectItem value="ready">Ready to go</SelectItem>
+                                   <SelectItem value="adjustments">Need minor adjustments</SelectItem>
+                                   <SelectItem value="development">Need full creative development</SelectItem>
+                                 </SelectContent>
+                               </Select>
+                             </div>
+                             
+                             <div>
+                               <Label className="text-sm font-medium">Number of Creative Assets</Label>
+                               <p className="text-xs text-muted-foreground mb-2">How many different creative designs do you need?</p>
+                               <Select value={creativeAssets.toString()} onValueChange={(value) => setCreativeAssets(parseInt(value))}>
+                                 <SelectTrigger>
+                                   <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20].map(num => (
+                                     <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                                   ))}
+                                 </SelectContent>
+                               </Select>
+                             </div>
+                           </div>
+                         )}
                       </div>
 
                       {/* Campaign Periods */}
