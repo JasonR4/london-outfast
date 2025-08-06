@@ -8,6 +8,7 @@ import QuoteFormSection from './QuoteFormSection';
 import { LocationSelector } from './LocationSelector';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
+import { useQuotes } from '@/hooks/useQuotes';
 
 interface Answer {
   questionId: string;
@@ -374,6 +375,8 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
   const [showResults, setShowResults] = useState(false);
   const [showQuoteForm, setShowQuoteForm] = useState(false);
   const [inchargePeriods, setInchargePeriods] = useState<any[]>([]);
+  const [isCreatingQuote, setIsCreatingQuote] = useState(false);
+  const { addQuoteItem, createOrGetQuote } = useQuotes();
 
   // Fetch incharge periods on component mount
   useEffect(() => {
@@ -768,11 +771,46 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
               <Button onClick={restart} variant="outline" className="flex-1">
                 Start Over
               </Button>
-              <Button onClick={() => {
-                setShowQuoteForm(true);
-                onComplete?.();
-              }} className="flex-1">
-                Get Detailed Quote
+              <Button 
+                onClick={async () => {
+                  setIsCreatingQuote(true);
+                  try {
+                    // Create or get quote first
+                    await createOrGetQuote();
+                    
+                    // Get recommendations and add them as quote items
+                    const recommendations = calculateRecommendations();
+                    const selectedLocations = getSelectedLocations();
+                    const selectedPeriods = getSelectedPeriods();
+                    
+                    // Add quote items for each recommendation
+                    for (const rec of recommendations) {
+                      const formatInfo = formatDescriptions[rec.format as keyof typeof formatDescriptions];
+                      await addQuoteItem({
+                        format_name: formatInfo?.name || rec.format,
+                        format_slug: rec.format,
+                        quantity: 1, // Default quantity
+                        selected_periods: selectedPeriods,
+                        selected_areas: selectedLocations,
+                        production_cost: 0,
+                        creative_cost: 0,
+                        base_cost: 1000, // Placeholder base cost
+                        total_cost: 1000,
+                        creative_needs: getCreativeNeeds()
+                      });
+                    }
+                    
+                    onComplete?.();
+                  } catch (error) {
+                    console.error('Error creating quote items:', error);
+                  } finally {
+                    setIsCreatingQuote(false);
+                  }
+                }} 
+                className="flex-1"
+                disabled={isCreatingQuote}
+              >
+                {isCreatingQuote ? 'Creating Quote...' : 'Get Detailed Quote'}
               </Button>
             </div>
           </CardContent>
