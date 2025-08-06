@@ -905,10 +905,46 @@ const FormatPage = () => {
                      )}
 
                      <div className="pt-4 border-t space-y-2">
-                       <div className="flex justify-between text-sm">
-                          <span>Campaign Duration:</span>
-                          <span>{selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''} ({selectedPeriods.length * 2} weeks)</span>
+                        {/* ALWAYS SHOW SELECTED PERIODS */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium">Selected Periods:</span>
+                            <span>{selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''}</span>
+                          </div>
+                          {selectedPeriods.length > 0 ? (
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap gap-1">
+                                {selectedPeriods.map((period) => (
+                                  <Badge key={period} variant="secondary" className="text-xs">
+                                    P{period}
+                                  </Badge>
+                                ))}
+                              </div>
+                              {/* Show detailed period dates */}
+                              <div className="text-xs space-y-1">
+                                {selectedPeriods.slice(0, 3).map((periodNumber) => {
+                                  const period = inchargePeriods?.find(p => p.period_number === periodNumber);
+                                  return period ? (
+                                    <div key={periodNumber} className="text-muted-foreground">
+                                      Period {period.period_number}: {new Date(period.start_date).toLocaleDateString('en-GB')} - {new Date(period.end_date).toLocaleDateString('en-GB')}
+                                    </div>
+                                  ) : null;
+                                })}
+                                {selectedPeriods.length > 3 && (
+                                  <div className="text-muted-foreground">
+                                    +{selectedPeriods.length - 3} more periods
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-xs text-muted-foreground">No periods selected</div>
+                          )}
                         </div>
+                        <div className="flex justify-between text-sm">
+                           <span>Campaign Duration:</span>
+                           <span>{selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''} ({selectedPeriods.length * 2} weeks)</span>
+                         </div>
                        <div className="flex justify-between text-sm">
                          <span>Sites Selected:</span>
                          <span>{quantity}</span>
