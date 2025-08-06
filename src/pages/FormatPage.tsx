@@ -398,16 +398,7 @@ const FormatPage = () => {
                 </div>
 
                 {/* Location Selector Column */}
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-bold mb-4 text-center lg:text-left">
-                      Where Can You Book {format.shortName}?
-                    </h3>
-                    <p className="text-muted-foreground mb-6 text-center lg:text-left">
-                      Select areas to explore where this format is available across London.
-                    </p>
-                  </div>
-                  
+                <div>
                   <LocationSelector
                     selectedLocations={selectedAreas}
                     onSelectionChange={setSelectedAreas}
@@ -418,7 +409,7 @@ const FormatPage = () => {
                   />
 
                   {selectedAreas.length > 0 && (
-                    <Card className="p-6">
+                    <Card className="p-6 mt-6">
                       <h4 className="text-lg font-semibold mb-3">Coverage in Selected Areas</h4>
                       <p className="text-muted-foreground text-sm mb-4">
                         {format.shortName} advertising is available in {selectedAreas.length} selected area{selectedAreas.length !== 1 ? 's' : ''}. 
@@ -441,7 +432,7 @@ const FormatPage = () => {
           </section>
 
           {/* Who Uses This Format */}
-          <section className="py-20 px-4 bg-muted/20">
+          <section className="py-20 px-4">
             <div className="max-w-6xl mx-auto">
               <h2 className="text-3xl font-bold text-center mb-12">
                 Who Uses {format.shortName} Ads?
