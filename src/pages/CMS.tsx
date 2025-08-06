@@ -99,6 +99,37 @@ const CMS = () => {
     return null;
   }
 
+  // Check if user has admin/editor access
+  if (userProfile && !['super_admin', 'admin', 'editor'].includes(userProfile.role)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle className="text-center text-destructive">Access Denied</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-muted-foreground">
+              You don't have permission to access the Content Management System.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Current role: <span className="font-medium">{userProfile.role}</span>
+            </p>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => navigate('/')} className="flex-1">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Go Home
+              </Button>
+              <Button onClick={handleSignOut} variant="destructive" className="flex-1">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
