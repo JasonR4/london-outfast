@@ -394,14 +394,18 @@ export type Database = {
           base_rate_per_incharge: number
           created_at: string
           created_by: string | null
+          end_date: string | null
           id: string
+          incharge_period: number | null
           is_active: boolean
+          is_date_specific: boolean | null
           location_area: string
           location_markup_percentage: number | null
           media_format_id: string
           quantity_per_medium: number | null
           reduced_price: number | null
           sale_price: number | null
+          start_date: string | null
           updated_at: string
           updated_by: string | null
         }
@@ -409,14 +413,18 @@ export type Database = {
           base_rate_per_incharge: number
           created_at?: string
           created_by?: string | null
+          end_date?: string | null
           id?: string
+          incharge_period?: number | null
           is_active?: boolean
+          is_date_specific?: boolean | null
           location_area: string
           location_markup_percentage?: number | null
           media_format_id: string
           quantity_per_medium?: number | null
           reduced_price?: number | null
           sale_price?: number | null
+          start_date?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -424,14 +432,18 @@ export type Database = {
           base_rate_per_incharge?: number
           created_at?: string
           created_by?: string | null
+          end_date?: string | null
           id?: string
+          incharge_period?: number | null
           is_active?: boolean
+          is_date_specific?: boolean | null
           location_area?: string
           location_markup_percentage?: number | null
           media_format_id?: string
           quantity_per_medium?: number | null
           reduced_price?: number | null
           sale_price?: number | null
+          start_date?: string | null
           updated_at?: string
           updated_by?: string | null
         }

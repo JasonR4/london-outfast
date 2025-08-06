@@ -8,10 +8,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2, CalendarIcon } from 'lucide-react';
 import { londonAreas } from '@/data/londonAreas';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface MediaFormat {
   id: string;
@@ -33,6 +38,10 @@ interface RateCard {
   location_markup_percentage: number;
   quantity_per_medium: number;
   is_active: boolean;
+  start_date: string | null;
+  end_date: string | null;
+  incharge_period: number;
+  is_date_specific: boolean;
   media_formats?: {
     format_name: string;
   };
@@ -138,7 +147,11 @@ export function RateCardManager() {
         reduced_price: formData.get('reduced_price') ? parseFloat(formData.get('reduced_price') as string) : null,
         location_markup_percentage: parseFloat(formData.get('location_markup_percentage') as string) || 0,
         quantity_per_medium: parseInt(formData.get('quantity_per_medium') as string) || 1,
-        is_active: formData.get('is_active') === 'true'
+        is_active: formData.get('is_active') === 'true',
+        start_date: (formData.get('start_date') as string) || null,
+        end_date: (formData.get('end_date') as string) || null,
+        incharge_period: parseInt(formData.get('incharge_period') as string) || 1,
+        is_date_specific: formData.get('is_date_specific') === 'true'
       };
 
       if (editingRate) {
@@ -492,19 +505,73 @@ export function RateCardManager() {
                             defaultValue={editingRate?.reduced_price || ''}
                             placeholder="Optional reduced price"
                           />
-                        </div>
-                        <div>
-                          <Label htmlFor="is_active">Status</Label>
-                          <Select name="is_active" defaultValue={editingRate?.is_active ? 'true' : 'false'}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="true">Active</SelectItem>
-                              <SelectItem value="false">Inactive</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                         </div>
+                         
+                         {/* Date-specific checkbox */}
+                         <div className="col-span-2">
+                           <div className="flex items-center space-x-2">
+                             <Checkbox 
+                               id="is_date_specific" 
+                               name="is_date_specific"
+                               defaultChecked={editingRate?.is_date_specific}
+                               value="true"
+                             />
+                             <Label htmlFor="is_date_specific">
+                               This is date-specific media (incharge-based)
+                             </Label>
+                           </div>
+                           <p className="text-sm text-muted-foreground mt-1">
+                             Check this for media that requires specific start/end dates (not for guerrilla or ambient)
+                           </p>
+                         </div>
+
+                         {/* Date picker fields */}
+                         <div>
+                           <Label htmlFor="incharge_period">Incharge Period</Label>
+                           <Select name="incharge_period" defaultValue={editingRate?.incharge_period?.toString() || "1"}>
+                             <SelectTrigger>
+                               <SelectValue placeholder="Select period" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26].map(num => (
+                                 <SelectItem key={num} value={num.toString()}>Period {num}</SelectItem>
+                               ))}
+                             </SelectContent>
+                           </Select>
+                         </div>
+                         
+                         <div>
+                           <Label htmlFor="start_date">Start Date</Label>
+                           <Input
+                             name="start_date"
+                             type="date"
+                             defaultValue={editingRate?.start_date || ''}
+                             placeholder="Select start date"
+                           />
+                         </div>
+
+                         <div>
+                           <Label htmlFor="end_date">End Date</Label>
+                           <Input
+                             name="end_date"
+                             type="date"
+                             defaultValue={editingRate?.end_date || ''}
+                             placeholder="Select end date"
+                           />
+                         </div>
+
+                         <div>
+                           <Label htmlFor="is_active">Status</Label>
+                           <Select name="is_active" defaultValue={editingRate?.is_active ? 'true' : 'false'}>
+                             <SelectTrigger>
+                               <SelectValue />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="true">Active</SelectItem>
+                               <SelectItem value="false">Inactive</SelectItem>
+                             </SelectContent>
+                           </Select>
+                         </div>
                       </div>
                       <div className="flex justify-end space-x-2">
                         <Button type="button" variant="outline" onClick={() => setIsRateDialogOpen(false)}>
@@ -519,30 +586,47 @@ export function RateCardManager() {
                 </Dialog>
               </div>
 
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                     <TableHead>Format</TableHead>
-                     <TableHead>Location</TableHead>
-                     <TableHead>Base Rate</TableHead>
-                     <TableHead>Quantity</TableHead>
-                     <TableHead>Location Markup</TableHead>
-                     <TableHead>Sale Price</TableHead>
-                     <TableHead>Reduced Price</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
+               <Table>
+                 <TableHeader>
+                   <TableRow>
+                      <TableHead>Format</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Period</TableHead>
+                      <TableHead>Dates</TableHead>
+                      <TableHead>Base Rate</TableHead>
+                      <TableHead>Quantity</TableHead>
+                      <TableHead>Location Markup</TableHead>
+                      <TableHead>Sale Price</TableHead>
+                      <TableHead>Reduced Price</TableHead>
+                     <TableHead>Status</TableHead>
+                     <TableHead>Actions</TableHead>
+                   </TableRow>
+                 </TableHeader>
                 <TableBody>
-                  {rateCards.map((rate) => (
-                    <TableRow key={rate.id}>
-                       <TableCell>{rate.media_formats?.format_name}</TableCell>
-                       <TableCell>{rate.location_area}</TableCell>
-                       <TableCell>£{rate.base_rate_per_incharge}</TableCell>
-                       <TableCell>{rate.quantity_per_medium}</TableCell>
-                       <TableCell>{rate.location_markup_percentage}%</TableCell>
-                       <TableCell>{rate.sale_price ? `£${rate.sale_price}` : '-'}</TableCell>
-                       <TableCell>{rate.reduced_price ? `£${rate.reduced_price}` : '-'}</TableCell>
+                   {rateCards.map((rate) => (
+                     <TableRow key={rate.id}>
+                        <TableCell>{rate.media_formats?.format_name}</TableCell>
+                        <TableCell>{rate.location_area}</TableCell>
+                        <TableCell>
+                          {rate.is_date_specific ? `Period ${rate.incharge_period}` : '-'}
+                        </TableCell>
+                        <TableCell>
+                          {rate.is_date_specific && rate.start_date && rate.end_date ? (
+                            <div className="text-xs">
+                              <div>{format(new Date(rate.start_date), 'MMM dd, yyyy')}</div>
+                              <div>to {format(new Date(rate.end_date), 'MMM dd, yyyy')}</div>
+                            </div>
+                          ) : (
+                            <Badge variant="outline" className="text-xs">
+                              {rate.is_date_specific ? 'No dates set' : 'Non-date media'}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>£{rate.base_rate_per_incharge}</TableCell>
+                        <TableCell>{rate.quantity_per_medium}</TableCell>
+                        <TableCell>{rate.location_markup_percentage}%</TableCell>
+                        <TableCell>{rate.sale_price ? `£${rate.sale_price}` : '-'}</TableCell>
+                        <TableCell>{rate.reduced_price ? `£${rate.reduced_price}` : '-'}</TableCell>
                       <TableCell>
                         <Badge variant={rate.is_active ? 'default' : 'secondary'}>
                           {rate.is_active ? 'Active' : 'Inactive'}

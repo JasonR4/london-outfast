@@ -11,12 +11,16 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { getFormatBySlug } from '@/data/oohFormats';
 import { updateMetaTags, generateStructuredData, getSEODataForPage } from '@/utils/seo';
-import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone } from 'lucide-react';
+import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone, CalendarIcon } from 'lucide-react';
 import { useRateCards } from '@/hooks/useRateCards';
 import { useLocationSelector } from '@/hooks/useLocationSelector';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Search, X } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const FormatPage = () => {
   const { formatSlug } = useParams();
@@ -31,6 +35,8 @@ const FormatPage = () => {
   const [selectedLocation, setSelectedLocation] = useState<string>('');
   const [needsCreative, setNeedsCreative] = useState<boolean>(false);
   const [creativeAssets, setCreativeAssets] = useState<number>(1);
+  const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>();
+  const [selectedEndDate, setSelectedEndDate] = useState<Date | undefined>();
   
   // Use rate cards hook
   const { rateCards, calculatePrice, calculateProductionCost, getAvailableLocations, loading: rateLoading, error: rateError } = useRateCards(formatSlug);
@@ -570,22 +576,89 @@ const FormatPage = () => {
                           £85 per creative asset
                         </p>
                       </div>
-                    )}
+                     )}
 
-                    <div className="pt-4 border-t space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Campaign Duration:</span>
-                        <span>{incharges} incharge{incharges > 1 ? 's' : ''} ({incharges * 2} weeks)</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Sites Selected:</span>
-                        <span>{quantity}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Lead Time:</span>
-                        <span>5-10 working days</span>
-                      </div>
-                    </div>
+                     {/* Date Selection for Incharge-Based Media */}
+                     {format.category !== 'Ambient / Guerrilla OOH' && (
+                       <div className="space-y-4">
+                         <div>
+                           <Label>Campaign Start Date</Label>
+                           <Popover>
+                             <PopoverTrigger asChild>
+                               <Button
+                                 variant="outline"
+                                 className={cn(
+                                   "w-full justify-start text-left font-normal",
+                                   !selectedStartDate && "text-muted-foreground"
+                                 )}
+                               >
+                                 <CalendarIcon className="mr-2 h-4 w-4" />
+                                 {selectedStartDate ? format(selectedStartDate, "PPP") : <span>Pick start date</span>}
+                               </Button>
+                             </PopoverTrigger>
+                             <PopoverContent className="w-auto p-0" align="start">
+                               <Calendar
+                                 mode="single"
+                                 selected={selectedStartDate}
+                                 onSelect={setSelectedStartDate}
+                                 disabled={(date) => date < new Date()}
+                                 initialFocus
+                                 className={cn("p-3 pointer-events-auto")}
+                               />
+                             </PopoverContent>
+                           </Popover>
+                         </div>
+
+                         <div>
+                           <Label>Campaign End Date</Label>
+                           <Popover>
+                             <PopoverTrigger asChild>
+                               <Button
+                                 variant="outline"
+                                 className={cn(
+                                   "w-full justify-start text-left font-normal",
+                                   !selectedEndDate && "text-muted-foreground"
+                                 )}
+                               >
+                                 <CalendarIcon className="mr-2 h-4 w-4" />
+                                 {selectedEndDate ? format(selectedEndDate, "PPP") : <span>Pick end date</span>}
+                               </Button>
+                             </PopoverTrigger>
+                             <PopoverContent className="w-auto p-0" align="start">
+                               <Calendar
+                                 mode="single"
+                                 selected={selectedEndDate}
+                                 onSelect={setSelectedEndDate}
+                                 disabled={(date) => date < (selectedStartDate || new Date())}
+                                 initialFocus
+                                 className={cn("p-3 pointer-events-auto")}
+                               />
+                             </PopoverContent>
+                           </Popover>
+                         </div>
+                       </div>
+                     )}
+
+                     <div className="pt-4 border-t space-y-2">
+                       <div className="flex justify-between text-sm">
+                         <span>Campaign Duration:</span>
+                         <span>{incharges} incharge{incharges > 1 ? 's' : ''} ({incharges * 2} weeks)</span>
+                       </div>
+                       <div className="flex justify-between text-sm">
+                         <span>Sites Selected:</span>
+                         <span>{quantity}</span>
+                       </div>
+                       {selectedStartDate && selectedEndDate && (
+                         <div className="flex justify-between text-sm">
+                           <span>Campaign Dates:</span>
+                           <span>{format(selectedStartDate, "MMM dd")} - {format(selectedEndDate, "MMM dd, yyyy")}</span>
+                         </div>
+                       )}
+                       <div className="flex justify-between text-sm">
+                         <span>Lead Time:</span>
+                         <span>5-10 working days</span>
+                       </div>
+                     </div>
                   </CardContent>
                 </Card>
               </div>

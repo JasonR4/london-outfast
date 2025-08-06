@@ -11,6 +11,10 @@ export interface RateCard {
   location_markup_percentage: number;
   quantity_per_medium: number;
   is_active: boolean;
+  start_date: string | null;
+  end_date: string | null;
+  incharge_period: number;
+  is_date_specific: boolean;
 }
 
 export interface DiscountTier {
