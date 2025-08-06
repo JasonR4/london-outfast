@@ -27,6 +27,11 @@ const WhyChooseUs = () => {
       title: "Performance Focused",
       description: "Plan by audience, postcode, footfall & WMI (Weighted Media Index).",
       highlight: "Data-driven planning"
+    },
+    {
+      title: "Expert Planning",
+      description: "15+ years buying London media. We know every site.",
+      highlight: "Insider knowledge"
     }
   ];
 
