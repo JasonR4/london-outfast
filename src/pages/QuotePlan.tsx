@@ -119,6 +119,37 @@ export default function QuotePlan() {
                           </div>
                         </div>
 
+                        {(item.campaign_start_date || item.campaign_end_date) && (
+                          <div className="mt-2">
+                            <p className="text-sm font-medium mb-1">Campaign Dates:</p>
+                            <div className="text-sm text-muted-foreground">
+                              {item.campaign_start_date && item.campaign_end_date ? (
+                                `${new Date(item.campaign_start_date).toLocaleDateString('en-GB', { 
+                                  day: 'numeric', 
+                                  month: 'short', 
+                                  year: 'numeric' 
+                                })} - ${new Date(item.campaign_end_date).toLocaleDateString('en-GB', { 
+                                  day: 'numeric', 
+                                  month: 'short', 
+                                  year: 'numeric' 
+                                })}`
+                              ) : item.campaign_start_date ? (
+                                `From ${new Date(item.campaign_start_date).toLocaleDateString('en-GB', { 
+                                  day: 'numeric', 
+                                  month: 'short', 
+                                  year: 'numeric' 
+                                })}`
+                              ) : item.campaign_end_date ? (
+                                `Until ${new Date(item.campaign_end_date).toLocaleDateString('en-GB', { 
+                                  day: 'numeric', 
+                                  month: 'short', 
+                                  year: 'numeric' 
+                                })}`
+                              ) : ''}
+                            </div>
+                          </div>
+                        )}
+
                         {item.selected_areas.length > 0 && (
                           <div className="mt-2">
                             <p className="text-sm font-medium mb-1">Locations:</p>
