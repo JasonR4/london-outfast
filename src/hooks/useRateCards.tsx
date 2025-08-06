@@ -21,6 +21,28 @@ export interface DiscountTier {
   is_active: boolean;
 }
 
+export interface ProductionCostTier {
+  id: string;
+  media_format_id: string;
+  location_area: string | null;
+  min_quantity: number;
+  max_quantity: number | null;
+  cost_per_unit: number;
+  category: string | null;
+  is_active: boolean;
+}
+
+export interface CreativeCostTier {
+  id: string;
+  media_format_id: string;
+  location_area: string | null;
+  min_quantity: number;
+  max_quantity: number | null;
+  cost_per_unit: number;
+  category: string;
+  is_active: boolean;
+}
+
 export interface MediaFormat {
   id: string;
   format_name: string;
@@ -33,6 +55,8 @@ export interface MediaFormat {
 export function useRateCards(formatSlug?: string) {
   const [rateCards, setRateCards] = useState<RateCard[]>([]);
   const [discountTiers, setDiscountTiers] = useState<DiscountTier[]>([]);
+  const [productionCostTiers, setProductionCostTiers] = useState<ProductionCostTier[]>([]);
+  const [creativeCostTiers, setCreativeCostTiers] = useState<CreativeCostTier[]>([]);
   const [mediaFormat, setMediaFormat] = useState<MediaFormat | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -86,12 +110,86 @@ export function useRateCards(formatSlug?: string) {
       if (discountsError) throw discountsError;
       setDiscountTiers(discountsData || []);
 
+      // Get production cost tiers for this format
+      const { data: productionData, error: productionError } = await supabase
+        .from('production_cost_tiers')
+        .select('*')
+        .eq('media_format_id', formatData.id)
+        .eq('is_active', true)
+        .order('location_area', { nullsFirst: true })
+        .order('min_quantity');
+
+      if (productionError) throw productionError;
+      setProductionCostTiers(productionData || []);
+
+      // Get creative cost tiers for this format
+      const { data: creativeData, error: creativeError } = await supabase
+        .from('creative_design_cost_tiers')
+        .select('*')
+        .eq('media_format_id', formatData.id)
+        .eq('is_active', true)
+        .order('location_area', { nullsFirst: true })
+        .order('min_quantity');
+
+      if (creativeError) throw creativeError;
+      setCreativeCostTiers(creativeData || []);
+
     } catch (err) {
       console.error('Error fetching rate data:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch rate data');
     } finally {
       setLoading(false);
     }
+  };
+
+  const calculateProductionCost = (locationArea: string, quantity: number, category?: string) => {
+    const applicableTiers = productionCostTiers.filter(tier => 
+      (tier.location_area === locationArea || tier.location_area === null) &&
+      tier.min_quantity <= quantity &&
+      (!tier.max_quantity || quantity <= tier.max_quantity) &&
+      (!category || tier.category === category || tier.category === null)
+    );
+
+    // Prioritize location-specific over global, then by category match
+    const bestTier = applicableTiers.sort((a, b) => {
+      if (a.location_area && !b.location_area) return -1;
+      if (!a.location_area && b.location_area) return 1;
+      if (a.category === category && b.category !== category) return -1;
+      if (a.category !== category && b.category === category) return 1;
+      return 0;
+    })[0];
+
+    if (!bestTier) return null;
+
+    return {
+      costPerUnit: bestTier.cost_per_unit,
+      totalCost: bestTier.cost_per_unit * quantity,
+      tier: bestTier
+    };
+  };
+
+  const calculateCreativeCost = (locationArea: string, quantity: number, category: string) => {
+    const applicableTiers = creativeCostTiers.filter(tier => 
+      (tier.location_area === locationArea || tier.location_area === null) &&
+      tier.min_quantity <= quantity &&
+      (!tier.max_quantity || quantity <= tier.max_quantity) &&
+      tier.category === category
+    );
+
+    // Prioritize location-specific over global
+    const bestTier = applicableTiers.sort((a, b) => {
+      if (a.location_area && !b.location_area) return -1;
+      if (!a.location_area && b.location_area) return 1;
+      return 0;
+    })[0];
+
+    if (!bestTier) return null;
+
+    return {
+      costPerUnit: bestTier.cost_per_unit,
+      totalCost: bestTier.cost_per_unit * quantity,
+      tier: bestTier
+    };
   };
 
   const calculatePrice = (locationArea: string, incharges: number) => {
@@ -134,10 +232,14 @@ export function useRateCards(formatSlug?: string) {
   return {
     rateCards,
     discountTiers,
+    productionCostTiers,
+    creativeCostTiers,
     mediaFormat,
     loading,
     error,
     calculatePrice,
+    calculateProductionCost,
+    calculateCreativeCost,
     getAvailableLocations
   };
 }

@@ -64,6 +64,7 @@ export type Database = {
           created_by: string | null
           id: string
           is_active: boolean
+          location_area: string | null
           max_quantity: number | null
           media_format_id: string
           min_quantity: number
@@ -77,6 +78,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_active?: boolean
+          location_area?: string | null
           max_quantity?: number | null
           media_format_id: string
           min_quantity: number
@@ -90,6 +92,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_active?: boolean
+          location_area?: string | null
           max_quantity?: number | null
           media_format_id?: string
           min_quantity?: number
@@ -308,6 +311,7 @@ export type Database = {
           created_by: string | null
           id: string
           is_active: boolean
+          location_area: string | null
           max_quantity: number | null
           media_format_id: string
           min_quantity: number
@@ -321,6 +325,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_active?: boolean
+          location_area?: string | null
           max_quantity?: number | null
           media_format_id: string
           min_quantity: number
@@ -334,6 +339,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_active?: boolean
+          location_area?: string | null
           max_quantity?: number | null
           media_format_id?: string
           min_quantity?: number
