@@ -247,60 +247,62 @@ export default function CreateAccount() {
                     <div className="mb-6 p-4 bg-primary/5 border border-primary/10 rounded-lg">
                       <div className="flex items-center gap-2 text-sm text-primary font-medium mb-2">
                         <CheckCircle className="h-4 w-4" />
-                        Details from your quote submission
+                        Your quote submission details
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        We've pre-filled your information. You can edit these if needed.
-                      </p>
+                      <div className="space-y-1 text-sm text-muted-foreground">
+                        <p><span className="font-medium">Name:</span> {formData.firstName} {formData.lastName}</p>
+                        <p><span className="font-medium">Email:</span> {formData.email}</p>
+                        {formData.company && <p><span className="font-medium">Company:</span> {formData.company}</p>}
+                      </div>
                     </div>
                   )}
                   
                   <form onSubmit={handleSignUp} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name</Label>
-                        <Input
-                          id="firstName"
-                          value={formData.firstName}
-                          onChange={(e) => handleInputChange('firstName', e.target.value)}
-                          required
-                          className={hasQuoteData ? 'bg-muted/30' : ''}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name</Label>
-                        <Input
-                          id="lastName"
-                          value={formData.lastName}
-                          onChange={(e) => handleInputChange('lastName', e.target.value)}
-                          required
-                          className={hasQuoteData ? 'bg-muted/30' : ''}
-                        />
-                      </div>
-                    </div>
+                    {!hasQuoteData && (
+                      <>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-2">
+                            <Label htmlFor="firstName">First Name</Label>
+                            <Input
+                              id="firstName"
+                              value={formData.firstName}
+                              onChange={(e) => handleInputChange('firstName', e.target.value)}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="lastName">Last Name</Label>
+                            <Input
+                              id="lastName"
+                              value={formData.lastName}
+                              onChange={(e) => handleInputChange('lastName', e.target.value)}
+                              required
+                            />
+                          </div>
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
-                        required
-                        className={hasQuoteData ? 'bg-muted/30' : ''}
-                      />
-                    </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Email Address</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => handleInputChange('email', e.target.value)}
+                            required
+                          />
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="company">Company Name</Label>
-                      <Input
-                        id="company"
-                        value={formData.company}
-                        onChange={(e) => handleInputChange('company', e.target.value)}
-                        placeholder="Your Company Ltd"
-                        className={hasQuoteData ? 'bg-muted/30' : ''}
-                      />
-                    </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="company">Company Name</Label>
+                          <Input
+                            id="company"
+                            value={formData.company}
+                            onChange={(e) => handleInputChange('company', e.target.value)}
+                            placeholder="Your Company Ltd"
+                          />
+                        </div>
+                      </>
+                    )}
 
                     <div className="space-y-2">
                       <Label htmlFor="password">Password</Label>
