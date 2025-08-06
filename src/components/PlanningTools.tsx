@@ -3,9 +3,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Calculator, Map, Calendar, Settings } from "lucide-react";
+import { useHomepageContent } from "@/hooks/useHomepageContent";
 
 const PlanningTools = () => {
   const navigate = useNavigate();
+  const { content, loading } = useHomepageContent('planning_tools');
+
+  if (loading) {
+    return <div className="py-20 px-4 text-center">Loading...</div>;
+  }
 
   const tools = [
     {
@@ -47,13 +53,13 @@ const PlanningTools = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-4 text-lg px-6 py-2">
-            SELF-SERVICE TOOLS
+            {content?.badge_text || "SELF-SERVICE TOOLS"}
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Plan Your Campaign Your Way
+            {content?.title || "Plan Your Campaign Your Way"}
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Use our free planning tools to explore options, estimate costs, and prepare your brief before speaking with our team
+            {content?.description || "Use our free planning tools to explore options, estimate costs, and prepare your brief before speaking with our team"}
           </p>
         </div>
         

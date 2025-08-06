@@ -127,11 +127,12 @@ const HomepageContentManager = () => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="hero" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="hero">Hero</TabsTrigger>
           <TabsTrigger value="services">Services</TabsTrigger>
+          <TabsTrigger value="configurator_teaser">Configurator</TabsTrigger>
           <TabsTrigger value="why_choose_us">Why Choose Us</TabsTrigger>
-          <TabsTrigger value="how_it_works">How It Works</TabsTrigger>
+          <TabsTrigger value="planning_tools">Planning Tools</TabsTrigger>
           <TabsTrigger value="format_links">Format Links</TabsTrigger>
           <TabsTrigger value="cta">CTA</TabsTrigger>
         </TabsList>
@@ -438,97 +439,80 @@ const HomepageContentManager = () => {
           </Card>
         </TabsContent>
 
-        {/* Continue with other tabs... */}
-        <TabsContent value="how_it_works">
+        <TabsContent value="configurator_teaser">
           <Card>
             <CardHeader>
-              <CardTitle>How It Works Section</CardTitle>
+              <CardTitle>Configurator Teaser Section</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="hiw_badge">Badge Text</Label>
+                  <Label htmlFor="ct_badge">Badge Text</Label>
                   <Input
-                    id="hiw_badge"
-                    value={homepageData.how_it_works?.content?.badge_text || ''}
-                    onChange={(e) => updateField('how_it_works', 'badge_text', e.target.value)}
+                    id="ct_badge"
+                    value={homepageData.configurator_teaser?.content?.badge_text || ''}
+                    onChange={(e) => updateField('configurator_teaser', 'badge_text', e.target.value)}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="hiw_title">Title</Label>
+                  <Label htmlFor="ct_title">Title</Label>
                   <Input
-                    id="hiw_title"
-                    value={homepageData.how_it_works?.content?.title || ''}
-                    onChange={(e) => updateField('how_it_works', 'title', e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="hiw_description">Description</Label>
-                  <Input
-                    id="hiw_description"
-                    value={homepageData.how_it_works?.content?.description || ''}
-                    onChange={(e) => updateField('how_it_works', 'description', e.target.value)}
+                    id="ct_title"
+                    value={homepageData.configurator_teaser?.content?.title || ''}
+                    onChange={(e) => updateField('configurator_teaser', 'title', e.target.value)}
                   />
                 </div>
               </div>
-
               <div>
-                <h4 className="text-lg font-semibold mb-4">Process Steps</h4>
-                {homepageData.how_it_works?.content?.steps?.map((step: any, index: number) => (
-                  <Card key={index} className="mb-4">
-                    <CardContent className="pt-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <Label>Step Number</Label>
-                          <Input
-                            value={step.number || ''}
-                            onChange={(e) => updateArrayItem('how_it_works', 'steps', index, {
-                              ...step,
-                              number: e.target.value
-                            })}
-                          />
-                        </div>
-                        <div>
-                          <Label>Title</Label>
-                          <Input
-                            value={step.title || ''}
-                            onChange={(e) => updateArrayItem('how_it_works', 'steps', index, {
-                              ...step,
-                              title: e.target.value
-                            })}
-                          />
-                        </div>
-                        <div>
-                          <Label>Description</Label>
-                          <Textarea
-                            value={step.description || ''}
-                            onChange={(e) => updateArrayItem('how_it_works', 'steps', index, {
-                              ...step,
-                              description: e.target.value
-                            })}
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              <div>
-                <Label htmlFor="addons_title">Add-ons Title</Label>
-                <Input
-                  id="addons_title"
-                  value={homepageData.how_it_works?.content?.addons_title || ''}
-                  onChange={(e) => updateField('how_it_works', 'addons_title', e.target.value)}
+                <Label htmlFor="ct_description">Description</Label>
+                <Textarea
+                  id="ct_description"
+                  value={homepageData.configurator_teaser?.content?.description || ''}
+                  onChange={(e) => updateField('configurator_teaser', 'description', e.target.value)}
                 />
               </div>
               <div>
-                <Label htmlFor="addons_list">Add-ons (one per line)</Label>
+                <Label htmlFor="ct_button">Button Text</Label>
+                <Input
+                  id="ct_button"
+                  value={homepageData.configurator_teaser?.content?.button_text || ''}
+                  onChange={(e) => updateField('configurator_teaser', 'button_text', e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="planning_tools">
+          <Card>
+            <CardHeader>
+              <CardTitle>Planning Tools Section</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="pt_badge">Badge Text</Label>
+                  <Input
+                    id="pt_badge"
+                    value={homepageData.planning_tools?.content?.badge_text || ''}
+                    onChange={(e) => updateField('planning_tools', 'badge_text', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="pt_title">Title</Label>
+                  <Input
+                    id="pt_title"
+                    value={homepageData.planning_tools?.content?.title || ''}
+                    onChange={(e) => updateField('planning_tools', 'title', e.target.value)}
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="pt_description">Description</Label>
                 <Textarea
-                  id="addons_list"
-                  rows={5}
-                  value={homepageData.how_it_works?.content?.addons?.join('\n') || ''}
-                  onChange={(e) => updateField('how_it_works', 'addons', e.target.value.split('\n').filter(a => a.trim()))}
+                  id="pt_description"
+                  value={homepageData.planning_tools?.content?.description || ''}
+                  onChange={(e) => updateField('planning_tools', 'description', e.target.value)}
                 />
               </div>
             </CardContent>

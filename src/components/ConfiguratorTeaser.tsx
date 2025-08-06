@@ -3,9 +3,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Brain, Target, Clock, Zap } from "lucide-react";
+import { useHomepageContent } from "@/hooks/useHomepageContent";
 
 const ConfiguratorTeaser = () => {
   const navigate = useNavigate();
+  const { content, loading } = useHomepageContent('configurator_teaser');
+
+  if (loading) {
+    return <div className="py-20 px-4 text-center">Loading...</div>;
+  }
 
   const features = [
     { icon: Brain, text: "AI-powered recommendations" },
@@ -19,13 +25,13 @@ const ConfiguratorTeaser = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <Badge variant="secondary" className="mb-4 text-lg px-6 py-2">
-            UNSURE WHICH FORMAT?
+            {content?.badge_text || "UNSURE WHICH FORMAT?"}
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Let Our Smart Tool Choose For You
+            {content?.title || "Let Our Smart Tool Choose For You"}
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Answer 5 quick questions and get personalized OOH recommendations based on your goals, budget, and target audience
+            {content?.description || "Answer 5 quick questions and get personalized OOH recommendations based on your goals, budget, and target audience"}
           </p>
         </div>
 
@@ -63,7 +69,7 @@ const ConfiguratorTeaser = () => {
               className="text-lg px-8 py-6 shadow-glow"
               onClick={() => navigate('/configurator')}
             >
-              Find My Perfect Format
+              {content?.button_text || "Find My Perfect Format"}
             </Button>
           </div>
         </div>
