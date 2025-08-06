@@ -157,9 +157,6 @@ export function RateCardManager() {
         location_markup_percentage: parseFloat(formData.get('location_markup_percentage') as string) || 0,
         quantity_per_medium: parseInt(formData.get('quantity_per_medium') as string) || 1,
         is_active: formData.get('is_active') === 'true',
-        start_date: (formData.get('start_date') as string) || null,
-        end_date: (formData.get('end_date') as string) || null,
-        incharge_period: parseInt(formData.get('incharge_period') as string) || 1,
         is_date_specific: formData.get('is_date_specific') === 'true'
       };
 
@@ -566,29 +563,9 @@ export function RateCardManager() {
                               Select which periods are available for this rate card
                             </p>
                           </div>
-                         
-                         <div>
-                           <Label htmlFor="start_date">Start Date</Label>
-                           <Input
-                             name="start_date"
-                             type="date"
-                             defaultValue={editingRate?.start_date || ''}
-                             placeholder="Select start date"
-                           />
-                         </div>
-
-                         <div>
-                           <Label htmlFor="end_date">End Date</Label>
-                           <Input
-                             name="end_date"
-                             type="date"
-                             defaultValue={editingRate?.end_date || ''}
-                             placeholder="Select end date"
-                           />
-                         </div>
-
-                         <div>
-                           <Label htmlFor="is_active">Status</Label>
+                          
+                          <div>
+                            <Label htmlFor="is_active">Status</Label>
                            <Select name="is_active" defaultValue={editingRate?.is_active ? 'true' : 'false'}>
                              <SelectTrigger>
                                <SelectValue />
