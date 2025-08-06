@@ -4,16 +4,63 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { Menu, Phone, ChevronDown, ShoppingCart } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useGlobalSettings from '@/hooks/useGlobalSettings';
 import { useQuotes } from '@/hooks/useQuotes';
+import { supabase } from '@/integrations/supabase/client';
+import { User } from '@supabase/supabase-js';
 
 const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const { navigation, loading } = useGlobalSettings();
   const { currentQuote } = useQuotes();
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch user profile
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setUserProfile(null);
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching profile:', error);
+    } else {
+      setUserProfile(data);
+    }
+  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -66,8 +113,8 @@ const Navigation = () => {
               </button>
             ))}
             
-            {/* Your Plan Button */}
-            {currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0 && (
+            {/* Your Plan Button - Show if user is client or has active quote */}
+            {(userProfile?.role === 'client' || (currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0)) && (
               <Button 
                 onClick={() => handleNavigation('/quote-plan')}
                 variant={isActive('/quote-plan') ? "default" : "outline"}
@@ -76,9 +123,11 @@ const Navigation = () => {
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 Your Plan
-                <Badge variant="secondary" className="ml-2 text-xs">
-                  {currentQuote.quote_items.length}
-                </Badge>
+                {currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0 && (
+                  <Badge variant="secondary" className="ml-2 text-xs">
+                    {currentQuote.quote_items.length}
+                  </Badge>
+                )}
               </Button>
             )}
             
@@ -143,15 +192,15 @@ const Navigation = () => {
                   );
                 })}
                 
-                {/* Mobile Your Plan Button */}
-                {currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0 && (
+                {/* Mobile Your Plan Button - Show if user is client or has active quote */}
+                {(userProfile?.role === 'client' || (currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0)) && (
                   <Button 
                     onClick={() => handleNavigation('/quote-plan')}
                     variant={isActive('/quote-plan') ? "default" : "outline"}
                     className="w-full mt-4"
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
-                    Your Plan ({currentQuote.quote_items.length})
+                    Your Plan {currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0 && `(${currentQuote.quote_items.length})`}
                   </Button>
                 )}
                 
