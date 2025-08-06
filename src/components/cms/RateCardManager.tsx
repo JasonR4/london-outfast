@@ -51,6 +51,7 @@ interface DiscountTier {
 interface ProductionCostTier {
   id: string;
   media_format_id: string;
+  category?: string;
   min_quantity: number;
   max_quantity: number | null;
   cost_per_unit: number;
@@ -177,6 +178,7 @@ export function RateCardManager() {
     try {
       const productionData = {
         media_format_id: formData.get('media_format_id') as string,
+        category: formData.get('category') as string,
         min_quantity: parseInt(formData.get('min_quantity') as string),
         max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
         cost_per_unit: parseFloat(formData.get('cost_per_unit') as string),
@@ -646,16 +648,42 @@ export function RateCardManager() {
                           />
                         </div>
                       </div>
-                      <div>
-                        <Label htmlFor="cost_per_unit">Cost per Unit (£)</Label>
-                        <Input
-                          name="cost_per_unit"
-                          type="number"
-                          step="0.01"
-                          defaultValue={editingProduction?.cost_per_unit}
-                          required
-                        />
-                      </div>
+                       <div>
+                         <Label htmlFor="category">Production Category</Label>
+                         <Select name="category" defaultValue={editingProduction?.category} required>
+                           <SelectTrigger>
+                             <SelectValue placeholder="Select category" />
+                           </SelectTrigger>
+                           <SelectContent>
+                             <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
+                             <SelectItem value="London Underground">London Underground</SelectItem>
+                             <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
+                             <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
+                             <SelectItem value="Airports">Airports</SelectItem>
+                             <SelectItem value="Ambient">Ambient</SelectItem>
+                             <SelectItem value="Railway Stations">Railway Stations</SelectItem>
+                             <SelectItem value="Shopping Centres">Shopping Centres</SelectItem>
+                             <SelectItem value="Digital Out of Home">Digital Out of Home</SelectItem>
+                             <SelectItem value="Street Furniture">Street Furniture</SelectItem>
+                             <SelectItem value="Transit">Transit</SelectItem>
+                             <SelectItem value="Experiential">Experiential</SelectItem>
+                             <SelectItem value="Cinema">Cinema</SelectItem>
+                             <SelectItem value="Radio">Radio</SelectItem>
+                             <SelectItem value="Creative Production">Creative Production</SelectItem>
+                             <SelectItem value="Installation & Maintenance">Installation & Maintenance</SelectItem>
+                           </SelectContent>
+                         </Select>
+                       </div>
+                       <div>
+                         <Label htmlFor="cost_per_unit">Cost per Unit (£)</Label>
+                         <Input
+                           name="cost_per_unit"
+                           type="number"
+                           step="0.01"
+                           defaultValue={editingProduction?.cost_per_unit}
+                           required
+                         />
+                       </div>
                       <div>
                         <Label htmlFor="is_active">Status</Label>
                         <Select name="is_active" defaultValue={editingProduction?.is_active ? 'true' : 'false'}>
