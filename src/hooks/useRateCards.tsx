@@ -144,12 +144,29 @@ export function useRateCards(formatSlug?: string) {
   };
 
   const calculateProductionCost = (locationArea: string, quantity: number, category?: string) => {
+    console.log('🔍 Production Cost Debug:', {
+      locationArea,
+      quantity,
+      category,
+      availableTiers: productionCostTiers.length,
+      allTiers: productionCostTiers.map(t => ({
+        id: t.id,
+        location_area: t.location_area,
+        min_quantity: t.min_quantity,
+        max_quantity: t.max_quantity,
+        cost_per_unit: t.cost_per_unit,
+        category: t.category
+      }))
+    });
+
     const applicableTiers = productionCostTiers.filter(tier => 
       (tier.location_area === locationArea || tier.location_area === null) &&
       tier.min_quantity <= quantity &&
       (!tier.max_quantity || quantity <= tier.max_quantity) &&
       (!category || tier.category === category || tier.category === null)
     );
+
+    console.log('🎯 Applicable Production Tiers:', applicableTiers);
 
     // Prioritize location-specific over global, then by category match
     const bestTier = applicableTiers.sort((a, b) => {
@@ -160,13 +177,18 @@ export function useRateCards(formatSlug?: string) {
       return 0;
     })[0];
 
+    console.log('✅ Best Production Tier:', bestTier);
+
     if (!bestTier) return null;
 
-    return {
+    const result = {
       costPerUnit: bestTier.cost_per_unit,
       totalCost: bestTier.cost_per_unit * quantity,
       tier: bestTier
     };
+
+    console.log('💰 Production Cost Result:', result);
+    return result;
   };
 
   const calculateCreativeCost = (locationArea: string, quantity: number, category: string) => {
