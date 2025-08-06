@@ -24,6 +24,7 @@ import { LocationSelector } from "@/components/LocationSelector";
 import { oohFormats, OOHFormat } from "@/data/oohFormats";
 import { londonAreas } from "@/data/londonAreas";
 import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 interface SmartQuoteFormProps {
   onQuoteSubmitted?: () => void;
@@ -34,6 +35,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const navigate = useNavigate();
   const { currentQuote, addQuoteItem, submitQuote, createOrGetQuote, loading: quotesLoading } = useQuotes();
   
+  // Auth state
+  const [user, setUser] = useState<User | null>(null);
+
   // Form state
   const [activeTab, setActiveTab] = useState("search");
   const [searchQuery, setSearchQuery] = useState("");
@@ -95,6 +99,24 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     creativeCostPerAsset: dynamicCreativeCost?.costPerUnit || 0,
     siteCost: 1000
   });
+
+  // Check authentication status
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Initialize quote on component mount
   useEffect(() => {
@@ -278,7 +300,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       return;
     }
 
-    if (!contactDetails.contact_name || !contactDetails.contact_email) {
+    // For authenticated users, we don't need contact details validation
+    if (!user && (!contactDetails.contact_name || !contactDetails.contact_email)) {
       toast({
         title: "Missing Contact Information",
         description: "Please provide your name and email to submit the quote.",
@@ -290,8 +313,12 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     try {
       const success = await submitQuote(contactDetails);
       if (success) {
-        // Navigate to quote submitted page - same as OOH media quote flow
-        navigate('/quote-submitted');
+        // Navigate based on authentication status
+        if (user) {
+          navigate('/client-portal');
+        } else {
+          navigate('/quote-submitted');
+        }
       }
     } catch (error) {
       toast({
@@ -780,123 +807,154 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
           {/* Contact Form */}
           <Card className="bg-gradient-card border-border sticky top-8">
             <CardHeader>
-              <CardTitle className="text-lg">Submit Your Quote</CardTitle>
+              <CardTitle className="text-lg">
+                {user ? "Submit Your Quote" : "Submit Your Quote"}
+              </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Get professional consultation within 24 hours
+                {user 
+                  ? "Your quote will be sent to your client portal" 
+                  : "Get professional consultation within 24 hours"}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="contact_name">Full Name *</Label>
-                <Input
-                  id="contact_name"
-                  value={contactDetails.contact_name}
-                  onChange={(e) => setContactDetails(prev => ({ ...prev, contact_name: e.target.value }))}
-                  placeholder="Your full name"
-                />
-              </div>
+              {user ? (
+                // Simplified form for authenticated users
+                <div className="space-y-4">
+                  <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                    <div className="flex items-center gap-2 text-sm font-medium text-primary mb-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Logged in as {user.email}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Your quote will be automatically associated with your account and sent to your client portal.
+                    </p>
+                  </div>
+                  
+                  <Button
+                    onClick={handleSubmitQuote}
+                    size="lg"
+                    className="w-full"
+                    disabled={quotesLoading || !currentQuote?.quote_items?.length}
+                  >
+                    {quotesLoading ? "Submitting..." : "Submit Quote to Portal"}
+                  </Button>
+                </div>
+              ) : (
+                // Full form for non-authenticated users
+                <>
+                  <div>
+                    <Label htmlFor="contact_name">Full Name *</Label>
+                    <Input
+                      id="contact_name"
+                      value={contactDetails.contact_name}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_name: e.target.value }))}
+                      placeholder="Your full name"
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="contact_email">Email *</Label>
-                <Input
-                  id="contact_email"
-                  type="email"
-                  value={contactDetails.contact_email}
-                  onChange={(e) => setContactDetails(prev => ({ ...prev, contact_email: e.target.value }))}
-                  placeholder="your@email.com"
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="contact_email">Email *</Label>
+                    <Input
+                      id="contact_email"
+                      type="email"
+                      value={contactDetails.contact_email}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_email: e.target.value }))}
+                      placeholder="your@email.com"
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="contact_phone">Phone</Label>
-                <Input
-                  id="contact_phone"
-                  type="tel"
-                  value={contactDetails.contact_phone}
-                  onChange={(e) => setContactDetails(prev => ({ ...prev, contact_phone: e.target.value }))}
-                  placeholder="+44 20 1234 5678"
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="contact_phone">Phone</Label>
+                    <Input
+                      id="contact_phone"
+                      type="tel"
+                      value={contactDetails.contact_phone}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_phone: e.target.value }))}
+                      placeholder="+44 20 1234 5678"
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="company_name">Company</Label>
-                <Input
-                  id="company_name"
-                  value={contactDetails.company_name}
-                  onChange={(e) => setContactDetails(prev => ({ ...prev, company_name: e.target.value }))}
-                  placeholder="Your company"
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="company_name">Company</Label>
+                    <Input
+                      id="company_name"
+                      value={contactDetails.company_name}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, company_name: e.target.value }))}
+                      placeholder="Your company"
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="campaign_objective">Campaign Objective</Label>
-                <Select
-                  value={contactDetails.campaign_objective}
-                  onValueChange={(value) => setContactDetails(prev => ({ ...prev, campaign_objective: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select objective" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="brand-awareness">Brand Awareness</SelectItem>
-                    <SelectItem value="product-launch">Product Launch</SelectItem>
-                    <SelectItem value="event-promotion">Event Promotion</SelectItem>
-                    <SelectItem value="footfall">Drive Footfall</SelectItem>
-                    <SelectItem value="sales">Increase Sales</SelectItem>
-                    <SelectItem value="recruitment">Recruitment</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div>
+                    <Label htmlFor="campaign_objective">Campaign Objective</Label>
+                    <Select
+                      value={contactDetails.campaign_objective}
+                      onValueChange={(value) => setContactDetails(prev => ({ ...prev, campaign_objective: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select objective" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="brand-awareness">Brand Awareness</SelectItem>
+                        <SelectItem value="product-launch">Product Launch</SelectItem>
+                        <SelectItem value="event-promotion">Event Promotion</SelectItem>
+                        <SelectItem value="footfall">Drive Footfall</SelectItem>
+                        <SelectItem value="sales">Increase Sales</SelectItem>
+                        <SelectItem value="recruitment">Recruitment</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div>
-                <Label htmlFor="budget_range">Budget Range</Label>
-                <Select
-                  value={contactDetails.budget_range}
-                  onValueChange={(value) => setContactDetails(prev => ({ ...prev, budget_range: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select budget" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="under-1k">Under £1,000</SelectItem>
-                    <SelectItem value="1k-5k">£1,000 - £5,000</SelectItem>
-                    <SelectItem value="5k-10k">£5,000 - £10,000</SelectItem>
-                    <SelectItem value="10k-25k">£10,000 - £25,000</SelectItem>
-                    <SelectItem value="25k-50k">£25,000 - £50,000</SelectItem>
-                    <SelectItem value="50k-100k">£50,000 - £100,000</SelectItem>
-                    <SelectItem value="100k-250k">£100,000 - £250,000</SelectItem>
-                    <SelectItem value="over-250k">Over £250,000</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div>
+                    <Label htmlFor="budget_range">Budget Range</Label>
+                    <Select
+                      value={contactDetails.budget_range}
+                      onValueChange={(value) => setContactDetails(prev => ({ ...prev, budget_range: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select budget" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="under-1k">Under £1,000</SelectItem>
+                        <SelectItem value="1k-5k">£1,000 - £5,000</SelectItem>
+                        <SelectItem value="5k-10k">£5,000 - £10,000</SelectItem>
+                        <SelectItem value="10k-25k">£10,000 - £25,000</SelectItem>
+                        <SelectItem value="25k-50k">£25,000 - £50,000</SelectItem>
+                        <SelectItem value="50k-100k">£50,000 - £100,000</SelectItem>
+                        <SelectItem value="100k-250k">£100,000 - £250,000</SelectItem>
+                        <SelectItem value="over-250k">Over £250,000</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div>
-                <Label htmlFor="timeline">Timeline</Label>
-                <Select
-                  value={contactDetails.timeline}
-                  onValueChange={(value) => setContactDetails(prev => ({ ...prev, timeline: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="When to go live?" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="asap">ASAP (within 1 week)</SelectItem>
-                    <SelectItem value="2-4-weeks">2-4 weeks</SelectItem>
-                    <SelectItem value="1-2-months">1-2 months</SelectItem>
-                    <SelectItem value="3-6-months">3-6 months</SelectItem>
-                    <SelectItem value="planning">Just planning ahead</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div>
+                    <Label htmlFor="timeline">Timeline</Label>
+                    <Select
+                      value={contactDetails.timeline}
+                      onValueChange={(value) => setContactDetails(prev => ({ ...prev, timeline: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="When to go live?" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="asap">ASAP (within 1 week)</SelectItem>
+                        <SelectItem value="2-4-weeks">2-4 weeks</SelectItem>
+                        <SelectItem value="1-2-months">1-2 months</SelectItem>
+                        <SelectItem value="3-6-months">3-6 months</SelectItem>
+                        <SelectItem value="planning">Just planning ahead</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <Button
-                onClick={handleSubmitQuote}
-                size="lg"
-                className="w-full"
-                disabled={quotesLoading || !currentQuote?.quote_items?.length}
-              >
-                {quotesLoading ? "Submitting..." : "Submit Quote Request"}
-              </Button>
+                  <Button
+                    onClick={handleSubmitQuote}
+                    size="lg"
+                    className="w-full"
+                    disabled={quotesLoading || !currentQuote?.quote_items?.length}
+                  >
+                    {quotesLoading ? "Submitting..." : "Submit Quote Request"}
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
