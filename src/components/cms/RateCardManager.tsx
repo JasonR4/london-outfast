@@ -715,18 +715,43 @@ export function RateCardManager() {
                         <TableCell>
                           {rate.is_date_specific ? `Period ${rate.incharge_period}` : '-'}
                         </TableCell>
-                        <TableCell>
-                          {rate.is_date_specific && rate.start_date && rate.end_date ? (
-                            <div className="text-xs">
-                              <div>{format(new Date(rate.start_date), 'MMM dd, yyyy')}</div>
-                              <div>to {format(new Date(rate.end_date), 'MMM dd, yyyy')}</div>
-                            </div>
-                          ) : (
-                            <Badge variant="outline" className="text-xs">
-                              {rate.is_date_specific ? 'No dates set' : 'Non-date media'}
-                            </Badge>
-                          )}
-                        </TableCell>
+                         <TableCell>
+                           {rate.is_date_specific ? (
+                             (() => {
+                               const ratePeriods = rateCardPeriods
+                                 .filter(rcp => rcp.rate_card_id === rate.id)
+                                 .map(rcp => rcp.incharge_periods)
+                                 .filter(Boolean);
+                               
+                               if (ratePeriods.length > 0) {
+                                 return (
+                                   <div className="text-xs">
+                                     {ratePeriods.map((period, index) => (
+                                       <div key={index}>
+                                         Period {period.period_number}: {format(new Date(period.start_date), 'MMM dd')} - {format(new Date(period.end_date), 'MMM dd, yyyy')}
+                                       </div>
+                                     ))}
+                                   </div>
+                                 );
+                               } else {
+                                 return (
+                                   <Badge variant="outline" className="text-xs">
+                                     No periods selected
+                                   </Badge>
+                                 );
+                               }
+                             })()
+                           ) : rate.start_date && rate.end_date ? (
+                             <div className="text-xs">
+                               <div>{format(new Date(rate.start_date), 'MMM dd, yyyy')}</div>
+                               <div>to {format(new Date(rate.end_date), 'MMM dd, yyyy')}</div>
+                             </div>
+                           ) : (
+                             <Badge variant="outline" className="text-xs">
+                               Custom dates
+                             </Badge>
+                           )}
+                         </TableCell>
                         <TableCell>£{rate.base_rate_per_incharge}</TableCell>
                         <TableCell>{rate.quantity_per_medium}</TableCell>
                         <TableCell>{rate.location_markup_percentage}%</TableCell>
