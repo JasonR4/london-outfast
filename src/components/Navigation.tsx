@@ -113,6 +113,18 @@ const Navigation = () => {
               </button>
             ))}
             
+            {/* Client Portal Link - Show only for authenticated users */}
+            {user && (
+              <button
+                onClick={() => handleNavigation('/client-portal')}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive('/client-portal') ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                Client Portal
+              </button>
+            )}
+            
             {/* Your Plan Button - Show if user is client or has active quote */}
             {(userProfile?.role === 'client' || (currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0)) && (
               <Button 
@@ -191,6 +203,18 @@ const Navigation = () => {
                     </button>
                   );
                 })}
+                
+                {/* Mobile Client Portal Link - Show only for authenticated users */}
+                {user && (
+                  <button
+                    onClick={() => handleNavigation('/client-portal')}
+                    className={`text-left text-lg font-medium transition-colors hover:text-primary ${
+                      isActive('/client-portal') ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Client Portal
+                  </button>
+                )}
                 
                 {/* Mobile Your Plan Button - Show if user is client or has active quote */}
                 {(userProfile?.role === 'client' || (currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0)) && (
