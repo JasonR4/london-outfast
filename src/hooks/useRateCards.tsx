@@ -366,7 +366,7 @@ export function useRateCards(formatSlug?: string) {
     productionCostTiers,
     creativeCostTiers,
     mediaFormat,
-    inchargePeriods: getAllAvailablePeriods(), // Use the periods that are actually available for this format
+    inchargePeriods, // Use the raw periods - ALL periods should be available for selection
     rateCardPeriods,
     loading,
     error,
