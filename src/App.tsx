@@ -59,6 +59,11 @@ const App = () => (
             <Route path="/terms-of-service" element={<LegalPage />} />
             <Route path="/cookie-policy" element={<LegalPage />} />
             <Route path="/disclaimer" element={<LegalPage />} />
+            {/* Legal Pages with /legal/ prefix */}
+            <Route path="/legal/privacy-policy" element={<LegalPage />} />
+            <Route path="/legal/terms-of-service" element={<LegalPage />} />
+            <Route path="/legal/cookie-policy" element={<LegalPage />} />
+            <Route path="/legal/disclaimer" element={<LegalPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

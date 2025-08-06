@@ -7,7 +7,9 @@ import { Badge } from '@/components/ui/badge';
 
 const LegalPage = () => {
   const navigate = useNavigate();
-  const legalSlug = window.location.pathname.slice(1); // Remove leading slash
+  const legalSlug = window.location.pathname.startsWith('/legal/') 
+    ? window.location.pathname.slice(7) // Remove '/legal/' prefix
+    : window.location.pathname.slice(1); // Remove leading slash
   const [pageData, setPageData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
