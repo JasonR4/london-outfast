@@ -56,6 +56,48 @@ export type Database = {
         }
         Relationships: []
       }
+      creative_design_cost_tiers: {
+        Row: {
+          category: string
+          cost_per_unit: number
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          max_quantity: number | null
+          media_format_id: string
+          min_quantity: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          cost_per_unit: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          max_quantity?: number | null
+          media_format_id: string
+          min_quantity: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          cost_per_unit?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          max_quantity?: number | null
+          media_format_id?: string
+          min_quantity?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       discount_tiers: {
         Row: {
           created_at: string
