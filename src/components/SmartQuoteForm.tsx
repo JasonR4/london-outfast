@@ -151,7 +151,41 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     return acc;
   }, {} as Record<string, OOHFormat[]>);
 
-  // Calculate total pricing
+  // Calculate total costs from all quote items
+  const calculateQuoteTotalCosts = () => {
+    if (!currentQuote?.quote_items || currentQuote.quote_items.length === 0) {
+      return {
+        mediaPrice: 0,
+        productionCost: 0,
+        creativeCost: 0,
+        totalCost: 0,
+        totalDiscount: 0,
+        originalCost: 0
+      };
+    }
+
+    const totals = currentQuote.quote_items.reduce((acc, item) => {
+      acc.mediaPrice += item.base_cost || 0;
+      acc.productionCost += item.production_cost || 0;
+      acc.creativeCost += item.creative_cost || 0;
+      acc.totalCost += item.total_cost || 0;
+      return acc;
+    }, {
+      mediaPrice: 0,
+      productionCost: 0,
+      creativeCost: 0,
+      totalCost: 0,
+      totalDiscount: 0,
+      originalCost: 0
+    });
+
+    console.log('📊 Quote total costs:', totals);
+    console.log('📋 Quote items:', currentQuote.quote_items);
+    
+    return totals;
+  };
+
+  // Calculate total pricing for current item configuration
   const calculateTotalPrice = () => {
     console.log('💰 calculateTotalPrice called');
     console.log('📊 Current state:', {
@@ -242,6 +276,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   };
 
   const pricing = calculateTotalPrice();
+  const quoteTotals = calculateQuoteTotalCosts();
 
   const handleFormatSelect = (format: OOHFormat) => {
     setSelectedFormat(format);
@@ -782,62 +817,100 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                 </TabsContent>
 
                 <TabsContent value="pricing" className="space-y-6">
-                  {selectedFormat && selectedLocations.length > 0 && selectedPeriods.length > 0 && (
-                    <>
-                      {/* Pricing Breakdown */}
-                      <Card className="bg-gradient-card border-border">
-                        <CardHeader>
-                          <CardTitle className="text-lg">Pricing Breakdown</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          {pricing.totalDiscount > 0 && (
-                            <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg">
-                              <div className="text-sm font-medium text-green-800 dark:text-green-200">
-                                💰 Volume Discount Applied
-                              </div>
-                              <div className="text-xs text-green-600 dark:text-green-300">
-                                You saved £{pricing.totalDiscount.toLocaleString()} with this selection
-                              </div>
-                            </div>
-                          )}
+                  {/* Show current item pricing or total quote breakdown */}
+                  {currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0 ? (
+                    // Show total quote breakdown when items exist
+                    <Card className="bg-gradient-card border-border">
+                      <CardHeader>
+                        <CardTitle className="text-lg">Pricing Breakdown</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span>Media Costs:</span>
+                          <span className="font-medium">£{quoteTotals.mediaPrice.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span>Production Costs:</span>
+                          <span className="font-medium">£{quoteTotals.productionCost.toLocaleString()}</span>
+                        </div>
+                        {quoteTotals.creativeCost > 0 && (
                           <div className="flex justify-between items-center">
-                            <span>Media Costs:</span>
-                            <span className="font-medium">£{pricing.mediaPrice.toLocaleString()}</span>
+                            <span>Creative Development ({currentQuote.quote_items.reduce((sum, item) => sum + (item.creative_cost || 0), 0) / 85} assets):</span>
+                            <span className="font-medium">£{quoteTotals.creativeCost.toLocaleString()}</span>
                           </div>
+                        )}
+                        <div className="border-t border-border pt-4 space-y-2">
                           <div className="flex justify-between items-center">
-                            <span>Production Costs:</span>
-                            <span className="font-medium">£{pricing.productionCost.toLocaleString()}</span>
+                            <span>Subtotal (exc VAT):</span>
+                            <span className="font-medium">£{quoteTotals.totalCost.toLocaleString()}</span>
                           </div>
-                          {needsCreative && pricing.creativeCost > 0 && (
-                            <div className="flex justify-between items-center">
-                              <span>Creative Development ({creativeAssets} assets):</span>
-                              <span className="font-medium">£{pricing.creativeCost.toLocaleString()}</span>
+                          <div className="flex justify-between items-center text-sm text-muted-foreground">
+                            <span>VAT (20%):</span>
+                            <span>£{(quoteTotals.totalCost * 0.20).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
+                            <span>Total inc VAT:</span>
+                            <span className="text-primary">£{(quoteTotals.totalCost * 1.20).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ) : selectedFormat && selectedLocations.length > 0 && selectedPeriods.length > 0 ? (
+                    // Show current item pricing when no items in quote yet
+                    <Card className="bg-gradient-card border-border">
+                      <CardHeader>
+                        <CardTitle className="text-lg">Pricing Breakdown</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {pricing.totalDiscount > 0 && (
+                          <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg">
+                            <div className="text-sm font-medium text-green-800 dark:text-green-200">
+                              💰 Volume Discount Applied
                             </div>
-                          )}
-                          {pricing.totalDiscount > 0 && (
-                            <div className="flex justify-between items-center text-green-600 dark:text-green-400">
-                              <span>Discount:</span>
-                              <span className="font-medium">-£{pricing.totalDiscount.toLocaleString()}</span>
-                            </div>
-                          )}
-                          <div className="border-t border-border pt-4 space-y-2">
-                            <div className="flex justify-between items-center">
-                              <span>Subtotal (exc VAT):</span>
-                              <span className="font-medium">£{pricing.totalCost.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm text-muted-foreground">
-                              <span>VAT (20%):</span>
-                              <span>£{(pricing.totalCost * 0.20).toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
-                              <span>Total inc VAT:</span>
-                              <span className="text-primary">£{(pricing.totalCost * 1.20).toLocaleString()}</span>
+                            <div className="text-xs text-green-600 dark:text-green-300">
+                              You saved £{pricing.totalDiscount.toLocaleString()} with this selection
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
+                        )}
+                        <div className="flex justify-between items-center">
+                          <span>Media Costs:</span>
+                          <span className="font-medium">£{pricing.mediaPrice.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span>Production Costs:</span>
+                          <span className="font-medium">£{pricing.productionCost.toLocaleString()}</span>
+                        </div>
+                        {needsCreative && pricing.creativeCost > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span>Creative Development ({creativeAssets} assets):</span>
+                            <span className="font-medium">£{pricing.creativeCost.toLocaleString()}</span>
+                          </div>
+                        )}
+                        {pricing.totalDiscount > 0 && (
+                          <div className="flex justify-between items-center text-green-600 dark:text-green-400">
+                            <span>Discount:</span>
+                            <span className="font-medium">-£{pricing.totalDiscount.toLocaleString()}</span>
+                          </div>
+                        )}
+                        <div className="border-t border-border pt-4 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span>Subtotal (exc VAT):</span>
+                            <span className="font-medium">£{pricing.totalCost.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-sm text-muted-foreground">
+                            <span>VAT (20%):</span>
+                            <span>£{(pricing.totalCost * 0.20).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
+                            <span>Total inc VAT:</span>
+                            <span className="text-primary">£{(pricing.totalCost * 1.20).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ) : null}
 
-                      {/* Campaign Summary */}
+                  {/* Campaign Summary */}
                       <Card className="bg-muted/20 border-border">
                         <CardHeader>
                           <CardTitle className="text-lg">Campaign Summary</CardTitle>
