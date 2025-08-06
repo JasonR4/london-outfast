@@ -1022,7 +1022,7 @@ const FormatPage = () => {
                                 </div>
                               </div>
 
-                              <Button onClick={handleBuildPlan} size="lg" className="w-full mt-4 bg-gradient-primary hover:opacity-90">
+                              <Button onClick={handleBuildPlan} size="lg" className="w-full mt-4 bg-gradient-primary hover:opacity-90 shadow-lg shadow-primary/25 animate-pulse hover:animate-none transition-all duration-300 hover:shadow-xl hover:shadow-primary/40 font-semibold text-lg">
                                 Build My Plan
                               </Button>
                             </div>
