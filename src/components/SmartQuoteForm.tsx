@@ -93,8 +93,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   } = useRateCards(selectedFormat?.slug);
 
   // Get dynamic creative cost per asset from CMS
-  const dynamicCreativeCost = selectedFormat && selectedLocations.length > 0 && creativeAssets > 0 
-    ? calculateCreativeCost(selectedLocations[0], creativeAssets, creativeLevel)
+  const dynamicCreativeCost = selectedFormat && creativeAssets > 0 
+    ? (selectedLocations.length > 0 
+        ? calculateCreativeCost(selectedLocations[0], creativeAssets, creativeLevel)
+        : calculateCreativeCost('GD', creativeAssets, creativeLevel) // Default to GD location
+      )
     : null;
   
   // Creative capacity logic
