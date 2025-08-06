@@ -2,12 +2,11 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, ArrowRight, Phone, Mail } from 'lucide-react';
+import { CheckCircle, Mail, ArrowRight, Clock } from 'lucide-react';
 
-export default function QuoteSubmitted() {
+export default function AccountCreated() {
   useEffect(() => {
-    // Update page title
-    document.title = 'Quote Submitted - OOH London';
+    document.title = 'Account Created - Media Buying London';
   }, []);
 
   return (
@@ -16,10 +15,10 @@ export default function QuoteSubmitted() {
         <div className="max-w-2xl mx-auto text-center">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />
           
-          <h1 className="text-3xl font-bold mb-4">Quote Submitted Successfully!</h1>
+          <h1 className="text-3xl font-bold mb-4">Account Created Successfully!</h1>
           
           <p className="text-lg text-muted-foreground mb-8">
-            Thank you for your quote request. We've received your campaign plan and will get back to you with a detailed quote within 24 hours.
+            We've sent a verification email to confirm your account. Please check your inbox and click the verification link to activate your client portal.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -27,10 +26,10 @@ export default function QuoteSubmitted() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Mail className="h-5 w-5" />
-                  Email Quote
+                  Check Your Email
                 </CardTitle>
                 <CardDescription>
-                  You'll receive a detailed quote via email within 24 hours
+                  Verification email sent to your inbox
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -38,11 +37,11 @@ export default function QuoteSubmitted() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Phone className="h-5 w-5" />
-                  Expert Consultation
+                  <Clock className="h-5 w-5" />
+                  Quick Activation
                 </CardTitle>
                 <CardDescription>
-                  Our team may call to discuss your campaign requirements
+                  Usually takes less than 5 minutes
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -51,17 +50,17 @@ export default function QuoteSubmitted() {
           <div className="bg-muted/50 rounded-lg p-6 mb-8">
             <h3 className="font-semibold mb-2">What happens next?</h3>
             <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• We'll review your campaign requirements</li>
-              <li>• Check availability for your selected periods and locations</li>
-              <li>• Prepare a detailed quote with all costs included</li>
-              <li>• Send you the quote via email within 24 hours</li>
+              <li>• Click the verification link in your email</li>
+              <li>• Access your client portal automatically</li>
+              <li>• View your submitted quote and campaign details</li>
+              <li>• Start managing your OOH campaigns with premium features</li>
             </ul>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg">
-              <Link to="/create-account">
-                Create Account for Premium Access
+              <Link to="/auth">
+                Sign In to Portal
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>
@@ -75,9 +74,9 @@ export default function QuoteSubmitted() {
 
           <div className="mt-8 pt-8 border-t">
             <p className="text-sm text-muted-foreground">
-              Need immediate assistance? Call us at{' '}
-              <a href="tel:+442012345678" className="font-medium text-foreground hover:underline">
-                +44 20 1234 5678
+              Didn't receive the email? Check your spam folder or{' '}
+              <a href="mailto:support@mediabuyinglondon.co.uk" className="font-medium text-foreground hover:underline">
+                contact support
               </a>
             </p>
           </div>
