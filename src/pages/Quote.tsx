@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import QuoteForm from "@/components/QuoteForm";
+import { SmartQuoteForm } from "@/components/SmartQuoteForm";
 import londonHero from "@/assets/london-hero.jpg";
 
 const Quote = () => {
@@ -46,7 +46,7 @@ const Quote = () => {
       </section>
 
       {/* Quote Form */}
-      <QuoteForm />
+      <SmartQuoteForm />
 
       {/* Additional SEO Content */}
       <section className="py-16 px-4 bg-muted/20">
