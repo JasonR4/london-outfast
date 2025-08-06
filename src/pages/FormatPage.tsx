@@ -837,14 +837,9 @@ const FormatPage = () => {
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-2 gap-2 mt-4">
-                                <Button onClick={handleGetQuote} variant="outline" size="lg" className="w-full">
-                                  Request Quote
-                                </Button>
-                                <Button onClick={handleBuildPlan} size="lg" className="w-full bg-gradient-primary hover:opacity-90">
-                                  Build My Plan
-                                </Button>
-                              </div>
+                              <Button onClick={handleBuildPlan} size="lg" className="w-full mt-4 bg-gradient-primary hover:opacity-90">
+                                Build My Plan
+                              </Button>
                             </div>
                           );
                         }
