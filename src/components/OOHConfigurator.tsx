@@ -498,9 +498,11 @@ export const OOHConfigurator = () => {
 
     const newAnswer: Answer = {
       questionId: currentQuestion.id,
-      value: currentQuestion.type === 'multiple' || currentQuestion.type === 'location' ? selectedValues : selectedValues[0],
+      value: currentQuestion.type === 'multiple' || currentQuestion.type === 'location' || currentQuestion.type === 'periods' ? selectedValues : selectedValues[0],
       scores: combinedScores
     };
+
+    console.log('💾 Saving answer for question:', currentQuestion.id, 'with value:', newAnswer.value);
 
     const newAnswers = [...answers.filter(a => a.questionId !== currentQuestion.id), newAnswer];
     setAnswers(newAnswers);
@@ -689,7 +691,11 @@ export const OOHConfigurator = () => {
 
   const getSelectedPeriods = (): number[] => {
     const periodsAnswer = answers.find(a => a.questionId === 'campaign_periods')?.value;
-    return Array.isArray(periodsAnswer) ? periodsAnswer as number[] : [];
+    console.log('🔍 Looking for campaign_periods in answers:', answers);
+    console.log('🔍 Found periods answer:', periodsAnswer);
+    const result = Array.isArray(periodsAnswer) ? periodsAnswer as number[] : [];
+    console.log('🔍 Returning periods:', result);
+    return result;
   };
 
   const getCreativeNeeds = (): string => {
