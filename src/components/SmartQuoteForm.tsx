@@ -72,6 +72,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     clearAllLocations,
     getSelectedLocationsByZone
   } = useLocationSelector();
+  
+  console.log('📊 SmartQuoteForm location state:', {
+    selectedLocationsCount: selectedLocations.length,
+    selectedFormatsCount: selectedFormats.length
+  });
 
   // Location capacity logic
   const locationCapacity = useLocationCapacity({
@@ -279,19 +284,28 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const quoteTotals = calculateQuoteTotalCosts();
 
   const handleFormatToggle = (format: OOHFormat) => {
+    console.log('🔄 Format toggle clicked:', format.name);
+    console.log('📋 Current selectedFormats:', selectedFormats.map(f => f.name));
+    
     setSelectedFormats(prev => {
       const isSelected = prev.some(f => f.slug === format.slug);
       if (isSelected) {
+        console.log('❌ Removing format:', format.name);
         return prev.filter(f => f.slug !== format.slug);
       } else {
+        console.log('✅ Adding format:', format.name);
         return [...prev, format];
       }
     });
     
-    // Only advance to configure tab if at least one format is selected
-    if (selectedFormats.length === 0) {
-      setActiveTab("configure");
-    }
+    // Auto-advance to configure tab if this is the first format selected
+    // and no formats were previously selected
+    setTimeout(() => {
+      if (selectedFormats.length === 0) {
+        console.log('🚀 Auto-advancing to configure tab');
+        setActiveTab("configure");
+      }
+    }, 100);
   };
 
   const handleContinueToConfig = () => {
