@@ -188,28 +188,6 @@ const questions: Question[] = [
     ]
   },
   {
-    id: 'urgency',
-    title: 'How quickly do you need this live?',
-    type: 'single',
-    options: [
-      {
-        label: 'ASAP (within 1 week)',
-        value: 'urgent',
-        scores: { 'digital_billboards': 9, 'taxi_ads': 8, 'bus_shelters': 6, 'tube_ads': 5, 'billboards': 4 }
-      },
-      {
-        label: '2-4 weeks',
-        value: 'soon',
-        scores: { 'bus_shelters': 8, 'billboards': 8, 'digital_billboards': 7, 'tube_ads': 7, 'taxi_ads': 8 }
-      },
-      {
-        label: '1-3 months',
-        value: 'planned',
-        scores: { 'billboards': 9, 'tube_ads': 9, 'bus_shelters': 8, 'digital_billboards': 7, 'taxi_ads': 7 }
-      }
-    ]
-  },
-  {
     id: 'creative_ready',
     title: 'Do you have creative assets ready?',
     subtitle: 'This affects timeline and format options',
