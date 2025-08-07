@@ -11,7 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { Search, MapPin, Zap, Calculator, CheckCircle2, AlertTriangle, Info, Palette } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Search, MapPin, Zap, Calculator, CheckCircle2, AlertTriangle, Info, Palette, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuotes } from "@/hooks/useQuotes";
 import { useRateCards } from "@/hooks/useRateCards";
@@ -51,6 +52,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const [selectedFormats, setSelectedFormats] = useState<OOHFormat[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedPeriods, setSelectedPeriods] = useState<number[]>([]);
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
   const [needsCreative, setNeedsCreative] = useState(false);
   const [creativeAssets, setCreativeAssets] = useState(1);
   const [creativeLevel, setCreativeLevel] = useState("Basic Design");
@@ -313,6 +315,13 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     setActiveTab("configure");
   };
 
+  const toggleCategory = (category: string) => {
+    setOpenCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
+
   const handleAddToQuote = async () => {
     if (selectedFormats.length === 0 || selectedLocations.length === 0 || selectedPeriods.length === 0) {
       toast({
@@ -560,44 +569,69 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                     />
                   </div>
 
-                  {/* Format Categories */}
-                  <div className="space-y-6">
-                    {Object.entries(formatsByCategory).map(([category, formats]) => (
-                      <div key={category} className="space-y-3">
-                        <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">
-                          {category}
-                        </h3>
-                         <div className="grid gap-3">
-                           {formats.map((format) => (
-                             <Card
-                               key={format.id}
-                               className={`cursor-pointer transition-all hover:shadow-md ${
-                                 selectedFormats.some(f => f.id === format.id) ? 'ring-2 ring-primary bg-primary/5' : ''
-                               }`}
-                               onClick={() => handleFormatToggle(format)}
-                             >
-                               <CardContent className="p-4">
-                                 <div className="flex items-start justify-between">
-                                   <div className="space-y-1">
-                                     <h4 className="font-medium text-foreground">{format.name}</h4>
-                                     <p className="text-sm text-muted-foreground line-clamp-2">
-                                       {format.description}
-                                     </p>
-                                     <div className="flex items-center gap-2 text-xs">
-                                       <Badge variant="outline">{format.type}</Badge>
-                                       <Badge variant="secondary">{format.priceRange}</Badge>
+                   {/* Format Categories - Collapsible */}
+                   <div className="space-y-4">
+                     {Object.entries(formatsByCategory).map(([category, formats]) => (
+                       <Collapsible
+                         key={category}
+                         open={openCategories[category]}
+                         onOpenChange={() => toggleCategory(category)}
+                       >
+                         <CollapsibleTrigger className="w-full">
+                           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                             <div className="flex items-center gap-3">
+                               <h3 className="text-lg font-semibold text-foreground">
+                                 {category}
+                               </h3>
+                               <Badge variant="secondary" className="text-xs">
+                                 {formats.length} format{formats.length > 1 ? 's' : ''}
+                               </Badge>
+                               {selectedFormats.some(selected => formats.some(f => f.id === selected.id)) && (
+                                 <Badge variant="default" className="text-xs bg-primary">
+                                   {selectedFormats.filter(selected => formats.some(f => f.id === selected.id)).length} selected
+                                 </Badge>
+                               )}
+                             </div>
+                             <ChevronDown 
+                               className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${
+                                 openCategories[category] ? 'rotate-180' : ''
+                               }`} 
+                             />
+                           </div>
+                         </CollapsibleTrigger>
+                         <CollapsibleContent className="pt-3 pb-1">
+                           <div className="grid gap-3 pl-4">
+                             {formats.map((format) => (
+                               <Card
+                                 key={format.id}
+                                 className={`cursor-pointer transition-all hover:shadow-md ${
+                                   selectedFormats.some(f => f.id === format.id) ? 'ring-2 ring-primary bg-primary/5' : ''
+                                 }`}
+                                 onClick={() => handleFormatToggle(format)}
+                               >
+                                 <CardContent className="p-4">
+                                   <div className="flex items-start justify-between">
+                                     <div className="space-y-1">
+                                       <h4 className="font-medium text-foreground">{format.name}</h4>
+                                       <p className="text-sm text-muted-foreground line-clamp-2">
+                                         {format.description}
+                                       </p>
+                                       <div className="flex items-center gap-2 text-xs">
+                                         <Badge variant="outline">{format.type}</Badge>
+                                         <Badge variant="secondary">{format.priceRange}</Badge>
+                                       </div>
                                      </div>
+                                     {selectedFormats.some(f => f.id === format.id) && (
+                                       <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                                     )}
                                    </div>
-                                   {selectedFormats.some(f => f.id === format.id) && (
-                                     <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                                   )}
-                                 </div>
-                               </CardContent>
-                             </Card>
-                           ))}
-                        </div>
-                      </div>
-                    ))}
+                                 </CardContent>
+                               </Card>
+                             ))}
+                           </div>
+                         </CollapsibleContent>
+                       </Collapsible>
+                     ))}
                    </div>
 
                    {/* Continue Button - Prominent and Always Visible */}
