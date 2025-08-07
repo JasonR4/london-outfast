@@ -7,37 +7,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Pencil, Plus, Trash2, Tags } from 'lucide-react';
+import { useCentralizedMediaFormats } from '@/hooks/useCentralizedMediaFormats';
+import { MediaFormat } from '@/services/mediaFormatsService';
 // Categories constants - Location and Format categories are managed separately
 const LOCATION_CATEGORIES = ['Transport', 'Retail', 'Rail', 'Supermarket', 'Roadside', 'London Underground'];
 const FORMAT_CATEGORIES = ['Digital', 'Paper & Paste', 'Backlight', 'Illuminated', 'Premium', 'HD', 'Vynl', 'WRB'];
 
-interface MediaFormat {
-  id: string;
-  format_name: string;
-  format_slug: string;
-  description: string | null;
-  dimensions: string | null;
-  is_active: boolean;
-  locationCategories?: string[];
-  formatCategories?: string[];
-}
-
-interface MediaFormatCategory {
-  id: string;
-  media_format_id: string;
-  category: string;
-  is_active: boolean;
-  media_formats?: {
-    format_name: string;
-  };
-}
-
 export function MediaFormatCategoryManager() {
-  const [mediaFormats, setMediaFormats] = useState<MediaFormat[]>([]);
-  const [formatCategories, setFormatCategories] = useState<MediaFormatCategory[]>([]);
+  const { 
+    mediaFormats, 
+    loading, 
+    error, 
+    updateFormat 
+  } = useCentralizedMediaFormats(true); // Include inactive for admin management
+  
   const [selectedFormat, setSelectedFormat] = useState<MediaFormat | null>(null);
   const [selectedLocationCategories, setSelectedLocationCategories] = useState<string[]>([]);
   const [selectedFormatCategories, setSelectedFormatCategories] = useState<string[]>([]);
@@ -48,96 +33,19 @@ export function MediaFormatCategoryManager() {
   const [editingDimensions, setEditingDimensions] = useState<string | null>(null);
   const [newDimensions, setNewDimensions] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
+  // Handle errors from the hook
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Fetch media formats
-      const { data: formatsData, error: formatsError } = await supabase
-        .from('media_formats')
-        .select('*')
-        .eq('is_active', true)
-        .order('format_name');
-
-      if (formatsError) throw formatsError;
-
-      // Check if we have a format_categories table or if categories are stored differently
-      // For now, we'll simulate categories based on the format names and our constants
-      const formatsWithCategories = formatsData?.map(format => {
-        const defaultCategories = getDefaultCategoriesForFormat(format.format_name);
-        return {
-          ...format,
-          locationCategories: defaultCategories.location,
-          formatCategories: defaultCategories.format
-        };
-      }) || [];
-
-      setMediaFormats(formatsWithCategories);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error('Failed to load media formats and categories');
-    } finally {
-      setIsLoading(false);
+    if (error) {
+      toast.error(error);
     }
-  };
+  }, [error]);
 
-  const getDefaultCategoriesForFormat = (formatName: string) => {
-    // Default category assignment based on format name
-    const name = formatName.toLowerCase();
-    const locationCategories: string[] = [];
-    const formatCategories: string[] = [];
-    
-    // Location categories
-    if (name.includes('transport') || name.includes('bus')) {
-      locationCategories.push('Transport');
-    } else if (name.includes('tube') || name.includes('underground')) {
-      locationCategories.push('London Underground');
-    } else if (name.includes('rail') || name.includes('railway') || name.includes('train')) {
-      locationCategories.push('Rail');
-    } else if (name.includes('retail') || name.includes('shopping')) {
-      locationCategories.push('Retail');
-    } else if (name.includes('supermarket') || name.includes('grocery')) {
-      locationCategories.push('Supermarket');
-    } else if (name.includes('billboard') || name.includes('poster') || name.includes('roadside')) {
-      locationCategories.push('Roadside');
-    } else {
-      locationCategories.push('Transport'); // Default location fallback
-    }
-    
-    // Format categories
-    if (name.includes('digital') || name.includes('led')) {
-      formatCategories.push('Digital');
-    } else if (name.includes('paper') || name.includes('paste')) {
-      formatCategories.push('Paper & Paste');
-    } else if (name.includes('backlight')) {
-      formatCategories.push('Backlight');
-    } else if (name.includes('illuminated')) {
-      formatCategories.push('Illuminated');
-    } else if (name.includes('premium')) {
-      formatCategories.push('Premium');
-    } else if (name.includes('hd')) {
-      formatCategories.push('HD');
-    } else if (name.includes('vinyl') || name.includes('vynl')) {
-      formatCategories.push('Vynl');
-    } else if (name.includes('wrb')) {
-      formatCategories.push('WRB');
-    } else {
-      formatCategories.push('Paper & Paste'); // Default format fallback
-    }
-    
-    return { location: locationCategories, format: formatCategories };
-  };
 
   const handleEditCategories = (format: MediaFormat) => {
     setSelectedFormat(format);
-    setSelectedLocationCategories(format.locationCategories || []);
-    setSelectedFormatCategories(format.formatCategories || []);
+    setSelectedLocationCategories(format.categories?.location || []);
+    setSelectedFormatCategories(format.categories?.format || []);
     setIsDialogOpen(true);
   };
 
@@ -145,19 +53,13 @@ export function MediaFormatCategoryManager() {
     if (!selectedFormat) return;
 
     try {
-      // For now, we'll just update the local state
-      // In a real implementation, you'd save this to a format_categories table
-      const updatedFormats = mediaFormats.map(format =>
-        format.id === selectedFormat.id
-          ? { 
-              ...format, 
-              locationCategories: selectedLocationCategories,
-              formatCategories: selectedFormatCategories
-            }
-          : format
-      );
+      await updateFormat(selectedFormat.id, {
+        categories: {
+          location: selectedLocationCategories,
+          format: selectedFormatCategories
+        }
+      });
       
-      setMediaFormats(updatedFormats);
       toast.success('Categories updated successfully');
       setIsDialogOpen(false);
       setSelectedFormat(null);
@@ -176,21 +78,7 @@ export function MediaFormatCategoryManager() {
 
   const handleSaveFormatName = async (formatId: string) => {
     try {
-      const { error } = await supabase
-        .from('media_formats')
-        .update({ format_name: newFormatName })
-        .eq('id', formatId);
-
-      if (error) throw error;
-
-      // Update local state
-      const updatedFormats = mediaFormats.map(format =>
-        format.id === formatId
-          ? { ...format, format_name: newFormatName }
-          : format
-      );
-      
-      setMediaFormats(updatedFormats);
+      await updateFormat(formatId, { format_name: newFormatName });
       setEditingFormatName(null);
       setNewFormatName('');
       toast.success('Format name updated successfully');
@@ -212,21 +100,7 @@ export function MediaFormatCategoryManager() {
 
   const handleSaveDescription = async (formatId: string) => {
     try {
-      const { error } = await supabase
-        .from('media_formats')
-        .update({ description: newDescription })
-        .eq('id', formatId);
-
-      if (error) throw error;
-
-      // Update local state
-      const updatedFormats = mediaFormats.map(format =>
-        format.id === formatId
-          ? { ...format, description: newDescription }
-          : format
-      );
-      
-      setMediaFormats(updatedFormats);
+      await updateFormat(formatId, { description: newDescription });
       setEditingDescription(null);
       setNewDescription('');
       toast.success('Description updated successfully');
@@ -248,21 +122,7 @@ export function MediaFormatCategoryManager() {
 
   const handleSaveDimensions = async (formatId: string) => {
     try {
-      const { error } = await supabase
-        .from('media_formats')
-        .update({ dimensions: newDimensions })
-        .eq('id', formatId);
-
-      if (error) throw error;
-
-      // Update local state
-      const updatedFormats = mediaFormats.map(format =>
-        format.id === formatId
-          ? { ...format, dimensions: newDimensions }
-          : format
-      );
-      
-      setMediaFormats(updatedFormats);
+      await updateFormat(formatId, { dimensions: newDimensions });
       setEditingDimensions(null);
       setNewDimensions('');
       toast.success('Dimensions updated successfully');
@@ -280,26 +140,26 @@ export function MediaFormatCategoryManager() {
   const getCategoryColor = (category: string) => {
     const colors = {
       // Location categories
-      'Transport': 'bg-blue-100 text-blue-800',
-      'Retail': 'bg-green-100 text-green-800',
-      'Rail': 'bg-purple-100 text-purple-800',
-      'Supermarket': 'bg-orange-100 text-orange-800',
-      'Roadside': 'bg-yellow-100 text-yellow-800',
-      'London Underground': 'bg-red-100 text-red-800',
+      'Transport': 'bg-accent/20 text-accent-foreground border-accent/40',
+      'Retail': 'bg-primary/20 text-primary-foreground border-primary/40',
+      'Rail': 'bg-secondary/20 text-secondary-foreground border-secondary/40',
+      'Supermarket': 'bg-muted/30 text-muted-foreground border-muted/50',
+      'Roadside': 'bg-london-red/20 text-foreground border-london-red/40',
+      'London Underground': 'bg-london-blue/20 text-foreground border-london-blue/40',
       // Format categories
-      'Digital': 'bg-cyan-100 text-cyan-800',
-      'Paper & Paste': 'bg-amber-100 text-amber-800',
-      'Backlight': 'bg-indigo-100 text-indigo-800',
-      'Illuminated': 'bg-lime-100 text-lime-800',
-      'Premium': 'bg-pink-100 text-pink-800',
-      'HD': 'bg-violet-100 text-violet-800',
-      'Vynl': 'bg-teal-100 text-teal-800',
-      'WRB': 'bg-slate-100 text-slate-800'
+      'Digital': 'bg-accent/10 text-accent-foreground border-accent/30',
+      'Paper & Paste': 'bg-primary/10 text-primary-foreground border-primary/30',
+      'Backlight': 'bg-secondary/10 text-secondary-foreground border-secondary/30',
+      'Illuminated': 'bg-muted/20 text-muted-foreground border-muted/40',
+      'Premium': 'bg-london-red/10 text-foreground border-london-red/30',
+      'HD': 'bg-london-blue/10 text-foreground border-london-blue/30',
+      'Vynl': 'bg-steel-blue/20 text-foreground border-steel-blue/40',
+      'WRB': 'bg-muted/40 text-muted-foreground border-muted/60'
     };
-    return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    return colors[category as keyof typeof colors] || 'bg-muted/30 text-muted-foreground border-muted/50';
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <Card>
         <CardContent className="p-6">
@@ -467,8 +327,8 @@ export function MediaFormatCategoryManager() {
                          <div className="space-y-2">
                            <div className="flex flex-wrap gap-1">
                              <span className="text-xs font-medium text-muted-foreground">Location:</span>
-                             {format.locationCategories && format.locationCategories.length > 0 ? (
-                               format.locationCategories.map((category) => (
+                              {format.categories?.location && format.categories.location.length > 0 ? (
+                                format.categories.location.map((category) => (
                                  <Badge
                                    key={category}
                                    variant="secondary"
@@ -483,8 +343,8 @@ export function MediaFormatCategoryManager() {
                            </div>
                            <div className="flex flex-wrap gap-1">
                              <span className="text-xs font-medium text-muted-foreground">Format:</span>
-                             {format.formatCategories && format.formatCategories.length > 0 ? (
-                               format.formatCategories.map((category) => (
+                              {format.categories?.format && format.categories.format.length > 0 ? (
+                                format.categories.format.map((category) => (
                                  <Badge
                                    key={category}
                                    variant="secondary"

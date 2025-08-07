@@ -252,6 +252,50 @@ export type Database = {
         }
         Relationships: []
       }
+      media_format_categories: {
+        Row: {
+          category_name: string
+          category_type: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          media_format_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category_name: string
+          category_type: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          media_format_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category_name?: string
+          category_type?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          media_format_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_format_categories_media_format_id_fkey"
+            columns: ["media_format_id"]
+            isOneToOne: false
+            referencedRelation: "media_formats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       media_formats: {
         Row: {
           created_at: string

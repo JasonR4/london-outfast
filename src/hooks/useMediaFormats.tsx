@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+// DEPRECATED: Use useCentralizedMediaFormats instead
+// This hook is maintained for backward compatibility
+import { useCentralizedMediaFormats } from './useCentralizedMediaFormats';
 
 export interface MediaFormat {
   id: string;
@@ -13,49 +14,32 @@ export interface MediaFormat {
 }
 
 export const useMediaFormats = () => {
-  const [mediaFormats, setMediaFormats] = useState<MediaFormat[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchMediaFormats = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('media_formats')
-        .select('*')
-        .eq('is_active', true)
-        .order('format_name');
-
-      if (error) throw error;
-      setMediaFormats(data || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch media formats');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMediaFormats();
-  }, []);
-
-  const getFormatBySlug = (slug: string): MediaFormat | undefined => {
-    return mediaFormats.find(format => format.format_slug === slug);
-  };
-
-  const getFormatsBySearch = (searchQuery: string): MediaFormat[] => {
-    return mediaFormats.filter(format =>
-      format.format_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (format.description && format.description.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-  };
-
-  return {
+  const {
     mediaFormats,
     loading,
     error,
-    refetch: fetchMediaFormats,
+    refetch,
     getFormatBySlug,
     getFormatsBySearch
+  } = useCentralizedMediaFormats(false); // Only active formats for public use
+
+  // Transform the data to match the old interface (remove categories)
+  const transformedFormats = mediaFormats.map(({ categories, ...format }) => format);
+
+  return {
+    mediaFormats: transformedFormats,
+    loading,
+    error,
+    refetch,
+    getFormatBySlug: (slug: string) => {
+      const format = getFormatBySlug(slug);
+      if (!format) return undefined;
+      const { categories, ...transformed } = format;
+      return transformed;
+    },
+    getFormatsBySearch: (searchQuery: string) => {
+      const formats = getFormatsBySearch(searchQuery);
+      return formats.map(({ categories, ...format }) => format);
+    }
   };
 };
