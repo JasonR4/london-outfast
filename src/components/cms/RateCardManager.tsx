@@ -167,7 +167,8 @@ export function RateCardManager() {
       setInchargePeriods(periodsRes.data || []);
       setRateCardPeriods(rateCardPeriodsRes.data || []);
       
-      console.log('Media formats loaded:', formatsRes.data?.length || 0);
+      console.log('Media formats loaded successfully:', formatsRes.data?.length || 0);
+      console.log('First 3 formats:', formatsRes.data?.slice(0, 3));
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load rate card data');
