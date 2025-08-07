@@ -296,18 +296,23 @@ export function useRateCards(formatSlug?: string) {
   };
 
   const calculatePrice = (locationArea: string, selectedPeriods: number[]) => {
-    console.log('🔍 calculatePrice called with:', { locationArea, selectedPeriods });
+    console.log('🔍 calculatePrice called with:', { locationArea, selectedPeriods, selectedPeriodsLength: selectedPeriods.length });
     
     // Map the location area name to the rate card location code
     const locationCode = getLocationCodeForArea(locationArea);
     console.log('🗺️ Mapped location code:', locationCode);
-    console.log('📊 Available rate cards:', rateCards.map(r => ({ id: r.id, location_area: r.location_area })));
+    console.log('📊 Available rate cards:', rateCards.map(r => ({ id: r.id, location_area: r.location_area, base_rate: r.base_rate_per_incharge, sale_price: r.sale_price })));
     
     const rateCard = rateCards.find(r => r.location_area === locationCode);
     console.log('🎯 Found rate card:', rateCard);
     
-    if (!rateCard || selectedPeriods.length === 0) {
-      console.log('❌ No rate card found or no periods selected');
+    if (!rateCard) {
+      console.log('❌ No rate card found for location:', locationCode);
+      return null;
+    }
+    
+    if (selectedPeriods.length === 0) {
+      console.log('❌ No periods selected');
       return null;
     }
 
@@ -415,7 +420,7 @@ export function useRateCards(formatSlug?: string) {
     productionCostTiers,
     creativeCostTiers,
     mediaFormat,
-    inchargePeriods, // Use the raw periods - ALL periods should be available for selection
+    inchargePeriods: getAllAvailablePeriods(), // Use filtered periods enabled for this format
     rateCardPeriods,
     loading,
     error,

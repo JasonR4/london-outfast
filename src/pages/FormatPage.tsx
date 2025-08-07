@@ -64,12 +64,12 @@ const FormatPage = () => {
     error: rateError 
   } = useRateCards(formatSlug);
 
-  // Check if format uses custom dates (is_date_specific = false)
+  // Check if format uses period-specific dates (is_date_specific = true means use periods)
   useEffect(() => {
     if (rateCards.length > 0) {
-      const hasCustomDates = rateCards.some(rc => rc.is_date_specific === false);
-      setIsDateSpecific(hasCustomDates);
-      console.log('🗓️ Date configuration:', { hasCustomDates, rateCards: rateCards.map(rc => ({ id: rc.id, is_date_specific: rc.is_date_specific })) });
+      const usesPeriods = rateCards.some(rc => rc.is_date_specific === true);
+      setIsDateSpecific(usesPeriods);
+      console.log('🗓️ Date configuration:', { usesPeriods, rateCards: rateCards.map(rc => ({ id: rc.id, is_date_specific: rc.is_date_specific })) });
     }
   }, [rateCards]);
   
@@ -312,13 +312,17 @@ const FormatPage = () => {
 
     // Validate date/period selection based on format type
     if (isDateSpecific) {
+      // isDateSpecific = true means use period selection
+      if (format?.category !== 'Bus' && format?.category !== 'Gorilla' && format?.category !== 'Ambient' && selectedPeriods.length === 0) {
+        toast.error('Please select at least one campaign period');
+        return;
+      }
+    } else {
+      // isDateSpecific = false means use custom date selection
       if (!selectedStartDate || !selectedEndDate) {
         toast.error('Please select campaign start and end dates');
         return;
       }
-    } else if (format?.category !== 'Bus' && format?.category !== 'Gorilla' && format?.category !== 'Ambient' && selectedPeriods.length === 0) {
-      toast.error('Please select at least one campaign period');
-      return;
     }
 
     // Check if over location capacity
@@ -351,17 +355,8 @@ const FormatPage = () => {
     let campaignStartDate = null;
     let campaignEndDate = null;
     
-    if (isDateSpecific && selectedStartDate && selectedEndDate) {
-      // Calculate number of weeks/periods for custom date range
-      const diffTime = Math.abs(selectedEndDate.getTime() - selectedStartDate.getTime());
-      const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
-      const pseudoPeriods = Array.from({ length: diffWeeks }, (_, i) => i + 1);
-      
-      priceCalculation = calculatePrice(locationForPricing, pseudoPeriods);
-      campaignStartDate = selectedStartDate.toISOString().split('T')[0];
-      campaignEndDate = selectedEndDate.toISOString().split('T')[0];
-    } else if (!isDateSpecific && selectedPeriods.length > 0) {
-      // Use standard period calculation
+    if (isDateSpecific && selectedPeriods.length > 0) {
+      // isDateSpecific = true means use period calculation
       priceCalculation = calculatePrice(locationForPricing, selectedPeriods);
       
       const sortedPeriods = [...selectedPeriods].sort((a, b) => a - b);
@@ -370,6 +365,15 @@ const FormatPage = () => {
       
       if (firstPeriod) campaignStartDate = firstPeriod.start_date;
       if (lastPeriod) campaignEndDate = lastPeriod.end_date;
+    } else if (!isDateSpecific && selectedStartDate && selectedEndDate) {
+      // isDateSpecific = false means use custom date range
+      const diffTime = Math.abs(selectedEndDate.getTime() - selectedStartDate.getTime());
+      const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+      const pseudoPeriods = Array.from({ length: diffWeeks }, (_, i) => i + 1);
+      
+      priceCalculation = calculatePrice(locationForPricing, pseudoPeriods);
+      campaignStartDate = selectedStartDate.toISOString().split('T')[0];
+      campaignEndDate = selectedEndDate.toISOString().split('T')[0];
     }
     
     if (!priceCalculation) {
@@ -710,8 +714,8 @@ const FormatPage = () => {
                     </div>
 
                     
-                     {/* Incharge Periods Selection - for incharge media formats */}
-                      {format?.category !== 'Bus' && format?.category !== 'Gorilla' && format?.category !== 'Ambient' && (
+                     {/* Incharge Periods Selection - for period-specific formats */}
+                      {isDateSpecific && (
                       <div>
                         <Label>Select Campaign Periods</Label>
                         
@@ -945,8 +949,8 @@ const FormatPage = () => {
                        onOptimizeClick={() => setShowCreativeUpsellModal(true)}
                      />
 
-                     {/* Date Selection - Custom Dates or Non-Incharge Media */}
-                     {(isDateSpecific || format.category === 'Bus' || format.category === 'Gorilla' || format.category === 'Ambient') && (
+                      {/* Date Selection - Custom Dates for Non-Incharge Media */}
+                      {(!isDateSpecific || format.category === 'Bus' || format.category === 'Gorilla' || format.category === 'Ambient') && (
                        <div className="space-y-4">
                          <div>
                            <Label>Campaign Start Date</Label>
@@ -1089,15 +1093,15 @@ const FormatPage = () => {
                         
                         // Calculate pricing based on format type
                         let priceCalculation = null;
-                        if (isDateSpecific && selectedStartDate && selectedEndDate) {
-                          // For custom dates, calculate based on date range
+                        if (isDateSpecific && selectedPeriods.length > 0) {
+                          // isDateSpecific = true means use standard incharge periods
+                          priceCalculation = calculatePrice(locationForPricing, selectedPeriods);
+                        } else if (!isDateSpecific && selectedStartDate && selectedEndDate) {
+                          // isDateSpecific = false means use custom date range
                           const diffTime = Math.abs(selectedEndDate.getTime() - selectedStartDate.getTime());
                           const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
                           const pseudoPeriods = Array.from({ length: diffWeeks }, (_, i) => i + 1);
                           priceCalculation = calculatePrice(locationForPricing, pseudoPeriods);
-                        } else if (!isDateSpecific) {
-                          // For standard incharge periods
-                          priceCalculation = calculatePrice(locationForPricing, selectedPeriods);
                         }
                         
                         if (priceCalculation) {
