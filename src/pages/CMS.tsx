@@ -27,22 +27,7 @@ const CMS = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Check if current domain is allowed
-  const isAllowedDomain = () => {
-    return window.location.hostname === 'r4advertising.agency';
-  };
-
   useEffect(() => {
-    // Check domain access first
-    if (!isAllowedDomain()) {
-      navigate('/');
-      toast({
-        title: "Access Denied",
-        description: "CMS access is restricted to authorized domains only.",
-        variant: "destructive"
-      });
-      return;
-    }
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
