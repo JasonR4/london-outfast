@@ -55,56 +55,49 @@ export class MediaPlanGenerator {
       console.log('Incharge periods:', inchargePeriods);
       
       const budget = this.getBudgetFromAnswers(answers);
-      const recommendations = this.getRecommendationsFromAnswers(answers);
       const selectedAreas = this.getSelectedAreasFromAnswers(answers);
       const objective = this.getCampaignObjectiveFromAnswers(answers);
       const audience = this.getTargetAudienceFromAnswers(answers);
       
-      console.log('Extracted data:', { budget, recommendations, selectedAreas, objective, audience });
+      console.log('Extracted data:', { budget, selectedAreas, objective, audience });
       
-      if (!budget || recommendations.length === 0) {
-        console.error('Missing budget or recommendations:', { budget, recommendations });
+      if (!budget) {
+        console.error('Missing budget:', { budget });
+        return null;
+      }
+
+      // Get recommendations using the same logic as OOH configurator
+      const recommendations = await this.generateRecommendationsFromAnswers(answers, budget);
+      console.log('Generated recommendations:', recommendations);
+
+      if (recommendations.length === 0) {
+        console.error('No recommendations generated');
         return null;
       }
 
       const planItems: MediaPlanItem[] = [];
       let allocatedBudget = 0;
 
-      // Sort recommendations by score (highest first)
-      const sortedRecommendations = recommendations
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 2); // Take top 2 recommendations
-
-      console.log('Sorted recommendations:', sortedRecommendations);
-
-      for (let i = 0; i < sortedRecommendations.length; i++) {
-        const rec = sortedRecommendations[i];
-        const formatSlug = this.getFormatSlug(rec.name);
+      // Convert recommendations to plan items
+      for (let i = 0; i < Math.min(recommendations.length, 2); i++) {
+        const rec = recommendations[i];
         
-        console.log('Processing recommendation:', rec.name, 'slug:', formatSlug);
+        const planItem: MediaPlanItem = {
+          formatSlug: rec.format,
+          formatName: rec.formatName,
+          recommendedQuantity: rec.calculatedQuantity || 1,
+          selectedAreas: selectedAreas.slice(0, 3),
+          selectedPeriods: this.getSelectedPeriodsFromAnswers(),
+          baseCost: rec.budgetAllocation ? rec.budgetAllocation * 0.7 : budget * 0.35 * 0.7, // 70% for media
+          productionCost: rec.budgetAllocation ? rec.budgetAllocation * 0.15 : budget * 0.35 * 0.15, // 15% for production
+          creativeCost: rec.budgetAllocation ? rec.budgetAllocation * 0.15 : budget * 0.35 * 0.15, // 15% for creative
+          totalCost: rec.budgetAllocation || budget * 0.35,
+          budgetAllocation: i === 0 ? 65 : 35,
+          reasonForRecommendation: rec.reasons
+        };
         
-        if (!formatSlug) continue;
-
-        // Calculate budget allocation (primary gets more)
-        const allocationPercentage = i === 0 ? 0.65 : 0.35;
-        const itemBudget = budget * allocationPercentage;
-        
-        const planItem = await this.generatePlanItemForFormat(
-          formatSlug,
-          rec.name,
-          itemBudget,
-          selectedAreas,
-          inchargePeriods,
-          rec.reasons
-        );
-        
-        if (planItem) {
-          planItems.push({
-            ...planItem,
-            budgetAllocation: allocationPercentage * 100
-          });
-          allocatedBudget += planItem.totalCost;
-        }
+        planItems.push(planItem);
+        allocatedBudget += planItem.totalCost;
       }
 
       console.log('Generated plan items:', planItems);
@@ -126,6 +119,71 @@ export class MediaPlanGenerator {
     } catch (error) {
       console.error('Error generating media plan:', error);
       return null;
+    }
+  }
+
+  private async generateRecommendationsFromAnswers(answers: Answer[], budget: number) {
+    try {
+      // Get actual media formats from database
+      const { data: mediaFormats } = await supabase
+        .from('media_formats')
+        .select('*')
+        .eq('is_active', true);
+
+      if (!mediaFormats) return [];
+
+      // Get selected periods
+      const selectedPeriods = this.getSelectedPeriodsFromAnswers();
+      const periodsCount = selectedPeriods.length || 2;
+
+      const formatScores: Record<string, number> = {};
+
+      // Initialize scores for actual media formats
+      mediaFormats.forEach(format => {
+        formatScores[format.format_slug] = 0;
+      });
+
+      // Calculate total scores from answers (map old slugs to new ones where possible)
+      answers.forEach(answer => {
+        Object.entries(answer.scores).forEach(([format, score]) => {
+          // Map old format slugs to new ones
+          const mappedFormat = this.mapFormatSlug(format);
+          if (formatScores.hasOwnProperty(mappedFormat)) {
+            formatScores[mappedFormat] += score;
+          }
+        });
+      });
+
+      // Get top scoring formats
+      const topFormats = Object.entries(formatScores)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 3);
+
+      const recommendations = [];
+
+      for (const [formatSlug, score] of topFormats) {
+        const mediaFormat = mediaFormats.find(f => f.format_slug === formatSlug);
+        if (!mediaFormat) continue;
+
+        // Calculate real costs and quantities
+        const costData = await this.calculateRealCosts(mediaFormat.id, budget, periodsCount);
+        
+        recommendations.push({
+          format: formatSlug,
+          formatName: mediaFormat.format_name,
+          score,
+          reasons: [`Optimized for your ${this.getCampaignObjectiveFromAnswers(answers)} objective`],
+          description: mediaFormat.description || '',
+          calculatedQuantity: costData.quantity,
+          budgetAllocation: costData.totalCost,
+          costPerUnit: costData.costPerUnit
+        });
+      }
+
+      return recommendations;
+    } catch (error) {
+      console.error('Error generating recommendations:', error);
+      return [];
     }
   }
 
@@ -361,44 +419,6 @@ export class MediaPlanGenerator {
     return 25000; // Default fallback
   }
 
-  private getRecommendationsFromAnswers(answers: Answer[]): Array<{name: string, score: number, reasons: string[]}> {
-    console.log('Getting recommendations from answers:', answers);
-    
-    // Extract format scores from all answers
-    const formatScores: Record<string, number> = {};
-    const formatReasons: Record<string, string[]> = {};
-    
-    answers.forEach(answer => {
-      console.log('Processing answer:', answer.questionId, answer.scores);
-      Object.entries(answer.scores || {}).forEach(([format, score]) => {
-        formatScores[format] = (formatScores[format] || 0) + (score as number);
-        
-        // Add reasoning based on question type
-        if (!formatReasons[format]) formatReasons[format] = [];
-        if (answer.questionId === 'campaign_objective') {
-          formatReasons[format].push(`Aligns with ${answer.value} objective`);
-        } else if (answer.questionId === 'target_audience') {
-          formatReasons[format].push(`Targets ${answer.value} demographic`);
-        } else if (answer.questionId === 'budget' || answer.questionId === 'campaign_budget') {
-          formatReasons[format].push(`Fits within ${answer.value} budget range`);
-        }
-      });
-    });
-
-    console.log('Format scores:', formatScores);
-    
-    const recommendations = Object.entries(formatScores)
-      .map(([name, score]) => ({
-        name: this.formatDisplayName(name),
-        score,
-        reasons: formatReasons[name] || [`High compatibility score: ${score}`]
-      }))
-      .filter(item => item.score > 0);
-      
-    console.log('Generated recommendations:', recommendations);
-    
-    return recommendations;
-  }
 
   private getSelectedAreasFromAnswers(answers: Answer[]): string[] {
     const locationAnswer = answers.find(a => a.questionId === 'preferred_locations');
@@ -447,32 +467,74 @@ export class MediaPlanGenerator {
     return audience as string || 'General Public';
   }
 
-  private getFormatSlug(formatName: string): string | null {
-    const slugMap: Record<string, string> = {
-      'Billboards': 'billboards',
-      'Digital Billboards': 'digital_billboards',
-      'Rail Advertising': 'rail_advertising', 
-      'Taxi Advertising': 'taxi_advertising',
-      'Bus Advertising': 'bus_advertising',
-      'Tube Advertising': 'tube_advertising'
+  private mapFormatSlug(oldSlug: string): string {
+    const mapping: Record<string, string> = {
+      'billboards': '48-sheet-billboard',
+      'digital_billboards': 'digital-48-sheet',
+      'tube_ads': '6-sheet-tube-panel', // Map to most common tube format
+      'taxi_ads': 'taxi-advertising',
+      'bus_shelters': 'bus-shelter-supersites',
+      'local_billboards': 'lamp-post-banners'
     };
-    return slugMap[formatName] || null;
+    return mapping[oldSlug] || oldSlug;
   }
 
-  private formatDisplayName(slug: string): string {
-    const nameMap: Record<string, string> = {
-      'billboards': 'Billboards',
-      'digital_billboards': 'Digital Billboards',
-      'rail_advertising': 'Rail Advertising',
-      'taxi_advertising': 'Taxi Advertising', 
-      'bus_advertising': 'Bus Advertising',
-      'tube_advertising': 'Tube Advertising',
-      'tube_ads': 'Tube Advertising',
-      'taxi_ads': 'Taxi Advertising',
-      'bus_shelters': 'Bus Shelter Advertising',
-      'local_billboards': 'Local Billboards'
-    };
-    return nameMap[slug] || slug.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  private async calculateRealCosts(mediaFormatId: string, budget: number, periodsCount: number) {
+    try {
+      // Get rate cards for this format
+      const { data: rateCards } = await supabase
+        .from('rate_cards')
+        .select('*')
+        .eq('media_format_id', mediaFormatId)
+        .eq('is_active', true)
+        .limit(1);
+
+      if (!rateCards || rateCards.length === 0) {
+        return {
+          quantity: Math.floor(budget / 3000),
+          totalCost: budget * 0.7,
+          costPerUnit: 3000
+        };
+      }
+
+      const rateCard = rateCards[0];
+      const baseRate = rateCard.sale_price || rateCard.reduced_price || rateCard.base_rate_per_incharge;
+      const markupMultiplier = 1 + (rateCard.location_markup_percentage / 100);
+      const adjustedRate = baseRate * markupMultiplier;
+
+      // Apply discount tiers
+      const { data: discountTiers } = await supabase
+        .from('discount_tiers')
+        .select('*')
+        .eq('media_format_id', mediaFormatId)
+        .eq('is_active', true)
+        .lte('min_periods', periodsCount)
+        .or(`max_periods.is.null,max_periods.gte.${periodsCount}`)
+        .order('discount_percentage', { ascending: false })
+        .limit(1);
+
+      const discount = discountTiers?.[0]?.discount_percentage || 0;
+      const discountMultiplier = 1 - (discount / 100);
+      const finalRate = adjustedRate * discountMultiplier;
+      
+      const costPerUnit = finalRate * periodsCount;
+      const mediaBudget = budget * 0.7; // 70% for media
+      const quantity = Math.max(1, Math.floor(mediaBudget / costPerUnit));
+      const totalCost = costPerUnit * quantity;
+
+      return {
+        quantity,
+        totalCost,
+        costPerUnit
+      };
+    } catch (error) {
+      console.error('Error calculating real costs:', error);
+      return {
+        quantity: Math.floor(budget / 3000),
+        totalCost: budget * 0.7,
+        costPerUnit: 3000
+      };
+    }
   }
 
   private calculateEstimatedReach(items: MediaPlanItem[]): string {
