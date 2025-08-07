@@ -1151,6 +1151,9 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                      await fetchCurrentQuote();
                      console.log('Quote data refreshed');
                      
+                     // Add a small delay to ensure state updates complete before navigation
+                     await new Promise(resolve => setTimeout(resolve, 100));
+                     
                      onComplete?.();
                    } catch (error) {
                      console.error('Error creating quote items:', error);
