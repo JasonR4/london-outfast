@@ -130,6 +130,8 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
         }
       };
 
+      console.log('Syncing quote to HubSpot:', hubspotData);
+
       const response = await supabase.functions.invoke('sync-hubspot-contact', {
         body: hubspotData
       });

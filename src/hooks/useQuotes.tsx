@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { syncQuoteToHubSpot } from '@/utils/hubspotSync';
 import { calculateVAT } from '@/utils/vat';
 
 export interface QuoteItem {
@@ -376,6 +377,10 @@ export const useQuotes = () => {
         .eq('id', currentQuote.id);
 
       if (error) throw error;
+
+      // Sync to HubSpot
+      console.log('Syncing quote to HubSpot...');
+      await syncQuoteToHubSpot('format_quote', contactDetails, currentQuote);
 
       setCurrentQuote(prev => prev ? { ...prev, status: 'submitted', ...contactDetails } : null);
       
