@@ -513,6 +513,14 @@ export function RateCardManager() {
 
     setIsAddingIncharges(true);
     try {
+      // First, update rate cards to set is_date_specific to true
+      const { error: updateError } = await supabase
+        .from('rate_cards')
+        .update({ is_date_specific: true })
+        .in('id', selectedRateCardIds);
+      
+      if (updateError) throw updateError;
+
       // Create entries for each rate card + incharge period combination
       const entries = [];
       for (const rateCardId of selectedRateCardIds) {
@@ -536,6 +544,7 @@ export function RateCardManager() {
       setSelectedInchargePeriods([]);
       setSelectedRateCardIds([]);
       setIsAllSelected(false);
+      fetchData(); // Refresh the data to show the changes
     } catch (error) {
       console.error('Error adding incharge periods:', error);
       toast.error('Failed to add incharge periods');
