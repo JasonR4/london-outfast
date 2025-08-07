@@ -146,6 +146,10 @@ export function RateCardManager() {
   const [selectedRateCardIds, setSelectedRateCardIds] = useState<string[]>([]);
   const [isAllSelected, setIsAllSelected] = useState(false);
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
+  const [showBulkInchargeModal, setShowBulkInchargeModal] = useState(false);
+  const [availableInchargePeriods, setAvailableInchargePeriods] = useState<any[]>([]);
+  const [selectedInchargePeriods, setSelectedInchargePeriods] = useState<string[]>([]);
+  const [isAddingIncharges, setIsAddingIncharges] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -484,6 +488,65 @@ export function RateCardManager() {
     } finally {
       setIsDeletingBulk(false);
     }
+  };
+
+  const fetchInchargePeriods = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('incharge_periods')
+        .select('*')
+        .order('period_number');
+      
+      if (error) throw error;
+      setAvailableInchargePeriods(data || []);
+    } catch (error) {
+      console.error('Error fetching incharge periods:', error);
+      toast.error('Failed to fetch incharge periods');
+    }
+  };
+
+  const handleBulkAddIncharges = async () => {
+    if (selectedRateCardIds.length === 0 || selectedInchargePeriods.length === 0) {
+      toast.error('Please select rate cards and incharge periods');
+      return;
+    }
+
+    setIsAddingIncharges(true);
+    try {
+      // Create entries for each rate card + incharge period combination
+      const entries = [];
+      for (const rateCardId of selectedRateCardIds) {
+        for (const inchargePeriodId of selectedInchargePeriods) {
+          entries.push({
+            rate_card_id: rateCardId,
+            incharge_period_id: inchargePeriodId,
+            is_enabled: true
+          });
+        }
+      }
+
+      const { error } = await supabase
+        .from('rate_card_periods')
+        .insert(entries);
+      
+      if (error) throw error;
+      
+      toast.success(`Successfully added ${selectedInchargePeriods.length} incharge period${selectedInchargePeriods.length > 1 ? 's' : ''} to ${selectedRateCardIds.length} rate card${selectedRateCardIds.length > 1 ? 's' : ''}`);
+      setShowBulkInchargeModal(false);
+      setSelectedInchargePeriods([]);
+      setSelectedRateCardIds([]);
+      setIsAllSelected(false);
+    } catch (error) {
+      console.error('Error adding incharge periods:', error);
+      toast.error('Failed to add incharge periods');
+    } finally {
+      setIsAddingIncharges(false);
+    }
+  };
+
+  const handleOpenBulkInchargeModal = () => {
+    setShowBulkInchargeModal(true);
+    fetchInchargePeriods();
   };
 
   const handleDeleteDiscountTier = async (id: string) => {
@@ -1669,10 +1732,7 @@ export function RateCardManager() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          // TODO: Implement add incharges bulk action
-                          toast.info('Add incharges feature coming soon');
-                        }}
+                        onClick={handleOpenBulkInchargeModal}
                         className="flex items-center gap-2"
                       >
                         <Plus className="w-4 h-4" />
@@ -2978,6 +3038,67 @@ export function RateCardManager() {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Bulk Add Incharges Modal */}
+      <Dialog open={showBulkInchargeModal} onOpenChange={setShowBulkInchargeModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add Incharge Periods to Selected Rate Cards</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Adding periods to {selectedRateCardIds.length} selected rate card{selectedRateCardIds.length > 1 ? 's' : ''}
+              </p>
+            </div>
+
+            <div>
+              <Label className="text-base font-medium">Select Incharge Periods</Label>
+              <div className="border rounded-md p-4 max-h-64 overflow-y-auto mt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {availableInchargePeriods.map((period) => (
+                    <div key={period.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`bulk-period-${period.id}`}
+                        checked={selectedInchargePeriods.includes(period.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedInchargePeriods([...selectedInchargePeriods, period.id]);
+                          } else {
+                            setSelectedInchargePeriods(selectedInchargePeriods.filter(id => id !== period.id));
+                          }
+                        }}
+                      />
+                      <Label htmlFor={`bulk-period-${period.id}`} className="text-sm">
+                        Period {period.period_number} ({format(new Date(period.start_date), 'MMM dd')} - {format(new Date(period.end_date), 'MMM dd')})
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowBulkInchargeModal(false);
+                  setSelectedInchargePeriods([]);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleBulkAddIncharges}
+                disabled={selectedInchargePeriods.length === 0 || isAddingIncharges}
+              >
+                {isAddingIncharges ? 'Adding...' : `Add ${selectedInchargePeriods.length} Period${selectedInchargePeriods.length !== 1 ? 's' : ''}`}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
