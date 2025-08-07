@@ -175,6 +175,18 @@ const HomepageContentManager = () => {
                   onChange={(e) => updateField('hero', 'description', e.target.value)}
                 />
               </div>
+              <div>
+                <Label htmlFor="background_image">Background Image URL</Label>
+                <Input
+                  id="background_image"
+                  value={homepageData.hero?.content?.background_image || ''}
+                  onChange={(e) => updateField('hero', 'background_image', e.target.value)}
+                  placeholder="Enter image URL or upload to Media Library first"
+                />
+                <div className="mt-2 text-sm text-muted-foreground">
+                  Current: {homepageData.hero?.content?.background_image || 'Default london-hero.jpg'}
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="primary_button_text">Primary Button Text</Label>
