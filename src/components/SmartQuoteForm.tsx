@@ -969,48 +969,122 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         <CardTitle className="text-lg">Pricing Breakdown</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        {pricing.totalDiscount > 0 && (
-                          <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg">
-                            <div className="text-sm font-medium text-green-800 dark:text-green-200">
-                              💰 Volume Discount Applied
+                        {/* Rate Card Details */}
+                        {selectedLocations.map(location => {
+                          const priceResult = calculatePrice(location, selectedPeriods);
+                          if (!priceResult) return null;
+                          
+                          return (
+                            <div key={location} className="bg-muted/30 p-4 rounded-lg border border-border">
+                              <h4 className="font-medium text-sm mb-3">{location} - {selectedPeriods.length} Period{selectedPeriods.length > 1 ? 's' : ''}</h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Base Rate (per period):</span>
+                                  <span>£{priceResult.basePrice.toLocaleString()}</span>
+                                </div>
+                                
+                                {priceResult.locationMarkup > 0 && (
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Location Markup (+{priceResult.locationMarkup}%):</span>
+                                    <span>£{(priceResult.adjustedRate - priceResult.basePrice).toLocaleString()}</span>
+                                  </div>
+                                )}
+                                
+                                {priceResult.isOnSale && (
+                                  <>
+                                    <div className="flex justify-between items-center line-through text-muted-foreground">
+                                      <span>Regular Price:</span>
+                                      <span>£{(priceResult.adjustedRate * selectedPeriods.length).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-green-600 font-medium">
+                                      <span>Sale Price:</span>
+                                      <span>£{((priceResult.totalPrice / (1 - priceResult.discount / 100)) || priceResult.totalPrice).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-green-600 text-xs">
+                                      <span>💰 Sale Savings:</span>
+                                      <span>£{((priceResult.adjustedRate * selectedPeriods.length) - ((priceResult.totalPrice / (1 - priceResult.discount / 100)) || priceResult.totalPrice)).toLocaleString()}</span>
+                                    </div>
+                                  </>
+                                )}
+                                
+                                {priceResult.isReduced && !priceResult.isOnSale && (
+                                  <>
+                                    <div className="flex justify-between items-center line-through text-muted-foreground">
+                                      <span>Regular Price:</span>
+                                      <span>£{(priceResult.adjustedRate * selectedPeriods.length).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-blue-600 font-medium">
+                                      <span>Reduced Price:</span>
+                                      <span>£{((priceResult.totalPrice / (1 - priceResult.discount / 100)) || priceResult.totalPrice).toLocaleString()}</span>
+                                    </div>
+                                  </>
+                                )}
+                                
+                                {priceResult.discount > 0 && (
+                                  <>
+                                    <div className="border-t border-border/50 pt-2 mt-2">
+                                      <div className="flex justify-between items-center text-orange-600">
+                                        <span>Volume Discount ({priceResult.discount}%):</span>
+                                        <span>-£{(((priceResult.totalPrice / (1 - priceResult.discount / 100)) || priceResult.totalPrice) * (priceResult.discount / 100)).toLocaleString()}</span>
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+                                
+                                <div className="border-t border-border/50 pt-2 mt-2">
+                                  <div className="flex justify-between items-center font-medium">
+                                    <span>Media Cost (this location):</span>
+                                    <span className="text-primary">£{priceResult.totalPrice.toLocaleString()}</span>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-xs text-green-600 dark:text-green-300">
-                              You saved £{pricing.totalDiscount.toLocaleString()} with this selection
+                          );
+                        })}
+
+                        {/* Total Summary */}
+                        <div className="border-t border-border pt-4">
+                          {pricing.totalDiscount > 0 && (
+                            <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg mb-4">
+                              <div className="text-sm font-medium text-green-800 dark:text-green-200">
+                                💰 Total Volume Discount Applied
+                              </div>
+                              <div className="text-xs text-green-600 dark:text-green-300">
+                                You saved £{pricing.totalDiscount.toLocaleString()} across all locations
+                              </div>
                             </div>
+                          )}
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span>Total Media Costs:</span>
+                              <span className="font-medium">£{pricing.mediaPrice.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span>Production Costs:</span>
+                              <span className="font-medium">£{pricing.productionCost.toLocaleString()}</span>
+                            </div>
+                            {needsCreative && pricing.creativeCost > 0 && (
+                              <div className="flex justify-between items-center">
+                                <span>Creative Development ({creativeAssets} assets):</span>
+                                <span className="font-medium">£{pricing.creativeCost.toLocaleString()}</span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                          <div className="flex justify-between items-center">
-                            <span>Media Costs:</span>
-                            <span className="font-medium">£{pricing.mediaPrice.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span>Production Costs:</span>
-                            <span className="font-medium">£{pricing.productionCost.toLocaleString()}</span>
-                         </div>
-                         {needsCreative && pricing.creativeCost > 0 && (
-                           <div className="flex justify-between items-center">
-                             <span>Creative Development ({creativeAssets} assets):</span>
-                             <span className="font-medium">£{pricing.creativeCost.toLocaleString()}</span>
-                           </div>
-                         )}
-                        {pricing.totalDiscount > 0 && (
-                          <div className="flex justify-between items-center text-green-600 dark:text-green-400">
-                            <span>Discount:</span>
-                            <span className="font-medium">-£{pricing.totalDiscount.toLocaleString()}</span>
-                          </div>
-                        )}
-                        <div className="border-t border-border pt-4 space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span>Subtotal (exc VAT):</span>
-                            <span className="font-medium">£{pricing.totalCost.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between items-center text-sm text-muted-foreground">
-                            <span>VAT (20%):</span>
-                            <span>£{(pricing.totalCost * 0.20).toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
-                            <span>Total inc VAT:</span>
-                            <span className="text-primary">£{(pricing.totalCost * 1.20).toLocaleString()}</span>
+                          
+                          <div className="border-t border-border pt-4 mt-4 space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span>Subtotal (exc VAT):</span>
+                              <span className="font-medium">£{pricing.totalCost.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm text-muted-foreground">
+                              <span>VAT (20%):</span>
+                              <span>£{(pricing.totalCost * 0.20).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
+                              <span>Total inc VAT:</span>
+                              <span className="text-primary">£{(pricing.totalCost * 1.20).toLocaleString()}</span>
+                            </div>
                           </div>
                         </div>
                       </CardContent>
