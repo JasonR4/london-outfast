@@ -569,13 +569,20 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
         .slice(0, 3);
 
       const recommendations: OOHRecommendation[] = [];
+      
+      // Only show top 2 recommendations and split budget between them
+      const limitedFormats = topFormats.slice(0, 2);
 
-      for (const [formatSlug, score] of topFormats) {
+      for (let i = 0; i < limitedFormats.length; i++) {
+        const [formatSlug, score] = limitedFormats[i];
         const mediaFormat = mediaFormats.find(f => f.format_slug === formatSlug);
         if (!mediaFormat) continue;
 
-        // Calculate real costs and quantities
-        const costData = await calculateRealCosts(mediaFormat.id, budget, periodsCount);
+        // Split budget: 65% for first, 35% for second
+        const allocatedBudget = i === 0 ? Math.floor(budget * 0.65) : Math.floor(budget * 0.35);
+        
+        // Calculate real costs and quantities with allocated budget
+        const costData = await calculateRealCosts(mediaFormat.id, allocatedBudget, periodsCount);
         
         // Generate reasons based on answers
         const reasons = generateReasons(formatSlug, mediaFormat);
