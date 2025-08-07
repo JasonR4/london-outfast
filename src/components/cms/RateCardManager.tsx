@@ -142,7 +142,7 @@ export function RateCardManager() {
         supabase.from('media_formats').select('*').order('format_name'),
         supabase.from('rate_cards').select('*, media_formats(format_name)').order('location_area'),
         supabase.from('discount_tiers').select('*, media_formats(format_name)').order('min_periods'),
-        supabase.from('quantity_discount_tiers').select('*, media_formats(format_name)').order('min_quantity'),
+        supabase.from('discount_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('production_cost_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('creative_design_cost_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('incharge_periods').select('*').order('period_number'),
