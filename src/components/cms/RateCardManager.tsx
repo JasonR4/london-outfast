@@ -150,18 +150,9 @@ export function RateCardManager() {
   const [availableInchargePeriods, setAvailableInchargePeriods] = useState<any[]>([]);
   const [selectedInchargePeriods, setSelectedInchargePeriods] = useState<string[]>([]);
   const [isAddingIncharges, setIsAddingIncharges] = useState(false);
-  
-  // Form field state for controlled components
-  const [selectedMediaFormatId, setSelectedMediaFormatId] = useState<string>('');
-  const [selectedLocationArea, setSelectedLocationArea] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   useEffect(() => {
-    const initializeData = async () => {
-      await fetchData();
-      await syncRateCardPeriodFlags(); // Fix existing data
-    };
-    initializeData();
+    fetchData();
   }, []);
 
   const fetchData = async () => {
@@ -227,9 +218,8 @@ export function RateCardManager() {
       const isDateSpecificValue = formData.get('is_date_specific') === 'true';
       
       const rateData = {
-        media_format_id: selectedMediaFormatId || (formData.get('media_format_id') as string),
-        location_area: selectedLocationArea || 'GD', // Default to 'GD' if empty
-        category: selectedCategory || (formData.get('category') as string),
+        media_format_id: formData.get('media_format_id') as string,
+        location_area: formData.get('location_area') as string,
         base_rate_per_incharge: parseFloat(formData.get('base_rate_per_incharge') as string),
         sale_price: formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null,
         reduced_price: formData.get('reduced_price') ? parseFloat(formData.get('reduced_price') as string) : null,
@@ -330,10 +320,9 @@ export function RateCardManager() {
 
   const handleSaveQuantityDiscountTier = async (formData: FormData) => {
     try {
-      const locationArea = formData.get('location_area') as string;
       const quantityDiscountData = {
         media_format_id: formData.get('media_format_id') as string,
-        location_area: locationArea === 'global' ? null : (locationArea || 'GD'),
+        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
         min_quantity: parseInt(formData.get('min_quantity') as string),
         max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
         discount_percentage: parseFloat(formData.get('discount_percentage') as string),
@@ -366,10 +355,9 @@ export function RateCardManager() {
 
   const handleSaveProductionTier = async (formData: FormData) => {
     try {
-      const locationArea = formData.get('location_area') as string;
       const productionData = {
         media_format_id: formData.get('media_format_id') as string,
-        location_area: locationArea === 'global' ? null : (locationArea || 'GD'),
+        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
         category: formData.get('category') as string,
         min_quantity: parseInt(formData.get('min_quantity') as string),
         max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
@@ -403,10 +391,9 @@ export function RateCardManager() {
 
   const handleSaveCreativeTier = async (formData: FormData) => {
     try {
-      const locationArea = formData.get('location_area') as string;
       const creativeData = {
         media_format_id: formData.get('media_format_id') as string,
-        location_area: locationArea === 'global' ? null : (locationArea || 'GD'),
+        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
         category: formData.get('category') as string,
         min_quantity: parseInt(formData.get('min_quantity') as string),
         max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
@@ -526,71 +513,33 @@ export function RateCardManager() {
 
     setIsAddingIncharges(true);
     try {
-      // Get existing rate card periods to avoid duplicates
-      const { data: existingPeriods, error: fetchError } = await supabase
-        .from('rate_card_periods')
-        .select('rate_card_id, incharge_period_id')
-        .in('rate_card_id', selectedRateCardIds)
-        .in('incharge_period_id', selectedInchargePeriods);
+      // First, update rate cards to set is_date_specific to true
+      const { error: updateError } = await supabase
+        .from('rate_cards')
+        .update({ is_date_specific: true })
+        .in('id', selectedRateCardIds);
+      
+      if (updateError) throw updateError;
 
-      if (fetchError) throw fetchError;
-
-      // Create a Set of existing combinations for fast lookup
-      const existingCombinations = new Set(
-        existingPeriods?.map(ep => `${ep.rate_card_id}-${ep.incharge_period_id}`) || []
-      );
-
-      // Create entries for each rate card + incharge period combination, excluding duplicates
+      // Create entries for each rate card + incharge period combination
       const entries = [];
       for (const rateCardId of selectedRateCardIds) {
         for (const inchargePeriodId of selectedInchargePeriods) {
-          const combination = `${rateCardId}-${inchargePeriodId}`;
-          if (!existingCombinations.has(combination)) {
-            entries.push({
-              rate_card_id: rateCardId,
-              incharge_period_id: inchargePeriodId,
-              is_enabled: true
-            });
-          }
+          entries.push({
+            rate_card_id: rateCardId,
+            incharge_period_id: inchargePeriodId,
+            is_enabled: true
+          });
         }
       }
 
-      if (entries.length === 0) {
-        toast.info('All selected incharge periods are already assigned to the selected rate cards');
-        setShowBulkInchargeModal(false);
-        setSelectedInchargePeriods([]);
-        return;
-      }
-
-      // Insert new rate card periods first
       const { error } = await supabase
         .from('rate_card_periods')
         .insert(entries);
       
       if (error) throw error;
-
-      // Now update rate cards to set is_date_specific to true
-      // Only update rate cards that now have incharge periods
-      const rateCardsToUpdate = Array.from(new Set(entries.map(entry => entry.rate_card_id)));
       
-      const { error: updateError } = await supabase
-        .from('rate_cards')
-        .update({ 
-          is_date_specific: true,
-          start_date: null,
-          end_date: null
-        })
-        .in('id', rateCardsToUpdate);
-      
-      if (updateError) throw updateError;
-      
-      const skippedCount = (selectedRateCardIds.length * selectedInchargePeriods.length) - entries.length;
-      let message = `Successfully added ${entries.length} new period assignment${entries.length !== 1 ? 's' : ''}`;
-      if (skippedCount > 0) {
-        message += ` (${skippedCount} already existed)`;
-      }
-      
-      toast.success(message);
+      toast.success(`Successfully added ${selectedInchargePeriods.length} incharge period${selectedInchargePeriods.length > 1 ? 's' : ''} to ${selectedRateCardIds.length} rate card${selectedRateCardIds.length > 1 ? 's' : ''}`);
       setShowBulkInchargeModal(false);
       setSelectedInchargePeriods([]);
       setSelectedRateCardIds([]);
@@ -601,38 +550,6 @@ export function RateCardManager() {
       toast.error('Failed to add incharge periods');
     } finally {
       setIsAddingIncharges(false);
-    }
-  };
-
-  const syncRateCardPeriodFlags = async () => {
-    try {
-      // Get all rate cards that have periods but aren't marked as date specific
-      const { data: rateCardsWithPeriods, error: fetchError } = await supabase
-        .from('rate_card_periods')
-        .select('rate_card_id, rate_cards!inner(is_date_specific)')
-        .eq('rate_cards.is_date_specific', false);
-
-      if (fetchError) throw fetchError;
-
-      if (rateCardsWithPeriods && rateCardsWithPeriods.length > 0) {
-        const rateCardIds = Array.from(new Set(rateCardsWithPeriods.map(rcp => rcp.rate_card_id)));
-        
-        const { error: updateError } = await supabase
-          .from('rate_cards')
-          .update({ 
-            is_date_specific: true,
-            start_date: null,
-            end_date: null
-          })
-          .in('id', rateCardIds);
-        
-        if (updateError) throw updateError;
-        
-        console.log(`Updated ${rateCardIds.length} rate cards to use date-specific periods`);
-        fetchData(); // Refresh data
-      }
-    } catch (error) {
-      console.error('Error syncing rate card period flags:', error);
     }
   };
 
@@ -1855,9 +1772,6 @@ export function RateCardManager() {
                         setIsDateSpecific(false);
                         setCustomStartDate(undefined);
                         setCustomEndDate(undefined);
-                        setSelectedMediaFormatId('');
-                        setSelectedLocationArea('');
-                        setSelectedCategory('');
                       }}>
                         <Plus className="w-4 h-4 mr-2" />
                         Add Rate Card
@@ -1876,12 +1790,7 @@ export function RateCardManager() {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="media_format_id">Media Format</Label>
-                            <Select 
-                              name="media_format_id" 
-                              value={selectedMediaFormatId || editingRate?.media_format_id || ''} 
-                              onValueChange={setSelectedMediaFormatId}
-                              required
-                            >
+                            <Select name="media_format_id" defaultValue={editingRate?.media_format_id} required>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select format" />
                               </SelectTrigger>
@@ -1896,12 +1805,7 @@ export function RateCardManager() {
                           </div>
                           <div>
                             <Label htmlFor="location_area">Location Area</Label>
-                            <Select 
-                              name="location_area" 
-                              value={selectedLocationArea || editingRate?.location_area || 'GD'} 
-                              onValueChange={setSelectedLocationArea}
-                              required
-                            >
+                            <Select name="location_area" defaultValue={editingRate?.location_area} required>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select location area" />
                               </SelectTrigger>
@@ -1918,12 +1822,7 @@ export function RateCardManager() {
                          </div>
                          <div>
                            <Label htmlFor="category">OOH Category</Label>
-                           <Select 
-                             name="category" 
-                             value={selectedCategory || editingRate?.category || ''} 
-                             onValueChange={setSelectedCategory}
-                             required
-                           >
+                           <Select name="category" defaultValue={editingRate?.category} required>
                              <SelectTrigger>
                                <SelectValue placeholder="Select category" />
                              </SelectTrigger>
@@ -2230,11 +2129,6 @@ export function RateCardManager() {
                             onClick={() => {
                               setEditingRate(rate);
                               setIsDateSpecific(rate.is_date_specific || false);
-                              
-                              // Populate form fields
-                              setSelectedMediaFormatId(rate.media_format_id);
-                              setSelectedLocationArea(rate.location_area);
-                              setSelectedCategory(rate.category || '');
                               
                               if (rate.is_date_specific) {
                                 // Load existing periods for this rate card

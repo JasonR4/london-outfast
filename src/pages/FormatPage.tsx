@@ -51,9 +51,7 @@ const FormatPage = () => {
   const [upsellContext, setUpsellContext] = useState<{ zoneName?: string; requiredCapacity: number } | null>(null);
   const [showCreativeUpsellModal, setShowCreativeUpsellModal] = useState(false);
   
-  // Use rate cards hook with debugging
-  console.log('🔍 RATE CARDS DEBUG - formatSlug passed to useRateCards:', formatSlug);
-  
+  // Use rate cards hook
   const { 
     rateCards, 
     calculatePrice, 
@@ -64,14 +62,6 @@ const FormatPage = () => {
     loading: rateLoading, 
     error: rateError 
   } = useRateCards(formatSlug);
-  
-  console.log('🔍 RATE CARDS HOOK RESULT:', {
-    rateCardsCount: rateCards?.length || 0,
-    rateLoading,
-    rateError: rateError || 'none',
-    hasCalculatePrice: !!calculatePrice,
-    inchargePeriodsCount: inchargePeriods?.length || 0
-  });
   
   // Use location selector hook for multiple area selection in pricing
   const {
@@ -415,25 +405,9 @@ const FormatPage = () => {
     );
   }
 
-  // Debug logging for format loading
-  console.log('🔍 FORMAT PAGE DEBUG:', { 
-    formatSlug,
-    format: format ? 'loaded' : 'null',
-    formatName: format?.format_name || format?.name,
-    loading,
-    formatsLoading 
-  });
-
-  // Don't render if we don't have format data yet AND we're still loading
-  if (!format && loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Loading format data...</p>
-        </div>
-      </div>
-    );
+  // Don't render if we don't have format data yet
+  if (!format) {
+    return null;
   }
 
   return (
@@ -695,19 +669,13 @@ const FormatPage = () => {
                   <CardContent className="space-y-4">
                     <div>
                       <Label htmlFor="quantity">Quantity</Label>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        Number of {format?.name?.includes('Digital') ? 'sites' : 'units'} per incharge period
-                      </p>
-                      <Select value={quantity.toString()} onValueChange={(value) => {
-                        console.log('🔍 Quantity changed from', quantity, 'to', value);
-                        setQuantity(parseInt(value));
-                      }}>
+                      <Select value={quantity.toString()} onValueChange={(value) => setQuantity(parseInt(value))}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select quantity" />
                         </SelectTrigger>
                         <SelectContent>
                           {[1,2,3,4,5,6,7,8,9,10,15,20,25,30].map(num => (
-                            <SelectItem key={num} value={num.toString()}>{num} {format?.name?.includes('Digital') ? 'site' : 'unit'}{num > 1 ? 's' : ''}</SelectItem>
+                            <SelectItem key={num} value={num.toString()}>{num} site{num > 1 ? 's' : ''}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
