@@ -7,6 +7,7 @@ import { MediaFormatsProvider } from "@/components/providers/MediaFormatsProvide
 import Navigation from "@/components/Navigation";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import Footer from "@/components/Footer";
+import { AnalyticsScripts } from "@/components/AnalyticsScripts";
 import Index from "./pages/Index";
 import Quote from "./pages/Quote";
 import FormatPage from "./pages/FormatPage";
@@ -37,6 +38,7 @@ const App = () => (
         <BrowserRouter>
         <ScrollToTop />
         <div className="min-h-screen bg-background">
+          <AnalyticsScripts />
           <Navigation />
           <Routes>
             <Route path="/" element={<Index />} />

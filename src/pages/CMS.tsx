@@ -17,7 +17,8 @@ import IndustryContentManager from '@/components/cms/IndustryContentManager';
 import HomepageContentManager from '@/components/cms/HomepageContentManager';
 import { RateCardManager } from '@/components/cms/RateCardManager';
 import { QuoteManager } from '@/components/cms/QuoteManager';
-import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator, ClipboardList } from 'lucide-react';
+import { AnalyticsManager } from '@/components/cms/AnalyticsManager';
+import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator, ClipboardList, BarChart3 } from 'lucide-react';
 
 const CMS = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -161,7 +162,7 @@ const CMS = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="quotes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-11">
+          <TabsList className="grid w-full grid-cols-12">
             <TabsTrigger value="quotes" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
               Quotes
@@ -201,6 +202,10 @@ const CMS = () => {
             <TabsTrigger value="global" className="flex items-center gap-2">
               <Globe className="w-4 h-4" />
               Global
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Analytics
             </TabsTrigger>
             <TabsTrigger value="team" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -295,6 +300,10 @@ const CMS = () => {
                 <GlobalSettings />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <AnalyticsManager />
           </TabsContent>
 
           <TabsContent value="team">

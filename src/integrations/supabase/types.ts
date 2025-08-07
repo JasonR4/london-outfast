@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_codes: {
+        Row: {
+          code_type: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          placement: string
+          priority: number
+          tracking_code: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          code_type: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          placement?: string
+          priority?: number
+          tracking_code: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          code_type?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          placement?: string
+          priority?: number
+          tracking_code?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: []
+      }
       content_pages: {
         Row: {
           content: Json
