@@ -478,6 +478,12 @@ export function RateCardManager() {
 
   // Bulk upload functionality
   const downloadTemplate = (type: 'rates' | 'discounts' | 'quantity-discounts' | 'production' | 'creative' = 'rates') => {
+    // Check if media formats are loaded
+    if (!mediaFormats || mediaFormats.length === 0) {
+      toast.error('Media formats not loaded yet. Please wait and try again.');
+      return;
+    }
+
     const allAreas = londonAreas.flatMap(zone => zone.areas);
     let templateData: any[] = [];
     let filename = '';
@@ -557,14 +563,22 @@ export function RateCardManager() {
             
           case 'quantity-discounts':
     }
+    
+    // Check if we have template data
+    if (!templateData || templateData.length === 0) {
+      toast.error('No template data generated. Please try again.');
+      return;
+    }
 
     const worksheet = XLSX.utils.json_to_sheet(templateData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, `${type.charAt(0).toUpperCase() + type.slice(1)} Template`);
     
-    // Set column widths
-    const colWidths = Array(Object.keys(templateData[0]).length).fill({ wch: 20 });
-    worksheet['!cols'] = colWidths;
+    // Set column widths - safely check if templateData[0] exists
+    if (templateData[0]) {
+      const colWidths = Array(Object.keys(templateData[0]).length).fill({ wch: 20 });
+      worksheet['!cols'] = colWidths;
+    }
 
     XLSX.writeFile(workbook, filename);
     toast.success('Template downloaded successfully');
