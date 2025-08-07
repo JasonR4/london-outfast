@@ -84,13 +84,25 @@ export const MediaPlanModal = ({
               <div className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center text-lg font-medium">
-                    <span>Total Budget</span>
+                    <span>Total Budget Breakdown</span>
                   </div>
                   
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Subtotal (exc VAT):</span>
-                      <span className="font-medium">£{mediaPlan.totalBudget.toLocaleString()}</span>
+                      <span className="text-muted-foreground">Media Costs:</span>
+                      <span>£{(mediaPlan.totalBudget * 0.7).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Production Costs:</span>
+                      <span>£{(mediaPlan.totalBudget * 0.15).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Creative Development:</span>
+                      <span>£{(mediaPlan.totalBudget * 0.15).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between font-medium pt-2 border-t border-border/50">
+                      <span>Subtotal (exc VAT):</span>
+                      <span>£{mediaPlan.totalBudget.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">VAT (20%):</span>
@@ -102,7 +114,7 @@ export const MediaPlanModal = ({
                     </div>
                   </div>
                   
-                  <div className="w-full bg-muted rounded-full h-3">
+                  <div className="w-full bg-muted rounded-full h-3 mt-4">
                     <div 
                       className="bg-gradient-hero h-3 rounded-full transition-all duration-300"
                       style={{ 

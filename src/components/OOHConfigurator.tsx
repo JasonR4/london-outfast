@@ -1025,17 +1025,29 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                           <div className="text-lg font-bold text-primary">{rec.calculatedQuantity || 'TBC'}</div>
                         </div>
                         <div>
-                          <span className="font-medium">Budget Allocation:</span>
+                          <span className="font-medium">Cost Breakdown:</span>
                         </div>
                       </div>
                       
                       {rec.budgetAllocation && (
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Subtotal (exc VAT):</span>
-                            <span className="font-medium">£{rec.budgetAllocation.toLocaleString()}</span>
+                            <span className="text-muted-foreground">Media Costs:</span>
+                            <span>£{(rec.budgetAllocation * 0.7).toLocaleString()}</span>
                           </div>
                           <div className="flex justify-between">
+                            <span className="text-muted-foreground">Production Costs:</span>
+                            <span>£{(rec.budgetAllocation * 0.15).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Creative Development:</span>
+                            <span>£{(rec.budgetAllocation * 0.15).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between font-medium pt-2 border-t border-border/50">
+                            <span>Subtotal (exc VAT):</span>
+                            <span>£{rec.budgetAllocation.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">VAT (20%):</span>
                             <span>£{(rec.budgetAllocation * 0.2).toLocaleString()}</span>
                           </div>
@@ -1048,7 +1060,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                       
                       {rec.costPerUnit && (
                         <div className="mt-3 pt-2 border-t border-border/50 text-xs text-muted-foreground">
-                          Cost per unit: £{rec.costPerUnit.toLocaleString()} × {rec.calculatedQuantity} units = £{(rec.costPerUnit * rec.calculatedQuantity).toLocaleString()}
+                          Cost per unit: £{rec.costPerUnit.toLocaleString()} × {rec.calculatedQuantity} units
                         </div>
                       )}
                     </div>
