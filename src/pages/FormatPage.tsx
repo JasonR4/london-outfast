@@ -405,9 +405,25 @@ const FormatPage = () => {
     );
   }
 
-  // Don't render if we don't have format data yet
-  if (!format) {
-    return null;
+  // Debug logging for format loading
+  console.log('🔍 FORMAT PAGE DEBUG:', { 
+    formatSlug,
+    format: format ? 'loaded' : 'null',
+    formatName: format?.format_name || format?.name,
+    loading,
+    formatsLoading 
+  });
+
+  // Don't render if we don't have format data yet AND we're still loading
+  if (!format && loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading format data...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -669,13 +685,19 @@ const FormatPage = () => {
                   <CardContent className="space-y-4">
                     <div>
                       <Label htmlFor="quantity">Quantity</Label>
-                      <Select value={quantity.toString()} onValueChange={(value) => setQuantity(parseInt(value))}>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Number of {format?.name?.includes('Digital') ? 'sites' : 'units'} per incharge period
+                      </p>
+                      <Select value={quantity.toString()} onValueChange={(value) => {
+                        console.log('🔍 Quantity changed from', quantity, 'to', value);
+                        setQuantity(parseInt(value));
+                      }}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select quantity" />
                         </SelectTrigger>
                         <SelectContent>
                           {[1,2,3,4,5,6,7,8,9,10,15,20,25,30].map(num => (
-                            <SelectItem key={num} value={num.toString()}>{num} site{num > 1 ? 's' : ''}</SelectItem>
+                            <SelectItem key={num} value={num.toString()}>{num} {format?.name?.includes('Digital') ? 'site' : 'unit'}{num > 1 ? 's' : ''}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
