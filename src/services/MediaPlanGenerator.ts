@@ -171,7 +171,7 @@ export class MediaPlanGenerator {
 
   private getBudgetFromAnswers(answers: Answer[]): number {
     console.log('Looking for budget in answers:', answers);
-    const budgetAnswer = answers.find(a => a.questionId === 'budget_range');
+    const budgetAnswer = answers.find(a => a.questionId === 'campaign_budget');
     console.log('Found budget answer:', budgetAnswer);
     
     if (!budgetAnswer?.value) return 0;
@@ -179,22 +179,28 @@ export class MediaPlanGenerator {
     const budgetStr = budgetAnswer.value as string;
     console.log('Budget string:', budgetStr);
     
-    // Map budget ranges to actual amounts
-    const budgetMap: Record<string, number> = {
-      'startup': 5000,
-      'small': 15000,
-      'medium': 35000,
-      'large': 75000,
-      'premium': 150000
-    };
-    
-    if (typeof budgetStr === 'string' && budgetMap[budgetStr]) {
-      const budget = budgetMap[budgetStr];
-      console.log('Mapped budget:', budget);
-      return budget;
+    // Parse user input budget
+    if (typeof budgetStr === 'string') {
+      // Remove £, commas, and spaces, handle K suffix
+      const cleanBudget = budgetStr.replace(/[£,\s]/g, '').toLowerCase();
+      
+      if (cleanBudget.endsWith('k')) {
+        const baseAmount = parseFloat(cleanBudget.replace('k', ''));
+        if (!isNaN(baseAmount)) {
+          const budget = baseAmount * 1000;
+          console.log('Parsed K budget:', budget);
+          return budget;
+        }
+      } else {
+        const budget = parseFloat(cleanBudget);
+        if (!isNaN(budget)) {
+          console.log('Parsed raw budget:', budget);
+          return budget;
+        }
+      }
     }
     
-    console.log('Could not map budget, returning 25000 as default');
+    console.log('Could not parse budget, returning 25000 as default');
     return 25000; // Default fallback
   }
 

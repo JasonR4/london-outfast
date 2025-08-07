@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ArrowRight, Target, Users, MapPin, Clock, DollarSign, Eye, Zap } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import QuoteFormSection from './QuoteFormSection';
 import { LocationSelector } from './LocationSelector';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -23,7 +24,7 @@ interface Question {
   id: string;
   title: string;
   subtitle?: string;
-  type: 'single' | 'multiple' | 'range' | 'location' | 'periods';
+  type: 'single' | 'multiple' | 'range' | 'location' | 'periods' | 'budget_input';
   options: Array<{
     label: string;
     value: string | number;
@@ -75,47 +76,11 @@ const questions: Question[] = [
     ]
   },
   {
-    id: 'budget_range',
-    title: 'What\'s your budget range?',
-    subtitle: 'This helps us suggest formats within your budget',
-    type: 'single',
-    options: [
-      {
-        label: '£1K - £5K',
-        value: 'low',
-        scores: { 'bus_shelters': 8, 'local_billboards': 7, 'taxi_ads': 9, 'tube_ads': 5, 'digital_billboards': 3 }
-      },
-      {
-        label: '£5K - £10K',
-        value: 'lower_medium',
-        scores: { 'bus_shelters': 9, 'tube_ads': 7, 'billboards': 6, 'digital_billboards': 5, 'taxi_ads': 8 }
-      },
-      {
-        label: '£10K - £15K',
-        value: 'medium',
-        scores: { 'bus_shelters': 7, 'tube_ads': 8, 'billboards': 7, 'digital_billboards': 6, 'taxi_ads': 8 }
-      },
-      {
-        label: '£15K - £20K',
-        value: 'upper_medium',
-        scores: { 'tube_ads': 8, 'billboards': 7, 'digital_billboards': 7, 'bus_shelters': 6, 'taxi_ads': 7 }
-      },
-      {
-        label: '£20K - £25K',
-        value: 'high',
-        scores: { 'billboards': 8, 'digital_billboards': 8, 'tube_ads': 8, 'bus_shelters': 6, 'taxi_ads': 7 }
-      },
-      {
-        label: '£25K - £30K',
-        value: 'higher',
-        scores: { 'billboards': 8, 'digital_billboards': 9, 'tube_ads': 8, 'bus_shelters': 5, 'taxi_ads': 6 }
-      },
-      {
-        label: '£30K+',
-        value: 'premium',
-        scores: { 'digital_billboards': 10, 'billboards': 9, 'tube_ads': 8, 'bus_shelters': 4, 'taxi_ads': 6 }
-      }
-    ]
+    id: 'campaign_budget',
+    title: 'What\'s your campaign budget?',
+    subtitle: 'Enter your total budget amount (e.g., £25000 or £25K)',
+    type: 'budget_input',
+    options: [] // No predefined options for text input
   },
   {
     id: 'target_audience',
@@ -330,6 +295,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [selectedValues, setSelectedValues] = useState<(string | number)[]>([]);
+  const [budgetInput, setBudgetInput] = useState<string>('');
   const [showResults, setShowResults] = useState(false);
   const [showQuoteForm, setShowQuoteForm] = useState(false);
   const [inchargePeriods, setInchargePeriods] = useState<any[]>([]);
@@ -467,7 +433,8 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
 
     const newAnswer: Answer = {
       questionId: currentQuestion.id,
-      value: currentQuestion.type === 'multiple' || currentQuestion.type === 'location' || currentQuestion.type === 'periods' ? selectedValues : selectedValues[0],
+      value: currentQuestion.type === 'budget_input' ? budgetInput : 
+             (currentQuestion.type === 'multiple' || currentQuestion.type === 'location' || currentQuestion.type === 'periods' ? selectedValues : selectedValues[0]),
       scores: combinedScores
     };
 
@@ -476,6 +443,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
     const newAnswers = [...answers.filter(a => a.questionId !== currentQuestion.id), newAnswer];
     setAnswers(newAnswers);
     setSelectedValues([]);
+    setBudgetInput('');
 
     if (currentQuestionIndex < visibleQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -930,6 +898,19 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                 ))}
               </div>
             </div>
+          ) : currentQuestion.type === 'budget_input' ? (
+            <div className="space-y-3">
+              <Input
+                type="text"
+                placeholder="e.g., £25000, £25K, £30,000"
+                value={budgetInput}
+                onChange={(e) => setBudgetInput(e.target.value)}
+                className="text-lg"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter your total campaign budget. You can use formats like £25K, £25000, or £25,000
+              </p>
+            </div>
           ) : (
             currentQuestion.options.map((option, index) => {
               const isSelected = selectedValues.includes(option.value);
@@ -995,7 +976,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
             e.preventDefault();
             goNext();
           }}
-          disabled={selectedValues.length === 0}
+          disabled={currentQuestion.type === 'budget_input' ? !budgetInput.trim() : selectedValues.length === 0}
           className="flex items-center space-x-2"
         >
           <span>{currentQuestionIndex === visibleQuestions.length - 1 ? 'Get Results' : 'Next'}</span>
