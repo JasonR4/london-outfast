@@ -712,13 +712,20 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 <div className="w-24">
                                   <Select 
                                     value={(formatQuantities[format.slug] || 1).toString()} 
-                                    onValueChange={(value) => setFormatQuantities(prev => ({
-                                      ...prev,
-                                      [format.slug]: parseInt(value)
-                                    }))}
+                                    onValueChange={(value) => {
+                                      console.log('🔍 Quantity change:', { formatSlug: format.slug, oldValue: formatQuantities[format.slug], newValue: value });
+                                      setFormatQuantities(prev => {
+                                        const updated = {
+                                          ...prev,
+                                          [format.slug]: parseInt(value)
+                                        };
+                                        console.log('🔍 Updated formatQuantities:', updated);
+                                        return updated;
+                                      });
+                                    }}
                                   >
                                     <SelectTrigger className="h-8">
-                                      <SelectValue />
+                                      <SelectValue placeholder="Select quantity" />
                                     </SelectTrigger>
                                     <SelectContent>
                                       {[1, 2, 3, 4, 5, 10, 15, 20, 25, 50].map(num => (
