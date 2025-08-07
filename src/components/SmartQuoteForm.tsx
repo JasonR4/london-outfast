@@ -54,9 +54,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const [selectedPeriods, setSelectedPeriods] = useState<number[]>([]);
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
   const [needsCreative, setNeedsCreative] = useState(false);
-  const [creativeAssets, setCreativeAssets] = useState(1);
-  const [creativeLevel, setCreativeLevel] = useState("Basic Design");
-  const [creativeReadiness, setCreativeReadiness] = useState<'ready' | 'adjustments' | 'development'>('ready');
+  const [creativeQuantity, setCreativeQuantity] = useState(1);
   console.log('📊 Selected periods state:', selectedPeriods);
   const [contactDetails, setContactDetails] = useState({
     contact_name: "",
@@ -110,21 +108,17 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     loading: rateCardsLoading 
   } = useRateCards(selectedFormats[0]?.format_slug);
 
-  // Get dynamic creative cost per asset from CMS
-  const dynamicCreativeCost = selectedFormats.length > 0 && creativeAssets > 0 
-    ? (selectedLocations.length > 0 
-        ? calculateCreativeCost(selectedLocations[0], creativeAssets, creativeLevel)
-        : calculateCreativeCost('GD', creativeAssets, creativeLevel) // Default to GD location
-      )
+  // Get creative cost
+  const creativeResult = needsCreative && selectedLocations.length > 0 
+    ? calculateCreativeCost(selectedLocations[0], creativeQuantity, "Standard")
     : null;
   
   // Creative capacity logic
   const creativeCapacity = useCreativeCapacity({
     sites: totalQuantity,
-    creativeAssets,
+    creativeAssets: creativeQuantity,
     needsCreative,
-    creativeCostPerAsset: dynamicCreativeCost?.costPerUnit || 0,
-    siteCost: 1000
+    creativeCostPerAsset: creativeResult?.costPerUnit || 0
   });
 
   // Check authentication status
@@ -247,8 +241,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         console.log(`📅 Selected periods: ${selectedPeriods}`);
         
         const mediaPrice = calculatePrice(location, selectedPeriods);
-        // Calculate creative cost based on creative assets and selected level
-        const creativePrice = needsCreative ? calculateCreativeCost(location, creativeAssets, creativeLevel) : null;
+        // Calculate creative cost based on creative quantity
+        const creativePrice = needsCreative ? calculateCreativeCost(location, creativeQuantity, "Standard") : null;
         
         console.log(`💰 Media price result:`, mediaPrice);
         console.log(`🎨 Creative price result:`, creativePrice);
@@ -516,7 +510,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
              {needsCreative && (
                <CreativeCapacityIndicator
                  sites={totalQuantity}
-                 creativeAssets={creativeAssets}
+                 creativeAssets={creativeQuantity}
                  needsCreative={needsCreative}
                  efficiency={creativeCapacity.efficiency}
                  status={creativeCapacity.status}
@@ -736,44 +730,14 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                            <h3 className="text-lg font-semibold">Creative & Production</h3>
                          </div>
                          
-                         <div className="space-y-3">
-                           <Label className="text-base font-medium">Do you have artwork or need creative?</Label>
-                           <div className="space-y-2">
-                             <div className="flex items-center space-x-2">
-                               <input
-                                 type="radio"
-                                 id="artwork-ready"
-                                 name="creative-readiness"
-                                 value="ready"
-                                 checked={creativeReadiness === 'ready'}
-                                 onChange={(e) => {
-                                   setCreativeReadiness('ready');
-                                   setNeedsCreative(false);
-                                 }}
-                                 className="w-4 h-4 text-primary"
-                               />
-                               <Label htmlFor="artwork-ready" className="text-sm cursor-pointer">
-                                 I have artwork ready
-                               </Label>
-                             </div>
-                             <div className="flex items-center space-x-2">
-                               <input
-                                 type="radio"
-                                 id="need-creative"
-                                 name="creative-readiness"
-                                 value="development"
-                                 checked={creativeReadiness === 'development'}
-                                 onChange={(e) => {
-                                   setCreativeReadiness('development');
-                                   setNeedsCreative(true);
-                                 }}
-                                 className="w-4 h-4 text-primary"
-                               />
-                               <Label htmlFor="need-creative" className="text-sm cursor-pointer">
-                                 I need creative design
-                               </Label>
-                             </div>
-                           </div>
+                          <div className="space-y-3">
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                checked={needsCreative}
+                                onCheckedChange={setNeedsCreative}
+                              />
+                              <Label className="text-base font-medium">Need creative design?</Label>
+                            </div>
                          </div>
 
                          {needsCreative && (
@@ -1185,45 +1149,22 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         })()}
 
                         {/* Creative Cost Details */}
-                        {needsCreative && pricing.creativeCost > 0 && (() => {
-                          const creativeResult = calculateCreativeCost(selectedLocations[0], creativeAssets, creativeLevel);
-                          if (!creativeResult) return null;
-                          
-                          return (
-                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                              <h4 className="font-medium text-sm mb-3">
-                                Creative Development - {creativeAssets} Assets ({creativeLevel})
-                              </h4>
+                        {needsCreative && pricing.creativeCost > 0 && creativeResult && (
+                          <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                            <h4 className="font-medium text-sm mb-3">
+                              Creative Development - {creativeQuantity} Assets
+                            </h4>
+                            
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Cost per Asset:</span>
+                                <span>£{creativeResult.costPerUnit.toLocaleString()}</span>
+                              </div>
                               
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Cost per Asset:</span>
-                                  <span>£{creativeResult.costPerUnit.toLocaleString()}</span>
-                                </div>
-                                
-                                <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Creative Level:</span>
-                                  <span>{creativeLevel}</span>
-                                </div>
-                                
-                                <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Total Assets:</span>
-                                  <span>{creativeAssets} assets</span>
-                                </div>
-                                
-                                <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Applicable Tier:</span>
-                                  <span className="text-xs">
-                                    {creativeResult.tier.min_quantity}{creativeResult.tier.max_quantity ? `-${creativeResult.tier.max_quantity}` : '+'} assets
-                                  </span>
-                                </div>
-                                
-                                {creativeResult.tier.location_area && (
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">Location-Specific Rate:</span>
-                                    <span className="text-xs">{creativeResult.tier.location_area} area</span>
-                                  </div>
-                                )}
+                              <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Total Assets:</span>
+                                <span>{creativeQuantity} assets</span>
+                              </div>
                                 
                                 <div className="border-t border-border/50 pt-2 mt-2">
                                   <div className="flex justify-between items-center font-medium text-base">
@@ -1233,8 +1174,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 </div>
                               </div>
                             </div>
-                          );
-                        })()}
+                          )
+                        }
 
                         {/* Total Summary */}
                         <div className="border-t border-border pt-4">
@@ -1260,7 +1201,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                             </div>
                             {needsCreative && pricing.creativeCost > 0 && (
                               <div className="flex justify-between items-center">
-                                <span>Creative Development ({creativeAssets} assets):</span>
+                                <span>Creative Development ({creativeQuantity} assets):</span>
                                 <span className="font-medium">£{pricing.creativeCost.toLocaleString()}</span>
                               </div>
                             )}
