@@ -162,7 +162,7 @@ export function RateCardManager() {
       const [ratesRes, discountsRes, quantityDiscountsRes, productionRes, creativeRes, periodsRes, rateCardPeriodsRes] = await Promise.all([
         supabase.from('rate_cards').select('*, media_formats(format_name)').order('location_area'),
         supabase.from('discount_tiers').select('*, media_formats(format_name)').order('min_periods'),
-        supabase.from('quantity_discount_tiers').select('*, media_formats(format_name)').order('min_quantity'),
+        supabase.from('quantity_discount_tiers').select('*').order('min_quantity'),
         supabase.from('production_cost_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('creative_design_cost_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('incharge_periods').select('*').order('period_number'),
@@ -961,28 +961,35 @@ export function RateCardManager() {
         dataToInsert.push(dataEntry);
       }
 
-      // Insert data into appropriate table based on type
+      // Insert data in smaller batches to prevent timeout
+      const batchSize = 20;
+      let insertedCount = 0;
       let error: any = null;
       
-      switch (bulkUploadType) {
-        case 'rates':
-          ({ error } = await supabase.from('rate_cards').insert(dataToInsert));
-          break;
-        case 'discounts':
-          ({ error } = await supabase.from('discount_tiers').insert(dataToInsert));
-          break;
-        case 'quantity-discounts':
-          ({ error } = await supabase.from('quantity_discount_tiers').insert(dataToInsert));
-          break;
-        case 'production':
-          ({ error } = await supabase.from('production_cost_tiers').insert(dataToInsert));
-          break;
-        case 'creative':
-          ({ error } = await supabase.from('creative_design_cost_tiers').insert(dataToInsert));
-          break;
-      }
+      for (let i = 0; i < dataToInsert.length; i += batchSize) {
+        const batch = dataToInsert.slice(i, i + batchSize);
+        
+        switch (bulkUploadType) {
+          case 'rates':
+            ({ error } = await supabase.from('rate_cards').insert(batch));
+            break;
+          case 'discounts':
+            ({ error } = await supabase.from('discount_tiers').insert(batch));
+            break;
+          case 'quantity-discounts':
+            ({ error } = await supabase.from('quantity_discount_tiers').insert(batch));
+            break;
+          case 'production':
+            ({ error } = await supabase.from('production_cost_tiers').insert(batch));
+            break;
+          case 'creative':
+            ({ error } = await supabase.from('creative_design_cost_tiers').insert(batch));
+            break;
+        }
 
-      if (error) throw error;
+        if (error) throw error;
+        insertedCount += batch.length;
+      }
 
       const successMessages = {
         rates: 'rate cards',
@@ -992,7 +999,7 @@ export function RateCardManager() {
         creative: 'creative design cost tiers'
       };
 
-      toast.success(`Successfully imported ${dataToInsert.length} ${successMessages[bulkUploadType]}`);
+      toast.success(`Successfully imported ${insertedCount} ${successMessages[bulkUploadType]}`);
       setUploadedFile(null);
       setAnalysisResults(null);
       fetchData();
