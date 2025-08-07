@@ -242,6 +242,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         
         const mediaPrice = calculatePrice(location, selectedPeriods);
         // Calculate creative cost based on creative quantity
+        console.log('🎨 About to calculate creative cost:', { needsCreative, location, creativeQuantity });
         const creativePrice = needsCreative ? calculateCreativeCost(location, creativeQuantity, "Standard") : null;
         
         console.log(`💰 Media price result:`, mediaPrice);
@@ -1148,41 +1149,32 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         })()}
 
                         {/* Creative Cost Details */}
-                        {(() => {
-                          console.log('🎨 Creative cost display debug:', {
-                            needsCreative,
-                            creativeCost: pricing.creativeCost,
-                            creativeResult,
-                            creativeQuantity
-                          });
-                          
-                          return needsCreative && pricing.creativeCost > 0 && (
-                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                              <h4 className="font-medium text-sm mb-3">
-                                Creative Development - {creativeQuantity} Assets
-                              </h4>
+                        {needsCreative && (
+                          <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                            <h4 className="font-medium text-sm mb-3">
+                              Creative Development - {creativeQuantity} Assets
+                            </h4>
+                            
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Cost per Asset:</span>
+                                <span>£{creativeResult?.costPerUnit?.toLocaleString() || 'Calculating...'}</span>
+                              </div>
                               
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Cost per Asset:</span>
-                                  <span>£{creativeResult?.costPerUnit?.toLocaleString() || 'N/A'}</span>
-                                </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Total Assets:</span>
+                                <span>{creativeQuantity} assets</span>
+                              </div>
                                 
-                                <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Total Assets:</span>
-                                  <span>{creativeQuantity} assets</span>
-                                </div>
-                                  
-                                  <div className="border-t border-border/50 pt-2 mt-2">
-                                    <div className="flex justify-between items-center font-medium text-base">
-                                      <span>Total Creative Cost:</span>
-                                      <span className="text-primary">£{pricing.creativeCost.toLocaleString()}</span>
-                                    </div>
+                                <div className="border-t border-border/50 pt-2 mt-2">
+                                  <div className="flex justify-between items-center font-medium text-base">
+                                    <span>Total Creative Cost:</span>
+                                    <span className="text-primary">£{pricing.creativeCost > 0 ? pricing.creativeCost.toLocaleString() : 'Calculating...'}</span>
                                   </div>
                                 </div>
                               </div>
-                            );
-                        })()}
+                            </div>
+                        )}
 
                         {/* Total Summary */}
                         <div className="border-t border-border pt-4">
