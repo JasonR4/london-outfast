@@ -13,10 +13,11 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Pencil, Plus, Trash2, CalendarIcon } from 'lucide-react';
+import { Pencil, Plus, Trash2, CalendarIcon, Download, Upload, FileSpreadsheet, AlertCircle } from 'lucide-react';
 import { londonAreas } from '@/data/londonAreas';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import * as XLSX from 'xlsx';
 
 interface MediaFormat {
   id: string;
@@ -108,6 +109,10 @@ export function RateCardManager() {
   const [isDiscountDialogOpen, setIsDiscountDialogOpen] = useState(false);
   const [isProductionDialogOpen, setIsProductionDialogOpen] = useState(false);
   const [isCreativeDialogOpen, setIsCreativeDialogOpen] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [analysisResults, setAnalysisResults] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isBulkUploading, setIsBulkUploading] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -397,6 +402,162 @@ export function RateCardManager() {
     }
   };
 
+  // Bulk upload functionality
+  const downloadTemplate = () => {
+    // Flatten all areas from london areas data
+    const allAreas = londonAreas.flatMap(zone => zone.areas);
+    
+    const templateData = [
+      {
+        'Media Format': 'Select from existing formats',
+        'Location Area': 'Select from: ' + allAreas.join(', '),
+        'Base Rate Per Incharge': '0.00',
+        'Sale Price': '0.00',
+        'Reduced Price': '0.00',
+        'Location Markup Percentage': '0.00',
+        'Quantity Per Medium': '1',
+        'Is Active': 'TRUE/FALSE',
+        'Is Date Specific': 'TRUE/FALSE',
+        'Start Date': 'YYYY-MM-DD (if not date specific)',
+        'End Date': 'YYYY-MM-DD (if not date specific)',
+        'Incharge Period': '1-26 (if date specific)'
+      }
+    ];
+
+    const worksheet = XLSX.utils.json_to_sheet(templateData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Rate Cards Template');
+    
+    // Set column widths
+    const colWidths = [
+      { wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 12 }, { wch: 15 }, 
+      { wch: 25 }, { wch: 20 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, 
+      { wch: 15 }, { wch: 15 }
+    ];
+    worksheet['!cols'] = colWidths;
+
+    XLSX.writeFile(workbook, 'rate-cards-template.xlsx');
+    toast.success('Template downloaded successfully');
+  };
+
+  const analyzeUploadedFile = async () => {
+    if (!uploadedFile) return;
+
+    setIsAnalyzing(true);
+    try {
+      const data = await uploadedFile.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      // Validate data against existing formats and areas
+      const formatNames = mediaFormats.map(f => f.format_name.toLowerCase());
+      const validAreas = londonAreas.flatMap(zone => zone.areas).map(area => area.toLowerCase());
+      
+      const validRows: any[] = [];
+      const invalidRows: any[] = [];
+
+      jsonData.forEach((row: any, index) => {
+        const errors: string[] = [];
+        
+        // Skip header/example row
+        if (index === 0 && row['Media Format']?.includes('Select from')) return;
+
+        // Validate media format
+        if (!row['Media Format'] || !formatNames.includes(row['Media Format'].toLowerCase())) {
+          errors.push('Invalid media format');
+        }
+
+        // Validate location area
+        if (!row['Location Area'] || !validAreas.includes(row['Location Area'].toLowerCase())) {
+          errors.push('Invalid location area');
+        }
+
+        // Validate numeric fields
+        if (!row['Base Rate Per Incharge'] || isNaN(parseFloat(row['Base Rate Per Incharge']))) {
+          errors.push('Invalid base rate');
+        }
+
+        // Validate boolean fields
+        if (row['Is Active'] && !['TRUE', 'FALSE', true, false].includes(row['Is Active'])) {
+          errors.push('Invalid Is Active value (must be TRUE or FALSE)');
+        }
+
+        if (errors.length > 0) {
+          invalidRows.push({ ...row, rowNumber: index + 1, errors });
+        } else {
+          validRows.push({ ...row, rowNumber: index + 1 });
+        }
+      });
+
+      setAnalysisResults({
+        validRows,
+        invalidRows,
+        totalRows: jsonData.length,
+        validCount: validRows.length,
+        invalidCount: invalidRows.length
+      });
+
+      toast.success(`Analysis complete: ${validRows.length} valid rows, ${invalidRows.length} invalid rows`);
+    } catch (error) {
+      console.error('Error analyzing file:', error);
+      toast.error('Failed to analyze uploaded file');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const processBulkUpload = async () => {
+    if (!analysisResults?.validRows.length) return;
+
+    setIsBulkUploading(true);
+    try {
+      const rateCardsToInsert = [];
+
+      for (const row of analysisResults.validRows) {
+        // Find media format ID
+        const mediaFormat = mediaFormats.find(f => 
+          f.format_name.toLowerCase() === row['Media Format'].toLowerCase()
+        );
+
+        if (!mediaFormat) continue;
+
+        const rateCardData = {
+          media_format_id: mediaFormat.id,
+          location_area: row['Location Area'],
+          base_rate_per_incharge: parseFloat(row['Base Rate Per Incharge']),
+          sale_price: row['Sale Price'] ? parseFloat(row['Sale Price']) : null,
+          reduced_price: row['Reduced Price'] ? parseFloat(row['Reduced Price']) : null,
+          location_markup_percentage: parseFloat(row['Location Markup Percentage']) || 0,
+          quantity_per_medium: parseInt(row['Quantity Per Medium']) || 1,
+          is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true,
+          is_date_specific: row['Is Date Specific'] === 'TRUE' || row['Is Date Specific'] === true,
+          start_date: row['Start Date'] && row['Start Date'] !== '' ? row['Start Date'] : null,
+          end_date: row['End Date'] && row['End Date'] !== '' ? row['End Date'] : null,
+          incharge_period: row['Incharge Period'] ? parseInt(row['Incharge Period']) : 1
+        };
+
+        rateCardsToInsert.push(rateCardData);
+      }
+
+      const { error } = await supabase
+        .from('rate_cards')
+        .insert(rateCardsToInsert);
+
+      if (error) throw error;
+
+      toast.success(`Successfully imported ${rateCardsToInsert.length} rate cards`);
+      setUploadedFile(null);
+      setAnalysisResults(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error processing bulk upload:', error);
+      toast.error('Failed to import rate cards');
+    } finally {
+      setIsBulkUploading(false);
+    }
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center p-8">Loading rate cards...</div>;
   }
@@ -411,10 +572,140 @@ export function RateCardManager() {
           <Tabs defaultValue="rates" className="w-full">
             <TabsList>
               <TabsTrigger value="rates">Rate Cards</TabsTrigger>
+              <TabsTrigger value="bulk-upload">Bulk Upload</TabsTrigger>
               <TabsTrigger value="discounts">Discount Tiers</TabsTrigger>
               <TabsTrigger value="production">Production Costs</TabsTrigger>
               <TabsTrigger value="creative">Creative Design</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="bulk-upload" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileSpreadsheet className="w-5 h-5" />
+                    Bulk Upload Rate Cards
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Step 1: Download Template */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Step 1: Download Template</h3>
+                    <p className="text-muted-foreground">
+                      Download the Excel template with the correct format and data validation examples.
+                    </p>
+                    <Button onClick={downloadTemplate} className="flex items-center gap-2">
+                      <Download className="w-4 h-4" />
+                      Download Excel Template
+                    </Button>
+                  </div>
+
+                  {/* Step 2: Upload File */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Step 2: Upload Completed File</h3>
+                    <p className="text-muted-foreground">
+                      Upload your completed Excel file for analysis and validation.
+                    </p>
+                    <div className="border-2 border-dashed border-border rounded-lg p-6">
+                      <Input
+                        type="file"
+                        accept=".xlsx,.xls"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setUploadedFile(file);
+                            setAnalysisResults(null);
+                          }
+                        }}
+                        className="mb-4"
+                      />
+                      {uploadedFile && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <FileSpreadsheet className="w-4 h-4" />
+                          {uploadedFile.name} ({(uploadedFile.size / 1024).toFixed(1)} KB)
+                        </div>
+                      )}
+                    </div>
+                    {uploadedFile && (
+                      <Button 
+                        onClick={analyzeUploadedFile} 
+                        disabled={isAnalyzing}
+                        className="flex items-center gap-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        {isAnalyzing ? 'Analyzing...' : 'Analyze File'}
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Step 3: Analysis Results */}
+                  {analysisResults && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Step 3: Analysis Results</h3>
+                      
+                      <div className="grid grid-cols-3 gap-4">
+                        <Card>
+                          <CardContent className="p-4 text-center">
+                            <div className="text-2xl font-bold text-blue-600">{analysisResults.totalRows}</div>
+                            <div className="text-sm text-muted-foreground">Total Rows</div>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardContent className="p-4 text-center">
+                            <div className="text-2xl font-bold text-green-600">{analysisResults.validCount}</div>
+                            <div className="text-sm text-muted-foreground">Valid Rows</div>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardContent className="p-4 text-center">
+                            <div className="text-2xl font-bold text-red-600">{analysisResults.invalidCount}</div>
+                            <div className="text-sm text-muted-foreground">Invalid Rows</div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {analysisResults.invalidRows.length > 0 && (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-red-600">
+                              <AlertCircle className="w-5 h-5" />
+                              Invalid Rows ({analysisResults.invalidCount})
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="max-h-60 overflow-y-auto">
+                              {analysisResults.invalidRows.map((row: any, index: number) => (
+                                <div key={index} className="border-b pb-2 mb-2 last:border-b-0">
+                                  <div className="font-medium">Row {row.rowNumber}</div>
+                                  <div className="text-sm text-red-600">
+                                    {row.errors.join(', ')}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {analysisResults.validCount > 0 && (
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-green-600">
+                            Ready to Import {analysisResults.validCount} Rate Cards
+                          </h4>
+                          <Button 
+                            onClick={processBulkUpload}
+                            disabled={isBulkUploading}
+                            className="flex items-center gap-2"
+                          >
+                            <Upload className="w-4 h-4" />
+                            {isBulkUploading ? 'Importing...' : `Import ${analysisResults.validCount} Rate Cards`}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             <TabsContent value="rates" className="space-y-4">
               <div className="flex justify-between items-center">
