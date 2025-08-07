@@ -197,9 +197,9 @@ export const MediaPlanModal = ({
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-primary">
-                        {formatCurrencyWithVAT(item.totalCost)}
+                        £{item.totalCost.toLocaleString()}
                       </p>
-                      <p className="text-sm text-muted-foreground">+VAT</p>
+                      <p className="text-sm text-muted-foreground">exc VAT</p>
                     </div>
                   </div>
                 </CardHeader>
