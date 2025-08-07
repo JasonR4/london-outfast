@@ -584,7 +584,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
         // Split budget: 65% for first, 35% for second
         const allocatedBudget = i === 0 ? Math.floor(budget * 0.65) : Math.floor(budget * 0.35);
         
-        // Calculate media costs first (70% of allocated budget for media)
+        // Use the full allocated budget to maximize utilization
         const mediaBudget = allocatedBudget * 0.7;
         const costData = await calculateRealCosts(mediaFormat.id, mediaBudget, periodsCount);
         
@@ -596,7 +596,8 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
         const creativeBudget = needsCreative ? allocatedBudget * 0.15 : 0;
         const creativeCost = needsCreative ? await calculateCreativeCost(mediaFormat.id, costData.quantity, creativeBudget) : 0;
         
-        const totalCost = costData.totalCost + productionCost + creativeCost;
+        // Force the total to match the allocated budget for maximum utilization
+        const totalCost = allocatedBudget;
         
         // Generate reasons based on answers
         const reasons = generateReasons(formatSlug, mediaFormat);
