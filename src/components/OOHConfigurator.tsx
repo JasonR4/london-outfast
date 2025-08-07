@@ -1001,13 +1001,26 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                   setIsCreatingQuote(true);
                   try {
                     // Create or get quote first
-                    await createOrGetQuote();
+                    const quoteId = await createOrGetQuote();
+                    
+                    // Clear existing quote items for this quote to avoid duplicates
+                    const { data: existingItems } = await supabase
+                      .from('quote_items')
+                      .select('id')
+                      .eq('quote_id', quoteId);
+                    
+                    if (existingItems && existingItems.length > 0) {
+                      await supabase
+                        .from('quote_items')
+                        .delete()
+                        .eq('quote_id', quoteId);
+                    }
                     
                     // Get recommendations and add them as quote items
                     const selectedLocations = getSelectedLocations();
                     const selectedPeriods = getSelectedPeriods();
                     
-                     // Add quote items for each recommendation using EXACT recommendation data
+                    // Add quote items for each recommendation using EXACT recommendation data
                      for (const rec of recommendations) {
                        console.log('Adding quote item for recommendation:', rec, 'with areas:', selectedLocations);
                        const formatInfo = formatDescriptions[rec.format as keyof typeof formatDescriptions];
