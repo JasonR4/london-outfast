@@ -93,7 +93,7 @@ export class MediaPlanGenerator {
           formatSlug: rec.format,
           formatName: rec.formatName,
           recommendedQuantity: rec.calculatedQuantity || 1,
-          selectedAreas: selectedAreas.slice(0, 3),
+          selectedAreas: selectedAreas, // Use ALL selected areas, not just slice(0, 3)
           selectedPeriods: this.getSelectedPeriodsFromAnswers(),
           baseCost: actualBudget * 0.7, // 70% for media
           productionCost: actualBudget * 0.15, // 15% for production
@@ -430,8 +430,12 @@ export class MediaPlanGenerator {
   private getSelectedAreasFromAnswers(answers: Answer[]): string[] {
     const locationAnswer = answers.find(a => a.questionId === 'preferred_locations');
     console.log('Location answer:', locationAnswer);
-    const areas = locationAnswer?.value as string[] || ['Central London'];
-    console.log('Selected areas:', areas);
+    
+    // Ensure we get ALL selected areas, not just a default
+    const areas = Array.isArray(locationAnswer?.value) ? locationAnswer.value as string[] : 
+                  locationAnswer?.value ? [locationAnswer.value as string] : ['Central London'];
+    
+    console.log('All selected areas:', areas);
     return areas;
   }
 

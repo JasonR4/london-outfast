@@ -1007,15 +1007,16 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                     const selectedLocations = getSelectedLocations();
                     const selectedPeriods = getSelectedPeriods();
                     
-                    // Add quote items for each recommendation
+                    // Add quote items for each recommendation with ALL selected areas
                     for (const rec of recommendations) {
+                      console.log('Adding quote item for recommendation:', rec, 'with areas:', selectedLocations);
                       const formatInfo = formatDescriptions[rec.format as keyof typeof formatDescriptions];
                       await addQuoteItem({
                         format_name: formatInfo?.name || rec.format,
                         format_slug: rec.format,
                         quantity: 1, // Default quantity
                         selected_periods: selectedPeriods,
-                        selected_areas: selectedLocations,
+                        selected_areas: selectedLocations, // Use ALL selected areas
                         production_cost: 0,
                         creative_cost: 0,
                         base_cost: 1000, // Placeholder base cost
