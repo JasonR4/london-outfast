@@ -570,6 +570,9 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
 
       const recommendations: OOHRecommendation[] = [];
       
+      // Check if user needs creative help
+      const needsCreative = getCreativeNeeds() !== 'ready';
+      
       // Only show top 2 recommendations and split budget between them
       const limitedFormats = topFormats.slice(0, 2);
 
@@ -581,8 +584,19 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
         // Split budget: 65% for first, 35% for second
         const allocatedBudget = i === 0 ? Math.floor(budget * 0.65) : Math.floor(budget * 0.35);
         
-        // Calculate real costs and quantities with allocated budget
-        const costData = await calculateRealCosts(mediaFormat.id, allocatedBudget, periodsCount);
+        // Calculate media costs first (70% of allocated budget for media)
+        const mediaBudget = allocatedBudget * 0.7;
+        const costData = await calculateRealCosts(mediaFormat.id, mediaBudget, periodsCount);
+        
+        // Calculate production costs (15% of allocated budget)
+        const productionBudget = allocatedBudget * 0.15;
+        const productionCost = await calculateProductionCost(mediaFormat.id, costData.quantity, productionBudget);
+        
+        // Calculate creative costs (15% of allocated budget, only if needed)
+        const creativeBudget = needsCreative ? allocatedBudget * 0.15 : 0;
+        const creativeCost = needsCreative ? await calculateCreativeCost(mediaFormat.id, costData.quantity, creativeBudget) : 0;
+        
+        const totalCost = costData.totalCost + productionCost + creativeCost;
         
         // Generate reasons based on answers
         const reasons = generateReasons(formatSlug, mediaFormat);
@@ -594,7 +608,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
           reasons,
           description: mediaFormat.description || '',
           calculatedQuantity: costData.quantity,
-          budgetAllocation: costData.totalCost,
+          budgetAllocation: totalCost,
           costPerUnit: costData.costPerUnit
         });
       }
@@ -698,6 +712,54 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
     }
   };
 
+  const calculateProductionCost = async (mediaFormatId: string, quantity: number, maxBudget: number): Promise<number> => {
+    try {
+      const { data: productionTiers } = await supabase
+        .from('production_cost_tiers')
+        .select('*')
+        .eq('media_format_id', mediaFormatId)
+        .eq('is_active', true)
+        .lte('min_quantity', quantity)
+        .or(`max_quantity.is.null,max_quantity.gte.${quantity}`)
+        .order('cost_per_unit', { ascending: true })
+        .limit(1);
+
+      if (productionTiers && productionTiers.length > 0) {
+        const cost = productionTiers[0].cost_per_unit * quantity;
+        return Math.min(cost, maxBudget);
+      }
+
+      return maxBudget * 0.5; // Fallback to 50% of max budget if no tiers found
+    } catch (error) {
+      console.error('Error calculating production cost:', error);
+      return maxBudget * 0.5;
+    }
+  };
+
+  const calculateCreativeCost = async (mediaFormatId: string, quantity: number, maxBudget: number): Promise<number> => {
+    try {
+      const { data: creativeTiers } = await supabase
+        .from('creative_design_cost_tiers')
+        .select('*')
+        .eq('media_format_id', mediaFormatId)
+        .eq('is_active', true)
+        .lte('min_quantity', quantity)
+        .or(`max_quantity.is.null,max_quantity.gte.${quantity}`)
+        .order('cost_per_unit', { ascending: true })
+        .limit(1);
+
+      if (creativeTiers && creativeTiers.length > 0) {
+        const cost = creativeTiers[0].cost_per_unit * quantity;
+        return Math.min(cost, maxBudget);
+      }
+
+      return maxBudget * 0.5; // Fallback to 50% of max budget if no tiers found
+    } catch (error) {
+      console.error('Error calculating creative cost:', error);
+      return maxBudget * 0.5;
+    }
+  };
+
   const generateReasons = (formatSlug: string, mediaFormat: any): string[] => {
     const reasons: string[] = [];
     
@@ -743,14 +805,9 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
   };
 
   const getCreativeNeeds = (): string => {
-    const creativeAnswer = answers.find(a => a.questionId === 'creative_needs');
-    if (!creativeAnswer) return '';
-    switch(creativeAnswer.value) {
-      case 'ready': return 'Creative assets ready';
-      case 'design_help': return 'Need design assistance';
-      case 'full_creative': return 'Need full creative development';
-      default: return String(creativeAnswer.value);
-    }
+    const creativeAnswer = answers.find(a => a.questionId === 'creative_ready');
+    if (!creativeAnswer) return 'ready'; // Default to ready if no answer
+    return String(creativeAnswer.value);
   };
 
   const restart = () => {
