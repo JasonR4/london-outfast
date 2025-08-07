@@ -521,16 +521,40 @@ export function RateCardManager() {
       
       if (updateError) throw updateError;
 
-      // Create entries for each rate card + incharge period combination
+      // Get existing rate card periods to avoid duplicates
+      const { data: existingPeriods, error: fetchError } = await supabase
+        .from('rate_card_periods')
+        .select('rate_card_id, incharge_period_id')
+        .in('rate_card_id', selectedRateCardIds)
+        .in('incharge_period_id', selectedInchargePeriods);
+
+      if (fetchError) throw fetchError;
+
+      // Create a Set of existing combinations for fast lookup
+      const existingCombinations = new Set(
+        existingPeriods?.map(ep => `${ep.rate_card_id}-${ep.incharge_period_id}`) || []
+      );
+
+      // Create entries for each rate card + incharge period combination, excluding duplicates
       const entries = [];
       for (const rateCardId of selectedRateCardIds) {
         for (const inchargePeriodId of selectedInchargePeriods) {
-          entries.push({
-            rate_card_id: rateCardId,
-            incharge_period_id: inchargePeriodId,
-            is_enabled: true
-          });
+          const combination = `${rateCardId}-${inchargePeriodId}`;
+          if (!existingCombinations.has(combination)) {
+            entries.push({
+              rate_card_id: rateCardId,
+              incharge_period_id: inchargePeriodId,
+              is_enabled: true
+            });
+          }
         }
+      }
+
+      if (entries.length === 0) {
+        toast.info('All selected incharge periods are already assigned to the selected rate cards');
+        setShowBulkInchargeModal(false);
+        setSelectedInchargePeriods([]);
+        return;
       }
 
       const { error } = await supabase
@@ -539,7 +563,13 @@ export function RateCardManager() {
       
       if (error) throw error;
       
-      toast.success(`Successfully added ${selectedInchargePeriods.length} incharge period${selectedInchargePeriods.length > 1 ? 's' : ''} to ${selectedRateCardIds.length} rate card${selectedRateCardIds.length > 1 ? 's' : ''}`);
+      const skippedCount = (selectedRateCardIds.length * selectedInchargePeriods.length) - entries.length;
+      let message = `Successfully added ${entries.length} new period assignment${entries.length !== 1 ? 's' : ''}`;
+      if (skippedCount > 0) {
+        message += ` (${skippedCount} already existed)`;
+      }
+      
+      toast.success(message);
       setShowBulkInchargeModal(false);
       setSelectedInchargePeriods([]);
       setSelectedRateCardIds([]);
