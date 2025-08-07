@@ -291,7 +291,7 @@ const Auth = () => {
         <CardHeader>
           <CardTitle>Sign In to Client Portal</CardTitle>
           <CardDescription>
-            Sign in to manage your content
+            Sign in to manage your account
           </CardDescription>
         </CardHeader>
         <CardContent>
