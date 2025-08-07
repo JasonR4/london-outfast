@@ -29,6 +29,8 @@ export interface GeneratedMediaPlan {
 }
 
 export class MediaPlanGenerator {
+  private answers: Answer[] = [];
+  
   private formatSlugs = [
     'billboards',
     'digital_billboards', 
@@ -43,6 +45,9 @@ export class MediaPlanGenerator {
     inchargePeriods: InchargePeriod[]
   ): Promise<GeneratedMediaPlan | null> {
     try {
+      // Store answers for use in helper methods
+      this.answers = answers;
+      
       console.log('Generating media plan with answers:', answers);
       console.log('Incharge periods:', inchargePeriods);
       
@@ -309,8 +314,20 @@ export class MediaPlanGenerator {
   }
 
   private calculateCampaignDuration(periods: InchargePeriod[]): string {
-    if (periods.length === 0) return '2 weeks';
-    const weeks = periods.length;
-    return `${weeks} ${weeks === 1 ? 'week' : 'weeks'}`;
+    // Get selected periods from answers
+    const selectedPeriods = this.getSelectedPeriodsFromAnswers();
+    
+    if (selectedPeriods.length === 0) return '2 weeks';
+    
+    // Each incharge period is 2 weeks, so total duration is periods * 2
+    const totalWeeks = selectedPeriods.length * 2;
+    return `${totalWeeks} ${totalWeeks === 1 ? 'week' : 'weeks'}`;
+  }
+
+  private getSelectedPeriodsFromAnswers(): number[] {
+    const periodsAnswer = this.answers.find(a => a.questionId === 'campaign_periods');
+    const selectedPeriods = periodsAnswer?.value as number[] || [];
+    console.log('Selected periods from answers:', selectedPeriods);
+    return selectedPeriods;
   }
 }
