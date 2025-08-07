@@ -51,7 +51,9 @@ const FormatPage = () => {
   const [upsellContext, setUpsellContext] = useState<{ zoneName?: string; requiredCapacity: number } | null>(null);
   const [showCreativeUpsellModal, setShowCreativeUpsellModal] = useState(false);
   
-  // Use rate cards hook
+  // Use rate cards hook with debugging
+  console.log('🔍 RATE CARDS DEBUG - formatSlug passed to useRateCards:', formatSlug);
+  
   const { 
     rateCards, 
     calculatePrice, 
@@ -62,6 +64,14 @@ const FormatPage = () => {
     loading: rateLoading, 
     error: rateError 
   } = useRateCards(formatSlug);
+  
+  console.log('🔍 RATE CARDS HOOK RESULT:', {
+    rateCardsCount: rateCards?.length || 0,
+    rateLoading,
+    rateError: rateError || 'none',
+    hasCalculatePrice: !!calculatePrice,
+    inchargePeriodsCount: inchargePeriods?.length || 0
+  });
   
   // Use location selector hook for multiple area selection in pricing
   const {
