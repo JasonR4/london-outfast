@@ -649,9 +649,10 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
         .limit(1);
 
       if (!rateCards || rateCards.length === 0) {
+        const maxQuantity = Math.floor(budget / 3000);
         return {
-          quantity: Math.floor(budget / 3000),
-          totalCost: budget * 0.7,
+          quantity: Math.max(1, maxQuantity),
+          totalCost: Math.min(budget, maxQuantity * 3000),
           costPerUnit: 3000
         };
       }
@@ -677,9 +678,9 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
       const finalRate = adjustedRate * discountMultiplier;
       
       const costPerUnit = finalRate * periodsCount;
-      const mediaBudget = budget * 0.7; // 70% for media
-      const quantity = Math.max(1, Math.floor(mediaBudget / costPerUnit));
-      const totalCost = costPerUnit * quantity;
+      // Use the full allocated budget, not just 70%
+      const quantity = Math.max(1, Math.floor(budget / costPerUnit));
+      const totalCost = Math.min(budget, costPerUnit * quantity);
 
       return {
         quantity,
@@ -688,9 +689,10 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
       };
     } catch (error) {
       console.error('Error calculating real costs:', error);
+      const fallbackQuantity = Math.floor(budget / 3000);
       return {
-        quantity: Math.floor(budget / 3000),
-        totalCost: budget * 0.7,
+        quantity: Math.max(1, fallbackQuantity),
+        totalCost: Math.min(budget, fallbackQuantity * 3000),
         costPerUnit: 3000
       };
     }
