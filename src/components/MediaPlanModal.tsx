@@ -191,7 +191,16 @@ export const MediaPlanModal = ({
                     <div>
                       <CardTitle className="text-lg">{item.formatName}</CardTitle>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="secondary">{item.budgetAllocation.toFixed(0)}% of budget</Badge>
+                        <Badge variant="secondary">
+                          {(() => {
+                            const actualItemCost = item.baseCost + item.productionCost + item.creativeCost;
+                            const totalActualCost = mediaPlan.items.reduce((sum, planItem) => 
+                              sum + planItem.baseCost + planItem.productionCost + planItem.creativeCost, 0
+                            );
+                            const actualPercentage = totalActualCost > 0 ? (actualItemCost / totalActualCost) * 100 : 0;
+                            return `${actualPercentage.toFixed(0)}% of budget`;
+                          })()}
+                        </Badge>
                         <Badge variant="outline">{item.recommendedQuantity} units</Badge>
                       </div>
                     </div>
