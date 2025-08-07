@@ -88,10 +88,24 @@ interface CreativeDesignCostTier {
   };
 }
 
+interface QuantityDiscountTier {
+  id: string;
+  media_format_id: string;
+  location_area?: string | null;
+  min_quantity: number;
+  max_quantity: number | null;
+  discount_percentage: number;
+  is_active: boolean;
+  media_formats?: {
+    format_name: string;
+  };
+}
+
 export function RateCardManager() {
   const [mediaFormats, setMediaFormats] = useState<MediaFormat[]>([]);
   const [rateCards, setRateCards] = useState<RateCard[]>([]);
   const [discountTiers, setDiscountTiers] = useState<DiscountTier[]>([]);
+  const [quantityDiscountTiers, setQuantityDiscountTiers] = useState<QuantityDiscountTier[]>([]);
   const [productionTiers, setProductionTiers] = useState<ProductionCostTier[]>([]);
   const [creativeTiers, setCreativeTiers] = useState<CreativeDesignCostTier[]>([]);
   const [inchargePeriods, setInchargePeriods] = useState<any[]>([]);
@@ -103,17 +117,19 @@ export function RateCardManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [editingRate, setEditingRate] = useState<RateCard | null>(null);
   const [editingDiscount, setEditingDiscount] = useState<DiscountTier | null>(null);
+  const [editingQuantityDiscount, setEditingQuantityDiscount] = useState<QuantityDiscountTier | null>(null);
   const [editingProduction, setEditingProduction] = useState<ProductionCostTier | null>(null);
   const [editingCreative, setEditingCreative] = useState<CreativeDesignCostTier | null>(null);
   const [isRateDialogOpen, setIsRateDialogOpen] = useState(false);
   const [isDiscountDialogOpen, setIsDiscountDialogOpen] = useState(false);
+  const [isQuantityDiscountDialogOpen, setIsQuantityDiscountDialogOpen] = useState(false);
   const [isProductionDialogOpen, setIsProductionDialogOpen] = useState(false);
   const [isCreativeDialogOpen, setIsCreativeDialogOpen] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [analysisResults, setAnalysisResults] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
-  const [bulkUploadType, setBulkUploadType] = useState<'rates' | 'discounts' | 'production' | 'creative'>('rates');
+  const [bulkUploadType, setBulkUploadType] = useState<'rates' | 'discounts' | 'quantity-discounts' | 'production' | 'creative'>('rates');
 
   useEffect(() => {
     fetchData();
@@ -121,10 +137,11 @@ export function RateCardManager() {
 
   const fetchData = async () => {
     try {
-      const [formatsRes, ratesRes, discountsRes, productionRes, creativeRes, periodsRes, rateCardPeriodsRes] = await Promise.all([
+      const [formatsRes, ratesRes, discountsRes, quantityDiscountsRes, productionRes, creativeRes, periodsRes, rateCardPeriodsRes] = await Promise.all([
         supabase.from('media_formats').select('*').order('format_name'),
         supabase.from('rate_cards').select('*, media_formats(format_name)').order('location_area'),
         supabase.from('discount_tiers').select('*, media_formats(format_name)').order('min_periods'),
+        supabase.from('quantity_discount_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('production_cost_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('creative_design_cost_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('incharge_periods').select('*').order('period_number'),
@@ -134,6 +151,7 @@ export function RateCardManager() {
       if (formatsRes.error) throw formatsRes.error;
       if (ratesRes.error) throw ratesRes.error;
       if (discountsRes.error) throw discountsRes.error;
+      if (quantityDiscountsRes.error) throw quantityDiscountsRes.error;
       if (productionRes.error) throw productionRes.error;
       if (creativeRes.error) throw creativeRes.error;
       if (periodsRes.error) throw periodsRes.error;
@@ -142,6 +160,7 @@ export function RateCardManager() {
       setMediaFormats(formatsRes.data || []);
       setRateCards(ratesRes.data || []);
       setDiscountTiers(discountsRes.data || []);
+      setQuantityDiscountTiers((quantityDiscountsRes.data as any) || []);
       setProductionTiers(productionRes.data || []);
       setCreativeTiers((creativeRes.data as any) || []);
       setInchargePeriods(periodsRes.data || []);
@@ -269,7 +288,42 @@ export function RateCardManager() {
         max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
         cost_per_unit: parseFloat(formData.get('cost_per_unit') as string),
         is_active: formData.get('is_active') === 'true'
+  };
+
+  const handleSaveQuantityDiscountTier = async (formData: FormData) => {
+    try {
+      const quantityDiscountData = {
+        media_format_id: formData.get('media_format_id') as string,
+        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
+        min_quantity: parseInt(formData.get('min_quantity') as string),
+        max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
+        discount_percentage: parseFloat(formData.get('discount_percentage') as string),
+        is_active: formData.get('is_active') === 'true'
       };
+
+      if (editingQuantityDiscount) {
+        const { error } = await supabase
+          .from('quantity_discount_tiers')
+          .update(quantityDiscountData)
+          .eq('id', editingQuantityDiscount.id);
+        if (error) throw error;
+        toast.success('Quantity discount tier updated successfully');
+      } else {
+        const { error } = await supabase
+          .from('quantity_discount_tiers')
+          .insert(quantityDiscountData);
+        if (error) throw error;
+        toast.success('Quantity discount tier created successfully');
+      }
+
+      setIsQuantityDiscountDialogOpen(false);
+      setEditingQuantityDiscount(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error saving quantity discount tier:', error);
+      toast.error('Failed to save quantity discount tier');
+    }
+  };
 
       if (editingProduction) {
         const { error } = await supabase
@@ -403,8 +457,26 @@ export function RateCardManager() {
     }
   };
 
+  const handleDeleteQuantityDiscountTier = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this quantity discount tier?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('quantity_discount_tiers')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      toast.success('Quantity discount tier deleted successfully');
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting quantity discount tier:', error);
+      toast.error('Failed to delete quantity discount tier');
+    }
+  };
+
   // Bulk upload functionality
-  const downloadTemplate = (type: 'rates' | 'discounts' | 'production' | 'creative' = 'rates') => {
+  const downloadTemplate = (type: 'rates' | 'discounts' | 'quantity-discounts' | 'production' | 'creative' = 'rates') => {
     const allAreas = londonAreas.flatMap(zone => zone.areas);
     let templateData: any[] = [];
     let filename = '';
@@ -443,6 +515,20 @@ export function RateCardManager() {
         filename = 'discount-tiers-template.xlsx';
         break;
         
+      case 'quantity-discounts':
+        templateData = [
+          {
+            'Media Format': 'Select from existing formats',
+            'Location Area': 'Select from: ' + allAreas.join(', ') + ' or "global"',
+            'Min Quantity': '1',
+            'Max Quantity': '10 (or leave blank for unlimited)',
+            'Discount Percentage': '5.00',
+            'Is Active': 'TRUE/FALSE'
+          }
+        ];
+        filename = 'quantity-discount-tiers-template.xlsx';
+        break;
+        
       case 'production':
         templateData = [
           {
@@ -471,7 +557,9 @@ export function RateCardManager() {
           }
         ];
         filename = 'creative-design-template.xlsx';
-        break;
+            break;
+            
+          case 'quantity-discounts':
     }
 
     const worksheet = XLSX.utils.json_to_sheet(templateData);
@@ -509,7 +597,8 @@ export function RateCardManager() {
         // Skip header/example row
         if (index === 0 && (
           row['Media Format']?.includes('Select from') ||
-          row['Min Periods']?.toString().includes('1') && bulkUploadType === 'discounts'
+          (row['Min Periods']?.toString().includes('1') && bulkUploadType === 'discounts') ||
+          (row['Min Quantity']?.toString().includes('1') && (bulkUploadType === 'quantity-discounts' || bulkUploadType === 'production' || bulkUploadType === 'creative'))
         )) return;
 
         // Common validation for all types
@@ -537,6 +626,24 @@ export function RateCardManager() {
             }
             if (row['Max Periods'] && (isNaN(parseInt(row['Max Periods'])) || parseInt(row['Max Periods']) < parseInt(row['Min Periods']))) {
               errors.push('Invalid max periods');
+            }
+            if (!row['Discount Percentage'] || isNaN(parseFloat(row['Discount Percentage']))) {
+              errors.push('Invalid discount percentage');
+            }
+            break;
+            
+          case 'quantity-discounts':
+            // Validate location area (can be global or valid area)
+            if (row['Location Area'] && row['Location Area'].toLowerCase() !== 'global' && 
+                !validAreas.includes(row['Location Area'].toLowerCase())) {
+              errors.push('Invalid location area (use "global" or valid area)');
+            }
+            // Validate quantity ranges
+            if (!row['Min Quantity'] || isNaN(parseInt(row['Min Quantity'])) || parseInt(row['Min Quantity']) < 1) {
+              errors.push('Invalid min quantity');
+            }
+            if (row['Max Quantity'] && (isNaN(parseInt(row['Max Quantity'])) || parseInt(row['Max Quantity']) < parseInt(row['Min Quantity']))) {
+              errors.push('Invalid max quantity');
             }
             if (!row['Discount Percentage'] || isNaN(parseFloat(row['Discount Percentage']))) {
               errors.push('Invalid discount percentage');
@@ -627,6 +734,17 @@ export function RateCardManager() {
             };
             break;
             
+          case 'quantity-discounts':
+            dataEntry = {
+              media_format_id: mediaFormat.id,
+              location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
+              min_quantity: parseInt(row['Min Quantity']),
+              max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
+              discount_percentage: parseFloat(row['Discount Percentage']),
+              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+            };
+            break;
+            
           case 'discounts':
             dataEntry = {
               media_format_id: mediaFormat.id,
@@ -675,6 +793,9 @@ export function RateCardManager() {
         case 'discounts':
           ({ error } = await supabase.from('discount_tiers').insert(dataToInsert));
           break;
+        case 'quantity-discounts':
+          ({ error } = await supabase.from('quantity_discount_tiers').insert(dataToInsert));
+          break;
         case 'production':
           ({ error } = await supabase.from('production_cost_tiers').insert(dataToInsert));
           break;
@@ -687,7 +808,8 @@ export function RateCardManager() {
 
       const successMessages = {
         rates: 'rate cards',
-        discounts: 'discount tiers', 
+        discounts: 'discount tiers',
+        'quantity-discounts': 'quantity discount tiers', 
         production: 'production cost tiers',
         creative: 'creative design cost tiers'
       };
@@ -719,7 +841,8 @@ export function RateCardManager() {
             <TabsList>
               <TabsTrigger value="rates">Rate Cards</TabsTrigger>
               <TabsTrigger value="bulk-upload">Bulk Upload</TabsTrigger>
-              <TabsTrigger value="discounts">Discount Tiers</TabsTrigger>
+              <TabsTrigger value="discounts">Period Discounts</TabsTrigger>
+              <TabsTrigger value="quantity-discounts">Quantity Discounts</TabsTrigger>
               <TabsTrigger value="production">Production Costs</TabsTrigger>
               <TabsTrigger value="creative">Creative Design</TabsTrigger>
             </TabsList>
@@ -739,7 +862,8 @@ export function RateCardManager() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {[
                         { value: 'rates', label: 'Rate Cards' },
-                        { value: 'discounts', label: 'Discount Tiers' },
+                        { value: 'discounts', label: 'Period Discounts' },
+                        { value: 'quantity-discounts', label: 'Quantity Discounts' },
                         { value: 'production', label: 'Production Costs' },
                         { value: 'creative', label: 'Creative Design' }
                       ].map((type) => (
@@ -764,13 +888,14 @@ export function RateCardManager() {
                     <h3 className="text-lg font-semibold">Step 1: Download Template</h3>
                     <p className="text-muted-foreground">
                       Download the Excel template for {bulkUploadType === 'rates' ? 'rate cards' : 
-                        bulkUploadType === 'discounts' ? 'discount tiers' :
+                        bulkUploadType === 'discounts' ? 'period discount tiers' :
+                        bulkUploadType === 'quantity-discounts' ? 'quantity discount tiers' :
                         bulkUploadType === 'production' ? 'production costs' : 'creative design costs'} 
                       with the correct format and validation examples.
                     </p>
                     <Button onClick={() => downloadTemplate(bulkUploadType)} className="flex items-center gap-2">
                       <Download className="w-4 h-4" />
-                      Download {bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1)} Template
+                      Download {bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1).replace('-', ' ')} Template
                     </Button>
                   </div>
 

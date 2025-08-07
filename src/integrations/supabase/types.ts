@@ -416,6 +416,48 @@ export type Database = {
         }
         Relationships: []
       }
+      quantity_discount_tiers: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          discount_percentage: number
+          id: string
+          is_active: boolean
+          location_area: string | null
+          max_quantity: number | null
+          media_format_id: string
+          min_quantity: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          discount_percentage: number
+          id?: string
+          is_active?: boolean
+          location_area?: string | null
+          max_quantity?: number | null
+          media_format_id: string
+          min_quantity: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          discount_percentage?: number
+          id?: string
+          is_active?: boolean
+          location_area?: string | null
+          max_quantity?: number | null
+          media_format_id?: string
+          min_quantity?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       quote_items: {
         Row: {
           base_cost: number | null
