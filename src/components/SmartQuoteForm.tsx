@@ -1016,7 +1016,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                     </div>
                                     <div className="flex justify-between items-center text-green-600">
                                       <span>Subtotal ({totalQuantity} units × {selectedPeriods.length} periods):</span>
-                                      <span>£{pricing.mediaPrice.toLocaleString()}</span>
+                                      <span>£{(totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)).toLocaleString()}</span>
                                     </div>
                                   </>
                                 )}
