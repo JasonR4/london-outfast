@@ -21,7 +21,8 @@ interface MediaFormat {
   description: string | null;
   dimensions: string | null;
   is_active: boolean;
-  categories?: string[];
+  locationCategories?: string[];
+  formatCategories?: string[];
 }
 
 interface MediaFormatCategory {
@@ -38,7 +39,8 @@ export function MediaFormatCategoryManager() {
   const [mediaFormats, setMediaFormats] = useState<MediaFormat[]>([]);
   const [formatCategories, setFormatCategories] = useState<MediaFormatCategory[]>([]);
   const [selectedFormat, setSelectedFormat] = useState<MediaFormat | null>(null);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedLocationCategories, setSelectedLocationCategories] = useState<string[]>([]);
+  const [selectedFormatCategories, setSelectedFormatCategories] = useState<string[]>([]);
   const [editingFormatName, setEditingFormatName] = useState<string | null>(null);
   const [newFormatName, setNewFormatName] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -63,10 +65,14 @@ export function MediaFormatCategoryManager() {
 
       // Check if we have a format_categories table or if categories are stored differently
       // For now, we'll simulate categories based on the format names and our constants
-      const formatsWithCategories = formatsData?.map(format => ({
-        ...format,
-        categories: getDefaultCategoriesForFormat(format.format_name)
-      })) || [];
+      const formatsWithCategories = formatsData?.map(format => {
+        const defaultCategories = getDefaultCategoriesForFormat(format.format_name);
+        return {
+          ...format,
+          locationCategories: defaultCategories.location,
+          formatCategories: defaultCategories.format
+        };
+      }) || [];
 
       setMediaFormats(formatsWithCategories);
     } catch (error) {
@@ -77,55 +83,57 @@ export function MediaFormatCategoryManager() {
     }
   };
 
-  const getDefaultCategoriesForFormat = (formatName: string): string[] => {
+  const getDefaultCategoriesForFormat = (formatName: string) => {
     // Default category assignment based on format name
     const name = formatName.toLowerCase();
-    const categories: string[] = [];
+    const locationCategories: string[] = [];
+    const formatCategories: string[] = [];
     
     // Location categories
     if (name.includes('transport') || name.includes('bus')) {
-      categories.push('Transport');
+      locationCategories.push('Transport');
     } else if (name.includes('tube') || name.includes('underground')) {
-      categories.push('London Underground');
+      locationCategories.push('London Underground');
     } else if (name.includes('rail') || name.includes('railway') || name.includes('train')) {
-      categories.push('Rail');
+      locationCategories.push('Rail');
     } else if (name.includes('retail') || name.includes('shopping')) {
-      categories.push('Retail');
+      locationCategories.push('Retail');
     } else if (name.includes('supermarket') || name.includes('grocery')) {
-      categories.push('Supermarket');
+      locationCategories.push('Supermarket');
     } else if (name.includes('billboard') || name.includes('poster') || name.includes('roadside')) {
-      categories.push('Roadside');
+      locationCategories.push('Roadside');
     } else {
-      categories.push('Transport'); // Default location fallback
+      locationCategories.push('Transport'); // Default location fallback
     }
     
     // Format categories
     if (name.includes('digital') || name.includes('led')) {
-      categories.push('Digital');
+      formatCategories.push('Digital');
     } else if (name.includes('paper') || name.includes('paste')) {
-      categories.push('Paper & Paste');
+      formatCategories.push('Paper & Paste');
     } else if (name.includes('backlight')) {
-      categories.push('Backlight');
+      formatCategories.push('Backlight');
     } else if (name.includes('illuminated')) {
-      categories.push('Illuminated');
+      formatCategories.push('Illuminated');
     } else if (name.includes('premium')) {
-      categories.push('Premium');
+      formatCategories.push('Premium');
     } else if (name.includes('hd')) {
-      categories.push('HD');
+      formatCategories.push('HD');
     } else if (name.includes('vinyl') || name.includes('vynl')) {
-      categories.push('Vynl');
+      formatCategories.push('Vynl');
     } else if (name.includes('wrb')) {
-      categories.push('WRB');
+      formatCategories.push('WRB');
     } else {
-      categories.push('Paper & Paste'); // Default format fallback
+      formatCategories.push('Paper & Paste'); // Default format fallback
     }
     
-    return categories;
+    return { location: locationCategories, format: formatCategories };
   };
 
   const handleEditCategories = (format: MediaFormat) => {
     setSelectedFormat(format);
-    setSelectedCategories(format.categories || []);
+    setSelectedLocationCategories(format.locationCategories || []);
+    setSelectedFormatCategories(format.formatCategories || []);
     setIsDialogOpen(true);
   };
 
@@ -137,7 +145,11 @@ export function MediaFormatCategoryManager() {
       // In a real implementation, you'd save this to a format_categories table
       const updatedFormats = mediaFormats.map(format =>
         format.id === selectedFormat.id
-          ? { ...format, categories: selectedCategories }
+          ? { 
+              ...format, 
+              locationCategories: selectedLocationCategories,
+              formatCategories: selectedFormatCategories
+            }
           : format
       );
       
@@ -145,7 +157,8 @@ export function MediaFormatCategoryManager() {
       toast.success('Categories updated successfully');
       setIsDialogOpen(false);
       setSelectedFormat(null);
-      setSelectedCategories([]);
+      setSelectedLocationCategories([]);
+      setSelectedFormatCategories([]);
     } catch (error) {
       console.error('Error saving categories:', error);
       toast.error('Failed to save categories');
@@ -300,23 +313,42 @@ export function MediaFormatCategoryManager() {
                       <TableCell>
                         {format.dimensions || 'Not specified'}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {format.categories && format.categories.length > 0 ? (
-                            format.categories.map((category) => (
-                              <Badge
-                                key={category}
-                                variant="secondary"
-                                className={`text-xs ${getCategoryColor(category)}`}
-                              >
-                                {category}
-                              </Badge>
-                            ))
-                          ) : (
-                            <span className="text-sm text-muted-foreground">No categories</span>
-                          )}
-                        </div>
-                      </TableCell>
+                       <TableCell>
+                         <div className="space-y-2">
+                           <div className="flex flex-wrap gap-1">
+                             <span className="text-xs font-medium text-muted-foreground">Location:</span>
+                             {format.locationCategories && format.locationCategories.length > 0 ? (
+                               format.locationCategories.map((category) => (
+                                 <Badge
+                                   key={category}
+                                   variant="secondary"
+                                   className={`text-xs ${getCategoryColor(category)}`}
+                                 >
+                                   {category}
+                                 </Badge>
+                               ))
+                             ) : (
+                               <span className="text-xs text-muted-foreground">None</span>
+                             )}
+                           </div>
+                           <div className="flex flex-wrap gap-1">
+                             <span className="text-xs font-medium text-muted-foreground">Format:</span>
+                             {format.formatCategories && format.formatCategories.length > 0 ? (
+                               format.formatCategories.map((category) => (
+                                 <Badge
+                                   key={category}
+                                   variant="secondary"
+                                   className={`text-xs ${getCategoryColor(category)}`}
+                                 >
+                                   {category}
+                                 </Badge>
+                               ))
+                             ) : (
+                               <span className="text-xs text-muted-foreground">None</span>
+                             )}
+                           </div>
+                         </div>
+                       </TableCell>
                       <TableCell>
                         <Button
                           variant="outline"
@@ -348,58 +380,59 @@ export function MediaFormatCategoryManager() {
               <div className="grid grid-cols-1 gap-2 mt-2">
                 {LOCATION_CATEGORIES.map((category) => (
                   <div key={category} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`location-${category}`}
-                      checked={selectedCategories.includes(category)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedCategories([...selectedCategories, category]);
-                        } else {
-                          setSelectedCategories(selectedCategories.filter(c => c !== category));
-                        }
-                      }}
-                    />
-                    <Label htmlFor={`location-${category}`} className="text-sm">
-                      {category}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
+                     <Checkbox
+                       id={`location-${category}`}
+                       checked={selectedLocationCategories.includes(category)}
+                       onCheckedChange={(checked) => {
+                         if (checked) {
+                           setSelectedLocationCategories([...selectedLocationCategories, category]);
+                         } else {
+                           setSelectedLocationCategories(selectedLocationCategories.filter(c => c !== category));
+                         }
+                       }}
+                     />
+                     <Label htmlFor={`location-${category}`} className="text-sm">
+                       {category}
+                     </Label>
+                   </div>
+                 ))}
+               </div>
+             </div>
             
             <div>
               <Label>Format Categories</Label>
               <div className="grid grid-cols-1 gap-2 mt-2">
                 {FORMAT_CATEGORIES.map((category) => (
                   <div key={category} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`format-${category}`}
-                      checked={selectedCategories.includes(category)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedCategories([...selectedCategories, category]);
-                        } else {
-                          setSelectedCategories(selectedCategories.filter(c => c !== category));
-                        }
-                      }}
-                    />
-                    <Label htmlFor={`format-${category}`} className="text-sm">
-                      {category}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
+                     <Checkbox
+                       id={`format-${category}`}
+                       checked={selectedFormatCategories.includes(category)}
+                       onCheckedChange={(checked) => {
+                         if (checked) {
+                           setSelectedFormatCategories([...selectedFormatCategories, category]);
+                         } else {
+                           setSelectedFormatCategories(selectedFormatCategories.filter(c => c !== category));
+                         }
+                       }}
+                     />
+                     <Label htmlFor={`format-${category}`} className="text-sm">
+                       {category}
+                     </Label>
+                   </div>
+                 ))}
+               </div>
+             </div>
             
             <div className="flex justify-end space-x-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsDialogOpen(false);
-                  setSelectedFormat(null);
-                  setSelectedCategories([]);
-                }}
-              >
+               <Button
+                 variant="outline"
+                 onClick={() => {
+                   setIsDialogOpen(false);
+                   setSelectedFormat(null);
+                   setSelectedLocationCategories([]);
+                   setSelectedFormatCategories([]);
+                 }}
+               >
                 Cancel
               </Button>
               <Button onClick={handleSaveCategories}>
