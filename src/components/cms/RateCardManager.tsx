@@ -113,6 +113,7 @@ export function RateCardManager() {
   const [analysisResults, setAnalysisResults] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
+  const [bulkUploadType, setBulkUploadType] = useState<'rates' | 'discounts' | 'production' | 'creative'>('rates');
 
   useEffect(() => {
     fetchData();
@@ -403,40 +404,85 @@ export function RateCardManager() {
   };
 
   // Bulk upload functionality
-  const downloadTemplate = () => {
-    // Flatten all areas from london areas data
+  const downloadTemplate = (type: 'rates' | 'discounts' | 'production' | 'creative' = 'rates') => {
     const allAreas = londonAreas.flatMap(zone => zone.areas);
-    
-    const templateData = [
-      {
-        'Media Format': 'Select from existing formats',
-        'Location Area': 'Select from: ' + allAreas.join(', '),
-        'Base Rate Per Incharge': '0.00',
-        'Sale Price': '0.00',
-        'Reduced Price': '0.00',
-        'Location Markup Percentage': '0.00',
-        'Quantity Per Medium': '1',
-        'Is Active': 'TRUE/FALSE',
-        'Is Date Specific': 'TRUE/FALSE',
-        'Start Date': 'YYYY-MM-DD (if not date specific)',
-        'End Date': 'YYYY-MM-DD (if not date specific)',
-        'Incharge Period': '1-26 (if date specific)'
-      }
-    ];
+    let templateData: any[] = [];
+    let filename = '';
+
+    switch (type) {
+      case 'rates':
+        templateData = [
+          {
+            'Media Format': 'Select from existing formats',
+            'Location Area': 'Select from: ' + allAreas.join(', '),
+            'Base Rate Per Incharge': '0.00',
+            'Sale Price': '0.00',
+            'Reduced Price': '0.00',
+            'Location Markup Percentage': '0.00',
+            'Quantity Per Medium': '1',
+            'Is Active': 'TRUE/FALSE',
+            'Is Date Specific': 'TRUE/FALSE',
+            'Start Date': 'YYYY-MM-DD (if not date specific)',
+            'End Date': 'YYYY-MM-DD (if not date specific)',
+            'Incharge Period': '1-26 (if date specific)'
+          }
+        ];
+        filename = 'rate-cards-template.xlsx';
+        break;
+        
+      case 'discounts':
+        templateData = [
+          {
+            'Media Format': 'Select from existing formats',
+            'Min Periods': '1',
+            'Max Periods': '26 (or leave blank for unlimited)',
+            'Discount Percentage': '10.00',
+            'Is Active': 'TRUE/FALSE'
+          }
+        ];
+        filename = 'discount-tiers-template.xlsx';
+        break;
+        
+      case 'production':
+        templateData = [
+          {
+            'Media Format': 'Select from existing formats',
+            'Location Area': 'Select from: ' + allAreas.join(', ') + ' or "global"',
+            'Category': 'Standard/Premium/Custom',
+            'Min Quantity': '1',
+            'Max Quantity': '100 (or leave blank for unlimited)',
+            'Cost Per Unit': '50.00',
+            'Is Active': 'TRUE/FALSE'
+          }
+        ];
+        filename = 'production-costs-template.xlsx';
+        break;
+        
+      case 'creative':
+        templateData = [
+          {
+            'Media Format': 'Select from existing formats',
+            'Location Area': 'Select from: ' + allAreas.join(', ') + ' or "global"',
+            'Category': 'Basic Design/Premium Design/Custom Design',
+            'Min Quantity': '1',
+            'Max Quantity': '10 (or leave blank for unlimited)',
+            'Cost Per Unit': '85.00',
+            'Is Active': 'TRUE/FALSE'
+          }
+        ];
+        filename = 'creative-design-template.xlsx';
+        break;
+    }
 
     const worksheet = XLSX.utils.json_to_sheet(templateData);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Rate Cards Template');
+    XLSX.utils.book_append_sheet(workbook, worksheet, `${type.charAt(0).toUpperCase() + type.slice(1)} Template`);
     
     // Set column widths
-    const colWidths = [
-      { wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 12 }, { wch: 15 }, 
-      { wch: 25 }, { wch: 20 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, 
-      { wch: 15 }, { wch: 15 }
-    ];
+    const colWidths = Array(Object.keys(templateData[0]).length).fill({ wch: 20 });
     worksheet['!cols'] = colWidths;
 
-    XLSX.writeFile(workbook, 'rate-cards-template.xlsx');
+    XLSX.writeFile(workbook, filename);
     toast.success('Template downloaded successfully');
   };
 
@@ -461,24 +507,63 @@ export function RateCardManager() {
         const errors: string[] = [];
         
         // Skip header/example row
-        if (index === 0 && row['Media Format']?.includes('Select from')) return;
+        if (index === 0 && (
+          row['Media Format']?.includes('Select from') ||
+          row['Min Periods']?.toString().includes('1') && bulkUploadType === 'discounts'
+        )) return;
 
-        // Validate media format
+        // Common validation for all types
         if (!row['Media Format'] || !formatNames.includes(row['Media Format'].toLowerCase())) {
           errors.push('Invalid media format');
         }
 
-        // Validate location area
-        if (!row['Location Area'] || !validAreas.includes(row['Location Area'].toLowerCase())) {
-          errors.push('Invalid location area');
+        // Type-specific validation
+        switch (bulkUploadType) {
+          case 'rates':
+            // Validate location area for rates
+            if (!row['Location Area'] || !validAreas.includes(row['Location Area'].toLowerCase())) {
+              errors.push('Invalid location area');
+            }
+            // Validate numeric fields
+            if (!row['Base Rate Per Incharge'] || isNaN(parseFloat(row['Base Rate Per Incharge']))) {
+              errors.push('Invalid base rate');
+            }
+            break;
+            
+          case 'discounts':
+            // Validate periods
+            if (!row['Min Periods'] || isNaN(parseInt(row['Min Periods'])) || parseInt(row['Min Periods']) < 1) {
+              errors.push('Invalid min periods');
+            }
+            if (row['Max Periods'] && (isNaN(parseInt(row['Max Periods'])) || parseInt(row['Max Periods']) < parseInt(row['Min Periods']))) {
+              errors.push('Invalid max periods');
+            }
+            if (!row['Discount Percentage'] || isNaN(parseFloat(row['Discount Percentage']))) {
+              errors.push('Invalid discount percentage');
+            }
+            break;
+            
+          case 'production':
+          case 'creative':
+            // Validate location area (can be global)
+            if (row['Location Area'] && row['Location Area'].toLowerCase() !== 'global' && 
+                !validAreas.includes(row['Location Area'].toLowerCase())) {
+              errors.push('Invalid location area (use "global" or valid area)');
+            }
+            // Validate quantity ranges
+            if (!row['Min Quantity'] || isNaN(parseInt(row['Min Quantity'])) || parseInt(row['Min Quantity']) < 1) {
+              errors.push('Invalid min quantity');
+            }
+            if (row['Max Quantity'] && (isNaN(parseInt(row['Max Quantity'])) || parseInt(row['Max Quantity']) < parseInt(row['Min Quantity']))) {
+              errors.push('Invalid max quantity');
+            }
+            if (!row['Cost Per Unit'] || isNaN(parseFloat(row['Cost Per Unit']))) {
+              errors.push('Invalid cost per unit');
+            }
+            break;
         }
 
-        // Validate numeric fields
-        if (!row['Base Rate Per Incharge'] || isNaN(parseFloat(row['Base Rate Per Incharge']))) {
-          errors.push('Invalid base rate');
-        }
-
-        // Validate boolean fields
+        // Validate boolean fields (common)
         if (row['Is Active'] && !['TRUE', 'FALSE', true, false].includes(row['Is Active'])) {
           errors.push('Invalid Is Active value (must be TRUE or FALSE)');
         }
@@ -512,7 +597,7 @@ export function RateCardManager() {
 
     setIsBulkUploading(true);
     try {
-      const rateCardsToInsert = [];
+      const dataToInsert = [];
 
       for (const row of analysisResults.validRows) {
         // Find media format ID
@@ -522,37 +607,98 @@ export function RateCardManager() {
 
         if (!mediaFormat) continue;
 
-        const rateCardData = {
-          media_format_id: mediaFormat.id,
-          location_area: row['Location Area'],
-          base_rate_per_incharge: parseFloat(row['Base Rate Per Incharge']),
-          sale_price: row['Sale Price'] ? parseFloat(row['Sale Price']) : null,
-          reduced_price: row['Reduced Price'] ? parseFloat(row['Reduced Price']) : null,
-          location_markup_percentage: parseFloat(row['Location Markup Percentage']) || 0,
-          quantity_per_medium: parseInt(row['Quantity Per Medium']) || 1,
-          is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true,
-          is_date_specific: row['Is Date Specific'] === 'TRUE' || row['Is Date Specific'] === true,
-          start_date: row['Start Date'] && row['Start Date'] !== '' ? row['Start Date'] : null,
-          end_date: row['End Date'] && row['End Date'] !== '' ? row['End Date'] : null,
-          incharge_period: row['Incharge Period'] ? parseInt(row['Incharge Period']) : 1
-        };
+        let dataEntry: any = {};
 
-        rateCardsToInsert.push(rateCardData);
+        switch (bulkUploadType) {
+          case 'rates':
+            dataEntry = {
+              media_format_id: mediaFormat.id,
+              location_area: row['Location Area'],
+              base_rate_per_incharge: parseFloat(row['Base Rate Per Incharge']),
+              sale_price: row['Sale Price'] ? parseFloat(row['Sale Price']) : null,
+              reduced_price: row['Reduced Price'] ? parseFloat(row['Reduced Price']) : null,
+              location_markup_percentage: parseFloat(row['Location Markup Percentage']) || 0,
+              quantity_per_medium: parseInt(row['Quantity Per Medium']) || 1,
+              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true,
+              is_date_specific: row['Is Date Specific'] === 'TRUE' || row['Is Date Specific'] === true,
+              start_date: row['Start Date'] && row['Start Date'] !== '' ? row['Start Date'] : null,
+              end_date: row['End Date'] && row['End Date'] !== '' ? row['End Date'] : null,
+              incharge_period: row['Incharge Period'] ? parseInt(row['Incharge Period']) : 1
+            };
+            break;
+            
+          case 'discounts':
+            dataEntry = {
+              media_format_id: mediaFormat.id,
+              min_periods: parseInt(row['Min Periods']),
+              max_periods: row['Max Periods'] ? parseInt(row['Max Periods']) : null,
+              discount_percentage: parseFloat(row['Discount Percentage']),
+              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+            };
+            break;
+            
+          case 'production':
+            dataEntry = {
+              media_format_id: mediaFormat.id,
+              location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
+              category: row['Category'],
+              min_quantity: parseInt(row['Min Quantity']),
+              max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
+              cost_per_unit: parseFloat(row['Cost Per Unit']),
+              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+            };
+            break;
+            
+          case 'creative':
+            dataEntry = {
+              media_format_id: mediaFormat.id,
+              location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
+              category: row['Category'],
+              min_quantity: parseInt(row['Min Quantity']),
+              max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
+              cost_per_unit: parseFloat(row['Cost Per Unit']),
+              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+            };
+            break;
+        }
+
+        dataToInsert.push(dataEntry);
       }
 
-      const { error } = await supabase
-        .from('rate_cards')
-        .insert(rateCardsToInsert);
+      // Insert data into appropriate table based on type
+      let error: any = null;
+      
+      switch (bulkUploadType) {
+        case 'rates':
+          ({ error } = await supabase.from('rate_cards').insert(dataToInsert));
+          break;
+        case 'discounts':
+          ({ error } = await supabase.from('discount_tiers').insert(dataToInsert));
+          break;
+        case 'production':
+          ({ error } = await supabase.from('production_cost_tiers').insert(dataToInsert));
+          break;
+        case 'creative':
+          ({ error } = await supabase.from('creative_design_cost_tiers').insert(dataToInsert));
+          break;
+      }
 
       if (error) throw error;
 
-      toast.success(`Successfully imported ${rateCardsToInsert.length} rate cards`);
+      const successMessages = {
+        rates: 'rate cards',
+        discounts: 'discount tiers', 
+        production: 'production cost tiers',
+        creative: 'creative design cost tiers'
+      };
+
+      toast.success(`Successfully imported ${dataToInsert.length} ${successMessages[bulkUploadType]}`);
       setUploadedFile(null);
       setAnalysisResults(null);
       fetchData();
     } catch (error) {
       console.error('Error processing bulk upload:', error);
-      toast.error('Failed to import rate cards');
+      toast.error(`Failed to import ${bulkUploadType}`);
     } finally {
       setIsBulkUploading(false);
     }
@@ -583,19 +729,48 @@ export function RateCardManager() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileSpreadsheet className="w-5 h-5" />
-                    Bulk Upload Rate Cards
+                    Bulk Upload Data
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {/* Type Selection */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Select Data Type</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {[
+                        { value: 'rates', label: 'Rate Cards' },
+                        { value: 'discounts', label: 'Discount Tiers' },
+                        { value: 'production', label: 'Production Costs' },
+                        { value: 'creative', label: 'Creative Design' }
+                      ].map((type) => (
+                        <Button
+                          key={type.value}
+                          variant={bulkUploadType === type.value ? 'default' : 'outline'}
+                          onClick={() => {
+                            setBulkUploadType(type.value as any);
+                            setUploadedFile(null);
+                            setAnalysisResults(null);
+                          }}
+                          className="h-12"
+                        >
+                          {type.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Step 1: Download Template */}
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Step 1: Download Template</h3>
                     <p className="text-muted-foreground">
-                      Download the Excel template with the correct format and data validation examples.
+                      Download the Excel template for {bulkUploadType === 'rates' ? 'rate cards' : 
+                        bulkUploadType === 'discounts' ? 'discount tiers' :
+                        bulkUploadType === 'production' ? 'production costs' : 'creative design costs'} 
+                      with the correct format and validation examples.
                     </p>
-                    <Button onClick={downloadTemplate} className="flex items-center gap-2">
+                    <Button onClick={() => downloadTemplate(bulkUploadType)} className="flex items-center gap-2">
                       <Download className="w-4 h-4" />
-                      Download Excel Template
+                      Download {bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1)} Template
                     </Button>
                   </div>
 
@@ -632,7 +807,7 @@ export function RateCardManager() {
                         className="flex items-center gap-2"
                       >
                         <Upload className="w-4 h-4" />
-                        {isAnalyzing ? 'Analyzing...' : 'Analyze File'}
+                        {isAnalyzing ? 'Analyzing...' : `Analyze ${bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1)} File`}
                       </Button>
                     )}
                   </div>
@@ -689,7 +864,7 @@ export function RateCardManager() {
                       {analysisResults.validCount > 0 && (
                         <div className="space-y-4">
                           <h4 className="font-semibold text-green-600">
-                            Ready to Import {analysisResults.validCount} Rate Cards
+                            Ready to Import {analysisResults.validCount} {bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1)} Records
                           </h4>
                           <Button 
                             onClick={processBulkUpload}
@@ -697,7 +872,7 @@ export function RateCardManager() {
                             className="flex items-center gap-2"
                           >
                             <Upload className="w-4 h-4" />
-                            {isBulkUploading ? 'Importing...' : `Import ${analysisResults.validCount} Rate Cards`}
+                            {isBulkUploading ? 'Importing...' : `Import ${analysisResults.validCount} ${bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1)} Records`}
                           </Button>
                         </div>
                       )}
