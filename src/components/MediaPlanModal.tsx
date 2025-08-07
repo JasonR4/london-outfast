@@ -43,7 +43,7 @@ export const MediaPlanModal = ({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Objective</p>
                   <p className="font-medium">{mediaPlan.campaignObjective}</p>
@@ -53,12 +53,20 @@ export const MediaPlanModal = ({
                   <p className="font-medium">{mediaPlan.targetAudience}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Estimated Reach</p>
-                  <p className="font-medium">{mediaPlan.estimatedReach}</p>
+                  <p className="text-sm text-muted-foreground">Start Date</p>
+                  <p className="font-medium">{mediaPlan.startDate || 'TBC'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">End Date</p>
+                  <p className="font-medium">{mediaPlan.endDate || 'TBC'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Campaign Duration</p>
                   <p className="font-medium">{mediaPlan.campaignDuration}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Estimated Reach</p>
+                  <p className="font-medium">{mediaPlan.estimatedReach}</p>
                 </div>
               </div>
             </CardContent>

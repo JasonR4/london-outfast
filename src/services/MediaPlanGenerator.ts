@@ -26,6 +26,8 @@ export interface GeneratedMediaPlan {
   targetAudience: string;
   estimatedReach: string;
   campaignDuration: string;
+  startDate: string;
+  endDate: string;
 }
 
 export class MediaPlanGenerator {
@@ -106,6 +108,8 @@ export class MediaPlanGenerator {
 
       console.log('Generated plan items:', planItems);
 
+      const campaignDates = this.calculateCampaignDates(inchargePeriods);
+
       return {
         totalBudget: budget,
         totalAllocatedBudget: allocatedBudget,
@@ -114,7 +118,9 @@ export class MediaPlanGenerator {
         campaignObjective: objective,
         targetAudience: audience,
         estimatedReach: this.calculateEstimatedReach(planItems),
-        campaignDuration: this.calculateCampaignDuration(inchargePeriods)
+        campaignDuration: this.calculateCampaignDuration(inchargePeriods),
+        startDate: campaignDates.startDate,
+        endDate: campaignDates.endDate
       };
     } catch (error) {
       console.error('Error generating media plan:', error);
@@ -329,5 +335,48 @@ export class MediaPlanGenerator {
     const selectedPeriods = periodsAnswer?.value as number[] || [];
     console.log('Selected periods from answers:', selectedPeriods);
     return selectedPeriods;
+  }
+
+  private calculateCampaignDates(inchargePeriods: InchargePeriod[]): { startDate: string; endDate: string } {
+    const selectedPeriods = this.getSelectedPeriodsFromAnswers();
+    
+    if (selectedPeriods.length === 0 || inchargePeriods.length === 0) {
+      return {
+        startDate: 'TBC',
+        endDate: 'TBC'
+      };
+    }
+
+    // Find the periods that match selected period numbers
+    const matchingPeriods = inchargePeriods.filter(period => 
+      selectedPeriods.includes(period.period_number)
+    );
+
+    if (matchingPeriods.length === 0) {
+      return {
+        startDate: 'TBC',
+        endDate: 'TBC'
+      };
+    }
+
+    // Sort by period number to get start and end dates
+    const sortedPeriods = matchingPeriods.sort((a, b) => a.period_number - b.period_number);
+    const startDate = sortedPeriods[0].start_date;
+    const endDate = sortedPeriods[sortedPeriods.length - 1].end_date;
+
+    // Format dates nicely
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-GB', { 
+        day: 'numeric', 
+        month: 'short', 
+        year: 'numeric' 
+      });
+    };
+
+    return {
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate)
+    };
   }
 }
