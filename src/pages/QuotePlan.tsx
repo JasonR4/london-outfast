@@ -228,13 +228,91 @@ export default function QuotePlan() {
                           <Badge variant="secondary">Qty: {item.quantity}</Badge>
                         </div>
                         
+                        {/* Detailed Cost Breakdown */}
+                        <div className="bg-muted/30 p-4 rounded-lg mb-4">
+                          <h4 className="font-semibold mb-3 text-primary">Estimated Campaign Costs</h4>
+                          
+                          {/* Base Rate and Sale Price */}
+                          <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div className="space-y-2">
+                              {(() => {
+                                const baseRatePerPeriod = item.original_cost ? (item.original_cost / item.selected_periods.length / item.quantity) : (item.base_cost / item.selected_periods.length / item.quantity);
+                                const saleRatePerPeriod = item.base_cost / item.selected_periods.length / item.quantity;
+                                const isOnSale = baseRatePerPeriod !== saleRatePerPeriod;
+                                
+                                return (
+                                  <>
+                                    <div className="flex justify-between text-sm">
+                                      <span>Base Rate per Incharge:</span>
+                                      <span className={isOnSale ? "line-through text-muted-foreground" : "font-medium"}>{formatCurrency(baseRatePerPeriod)}</span>
+                                    </div>
+                                    {isOnSale && (
+                                      <>
+                                        <div className="flex justify-between text-sm text-green-600 font-medium">
+                                          <span>⚡ Special Offer:</span>
+                                          <span className="bg-green-100 px-2 py-1 rounded text-xs">Sale Price Applied</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm text-green-600 font-medium">
+                                          <span>Sale Price per Incharge:</span>
+                                          <span>{formatCurrency(saleRatePerPeriod)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-xs text-green-700 bg-green-50 px-2 py-1 rounded">
+                                          <span>You Save:</span>
+                                          <span className="font-semibold">{formatCurrency(baseRatePerPeriod - saleRatePerPeriod)} per Incharge</span>
+                                        </div>
+                                      </>
+                                    )}
+                                    {item.discount_percentage > 0 && (
+                                      <div className="flex justify-between text-xs text-green-600">
+                                        <span>Volume Discount ({item.discount_percentage}%):</span>
+                                        <span>Additional -{formatCurrency((item.discount_amount || 0) / item.selected_periods.length / item.quantity)} per period</span>
+                                      </div>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </div>
+                            <div className="space-y-2">
+                              <div className="text-sm text-muted-foreground">
+                                <div className="flex justify-between">
+                                  <span>Campaign Cost ({item.quantity} × {item.selected_periods.length} period{item.selected_periods.length !== 1 ? 's' : ''}):</span>
+                                  <span className="font-medium text-foreground">{formatCurrency(item.base_cost)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Production Cost ({item.quantity} unit{item.quantity !== 1 ? 's' : ''}):</span>
+                                  <span className="font-medium text-foreground">{formatCurrency(item.production_cost || 0)}</span>
+                                </div>
+                                {item.creative_cost > 0 && (
+                                  <div className="flex justify-between">
+                                    <span>Creative Assets:</span>
+                                    <span className="font-medium text-foreground">{formatCurrency(item.creative_cost)}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Subtotal and VAT */}
+                          <div className="border-t pt-3 space-y-2">
+                            <div className="flex justify-between font-medium">
+                              <span>Subtotal (exc VAT):</span>
+                              <span>{formatCurrency((item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0)))}</span>
+                            </div>
+                            <div className="flex justify-between text-sm text-muted-foreground">
+                              <span>VAT (20%):</span>
+                              <span>{formatCurrency(((item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0)) * 0.2))}</span>
+                            </div>
+                            <div className="flex justify-between text-lg font-bold text-primary border-t pt-2">
+                              <span>Total inc VAT:</span>
+                              <span>{formatCurrency(item.total_cost)}</span>
+                            </div>
+                          </div>
+                        </div>
+
                         <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <MapPin className="h-4 w-4" />
                             <span>{item.selected_areas.length} location{item.selected_areas.length !== 1 ? 's' : ''}</span>
-                          </div>
-                          <div className="font-semibold text-foreground">
-                            {formatCurrency(item.base_cost)}
                           </div>
                         </div>
 
