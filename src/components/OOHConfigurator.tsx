@@ -1042,21 +1042,41 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                       const totalCost = (rec.budgetAllocation || 0);
                       
                       const quoteItemData = {
+                        quote_id: quoteId,
                         format_name: formatInfo?.name || rec.format,
                         format_slug: rec.format,
-                        quantity: rec.calculatedQuantity || 1, // Use calculated quantity from recommendation
+                        quantity: rec.calculatedQuantity || 1,
                         selected_periods: selectedPeriods,
-                        selected_areas: selectedLocations, // Use ALL selected areas
+                        selected_areas: selectedLocations,
                         production_cost: 0,
                         creative_cost: 0,
-                        base_cost: totalCost, // Use actual budget allocation
-                        total_cost: totalCost, // Use actual budget allocation
-                        creative_needs: getCreativeNeeds()
+                        base_cost: totalCost,
+                        total_cost: totalCost,
+                        creative_needs: getCreativeNeeds(),
+                        subtotal: totalCost,
+                        vat_rate: 20,
+                        vat_amount: totalCost * 0.2,
+                        total_inc_vat: totalCost * 1.2,
+                        discount_percentage: 0,
+                        discount_amount: 0,
+                        original_cost: totalCost
                       };
                       
-                      console.log('Quote item data to add:', quoteItemData);
-                      await addQuoteItem(quoteItemData);
-                      console.log('Added quote item for:', rec.format);
+                      console.log('Quote item data to add (direct insert):', quoteItemData);
+                      
+                      // Direct insert to avoid useQuotes calculations that override our data
+                      const { data: insertedItem, error: insertError } = await supabase
+                        .from('quote_items')
+                        .insert(quoteItemData)
+                        .select()
+                        .single();
+                        
+                      if (insertError) {
+                        console.error('Insert error:', insertError);
+                        throw insertError;
+                      }
+                      
+                      console.log('Successfully inserted item:', insertedItem);
                      }
                      
                      onComplete?.();
