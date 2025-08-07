@@ -1013,10 +1013,14 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                       <span>🏷️ Sale Price Applied:</span>
                                       <span>£{(pricing.mediaPrice / (1 - firstLocationPrice.discount / 100)).toLocaleString()}</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-green-600 text-xs">
-                                      <span>Sale Savings:</span>
-                                      <span>-£{((firstLocationPrice.adjustedRate * selectedPeriods.length * selectedLocations.length) - (pricing.mediaPrice / (1 - firstLocationPrice.discount / 100))).toLocaleString()}</span>
-                                    </div>
+                                     <div className="flex justify-between items-center text-green-600 text-xs">
+                                       <span>Sale Savings:</span>
+                                       <span>-£{((firstLocationPrice.adjustedRate * selectedPeriods.length * selectedLocations.length) - (pricing.mediaPrice / (1 - firstLocationPrice.discount / 100))).toLocaleString()}</span>
+                                     </div>
+                                     <div className="flex justify-between items-center text-green-600 text-xs">
+                                       <span>Savings per unit:</span>
+                                       <span>-£{(((firstLocationPrice.adjustedRate * selectedPeriods.length * selectedLocations.length) - (pricing.mediaPrice / (1 - firstLocationPrice.discount / 100))) / (selectedLocations.length * selectedPeriods.length)).toFixed(2)}</span>
+                                     </div>
                                   </>
                                 )}
                                 
@@ -1026,10 +1030,14 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                       <span>🔽 Reduced Price Applied:</span>
                                       <span>£{(pricing.mediaPrice / (1 - firstLocationPrice.discount / 100)).toLocaleString()}</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-blue-600 text-xs">
-                                      <span>Reduction Savings:</span>
-                                      <span>-£{((firstLocationPrice.adjustedRate * selectedPeriods.length * selectedLocations.length) - (pricing.mediaPrice / (1 - firstLocationPrice.discount / 100))).toLocaleString()}</span>
-                                    </div>
+                                     <div className="flex justify-between items-center text-blue-600 text-xs">
+                                       <span>Reduction Savings:</span>
+                                       <span>-£{((firstLocationPrice.adjustedRate * selectedPeriods.length * selectedLocations.length) - (pricing.mediaPrice / (1 - firstLocationPrice.discount / 100))).toLocaleString()}</span>
+                                     </div>
+                                     <div className="flex justify-between items-center text-blue-600 text-xs">
+                                       <span>Savings per unit:</span>
+                                       <span>-£{(((firstLocationPrice.adjustedRate * selectedPeriods.length * selectedLocations.length) - (pricing.mediaPrice / (1 - firstLocationPrice.discount / 100))) / (selectedLocations.length * selectedPeriods.length)).toFixed(2)}</span>
+                                     </div>
                                   </>
                                 )}
                                 
