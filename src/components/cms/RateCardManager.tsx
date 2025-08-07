@@ -484,79 +484,74 @@ export function RateCardManager() {
 
     switch (type) {
       case 'rates':
-        templateData = [
-          {
-            'Media Format': 'Select from existing formats',
-            'Location Area': 'Select from: ' + allAreas.join(', '),
-            'Base Rate Per Incharge': '0.00',
-            'Sale Price': '0.00',
-            'Reduced Price': '0.00',
-            'Location Markup Percentage': '0.00',
-            'Quantity Per Medium': '1',
-            'Is Active': 'TRUE/FALSE',
-            'Is Date Specific': 'TRUE/FALSE',
-            'Start Date': 'YYYY-MM-DD (if not date specific)',
-            'End Date': 'YYYY-MM-DD (if not date specific)',
-            'Incharge Period': '1-26 (if date specific)'
-          }
-        ];
+        templateData = mediaFormats.map(format => ({
+          'Media Format ID': format.id,
+          'Media Format Name': format.format_name,
+          'Location Area': 'Enter location area',
+          'Base Rate Per Incharge': '0.00',
+          'Sale Price': '0.00',
+          'Reduced Price': '0.00',
+          'Location Markup Percentage': '0.00',
+          'Quantity Per Medium': '1',
+          'Is Active': 'TRUE',
+          'Is Date Specific': 'FALSE',
+          'Start Date': '',
+          'End Date': '',
+          'Incharge Period': '1'
+        }));
         filename = 'rate-cards-template.xlsx';
         break;
         
       case 'discounts':
-        templateData = [
-          {
-            'Media Format': 'Select from existing formats',
-            'Min Periods': '1',
-            'Max Periods': '26 (or leave blank for unlimited)',
-            'Discount Percentage': '10.00',
-            'Is Active': 'TRUE/FALSE'
-          }
-        ];
+        templateData = mediaFormats.map(format => ({
+          'Media Format ID': format.id,
+          'Media Format Name': format.format_name,
+          'Min Periods': '1',
+          'Max Periods': '',
+          'Discount Percentage': '10.00',
+          'Is Active': 'TRUE'
+        }));
         filename = 'discount-tiers-template.xlsx';
         break;
         
       case 'quantity-discounts':
-        templateData = [
-          {
-            'Media Format': 'Select from existing formats',
-            'Location Area': 'Select from: ' + allAreas.join(', ') + ' or "global"',
-            'Min Quantity': '1',
-            'Max Quantity': '10 (or leave blank for unlimited)',
-            'Discount Percentage': '5.00',
-            'Is Active': 'TRUE/FALSE'
-          }
-        ];
+        templateData = mediaFormats.map(format => ({
+          'Media Format ID': format.id,
+          'Media Format Name': format.format_name,
+          'Location Area': 'global or specific area',
+          'Min Quantity': '1',
+          'Max Quantity': '',
+          'Discount Percentage': '5.00',
+          'Is Active': 'TRUE'
+        }));
         filename = 'quantity-discount-tiers-template.xlsx';
         break;
         
       case 'production':
-        templateData = [
-          {
-            'Media Format': 'Select from existing formats',
-            'Location Area': 'Select from: ' + allAreas.join(', ') + ' or "global"',
-            'Category': 'Standard/Premium/Custom',
-            'Min Quantity': '1',
-            'Max Quantity': '100 (or leave blank for unlimited)',
-            'Cost Per Unit': '50.00',
-            'Is Active': 'TRUE/FALSE'
-          }
-        ];
+        templateData = mediaFormats.map(format => ({
+          'Media Format ID': format.id,
+          'Media Format Name': format.format_name,
+          'Location Area': 'global or specific area',
+          'Category': 'Standard',
+          'Min Quantity': '1',
+          'Max Quantity': '',
+          'Cost Per Unit': '50.00',
+          'Is Active': 'TRUE'
+        }));
         filename = 'production-costs-template.xlsx';
         break;
         
       case 'creative':
-        templateData = [
-          {
-            'Media Format': 'Select from existing formats',
-            'Location Area': 'Select from: ' + allAreas.join(', ') + ' or "global"',
-            'Category': 'Basic Design/Premium Design/Custom Design',
-            'Min Quantity': '1',
-            'Max Quantity': '10 (or leave blank for unlimited)',
-            'Cost Per Unit': '85.00',
-            'Is Active': 'TRUE/FALSE'
-          }
-        ];
+        templateData = mediaFormats.map(format => ({
+          'Media Format ID': format.id,
+          'Media Format Name': format.format_name,
+          'Location Area': 'global or specific area',
+          'Category': 'Basic Design',
+          'Min Quantity': '1',
+          'Max Quantity': '',
+          'Cost Per Unit': '85.00',
+          'Is Active': 'TRUE'
+        }));
         filename = 'creative-design-template.xlsx';
             break;
             
