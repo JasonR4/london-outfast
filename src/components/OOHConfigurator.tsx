@@ -1000,51 +1000,71 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                 onClick={async () => {
                   setIsCreatingQuote(true);
                   try {
+                    console.log('=== STARTING QUOTE CREATION ===');
+                    console.log('Current recommendations:', recommendations);
+                    
                     // Create or get quote first
                     const quoteId = await createOrGetQuote();
+                    console.log('Quote ID:', quoteId);
                     
                     // Clear existing quote items for this quote to avoid duplicates
-                    const { data: existingItems } = await supabase
+                    const { data: existingItems, error: fetchError } = await supabase
                       .from('quote_items')
-                      .select('id')
+                      .select('id, format_name, quantity, total_cost')
                       .eq('quote_id', quoteId);
                     
+                    console.log('Existing items before clear:', existingItems);
+                    
                     if (existingItems && existingItems.length > 0) {
-                      await supabase
+                      const { error: deleteError } = await supabase
                         .from('quote_items')
                         .delete()
                         .eq('quote_id', quoteId);
+                      console.log('Delete error:', deleteError);
+                      console.log('Cleared', existingItems.length, 'existing items');
                     }
                     
                     // Get recommendations and add them as quote items
                     const selectedLocations = getSelectedLocations();
                     const selectedPeriods = getSelectedPeriods();
+                    console.log('Selected locations:', selectedLocations);
+                    console.log('Selected periods:', selectedPeriods);
                     
                     // Add quote items for each recommendation using EXACT recommendation data
-                     for (const rec of recommendations) {
-                       console.log('Adding quote item for recommendation:', rec, 'with areas:', selectedLocations);
-                       const formatInfo = formatDescriptions[rec.format as keyof typeof formatDescriptions];
-                       const totalCost = (rec.budgetAllocation || 0);
-                       await addQuoteItem({
-                         format_name: formatInfo?.name || rec.format,
-                         format_slug: rec.format,
-                         quantity: rec.calculatedQuantity || 1, // Use calculated quantity from recommendation
-                         selected_periods: selectedPeriods,
-                         selected_areas: selectedLocations, // Use ALL selected areas
-                         production_cost: 0,
-                         creative_cost: 0,
-                         base_cost: totalCost, // Use actual budget allocation
-                         total_cost: totalCost, // Use actual budget allocation
-                         creative_needs: getCreativeNeeds()
-                       });
-                    }
-                    
-                    onComplete?.();
-                  } catch (error) {
-                    console.error('Error creating quote items:', error);
-                  } finally {
-                    setIsCreatingQuote(false);
-                  }
+                    for (const rec of recommendations) {
+                      console.log('=== PROCESSING RECOMMENDATION ===');
+                      console.log('Recommendation object:', rec);
+                      console.log('Format:', rec.format);
+                      console.log('Calculated quantity:', rec.calculatedQuantity);
+                      console.log('Budget allocation:', rec.budgetAllocation);
+                      
+                      const formatInfo = formatDescriptions[rec.format as keyof typeof formatDescriptions];
+                      const totalCost = (rec.budgetAllocation || 0);
+                      
+                      const quoteItemData = {
+                        format_name: formatInfo?.name || rec.format,
+                        format_slug: rec.format,
+                        quantity: rec.calculatedQuantity || 1, // Use calculated quantity from recommendation
+                        selected_periods: selectedPeriods,
+                        selected_areas: selectedLocations, // Use ALL selected areas
+                        production_cost: 0,
+                        creative_cost: 0,
+                        base_cost: totalCost, // Use actual budget allocation
+                        total_cost: totalCost, // Use actual budget allocation
+                        creative_needs: getCreativeNeeds()
+                      };
+                      
+                      console.log('Quote item data to add:', quoteItemData);
+                      await addQuoteItem(quoteItemData);
+                      console.log('Added quote item for:', rec.format);
+                     }
+                     
+                     onComplete?.();
+                   } catch (error) {
+                     console.error('Error creating quote items:', error);
+                   } finally {
+                     setIsCreatingQuote(false);
+                   }
                 }} 
                 variant="outline"
                 className="flex-1"
