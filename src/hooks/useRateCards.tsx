@@ -212,28 +212,11 @@ export function useRateCards(formatSlug?: string) {
     }
   };
 
-  // Helper function to calculate number of production runs based on period continuity
-  const calculateProductionRuns = (selectedPeriods: number[]) => {
-    if (selectedPeriods.length === 0) return 0;
-    
-    const sortedPeriods = [...selectedPeriods].sort((a, b) => a - b);
-    let runs = 1;
-    
-    for (let i = 1; i < sortedPeriods.length; i++) {
-      // If there's a gap between consecutive periods, it's a new production run
-      if (sortedPeriods[i] !== sortedPeriods[i - 1] + 1) {
-        runs++;
-      }
-    }
-    
-    return runs;
-  };
 
-  const calculateProductionCost = (locationArea: string, quantity: number, selectedPeriods: number[] = [], category?: string) => {
+  const calculateProductionCost = (sites: number, periods: number, category?: string) => {
     console.log('🔍 Production Cost Debug:', {
-      locationArea,
-      quantity,
-      selectedPeriods,
+      sites,
+      periods,
       category,
       availableTiers: productionCostTiers.length,
       allTiers: productionCostTiers.map(t => ({
@@ -246,19 +229,18 @@ export function useRateCards(formatSlug?: string) {
       }))
     });
 
+    const totalUnits = sites * periods;
+    
     const applicableTiers = productionCostTiers.filter(tier => 
-      (tier.location_area === locationArea || tier.location_area === null) &&
-      tier.min_quantity <= quantity &&
-      (!tier.max_quantity || quantity <= tier.max_quantity) &&
+      tier.min_quantity <= totalUnits &&
+      (!tier.max_quantity || totalUnits <= tier.max_quantity) &&
       (!category || tier.category === category || tier.category === null)
     );
 
     console.log('🎯 Applicable Production Tiers:', applicableTiers);
 
-    // Prioritize location-specific over global, then by category match
+    // Prioritize by category match
     const bestTier = applicableTiers.sort((a, b) => {
-      if (a.location_area && !b.location_area) return -1;
-      if (!a.location_area && b.location_area) return 1;
       if (a.category === category && b.category !== category) return -1;
       if (a.category !== category && b.category === category) return 1;
       return 0;
@@ -268,15 +250,11 @@ export function useRateCards(formatSlug?: string) {
 
     if (!bestTier) return null;
 
-    // Calculate production runs based on period continuity
-    const productionRuns = calculateProductionRuns(selectedPeriods);
-    const costPerRun = bestTier.cost_per_unit * quantity;
-    const totalCost = costPerRun * productionRuns;
+    const totalCost = bestTier.cost_per_unit * totalUnits;
 
     const result = {
       costPerUnit: bestTier.cost_per_unit,
-      costPerRun,
-      productionRuns,
+      totalUnits,
       totalCost,
       tier: bestTier,
       ...calculateVAT(totalCost) // Add VAT calculations

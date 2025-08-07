@@ -226,12 +226,12 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     let totalDiscount = 0;
     let originalMediaCost = 0;
 
-    // Calculate production cost once for total units (not per location)
+    // Calculate production cost for sites × periods
     if (selectedLocations.length > 0) {
-      const productionPrice = calculateProductionCost(selectedLocations[0], totalQuantity, selectedPeriods);
+      const productionPrice = calculateProductionCost(totalQuantity, selectedPeriods.length);
       if (productionPrice && productionPrice.totalCost !== undefined) {
         totalProductionCost = productionPrice.totalCost;
-        console.log(`🏭 Production cost for ${totalQuantity} units: ${totalProductionCost}`);
+        console.log(`🏭 Production cost for ${totalQuantity} sites × ${selectedPeriods.length} periods: ${totalProductionCost}`);
       }
     }
 
@@ -1057,7 +1057,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
                         {/* Production Cost Details */}
                         {pricing.productionCost > 0 && (() => {
-                          const productionResult = calculateProductionCost(selectedLocations[0], totalQuantity, selectedPeriods);
+                          const productionResult = calculateProductionCost(totalQuantity, selectedPeriods.length);
                           if (!productionResult) return null;
                           
                           return (
@@ -1073,52 +1073,16 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 </div>
                                 
                                 <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Total Quantity:</span>
-                                  <span>{totalQuantity} units</span>
+                                  <span className="text-muted-foreground">Total Units:</span>
+                                  <span>{productionResult.totalUnits} units</span>
                                 </div>
                                 
                                 <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Production Runs:</span>
-                                  <span>{productionResult.productionRuns} run{productionResult.productionRuns > 1 ? 's' : ''}</span>
+                                  <span className="text-muted-foreground">Periods:</span>
+                                  <span>{selectedPeriods.length}</span>
                                 </div>
                                 
-                                {/* Dynamic commentary about production runs */}
-                                {(() => {
-                                  const sortedPeriods = [...selectedPeriods].sort((a, b) => a - b);
-                                  const gaps = [];
-                                  for (let i = 1; i < sortedPeriods.length; i++) {
-                                    if (sortedPeriods[i] !== sortedPeriods[i - 1] + 1) {
-                                      gaps.push(`gap between ${sortedPeriods[i - 1]} and ${sortedPeriods[i]}`);
-                                    }
-                                  }
-                                  
-                                  if (productionResult.productionRuns > 1) {
-                                    return (
-                                      <div className="bg-amber-50 border-l-4 border-amber-200 p-3 my-2">
-                                        <div className="text-xs text-amber-800">
-                                          <strong>Multiple production runs required:</strong> As periods {selectedPeriods.join(', ')} are not continuous 
-                                          {gaps.length > 0 && ` (${gaps.join(', ')})`}, posters must be taken down and re-installed, 
-                                          requiring {productionResult.productionRuns} separate production runs.
-                                        </div>
-                                      </div>
-                                    );
-                                  } else if (selectedPeriods.length > 1) {
-                                    return (
-                                      <div className="bg-green-50 border-l-4 border-green-200 p-3 my-2">
-                                        <div className="text-xs text-green-800">
-                                          <strong>Single production run:</strong> Periods {selectedPeriods.join(', ')} are continuous, 
-                                          so posters can remain in place throughout the campaign.
-                                        </div>
-                                      </div>
-                                    );
-                                  }
-                                  return null;
-                                })()}
                                 
-                                <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Cost per Run:</span>
-                                  <span>£{productionResult.costPerRun.toLocaleString()}</span>
-                                </div>
                                 
                                 <div className="flex justify-between items-center">
                                   <span className="text-muted-foreground">Applicable Tier:</span>
@@ -1140,7 +1104,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                     <span className="text-primary">£{pricing.productionCost.toLocaleString()}</span>
                                   </div>
                                   <div className="text-xs text-muted-foreground mt-1">
-                                    {productionResult.productionRuns} run{productionResult.productionRuns > 1 ? 's' : ''} × {totalQuantity} units × £{productionResult.costPerUnit}
+                                    {totalQuantity} sites × {selectedPeriods.length} periods × £{productionResult.costPerUnit}
                                   </div>
                                 </div>
                               </div>
