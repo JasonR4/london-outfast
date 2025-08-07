@@ -13,9 +13,11 @@ const Contact = () => {
   const { content, loading } = useHomepageContent('contact');
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
+    website: '',
     company: '',
     message: '',
     urgency: 'standard'
@@ -27,7 +29,7 @@ const Contact = () => {
       title: "Message Sent!",
       description: "We'll get back to you within 2 hours during business hours.",
     });
-    setFormData({ name: '', email: '', phone: '', company: '', message: '', urgency: 'standard' });
+    setFormData({ firstName: '', lastName: '', email: '', phone: '', website: '', company: '', message: '', urgency: 'standard' });
   };
 
   if (loading) {
@@ -126,15 +128,28 @@ const Contact = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="name">Full Name *</Label>
+                      <Label htmlFor="firstName">First Name *</Label>
                       <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData(prev => ({...prev, name: e.target.value}))}
+                        id="firstName"
+                        value={formData.firstName}
+                        onChange={(e) => setFormData(prev => ({...prev, firstName: e.target.value}))}
                         required
                         className="mt-1"
                       />
                     </div>
+                    <div>
+                      <Label htmlFor="lastName">Last Name *</Label>
+                      <Input
+                        id="lastName"
+                        value={formData.lastName}
+                        onChange={(e) => setFormData(prev => ({...prev, lastName: e.target.value}))}
+                        required
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="email">Email Address *</Label>
                       <Input
@@ -143,6 +158,17 @@ const Contact = () => {
                         value={formData.email}
                         onChange={(e) => setFormData(prev => ({...prev, email: e.target.value}))}
                         required
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="website">Website Address</Label>
+                      <Input
+                        id="website"
+                        type="url"
+                        value={formData.website}
+                        onChange={(e) => setFormData(prev => ({...prev, website: e.target.value}))}
+                        placeholder="https://example.com"
                         className="mt-1"
                       />
                     </div>
