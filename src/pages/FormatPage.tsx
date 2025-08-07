@@ -33,7 +33,12 @@ import { cn } from '@/lib/utils';
 
 const FormatPage = () => {
   const { formatSlug } = useParams();
-  const { getFormatBySlug } = useMediaFormats();
+  const { getFormatBySlug, loading: formatsLoading } = useMediaFormats();
+  
+  // Add loading state check
+  if (formatsLoading) {
+    return <div>Loading...</div>;
+  }
   const navigate = useNavigate();
   const [format, setFormat] = useState<any>(null);
   const [cmsContent, setCmsContent] = useState<any>(null);
@@ -192,7 +197,7 @@ const FormatPage = () => {
       setCmsContent(cmsData);
 
       // Get static format data as fallback
-      const staticFormat = getFormatBySlug(formatSlug || '');
+      const staticFormat = getFormatBySlug(formatSlug || '') || null;
       
       if (!staticFormat && !cmsData) {
         navigate('/404');
