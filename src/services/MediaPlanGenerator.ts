@@ -82,17 +82,24 @@ export class MediaPlanGenerator {
       for (let i = 0; i < Math.min(recommendations.length, 2); i++) {
         const rec = recommendations[i];
         
+        // Calculate budget allocation (primary gets more, but never exceed total budget)
+        const allocationPercentage = i === 0 ? 0.65 : 0.35;
+        const maxItemBudget = budget * allocationPercentage;
+        
+        // Ensure the recommendation doesn't exceed the allocated budget
+        const actualBudget = Math.min(rec.budgetAllocation || maxItemBudget, maxItemBudget);
+        
         const planItem: MediaPlanItem = {
           formatSlug: rec.format,
           formatName: rec.formatName,
           recommendedQuantity: rec.calculatedQuantity || 1,
           selectedAreas: selectedAreas.slice(0, 3),
           selectedPeriods: this.getSelectedPeriodsFromAnswers(),
-          baseCost: rec.budgetAllocation ? rec.budgetAllocation * 0.7 : budget * 0.35 * 0.7, // 70% for media
-          productionCost: rec.budgetAllocation ? rec.budgetAllocation * 0.15 : budget * 0.35 * 0.15, // 15% for production
-          creativeCost: rec.budgetAllocation ? rec.budgetAllocation * 0.15 : budget * 0.35 * 0.15, // 15% for creative
-          totalCost: rec.budgetAllocation || budget * 0.35,
-          budgetAllocation: i === 0 ? 65 : 35,
+          baseCost: actualBudget * 0.7, // 70% for media
+          productionCost: actualBudget * 0.15, // 15% for production
+          creativeCost: actualBudget * 0.15, // 15% for creative
+          totalCost: actualBudget,
+          budgetAllocation: allocationPercentage * 100,
           reasonForRecommendation: rec.reasons
         };
         
@@ -479,7 +486,7 @@ export class MediaPlanGenerator {
     return mapping[oldSlug] || oldSlug;
   }
 
-  private async calculateRealCosts(mediaFormatId: string, budget: number, periodsCount: number) {
+  private async calculateRealCosts(mediaFormatId: string, totalBudget: number, periodsCount: number) {
     try {
       // Get rate cards for this format
       const { data: rateCards } = await supabase
@@ -490,9 +497,11 @@ export class MediaPlanGenerator {
         .limit(1);
 
       if (!rateCards || rateCards.length === 0) {
+        // Fallback: keep within budget constraints
+        const maxQuantity = Math.floor(totalBudget / 3000);
         return {
-          quantity: Math.floor(budget / 3000),
-          totalCost: budget * 0.7,
+          quantity: Math.max(1, maxQuantity),
+          totalCost: Math.min(totalBudget, maxQuantity * 3000),
           costPerUnit: 3000
         };
       }
@@ -518,9 +527,11 @@ export class MediaPlanGenerator {
       const finalRate = adjustedRate * discountMultiplier;
       
       const costPerUnit = finalRate * periodsCount;
-      const mediaBudget = budget * 0.7; // 70% for media
-      const quantity = Math.max(1, Math.floor(mediaBudget / costPerUnit));
-      const totalCost = costPerUnit * quantity;
+      
+      // Calculate quantity that fits within budget constraints
+      const maxQuantity = Math.floor(totalBudget / costPerUnit);
+      const quantity = Math.max(1, maxQuantity);
+      const totalCost = Math.min(totalBudget, costPerUnit * quantity);
 
       return {
         quantity,
@@ -529,9 +540,10 @@ export class MediaPlanGenerator {
       };
     } catch (error) {
       console.error('Error calculating real costs:', error);
+      const fallbackQuantity = Math.floor(totalBudget / 3000);
       return {
-        quantity: Math.floor(budget / 3000),
-        totalCost: budget * 0.7,
+        quantity: Math.max(1, fallbackQuantity),
+        totalCost: Math.min(totalBudget, fallbackQuantity * 3000),
         costPerUnit: 3000
       };
     }
