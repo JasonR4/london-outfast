@@ -420,7 +420,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
-          discount_percentage: number
+          discount_percentage: number | null
           id: string
           is_active: boolean
           location_area: string | null
@@ -433,7 +433,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
-          discount_percentage: number
+          discount_percentage?: number | null
           id?: string
           is_active?: boolean
           location_area?: string | null
@@ -446,7 +446,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
-          discount_percentage?: number
+          discount_percentage?: number | null
           id?: string
           is_active?: boolean
           location_area?: string | null
