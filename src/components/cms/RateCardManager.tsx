@@ -142,15 +142,6 @@ export function RateCardManager() {
     end_date: undefined as Date | undefined,
   });
 
-  // Bulk selection state for rate cards
-  const [selectedRateCardIds, setSelectedRateCardIds] = useState<string[]>([]);
-  const [isAllSelected, setIsAllSelected] = useState(false);
-  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
-  const [showBulkInchargeModal, setShowBulkInchargeModal] = useState(false);
-  const [availableInchargePeriods, setAvailableInchargePeriods] = useState<any[]>([]);
-  const [selectedInchargePeriods, setSelectedInchargePeriods] = useState<string[]>([]);
-  const [isAddingIncharges, setIsAddingIncharges] = useState(false);
-
   useEffect(() => {
     fetchData();
   }, []);
@@ -441,112 +432,6 @@ export function RateCardManager() {
       console.error('Error deleting rate card:', error);
       toast.error('Failed to delete rate card');
     }
-  };
-
-  // Bulk selection handlers for rate cards
-  const handleSelectAll = () => {
-    if (isAllSelected) {
-      setSelectedRateCardIds([]);
-      setIsAllSelected(false);
-    } else {
-      setSelectedRateCardIds(rateCards.map(rate => rate.id));
-      setIsAllSelected(true);
-    }
-  };
-
-  const handleSelectRateCard = (rateCardId: string) => {
-    const newSelected = selectedRateCardIds.includes(rateCardId)
-      ? selectedRateCardIds.filter(id => id !== rateCardId)
-      : [...selectedRateCardIds, rateCardId];
-    
-    setSelectedRateCardIds(newSelected);
-    setIsAllSelected(newSelected.length === rateCards.length);
-  };
-
-  const handleBulkDelete = async () => {
-    if (selectedRateCardIds.length === 0) return;
-    
-    const confirmed = confirm(`Are you sure you want to delete ${selectedRateCardIds.length} rate card${selectedRateCardIds.length > 1 ? 's' : ''}?`);
-    if (!confirmed) return;
-
-    setIsDeletingBulk(true);
-    try {
-      const { error } = await supabase
-        .from('rate_cards')
-        .delete()
-        .in('id', selectedRateCardIds);
-      
-      if (error) throw error;
-      
-      toast.success(`Successfully deleted ${selectedRateCardIds.length} rate card${selectedRateCardIds.length > 1 ? 's' : ''}`);
-      setSelectedRateCardIds([]);
-      setIsAllSelected(false);
-      fetchData();
-    } catch (error) {
-      console.error('Error deleting rate cards:', error);
-      toast.error('Failed to delete rate cards');
-    } finally {
-      setIsDeletingBulk(false);
-    }
-  };
-
-  const fetchInchargePeriods = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('incharge_periods')
-        .select('*')
-        .order('period_number');
-      
-      if (error) throw error;
-      setAvailableInchargePeriods(data || []);
-    } catch (error) {
-      console.error('Error fetching incharge periods:', error);
-      toast.error('Failed to fetch incharge periods');
-    }
-  };
-
-  const handleBulkAddIncharges = async () => {
-    if (selectedRateCardIds.length === 0 || selectedInchargePeriods.length === 0) {
-      toast.error('Please select rate cards and incharge periods');
-      return;
-    }
-
-    setIsAddingIncharges(true);
-    try {
-      // Create entries for each rate card + incharge period combination
-      const entries = [];
-      for (const rateCardId of selectedRateCardIds) {
-        for (const inchargePeriodId of selectedInchargePeriods) {
-          entries.push({
-            rate_card_id: rateCardId,
-            incharge_period_id: inchargePeriodId,
-            is_enabled: true
-          });
-        }
-      }
-
-      const { error } = await supabase
-        .from('rate_card_periods')
-        .insert(entries);
-      
-      if (error) throw error;
-      
-      toast.success(`Successfully added ${selectedInchargePeriods.length} incharge period${selectedInchargePeriods.length > 1 ? 's' : ''} to ${selectedRateCardIds.length} rate card${selectedRateCardIds.length > 1 ? 's' : ''}`);
-      setShowBulkInchargeModal(false);
-      setSelectedInchargePeriods([]);
-      setSelectedRateCardIds([]);
-      setIsAllSelected(false);
-    } catch (error) {
-      console.error('Error adding incharge periods:', error);
-      toast.error('Failed to add incharge periods');
-    } finally {
-      setIsAddingIncharges(false);
-    }
-  };
-
-  const handleOpenBulkInchargeModal = () => {
-    setShowBulkInchargeModal(true);
-    fetchInchargePeriods();
   };
 
   const handleDeleteDiscountTier = async (id: string) => {
@@ -1697,278 +1582,222 @@ export function RateCardManager() {
               </Card>
             </TabsContent>
             <TabsContent value="rates" className="space-y-4">
-              {/* Bulk Actions Navigation Bar */}
-              {selectedRateCardIds.length > 0 && (
-                <div className="bg-muted/50 border border-border rounded-lg p-4 mb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm font-medium">
-                        {selectedRateCardIds.length} rate card{selectedRateCardIds.length > 1 ? 's' : ''} selected
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedRateCardIds([]);
-                          setIsAllSelected(false);
-                        }}
-                      >
-                        Clear Selection
-                      </Button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          // TODO: Implement custom date bulk action
-                          toast.info('Custom date feature coming soon');
-                        }}
-                        className="flex items-center gap-2"
-                      >
-                        <CalendarIcon className="w-4 h-4" />
-                        Custom Date
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleOpenBulkInchargeModal}
-                        className="flex items-center gap-2"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Add Incharges
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={handleBulkDelete}
-                        disabled={isDeletingBulk}
-                        className="flex items-center gap-2"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        {isDeletingBulk ? 'Deleting...' : `Delete ${selectedRateCardIds.length}`}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-end items-center">
-                <div className="flex items-center gap-4">
-                  <Dialog open={isRateDialogOpen} onOpenChange={setIsRateDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button onClick={() => {
-                        setEditingRate(null);
-                        setSelectedPeriods([]);
-                        setIsDateSpecific(false);
-                        setCustomStartDate(undefined);
-                        setCustomEndDate(undefined);
-                      }}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Rate Card
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                      <DialogHeader>
-                        <DialogTitle>
-                          {editingRate ? 'Edit Rate Card' : 'Add New Rate Card'}
-                        </DialogTitle>
-                      </DialogHeader>
-                      <form onSubmit={(e) => {
-                        e.preventDefault();
-                        handleSaveRateCard(new FormData(e.currentTarget));
-                      }} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="media_format_id">Media Format</Label>
-                            <Select name="media_format_id" defaultValue={editingRate?.media_format_id} required>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select format" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {mediaFormats.map((format) => (
-                                  <SelectItem key={format.id} value={format.id}>
-                                    {format.format_name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <Label htmlFor="location_area">Location Area</Label>
-                            <Select name="location_area" defaultValue={editingRate?.location_area} required>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select location area" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="GD">GD (General Distribution)</SelectItem>
-                                {londonAreas.flatMap(area => 
-                                  area.areas.map(borough => (
-                                    <SelectItem key={borough} value={borough}>{borough}</SelectItem>
-                                  ))
-                                )}
-                              </SelectContent>
-                            </Select>
-                           </div>
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">OOH Media Rate Cards</h3>
+                <Dialog open={isRateDialogOpen} onOpenChange={setIsRateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => {
+                      setEditingRate(null);
+                      setSelectedPeriods([]);
+                      setIsDateSpecific(false);
+                      setCustomStartDate(undefined);
+                      setCustomEndDate(undefined);
+                    }}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Rate Card
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingRate ? 'Edit Rate Card' : 'Add New Rate Card'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveRateCard(new FormData(e.currentTarget));
+                    }} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="media_format_id">Media Format</Label>
+                          <Select name="media_format_id" defaultValue={editingRate?.media_format_id} required>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select format" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {mediaFormats.map((format) => (
+                                <SelectItem key={format.id} value={format.id}>
+                                  {format.format_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="location_area">Location Area</Label>
+                          <Select name="location_area" defaultValue={editingRate?.location_area} required>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select location area" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="GD">GD (General Distribution)</SelectItem>
+                              {londonAreas.flatMap(area => 
+                                area.areas.map(borough => (
+                                  <SelectItem key={borough} value={borough}>{borough}</SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                         </div>
+                       </div>
+                       <div>
+                         <Label htmlFor="category">OOH Category</Label>
+                         <Select name="category" defaultValue={editingRate?.category} required>
+                           <SelectTrigger>
+                             <SelectValue placeholder="Select category" />
+                           </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
+                              <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
+                              <SelectItem value="National Rail & Commuter Rail">National Rail & Commuter Rail</SelectItem>
+                              <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
+                              <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
+                              <SelectItem value="Retail & Leisure Environments">Retail & Leisure Environments</SelectItem>
+                              <SelectItem value="Airports">Airports</SelectItem>
+                              <SelectItem value="Street Furniture">Street Furniture</SelectItem>
+                              <SelectItem value="Programmatic DOOH (pDOOH)">Programmatic DOOH (pDOOH)</SelectItem>
+                              <SelectItem value="Ambient / Guerrilla OOH">Ambient / Guerrilla OOH</SelectItem>
+                              <SelectItem value="Sampling, Stunts & Flash Mob Advertising">Sampling, Stunts & Flash Mob Advertising</SelectItem>
+                              <SelectItem value="Brand Experience & Pop-Up Activations">Brand Experience & Pop-Up Activations</SelectItem>
+                              <SelectItem value="Mobile Advertising Solutions">Mobile Advertising Solutions</SelectItem>
+                              <SelectItem value="Aerial Advertising">Aerial Advertising</SelectItem>
+                              <SelectItem value="Cinema Advertising">Cinema Advertising</SelectItem>
+                              <SelectItem value="Sports Ground & Stadium Advertising">Sports Ground & Stadium Advertising</SelectItem>
+                              <SelectItem value="Radio">Radio</SelectItem>
+                            </SelectContent>
+                         </Select>
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                         <div>
+                           <Label htmlFor="base_rate_per_incharge">Base Rate per Incharge (£)</Label>
+                           <Input
+                             name="base_rate_per_incharge"
+                             type="number"
+                             step="0.01"
+                             defaultValue={editingRate?.base_rate_per_incharge}
+                             required
+                           />
                          </div>
                          <div>
-                           <Label htmlFor="category">OOH Category</Label>
-                           <Select name="category" defaultValue={editingRate?.category} required>
-                             <SelectTrigger>
-                               <SelectValue placeholder="Select category" />
-                             </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
-                                <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
-                                <SelectItem value="National Rail & Commuter Rail">National Rail & Commuter Rail</SelectItem>
-                                <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
-                                <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
-                                <SelectItem value="Retail & Leisure Environments">Retail & Leisure Environments</SelectItem>
-                                <SelectItem value="Airports">Airports</SelectItem>
-                                <SelectItem value="Street Furniture">Street Furniture</SelectItem>
-                                <SelectItem value="Programmatic DOOH (pDOOH)">Programmatic DOOH (pDOOH)</SelectItem>
-                                <SelectItem value="Ambient / Guerrilla OOH">Ambient / Guerrilla OOH</SelectItem>
-                                <SelectItem value="Sampling, Stunts & Flash Mob Advertising">Sampling, Stunts & Flash Mob Advertising</SelectItem>
-                                <SelectItem value="Brand Experience & Pop-Up Activations">Brand Experience & Pop-Up Activations</SelectItem>
-                                <SelectItem value="Mobile Advertising Solutions">Mobile Advertising Solutions</SelectItem>
-                                <SelectItem value="Aerial Advertising">Aerial Advertising</SelectItem>
-                                <SelectItem value="Cinema Advertising">Cinema Advertising</SelectItem>
-                                <SelectItem value="Sports Ground & Stadium Advertising">Sports Ground & Stadium Advertising</SelectItem>
-                                <SelectItem value="Radio">Radio</SelectItem>
-                              </SelectContent>
-                           </Select>
-                         </div>
-                         <div className="grid grid-cols-2 gap-4">
-                           <div>
-                             <Label htmlFor="base_rate_per_incharge">Base Rate per Incharge (£)</Label>
-                             <Input
-                               name="base_rate_per_incharge"
-                               type="number"
-                               step="0.01"
-                               defaultValue={editingRate?.base_rate_per_incharge}
-                               required
-                             />
-                           </div>
-                           <div>
-                             <Label htmlFor="location_markup_percentage">Location Markup (%)</Label>
-                             <Input
-                               name="location_markup_percentage"
-                               type="number"
-                               step="0.01"
-                               defaultValue={editingRate?.location_markup_percentage || 0}
-                               placeholder="0"
-                             />
-                            </div>
-                            <div>
-                              <Label htmlFor="quantity_per_medium">Quantity per Medium</Label>
-                              <Input
-                                name="quantity_per_medium"
-                                type="number"
-                                min="1"
-                                defaultValue={editingRate?.quantity_per_medium || 1}
-                                required
-                              />
-                            </div>
-                           <div>
-                             <Label htmlFor="sale_price">Sale Price (£)</Label>
-                             <Input
-                               name="sale_price"
-                               type="number"
-                               step="0.01"
-                               defaultValue={editingRate?.sale_price || ''}
-                               placeholder="Optional special sale price"
-                             />
-                           </div>
+                           <Label htmlFor="location_markup_percentage">Location Markup (%)</Label>
+                           <Input
+                             name="location_markup_percentage"
+                             type="number"
+                             step="0.01"
+                             defaultValue={editingRate?.location_markup_percentage || 0}
+                             placeholder="0"
+                           />
+                          </div>
                           <div>
-                            <Label htmlFor="reduced_price">Reduced Price (£)</Label>
+                            <Label htmlFor="quantity_per_medium">Quantity per Medium</Label>
                             <Input
-                              name="reduced_price"
+                              name="quantity_per_medium"
                               type="number"
-                              step="0.01"
-                              defaultValue={editingRate?.reduced_price || ''}
-                              placeholder="Optional reduced price"
+                              min="1"
+                              defaultValue={editingRate?.quantity_per_medium || 1}
+                              required
                             />
+                          </div>
+                         <div>
+                           <Label htmlFor="sale_price">Sale Price (£)</Label>
+                           <Input
+                             name="sale_price"
+                             type="number"
+                             step="0.01"
+                             defaultValue={editingRate?.sale_price || ''}
+                             placeholder="Optional special sale price"
+                           />
+                         </div>
+                        <div>
+                          <Label htmlFor="reduced_price">Reduced Price (£)</Label>
+                          <Input
+                            name="reduced_price"
+                            type="number"
+                            step="0.01"
+                            defaultValue={editingRate?.reduced_price || ''}
+                            placeholder="Optional reduced price"
+                          />
+                         </div>
+                         
+                         {/* Date-specific checkbox */}
+                         <div className="col-span-2">
+                           <div className="flex items-center space-x-2">
+                               <Checkbox 
+                                 id="is_date_specific" 
+                                 name="is_date_specific"
+                                 checked={isDateSpecific}
+                                 onCheckedChange={(checked) => setIsDateSpecific(checked as boolean)}
+                                 value="true"
+                              />
+                             <Label htmlFor="is_date_specific">
+                               This is date-specific media (incharge-based)
+                             </Label>
                            </div>
-                           
-                           {/* Date-specific checkbox */}
-                           <div className="col-span-2">
-                             <div className="flex items-center space-x-2">
-                                 <Checkbox 
-                                   id="is_date_specific" 
-                                   name="is_date_specific"
-                                   checked={isDateSpecific}
-                                   onCheckedChange={(checked) => setIsDateSpecific(checked as boolean)}
-                                   value="true"
-                                />
-                               <Label htmlFor="is_date_specific">
-                                 This is date-specific media (incharge-based)
-                               </Label>
-                             </div>
-                             <p className="text-sm text-muted-foreground mt-1">
-                               Check this for media that requires specific start/end dates (not for guerrilla or ambient)
+                           <p className="text-sm text-muted-foreground mt-1">
+                             Check this for media that requires specific start/end dates (not for guerrilla or ambient)
+                            </p>
+                          </div>
+
+                          {/* Conditional rendering based on date-specific checkbox */}
+                          {isDateSpecific ? (
+                            /* Incharge Periods Selection - when checked */
+                            <div>
+                              <Label>Available Incharge Periods</Label>
+                              <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
+                                {inchargePeriods.map(period => (
+                                  <div key={period.id} className="flex items-center space-x-2">
+                                    <input
+                                      type="checkbox"
+                                      id={`period-${period.id}`}
+                                      checked={selectedPeriods.includes(period.id)}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setSelectedPeriods(prev => [...prev, period.id]);
+                                        } else {
+                                          setSelectedPeriods(prev => prev.filter(p => p !== period.id));
+                                        }
+                                      }}
+                                      className="h-4 w-4"
+                                    />
+                                    <Label htmlFor={`period-${period.id}`} className="text-sm">
+                                      Period {period.period_number}: {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-2">
+                                Select which periods are available for this rate card
                               </p>
                             </div>
-
-                            {/* Conditional rendering based on date-specific checkbox */}
-                            {isDateSpecific ? (
-                              /* Incharge Periods Selection - when checked */
+                          ) : (
+                            /* Custom Date Selection - when unchecked */
+                            <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <Label>Available Incharge Periods</Label>
-                                <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
-                                  {inchargePeriods.map(period => (
-                                    <div key={period.id} className="flex items-center space-x-2">
-                                      <input
-                                        type="checkbox"
-                                        id={`period-${period.id}`}
-                                        checked={selectedPeriods.includes(period.id)}
-                                        onChange={(e) => {
-                                          if (e.target.checked) {
-                                            setSelectedPeriods(prev => [...prev, period.id]);
-                                          } else {
-                                            setSelectedPeriods(prev => prev.filter(p => p !== period.id));
-                                          }
-                                        }}
-                                        className="h-4 w-4"
-                                      />
-                                      <Label htmlFor={`period-${period.id}`} className="text-sm">
-                                        Period {period.period_number}: {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
-                                      </Label>
-                                    </div>
-                                  ))}
-                                </div>
-                                <p className="text-sm text-muted-foreground mt-2">
-                                  Select which periods are available for this rate card
-                                </p>
+                                <Label htmlFor="start_date">Custom Start Date</Label>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !customStartDate && "text-muted-foreground"
+                                      )}
+                                    >
+                                      <CalendarIcon className="mr-2 h-4 w-4" />
+                                      {customStartDate ? format(customStartDate, "PPP") : <span>Pick start date</span>}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                      mode="single"
+                                      selected={customStartDate}
+                                      onSelect={setCustomStartDate}
+                                      initialFocus
+                                      className={cn("p-3 pointer-events-auto")}
+                                    />
+                                  </PopoverContent>
+                                </Popover>
                               </div>
-                            ) : (
-                              /* Custom Date Selection - when unchecked */
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <Label htmlFor="start_date">Custom Start Date</Label>
-                                  <Popover>
-                                    <PopoverTrigger asChild>
-                                      <Button
-                                        variant="outline"
-                                        className={cn(
-                                          "w-full justify-start text-left font-normal",
-                                          !customStartDate && "text-muted-foreground"
-                                        )}
-                                      >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {customStartDate ? format(customStartDate, "PPP") : <span>Pick start date</span>}
-                                      </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                      <Calendar
-                                        mode="single"
-                                        selected={customStartDate}
-                                        onSelect={setCustomStartDate}
-                                        initialFocus
-                                        className={cn("p-3 pointer-events-auto")}
-                                      />
-                                    </PopoverContent>
-                                  </Popover>
-                                </div>
                               
                               <div>
                                 <Label htmlFor="end_date">Custom End Date</Label>
@@ -2012,8 +1841,8 @@ export function RateCardManager() {
                                <SelectItem value="false">Inactive</SelectItem>
                              </SelectContent>
                            </Select>
-                          </div>
-                        </div>
+                         </div>
+                      </div>
                       <div className="flex justify-end space-x-2">
                         <Button type="button" variant="outline" onClick={() => setIsRateDialogOpen(false)}>
                           Cancel
@@ -2026,17 +1855,10 @@ export function RateCardManager() {
                   </DialogContent>
                 </Dialog>
               </div>
-              
-              <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
-                        <Checkbox
-                          checked={isAllSelected}
-                          onCheckedChange={handleSelectAll}
-                          aria-label="Select all rate cards"
-                        />
-                      </TableHead>
+
+               <Table>
+                 <TableHeader>
+                   <TableRow>
                       <TableHead>Format</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Period</TableHead>
@@ -2046,20 +1868,13 @@ export function RateCardManager() {
                       <TableHead>Location Markup</TableHead>
                       <TableHead>Sale Price</TableHead>
                       <TableHead>Reduced Price</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
+                     <TableHead>Status</TableHead>
+                     <TableHead>Actions</TableHead>
+                   </TableRow>
+                 </TableHeader>
                 <TableBody>
                    {rateCards.map((rate) => (
                      <TableRow key={rate.id}>
-                       <TableCell>
-                         <Checkbox
-                           checked={selectedRateCardIds.includes(rate.id)}
-                           onCheckedChange={() => handleSelectRateCard(rate.id)}
-                           aria-label={`Select rate card for ${rate.media_formats?.format_name}`}
-                         />
-                       </TableCell>
                         <TableCell>{rate.media_formats?.format_name}</TableCell>
                         <TableCell>{rate.location_area}</TableCell>
                         <TableCell>
@@ -2154,7 +1969,6 @@ export function RateCardManager() {
                   ))}
                 </TableBody>
               </Table>
-              </div>
             </TabsContent>
 
             <TabsContent value="discounts" className="space-y-4">
@@ -3038,67 +2852,6 @@ export function RateCardManager() {
           </Tabs>
         </CardContent>
       </Card>
-
-      {/* Bulk Add Incharges Modal */}
-      <Dialog open={showBulkInchargeModal} onOpenChange={setShowBulkInchargeModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Add Incharge Periods to Selected Rate Cards</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground mb-4">
-                Adding periods to {selectedRateCardIds.length} selected rate card{selectedRateCardIds.length > 1 ? 's' : ''}
-              </p>
-            </div>
-
-            <div>
-              <Label className="text-base font-medium">Select Incharge Periods</Label>
-              <div className="border rounded-md p-4 max-h-64 overflow-y-auto mt-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {availableInchargePeriods.map((period) => (
-                    <div key={period.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`bulk-period-${period.id}`}
-                        checked={selectedInchargePeriods.includes(period.id)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedInchargePeriods([...selectedInchargePeriods, period.id]);
-                          } else {
-                            setSelectedInchargePeriods(selectedInchargePeriods.filter(id => id !== period.id));
-                          }
-                        }}
-                      />
-                      <Label htmlFor={`bulk-period-${period.id}`} className="text-sm">
-                        Period {period.period_number} ({format(new Date(period.start_date), 'MMM dd')} - {format(new Date(period.end_date), 'MMM dd')})
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowBulkInchargeModal(false);
-                  setSelectedInchargePeriods([]);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleBulkAddIncharges}
-                disabled={selectedInchargePeriods.length === 0 || isAddingIncharges}
-              >
-                {isAddingIncharges ? 'Adding...' : `Add ${selectedInchargePeriods.length} Period${selectedInchargePeriods.length !== 1 ? 's' : ''}`}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
