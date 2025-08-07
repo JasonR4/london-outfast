@@ -333,7 +333,7 @@ export type Database = {
       production_cost_tiers: {
         Row: {
           category: string | null
-          cost_per_unit: number
+          cost_per_unit: number | null
           created_at: string
           created_by: string | null
           id: string
@@ -347,7 +347,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
-          cost_per_unit: number
+          cost_per_unit?: number | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -361,7 +361,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
-          cost_per_unit?: number
+          cost_per_unit?: number | null
           created_at?: string
           created_by?: string | null
           id?: string
