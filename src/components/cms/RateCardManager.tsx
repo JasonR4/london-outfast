@@ -142,11 +142,6 @@ export function RateCardManager() {
     end_date: undefined as Date | undefined,
   });
 
-  // Bulk selection state
-  const [selectedRateCardIds, setSelectedRateCardIds] = useState<string[]>([]);
-  const [isAllSelected, setIsAllSelected] = useState(false);
-  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
-  
   // Bulk selection state for rate cards
   const [selectedRateCardIds, setSelectedRateCardIds] = useState<string[]>([]);
   const [isAllSelected, setIsAllSelected] = useState(false);
@@ -445,53 +440,6 @@ export function RateCardManager() {
   };
 
   // Bulk selection handlers for rate cards
-  const handleSelectAll = () => {
-    if (isAllSelected) {
-      setSelectedRateCardIds([]);
-      setIsAllSelected(false);
-    } else {
-      setSelectedRateCardIds(rateCards.map(rate => rate.id));
-      setIsAllSelected(true);
-    }
-  };
-
-  const handleSelectRateCard = (rateCardId: string) => {
-    const newSelected = selectedRateCardIds.includes(rateCardId)
-      ? selectedRateCardIds.filter(id => id !== rateCardId)
-      : [...selectedRateCardIds, rateCardId];
-    
-    setSelectedRateCardIds(newSelected);
-    setIsAllSelected(newSelected.length === rateCards.length);
-  };
-
-  const handleBulkDelete = async () => {
-    if (selectedRateCardIds.length === 0) return;
-    
-    const confirmed = confirm(`Are you sure you want to delete ${selectedRateCardIds.length} rate card${selectedRateCardIds.length > 1 ? 's' : ''}?`);
-    if (!confirmed) return;
-
-    setIsDeletingBulk(true);
-    try {
-      const { error } = await supabase
-        .from('rate_cards')
-        .delete()
-        .in('id', selectedRateCardIds);
-      
-      if (error) throw error;
-      
-      toast.success(`Successfully deleted ${selectedRateCardIds.length} rate card${selectedRateCardIds.length > 1 ? 's' : ''}`);
-      setSelectedRateCardIds([]);
-      setIsAllSelected(false);
-      fetchData();
-    } catch (error) {
-      console.error('Error deleting rate cards:', error);
-      toast.error('Failed to delete rate cards');
-    } finally {
-      setIsDeletingBulk(false);
-    }
-  };
-
-  // Bulk selection handlers
   const handleSelectAll = () => {
     if (isAllSelected) {
       setSelectedRateCardIds([]);
@@ -2105,7 +2053,7 @@ export function RateCardManager() {
                   ))}
                 </TableBody>
               </Table>
-            </TabsContent>
+              </div>
             </TabsContent>
 
             <TabsContent value="discounts" className="space-y-4">
