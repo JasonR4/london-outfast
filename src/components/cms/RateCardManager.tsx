@@ -221,9 +221,10 @@ export function RateCardManager() {
     try {
       const isDateSpecificValue = formData.get('is_date_specific') === 'true';
       
+      const locationArea = formData.get('location_area') as string;
       const rateData = {
         media_format_id: formData.get('media_format_id') as string,
-        location_area: formData.get('location_area') as string,
+        location_area: locationArea || 'GD', // Default to 'GD' if empty
         base_rate_per_incharge: parseFloat(formData.get('base_rate_per_incharge') as string),
         sale_price: formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null,
         reduced_price: formData.get('reduced_price') ? parseFloat(formData.get('reduced_price') as string) : null,
@@ -324,9 +325,10 @@ export function RateCardManager() {
 
   const handleSaveQuantityDiscountTier = async (formData: FormData) => {
     try {
+      const locationArea = formData.get('location_area') as string;
       const quantityDiscountData = {
         media_format_id: formData.get('media_format_id') as string,
-        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
+        location_area: locationArea === 'global' ? null : (locationArea || 'GD'),
         min_quantity: parseInt(formData.get('min_quantity') as string),
         max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
         discount_percentage: parseFloat(formData.get('discount_percentage') as string),
@@ -359,9 +361,10 @@ export function RateCardManager() {
 
   const handleSaveProductionTier = async (formData: FormData) => {
     try {
+      const locationArea = formData.get('location_area') as string;
       const productionData = {
         media_format_id: formData.get('media_format_id') as string,
-        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
+        location_area: locationArea === 'global' ? null : (locationArea || 'GD'),
         category: formData.get('category') as string,
         min_quantity: parseInt(formData.get('min_quantity') as string),
         max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
@@ -395,9 +398,10 @@ export function RateCardManager() {
 
   const handleSaveCreativeTier = async (formData: FormData) => {
     try {
+      const locationArea = formData.get('location_area') as string;
       const creativeData = {
         media_format_id: formData.get('media_format_id') as string,
-        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
+        location_area: locationArea === 'global' ? null : (locationArea || 'GD'),
         category: formData.get('category') as string,
         min_quantity: parseInt(formData.get('min_quantity') as string),
         max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
@@ -1879,7 +1883,7 @@ export function RateCardManager() {
                           </div>
                           <div>
                             <Label htmlFor="location_area">Location Area</Label>
-                            <Select name="location_area" defaultValue={editingRate?.location_area} required>
+                            <Select name="location_area" defaultValue={editingRate?.location_area || 'GD'} required>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select location area" />
                               </SelectTrigger>

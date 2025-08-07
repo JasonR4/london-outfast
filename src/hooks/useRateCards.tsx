@@ -361,7 +361,11 @@ export function useRateCards(formatSlug?: string) {
     console.log('🗺️ Mapped location code:', locationCode);
     console.log('📊 Available rate cards:', rateCards.map(r => ({ id: r.id, location_area: r.location_area })));
     
-    const rateCard = rateCards.find(r => r.location_area === locationCode);
+    // Find rate card with resilient matching - treat empty location_area as 'GD'
+    const rateCard = rateCards.find(r => {
+      const cardLocationArea = r.location_area || 'GD';
+      return cardLocationArea === locationCode;
+    });
     console.log('🎯 Found rate card:', rateCard);
     
     if (!rateCard || selectedPeriods.length === 0) {
