@@ -34,11 +34,6 @@ import { cn } from '@/lib/utils';
 const FormatPage = () => {
   const { formatSlug } = useParams();
   const { getFormatBySlug, loading: formatsLoading } = useMediaFormats();
-  
-  // Add loading state check
-  if (formatsLoading) {
-    return <div>Loading...</div>;
-  }
   const navigate = useNavigate();
   const [format, setFormat] = useState<any>(null);
   const [cmsContent, setCmsContent] = useState<any>(null);
