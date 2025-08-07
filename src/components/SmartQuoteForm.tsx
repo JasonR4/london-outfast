@@ -978,7 +978,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           return (
                             <div className="bg-muted/30 p-4 rounded-lg border border-border">
                               <h4 className="font-medium text-sm mb-3">
-                                {selectedLocations.length} Location{selectedLocations.length > 1 ? 's' : ''} × {selectedPeriods.length} Period{selectedPeriods.length > 1 ? 's' : ''}
+                                Media Rate Card - {selectedLocations.length} Location{selectedLocations.length > 1 ? 's' : ''} × {selectedPeriods.length} Period{selectedPeriods.length > 1 ? 's' : ''}
                               </h4>
                               
                               {/* Locations List */}
