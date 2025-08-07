@@ -242,7 +242,6 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         
         const mediaPrice = calculatePrice(location, selectedPeriods);
         // Calculate creative cost based on creative quantity
-        console.log('🎨 About to calculate creative cost:', { needsCreative, location, creativeQuantity });
         const creativePrice = needsCreative ? calculateCreativeCost(location, creativeQuantity, "Standard") : null;
         
         console.log(`💰 Media price result:`, mediaPrice);
