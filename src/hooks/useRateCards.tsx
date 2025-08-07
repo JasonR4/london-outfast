@@ -287,12 +287,17 @@ export function useRateCards(formatSlug?: string) {
   };
 
   const calculateCreativeCost = (locationArea: string, quantity: number, category: string) => {
+    console.log('🎨 calculateCreativeCost called with:', { locationArea, quantity, category });
+    console.log('🎨 Available creative tiers:', creativeCostTiers);
+    
     const applicableTiers = creativeCostTiers.filter(tier => 
       (tier.location_area === locationArea || tier.location_area === null) &&
       tier.min_quantity <= quantity &&
       (!tier.max_quantity || quantity <= tier.max_quantity) &&
       (tier.category === category || tier.category === null)
     );
+
+    console.log('🎯 Applicable Creative Tiers:', applicableTiers);
 
     // Prioritize location-specific over global
     const bestTier = applicableTiers.sort((a, b) => {
@@ -301,14 +306,19 @@ export function useRateCards(formatSlug?: string) {
       return 0;
     })[0];
 
+    console.log('✅ Best Creative Tier:', bestTier);
+
     if (!bestTier) return null;
 
-    return {
+    const result = {
       costPerUnit: bestTier.cost_per_unit,
       totalCost: bestTier.cost_per_unit * quantity,
       tier: bestTier,
       ...calculateVAT(bestTier.cost_per_unit * quantity) // Add VAT calculations
     };
+    
+    console.log('💰 Creative Cost Result:', result);
+    return result;
   };
 
   // Helper function to map location names to rate card location codes

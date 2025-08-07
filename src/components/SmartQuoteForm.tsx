@@ -246,6 +246,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         
         console.log(`💰 Media price result:`, mediaPrice);
         console.log(`🎨 Creative price result:`, creativePrice);
+        console.log(`🎨 CreativeResult for display:`, creativePrice);
         
         // Handle media price and discount
         if (mediaPrice !== null && mediaPrice !== undefined) {
