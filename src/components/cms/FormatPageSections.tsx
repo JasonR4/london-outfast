@@ -630,7 +630,7 @@ export const FormatPageSections: React.FC<FormatPageSectionsProps> = ({
                 id="cta_phone_number"
                 value={content.cta_phone_number || ''}
                 onChange={(e) => updateSection('cta', 'phone_number', e.target.value)}
-                placeholder="e.g., 020 7946 0465"
+                placeholder="e.g., +44 204 524 3019"
               />
             </div>
           </div>

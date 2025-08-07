@@ -202,8 +202,8 @@ const FormatDirectory = () => {
             <Button onClick={handleGetQuote} size="lg" className="bg-gradient-primary hover:opacity-90">
               GET EXPERT CONSULTATION
             </Button>
-            <Button variant="outline" size="lg" onClick={() => window.location.href = "tel:+442080680220"}>
-              CALL: 020 8068 0220
+            <Button variant="outline" size="lg" onClick={() => window.location.href = "tel:+442045243019"}>
+              CALL: +44 204 524 3019
             </Button>
           </div>
         </div>

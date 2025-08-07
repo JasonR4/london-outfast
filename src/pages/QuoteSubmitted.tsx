@@ -186,8 +186,8 @@ export default function QuoteSubmitted() {
           <div className="text-center pt-8 border-t border-border/50 animate-fade-in" style={{ animationDelay: '0.7s' }}>
             <p className="text-muted-foreground">
               Need immediate assistance? Call us at{' '}
-              <a href="tel:+442012345678" className="font-semibold text-primary hover:text-accent transition-colors duration-300 story-link">
-                +44 20 1234 5678
+              <a href="tel:+442045243019" className="font-semibold text-primary hover:text-accent transition-colors duration-300 story-link">
+                +44 204 524 3019
               </a>
             </p>
           </div>

@@ -49,7 +49,7 @@ export const generateStructuredData = (format?: any, seoData?: any) => {
       "addressLocality": "London",
       "addressCountry": "GB"
     },
-    "telephone": "+442080680220",
+    "telephone": "+442045243019",
     "url": "https://mediabuyinglondon.co.uk",
     "areaServed": "London",
     "serviceType": "Out-of-Home Media Buying"

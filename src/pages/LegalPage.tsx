@@ -125,10 +125,10 @@ const LegalPage = () => {
                   </a>
                   <span className="hidden md:inline text-muted-foreground">|</span>
                   <a 
-                    href="tel:+442079460465" 
+                    href="tel:+442045243019" 
                     className="text-primary hover:underline"
                   >
-                    020 7946 0465
+                    +44 204 524 3019
                   </a>
                 </div>
               </CardContent>

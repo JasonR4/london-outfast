@@ -298,7 +298,7 @@ const FormatPage = () => {
   };
 
   const handleCallNow = () => {
-    window.location.href = 'tel:+442080680220';
+    window.location.href = 'tel:+442045243019';
   };
 
   const { addQuoteItem } = useQuotes();
@@ -482,7 +482,7 @@ const FormatPage = () => {
               </Button>
               <Button onClick={handleCallNow} variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
                 <Phone className="mr-2 h-4 w-4" />
-                Call: 020 8068 0220
+                Call: +44 204 524 3019
               </Button>
             </div>
           </div>

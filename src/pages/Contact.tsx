@@ -55,7 +55,7 @@ const Contact = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="text-lg px-8 py-6 shadow-glow">
               <Phone className="w-5 h-5 mr-2" />
-              Call Now: 020 7946 0123
+              Call Now: +44 204 524 3019
             </Button>
             <Button variant="outline" size="lg" className="text-lg px-8 py-6">
               <Calendar className="w-5 h-5 mr-2" />
@@ -88,7 +88,7 @@ const Contact = () => {
                 <p className="text-muted-foreground mb-4">Campaign live tomorrow? We've got you covered.</p>
                 <Button variant="outline" className="w-full">
                   <Phone className="w-4 h-4 mr-2" />
-                  020 7946 0123
+                  +44 204 524 3019
                 </Button>
               </CardContent>
             </Card>
@@ -328,7 +328,7 @@ const Contact = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="secondary" className="text-lg px-8 py-6">
               <Phone className="w-5 h-5 mr-2" />
-              Call: 020 7946 0123
+              Call: +44 204 524 3019
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-white/10 border-white/20 text-white hover:bg-white/20">
               <Mail className="w-5 h-5 mr-2" />
