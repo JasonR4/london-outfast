@@ -988,6 +988,18 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 </div>
                               </div>
                               
+                              {(() => {
+                                console.log('🔍 PRICING VALUES DEBUG:', {
+                                  totalQuantity,
+                                  selectedPeriodsLength: selectedPeriods.length,
+                                  firstLocationPriceAdjustedRate: firstLocationPrice.adjustedRate,
+                                  firstLocationPriceBasePrice: firstLocationPrice.basePrice,
+                                  pricingMediaPrice: pricing.mediaPrice,
+                                  isOnSale: firstLocationPrice.isOnSale
+                                });
+                                return null;
+                              })()}
+                              
                               {/* Rate Card Breakdown */}
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between items-center">
