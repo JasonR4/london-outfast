@@ -144,10 +144,10 @@ export function RateCardManager() {
 
   // Filter states
   const [filters, setFilters] = useState({
-    mediaFormat: '',
-    locationArea: '',
+    mediaFormat: 'all',
+    locationArea: 'all',
     isActive: 'all',
-    category: '',
+    category: 'all',
     searchText: ''
   });
 
@@ -201,8 +201,8 @@ export function RateCardManager() {
 
   const getFilteredQuantityDiscountTiers = () => {
     return quantityDiscountTiers.filter(discount => {
-      if (filters.mediaFormat && discount.media_format_id !== filters.mediaFormat) return false;
-      if (filters.locationArea && discount.location_area !== filters.locationArea) return false;
+      if (filters.mediaFormat && filters.mediaFormat !== 'all' && discount.media_format_id !== filters.mediaFormat) return false;
+      if (filters.locationArea && filters.locationArea !== 'all' && discount.location_area !== filters.locationArea) return false;
       if (filters.isActive !== 'all' && discount.is_active.toString() !== filters.isActive) return false;
       
       if (filters.searchText) {
@@ -218,9 +218,9 @@ export function RateCardManager() {
 
   const getFilteredProductionTiers = () => {
     return productionTiers.filter(tier => {
-      if (filters.mediaFormat && tier.media_format_id !== filters.mediaFormat) return false;
-      if (filters.locationArea && tier.location_area !== filters.locationArea) return false;
-      if (filters.category && tier.category !== filters.category) return false;
+      if (filters.mediaFormat && filters.mediaFormat !== 'all' && tier.media_format_id !== filters.mediaFormat) return false;
+      if (filters.locationArea && filters.locationArea !== 'all' && tier.location_area !== filters.locationArea) return false;
+      if (filters.category && filters.category !== 'all' && tier.category !== filters.category) return false;
       if (filters.isActive !== 'all' && tier.is_active.toString() !== filters.isActive) return false;
       
       if (filters.searchText) {
@@ -239,9 +239,9 @@ export function RateCardManager() {
 
   const getFilteredCreativeTiers = () => {
     return creativeTiers.filter(tier => {
-      if (filters.mediaFormat && tier.media_format_id !== filters.mediaFormat) return false;
-      if (filters.locationArea && tier.location_area !== filters.locationArea) return false;
-      if (filters.category && tier.category !== filters.category) return false;
+      if (filters.mediaFormat && filters.mediaFormat !== 'all' && tier.media_format_id !== filters.mediaFormat) return false;
+      if (filters.locationArea && filters.locationArea !== 'all' && tier.location_area !== filters.locationArea) return false;
+      if (filters.category && filters.category !== 'all' && tier.category !== filters.category) return false;
       if (filters.isActive !== 'all' && tier.is_active.toString() !== filters.isActive) return false;
       
       if (filters.searchText) {
@@ -1679,7 +1679,7 @@ export function RateCardManager() {
                           <SelectValue placeholder="All Formats" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Formats</SelectItem>
+                          <SelectItem value="all">All Formats</SelectItem>
                           {mediaFormats.map((format) => (
                             <SelectItem key={format.id} value={format.id}>
                               {format.format_name}
@@ -1698,7 +1698,7 @@ export function RateCardManager() {
                           <SelectValue placeholder="All Locations" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Locations</SelectItem>
+                          <SelectItem value="all">All Locations</SelectItem>
                           <SelectItem value="GD">GD (General Distribution)</SelectItem>
                           {londonAreas.flatMap(area => 
                             area.areas.map(borough => (
@@ -1718,7 +1718,7 @@ export function RateCardManager() {
                           <SelectValue placeholder="All Categories" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Categories</SelectItem>
+                          <SelectItem value="all">All Categories</SelectItem>
                           <SelectItem value="Standard">Standard</SelectItem>
                           <SelectItem value="Premium">Premium</SelectItem>
                           <SelectItem value="Digital">Digital</SelectItem>
@@ -1745,13 +1745,13 @@ export function RateCardManager() {
                   <div className="flex justify-end mt-4">
                     <Button 
                       variant="outline" 
-                      onClick={() => setFilters({
-                        mediaFormat: '',
-                        locationArea: '',
-                        isActive: 'all',
-                        category: '',
-                        searchText: ''
-                      })}
+                       onClick={() => setFilters({
+                         mediaFormat: 'all',
+                         locationArea: 'all',
+                         isActive: 'all',
+                         category: 'all',
+                         searchText: ''
+                       })}
                     >
                       Clear Filters
                     </Button>
@@ -2107,7 +2107,7 @@ export function RateCardManager() {
                           <SelectValue placeholder="All Formats" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Formats</SelectItem>
+                          <SelectItem value="all">All Formats</SelectItem>
                           {mediaFormats.map((format) => (
                             <SelectItem key={format.id} value={format.id}>
                               {format.format_name}
@@ -2126,7 +2126,7 @@ export function RateCardManager() {
                           <SelectValue placeholder="All Locations" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Locations</SelectItem>
+                          <SelectItem value="all">All Locations</SelectItem>
                           <SelectItem value="GD">GD (General Distribution)</SelectItem>
                           {londonAreas.flatMap(area => 
                             area.areas.map(borough => (
@@ -2146,7 +2146,7 @@ export function RateCardManager() {
                           <SelectValue placeholder="All Categories" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Categories</SelectItem>
+                          <SelectItem value="all">All Categories</SelectItem>
                           <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
                           <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
                           <SelectItem value="National Rail & Commuter Rail">National Rail & Commuter Rail</SelectItem>
@@ -2180,13 +2180,13 @@ export function RateCardManager() {
                   <div className="flex justify-end mt-4">
                     <Button 
                       variant="outline" 
-                      onClick={() => setFilters({
-                        mediaFormat: '',
-                        locationArea: '',
-                        isActive: 'all',
-                        category: '',
-                        searchText: ''
-                      })}
+                       onClick={() => setFilters({
+                         mediaFormat: 'all',
+                         locationArea: 'all',
+                         isActive: 'all',
+                         category: 'all',
+                         searchText: ''
+                       })}
                     >
                       Clear Filters
                     </Button>
@@ -2426,7 +2426,7 @@ export function RateCardManager() {
                           <SelectValue placeholder="All Formats" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Formats</SelectItem>
+                          <SelectItem value="all">All Formats</SelectItem>
                           {mediaFormats.map((format) => (
                             <SelectItem key={format.id} value={format.id}>
                               {format.format_name}
@@ -2454,13 +2454,13 @@ export function RateCardManager() {
                     <div className="flex items-end">
                       <Button 
                         variant="outline" 
-                        onClick={() => setFilters({
-                          mediaFormat: '',
-                          locationArea: '',
-                          isActive: 'all',
-                          category: '',
-                          searchText: ''
-                        })}
+                         onClick={() => setFilters({
+                           mediaFormat: 'all',
+                           locationArea: 'all',
+                           isActive: 'all',
+                           category: 'all',
+                           searchText: ''
+                         })}
                       >
                         Clear Filters
                       </Button>
@@ -2848,7 +2848,7 @@ export function RateCardManager() {
                           <SelectValue placeholder="All Formats" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Formats</SelectItem>
+                          <SelectItem value="all">All Formats</SelectItem>
                           {mediaFormats.map((format) => (
                             <SelectItem key={format.id} value={format.id}>
                               {format.format_name}
@@ -2867,7 +2867,7 @@ export function RateCardManager() {
                           <SelectValue placeholder="All Locations" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Locations</SelectItem>
+                          <SelectItem value="all">All Locations</SelectItem>
                           <SelectItem value="GD">GD (General Distribution)</SelectItem>
                           {londonAreas.flatMap(area => 
                             area.areas.map(borough => (
@@ -2896,13 +2896,13 @@ export function RateCardManager() {
                     <div className="flex items-end">
                       <Button 
                         variant="outline" 
-                        onClick={() => setFilters({
-                          mediaFormat: '',
-                          locationArea: '',
-                          isActive: 'all',
-                          category: '',
-                          searchText: ''
-                        })}
+                         onClick={() => setFilters({
+                           mediaFormat: 'all',
+                           locationArea: 'all',
+                           isActive: 'all',
+                           category: 'all',
+                           searchText: ''
+                         })}
                       >
                         Clear Filters
                       </Button>
@@ -3126,7 +3126,7 @@ export function RateCardManager() {
                           <SelectValue placeholder="All Formats" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Formats</SelectItem>
+                          <SelectItem value="all">All Formats</SelectItem>
                           {mediaFormats.map((format) => (
                             <SelectItem key={format.id} value={format.id}>
                               {format.format_name}
@@ -3145,7 +3145,7 @@ export function RateCardManager() {
                           <SelectValue placeholder="All Locations" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Locations</SelectItem>
+                          <SelectItem value="all">All Locations</SelectItem>
                           <SelectItem value="GD">GD (General Distribution)</SelectItem>
                           {londonAreas.flatMap(area => 
                             area.areas.map(borough => (
@@ -3165,7 +3165,7 @@ export function RateCardManager() {
                           <SelectValue placeholder="All Categories" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Categories</SelectItem>
+                          <SelectItem value="all">All Categories</SelectItem>
                           <SelectItem value="Standard">Standard</SelectItem>
                           <SelectItem value="Premium">Premium</SelectItem>
                           <SelectItem value="Digital">Digital</SelectItem>
@@ -3192,13 +3192,13 @@ export function RateCardManager() {
                   <div className="flex justify-end mt-4">
                     <Button 
                       variant="outline" 
-                      onClick={() => setFilters({
-                        mediaFormat: '',
-                        locationArea: '',
-                        isActive: 'all',
-                        category: '',
-                        searchText: ''
-                      })}
+                       onClick={() => setFilters({
+                         mediaFormat: 'all',
+                         locationArea: 'all',
+                         isActive: 'all',
+                         category: 'all',
+                         searchText: ''
+                       })}
                     >
                       Clear Filters
                     </Button>
