@@ -18,11 +18,13 @@ export function useAnalyticsCodes() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('🔧 useAnalyticsCodes hook initialized');
     fetchAnalyticsCodes();
   }, []);
 
   const fetchAnalyticsCodes = async () => {
     try {
+      console.log('📡 Fetching analytics codes from database...');
       setLoading(true);
       const { data, error } = await supabase
         .from('analytics_codes')
@@ -31,10 +33,11 @@ export function useAnalyticsCodes() {
         .order('priority', { ascending: true });
 
       if (error) throw error;
+      console.log('📊 Analytics codes fetched:', data);
       setAnalyticsCodes(data || []);
       setError(null);
     } catch (err) {
-      console.error('Error fetching analytics codes:', err);
+      console.error('❌ Error fetching analytics codes:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch analytics codes');
     } finally {
       setLoading(false);

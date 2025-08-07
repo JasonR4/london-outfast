@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { useAnalyticsCodes } from '@/hooks/useAnalyticsCodes';
 
 export function AnalyticsScripts() {
-  const { analyticsCodes, loading } = useAnalyticsCodes();
+  console.log('🔍 AnalyticsScripts component loaded');
+  const { analyticsCodes, loading, error } = useAnalyticsCodes();
 
   useEffect(() => {
     if (loading) {
