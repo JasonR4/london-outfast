@@ -138,18 +138,37 @@ export function RateCardManager() {
 
   const fetchData = async () => {
     try {
-      const [formatsRes, ratesRes, discountsRes, quantityDiscountsRes, productionRes, creativeRes, periodsRes, rateCardPeriodsRes] = await Promise.all([
-        supabase.from('media_formats').select('*').order('format_name'),
+      console.log('Starting data fetch...');
+      
+      // First, try to fetch just media formats to isolate the issue
+      const formatsRes = await supabase.from('media_formats').select('*').order('format_name');
+      console.log('Media formats query result:', formatsRes);
+      
+      if (formatsRes.error) {
+        console.error('Media formats query error:', formatsRes.error);
+        throw formatsRes.error;
+      }
+      
+      if (!formatsRes.data || formatsRes.data.length === 0) {
+        console.error('No media formats found in database');
+        toast.error('No media formats found in database');
+        return;
+      }
+      
+      console.log('Successfully fetched', formatsRes.data.length, 'media formats');
+      setMediaFormats(formatsRes.data);
+      
+      // Now fetch the rest of the data
+      const [ratesRes, discountsRes, quantityDiscountsRes, productionRes, creativeRes, periodsRes, rateCardPeriodsRes] = await Promise.all([
         supabase.from('rate_cards').select('*, media_formats(format_name)').order('location_area'),
         supabase.from('discount_tiers').select('*, media_formats(format_name)').order('min_periods'),
-        supabase.from('discount_tiers').select('*, media_formats(format_name)').order('min_quantity'),
+        supabase.from('quantity_discount_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('production_cost_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('creative_design_cost_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('incharge_periods').select('*').order('period_number'),
         supabase.from('rate_card_periods').select('*, incharge_periods(*)')
       ]);
 
-      if (formatsRes.error) throw formatsRes.error;
       if (ratesRes.error) throw ratesRes.error;
       if (discountsRes.error) throw discountsRes.error;
       if (quantityDiscountsRes.error) throw quantityDiscountsRes.error;
@@ -158,7 +177,6 @@ export function RateCardManager() {
       if (periodsRes.error) throw periodsRes.error;
       if (rateCardPeriodsRes.error) throw rateCardPeriodsRes.error;
 
-      setMediaFormats(formatsRes.data || []);
       setRateCards(ratesRes.data || []);
       setDiscountTiers(discountsRes.data || []);
       setQuantityDiscountTiers((quantityDiscountsRes.data as any) || []);
@@ -167,8 +185,7 @@ export function RateCardManager() {
       setInchargePeriods(periodsRes.data || []);
       setRateCardPeriods(rateCardPeriodsRes.data || []);
       
-      console.log('Media formats loaded successfully:', formatsRes.data?.length || 0);
-      console.log('First 3 formats:', formatsRes.data?.slice(0, 3));
+      console.log('All data loaded successfully');
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load rate card data');
