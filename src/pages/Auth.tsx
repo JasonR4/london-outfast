@@ -289,7 +289,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Media Buying London CMS</CardTitle>
+          <CardTitle>Sign In to Client Portal</CardTitle>
           <CardDescription>
             Sign in to manage your content
           </CardDescription>
