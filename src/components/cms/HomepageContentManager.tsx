@@ -127,13 +127,14 @@ const HomepageContentManager = () => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="hero" className="w-full">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="hero">Hero</TabsTrigger>
           <TabsTrigger value="services">Services</TabsTrigger>
           <TabsTrigger value="configurator_teaser">Configurator</TabsTrigger>
           <TabsTrigger value="why_choose_us">Why Choose Us</TabsTrigger>
           <TabsTrigger value="planning_tools">Planning Tools</TabsTrigger>
           <TabsTrigger value="format_links">Format Links</TabsTrigger>
+          <TabsTrigger value="contact">Contact</TabsTrigger>
           <TabsTrigger value="cta">CTA</TabsTrigger>
         </TabsList>
 
@@ -639,6 +640,219 @@ const HomepageContentManager = () => {
                     </CardContent>
                   </Card>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="contact">
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact Page Content</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Hero Section */}
+              <div className="border rounded-lg p-4">
+                <h4 className="text-lg font-semibold mb-4">Hero Section</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <Label htmlFor="contact_hero_badge">Badge Text</Label>
+                    <Input
+                      id="contact_hero_badge"
+                      value={homepageData.contact?.content?.hero?.badge_text || ''}
+                      onChange={(e) => {
+                        const currentContent = homepageData.contact?.content || {};
+                        const updatedContent = {
+                          ...currentContent,
+                          hero: {
+                            ...currentContent.hero,
+                            badge_text: e.target.value
+                          }
+                        };
+                        updateContent('contact', updatedContent);
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="contact_hero_title">Title</Label>
+                    <Input
+                      id="contact_hero_title"
+                      value={homepageData.contact?.content?.hero?.title || ''}
+                      onChange={(e) => {
+                        const currentContent = homepageData.contact?.content || {};
+                        const updatedContent = {
+                          ...currentContent,
+                          hero: {
+                            ...currentContent.hero,
+                            title: e.target.value
+                          }
+                        };
+                        updateContent('contact', updatedContent);
+                      }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="contact_hero_description">Description</Label>
+                  <Textarea
+                    id="contact_hero_description"
+                    value={homepageData.contact?.content?.hero?.description || ''}
+                    onChange={(e) => {
+                      const currentContent = homepageData.contact?.content || {};
+                      const updatedContent = {
+                        ...currentContent,
+                        hero: {
+                          ...currentContent.hero,
+                          description: e.target.value
+                        }
+                      };
+                      updateContent('contact', updatedContent);
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Contact Methods */}
+              <div className="border rounded-lg p-4">
+                <h4 className="text-lg font-semibold mb-4">Contact Methods Section</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="contact_methods_badge">Badge Text</Label>
+                    <Input
+                      id="contact_methods_badge"
+                      value={homepageData.contact?.content?.methods?.badge_text || ''}
+                      onChange={(e) => {
+                        const currentContent = homepageData.contact?.content || {};
+                        const updatedContent = {
+                          ...currentContent,
+                          methods: {
+                            ...currentContent.methods,
+                            badge_text: e.target.value
+                          }
+                        };
+                        updateContent('contact', updatedContent);
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="contact_methods_title">Title</Label>
+                    <Input
+                      id="contact_methods_title"
+                      value={homepageData.contact?.content?.methods?.title || ''}
+                      onChange={(e) => {
+                        const currentContent = homepageData.contact?.content || {};
+                        const updatedContent = {
+                          ...currentContent,
+                          methods: {
+                            ...currentContent.methods,
+                            title: e.target.value
+                          }
+                        };
+                        updateContent('contact', updatedContent);
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className="border rounded-lg p-4">
+                <h4 className="text-lg font-semibold mb-4">Location Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="contact_location_address">Address</Label>
+                    <Input
+                      id="contact_location_address"
+                      value={homepageData.contact?.content?.location?.address || ''}
+                      onChange={(e) => {
+                        const currentContent = homepageData.contact?.content || {};
+                        const updatedContent = {
+                          ...currentContent,
+                          location: {
+                            ...currentContent.location,
+                            address: e.target.value
+                          }
+                        };
+                        updateContent('contact', updatedContent);
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="contact_location_details">Additional Details</Label>
+                    <Textarea
+                      id="contact_location_details"
+                      value={homepageData.contact?.content?.location?.details || ''}
+                      onChange={(e) => {
+                        const currentContent = homepageData.contact?.content || {};
+                        const updatedContent = {
+                          ...currentContent,
+                          location: {
+                            ...currentContent.location,
+                            details: e.target.value
+                          }
+                        };
+                        updateContent('contact', updatedContent);
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA Section */}
+              <div className="border rounded-lg p-4">
+                <h4 className="text-lg font-semibold mb-4">Bottom CTA Section</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="contact_cta_title">Title</Label>
+                    <Input
+                      id="contact_cta_title"
+                      value={homepageData.contact?.content?.cta?.title || ''}
+                      onChange={(e) => {
+                        const currentContent = homepageData.contact?.content || {};
+                        const updatedContent = {
+                          ...currentContent,
+                          cta: {
+                            ...currentContent.cta,
+                            title: e.target.value
+                          }
+                        };
+                        updateContent('contact', updatedContent);
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="contact_cta_description">Description</Label>
+                    <Textarea
+                      id="contact_cta_description"
+                      value={homepageData.contact?.content?.cta?.description || ''}
+                      onChange={(e) => {
+                        const currentContent = homepageData.contact?.content || {};
+                        const updatedContent = {
+                          ...currentContent,
+                          cta: {
+                            ...currentContent.cta,
+                            description: e.target.value
+                          }
+                        };
+                        updateContent('contact', updatedContent);
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <Button 
+                  onClick={() => {
+                    const contactContent = homepageData.contact?.content || {};
+                    updateContent('contact', contactContent);
+                  }}
+                  disabled={saving}
+                  className="flex items-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  {saving ? 'Saving...' : 'Save Contact Content'}
+                </Button>
               </div>
             </CardContent>
           </Card>

@@ -27,6 +27,7 @@ import QuoteSubmitted from "./pages/QuoteSubmitted";
 import CreateAccount from "./pages/CreateAccount";
 import AccountCreated from "./pages/AccountCreated";
 import ClientPortal from "./pages/ClientPortal";
+import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -161,6 +162,7 @@ const App = () => {
               <Route path="/industries/:industrySlug" element={<IndustryPage />} />
               <Route path="/about" element={<About />} />
               <Route path="/faqs" element={<FAQs />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/cms" element={<CMS />} />
               {/* Legal Pages */}
