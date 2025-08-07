@@ -113,8 +113,10 @@ export default function Configurator() {
                           acc.mediaCost += item.base_cost || 0;
                           acc.productionCost += item.production_cost || 0;
                           acc.creativeCost += item.creative_cost || 0;
+                          acc.totalDiscount += item.discount_amount || 0;
+                          acc.originalCost += (item.base_cost || 0) + (item.discount_amount || 0);
                           return acc;
-                        }, { mediaCost: 0, productionCost: 0, creativeCost: 0 }) || { mediaCost: 0, productionCost: 0, creativeCost: 0 };
+                        }, { mediaCost: 0, productionCost: 0, creativeCost: 0, totalDiscount: 0, originalCost: 0 }) || { mediaCost: 0, productionCost: 0, creativeCost: 0, totalDiscount: 0, originalCost: 0 };
                         
                         const subtotal = totals.mediaCost + totals.productionCost + totals.creativeCost;
                         const vatAmount = subtotal * 0.2;
@@ -125,8 +127,25 @@ export default function Configurator() {
                             <div className="space-y-2 text-sm">
                               <div className="flex justify-between">
                                 <span className="text-muted-foreground">Media Costs:</span>
-                                <span>£{totals.mediaCost.toFixed(2)}</span>
+                                <div className="text-right">
+                                  {totals.totalDiscount > 0 ? (
+                                    <div className="space-y-1">
+                                      <div className="text-xs text-muted-foreground line-through">
+                                        £{totals.originalCost.toFixed(2)}
+                                      </div>
+                                      <div className="font-medium">£{totals.mediaCost.toFixed(2)}</div>
+                                    </div>
+                                  ) : (
+                                    <span>£{totals.mediaCost.toFixed(2)}</span>
+                                  )}
+                                </div>
                               </div>
+                              {totals.totalDiscount > 0 && (
+                                <div className="flex justify-between text-green-600">
+                                  <span>💰 Volume Discount:</span>
+                                  <span>-£{totals.totalDiscount.toFixed(2)}</span>
+                                </div>
+                              )}
                               {totals.productionCost > 0 && (
                                 <div className="flex justify-between">
                                   <span className="text-muted-foreground">Production Costs:</span>
@@ -154,6 +173,13 @@ export default function Configurator() {
                                 <span>Total inc VAT:</span>
                                 <span>£{totalIncVat.toFixed(2)}</span>
                               </div>
+                              {totals.totalDiscount > 0 && (
+                                <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                  <div className="text-sm text-green-700 dark:text-green-300 font-medium">
+                                    🎉 You saved £{(totals.totalDiscount * 1.2).toFixed(2)} inc VAT!
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </>
                         );

@@ -1043,6 +1043,15 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                             <span className="text-muted-foreground">Creative Development:</span>
                             <span>£{(rec.budgetAllocation * 0.15).toLocaleString()}</span>
                           </div>
+                          
+                          {/* Show potential discount based on quantity */}
+                          {rec.calculatedQuantity && rec.calculatedQuantity >= 5 && (
+                            <div className="flex justify-between text-green-600">
+                              <span>💰 Volume Discount (10%):</span>
+                              <span>-£{(rec.budgetAllocation * 0.1).toLocaleString()}</span>
+                            </div>
+                          )}
+                          
                           <div className="flex justify-between font-medium pt-2 border-t border-border/50">
                             <span>Subtotal (exc VAT):</span>
                             <span>£{rec.budgetAllocation.toLocaleString()}</span>
@@ -1055,6 +1064,15 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                             <span>Total inc VAT:</span>
                             <span>£{(rec.budgetAllocation * 1.2).toLocaleString()}</span>
                           </div>
+                          
+                          {/* Show savings message for volume discounts */}
+                          {rec.calculatedQuantity && rec.calculatedQuantity >= 5 && (
+                            <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                              <div className="text-xs text-green-700 dark:text-green-300 font-medium">
+                                🎉 Volume discount applied! You save £{((rec.budgetAllocation * 0.1) * 1.2).toLocaleString()} inc VAT
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                       

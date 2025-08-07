@@ -100,6 +100,15 @@ export const MediaPlanModal = ({
                       <span className="text-muted-foreground">Creative Development:</span>
                       <span>£{(mediaPlan.totalBudget * 0.15).toLocaleString()}</span>
                     </div>
+                    
+                    {/* Show potential volume discount */}
+                    {mediaPlan.items.some(item => item.recommendedQuantity >= 5) && (
+                      <div className="flex justify-between text-green-600">
+                        <span>💰 Volume Discount (10%):</span>
+                        <span>-£{(mediaPlan.totalBudget * 0.1).toLocaleString()}</span>
+                      </div>
+                    )}
+                    
                     <div className="flex justify-between font-medium pt-2 border-t border-border/50">
                       <span>Subtotal (exc VAT):</span>
                       <span>£{mediaPlan.totalBudget.toLocaleString()}</span>
@@ -112,6 +121,15 @@ export const MediaPlanModal = ({
                       <span>Total inc VAT:</span>
                       <span>£{(mediaPlan.totalBudget * 1.2).toLocaleString()}</span>
                     </div>
+                    
+                    {/* Show savings message */}
+                    {mediaPlan.items.some(item => item.recommendedQuantity >= 5) && (
+                      <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <div className="text-sm text-green-700 dark:text-green-300 font-medium">
+                          🎉 Volume discounts applied! Total savings: £{((mediaPlan.totalBudget * 0.1) * 1.2).toLocaleString()} inc VAT
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="w-full bg-muted rounded-full h-3 mt-4">
