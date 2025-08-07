@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RefreshCw, Globe } from 'lucide-react';
-import { oohFormats } from '@/data/oohFormats';
+import { useMediaFormats } from '@/hooks/useMediaFormats';
 
 interface ContentPage {
   id: string;
@@ -24,6 +24,7 @@ interface ContentPage {
 }
 
 export const PageManager = () => {
+  const { mediaFormats } = useMediaFormats();
   const [pages, setPages] = useState<ContentPage[]>([]);
   const [filteredPages, setFilteredPages] = useState<ContentPage[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -92,24 +93,17 @@ export const PageManager = () => {
       // Get existing pages to avoid duplicates
       const existingSlugs = pages.map(p => p.slug);
       
-      for (const format of oohFormats) {
-        if (!existingSlugs.includes(format.slug)) {
+      for (const format of mediaFormats) {
+        if (!existingSlugs.includes(format.format_slug)) {
           const pageData = {
-            slug: format.slug,
-            title: format.name,
-            meta_description: format.description.slice(0, 160),
+            slug: format.format_slug,
+            title: format.format_name,
+            meta_description: (format.description || 'Professional outdoor advertising format').slice(0, 160),
             content: {
-              hero_title: format.name,
-              hero_description: format.description,
-              category: format.category,
-              type: format.type,
-              placement: format.placement,
-              dwellTime: format.dwellTime,
-              effectiveness: format.effectiveness,
-              pricing: format.priceRange,
-              coverage: format.londonCoverage,
-              whoUsesThis: format.whoUsesIt,
-              networks: format.networks
+              hero_title: format.format_name,
+              hero_description: format.description || 'Professional outdoor advertising format',
+              dimensions: format.dimensions,
+              format_type: 'outdoor_advertising'
             },
             status: 'published' as const,
             page_type: 'ooh_format' as const,
@@ -122,7 +116,7 @@ export const PageManager = () => {
             .insert(pageData);
 
           if (error) {
-            console.error(`Error creating page for ${format.name}:`, error);
+            console.error(`Error creating page for ${format.format_name}:`, error);
           }
         }
       }
@@ -439,7 +433,7 @@ export const PageManager = () => {
                 <h4 className="font-medium mb-2">Sync Information</h4>
                 <ul className="text-sm text-muted-foreground space-y-1">
                   <li>• Creates pages for OOH formats that don't exist in CMS</li>
-                  <li>• Uses data from your oohFormats.ts file</li>
+                  <li>• Uses data from your media_formats database table</li>
                   <li>• Pages are published by default</li>
                   <li>• Existing pages won't be overwritten</li>
                 </ul>

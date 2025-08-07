@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { oohFormats, getAllCategories } from "@/data/oohFormats";
+import { useMediaFormats } from "@/hooks/useMediaFormats";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,14 +12,16 @@ const FormatDirectory = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const { mediaFormats, loading } = useMediaFormats();
   
-  const categories = getAllCategories();
+  // Get unique dimensions as categories
+  const categories = [...new Set(mediaFormats.map(format => format.dimensions || 'Various Sizes'))];
   
-  const filteredFormats = oohFormats.filter(format => {
-    const matchesSearch = format.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         format.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         format.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || format.category === selectedCategory;
+  const filteredFormats = mediaFormats.filter(format => {
+    const matchesSearch = format.format_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (format.description && format.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    const formatCategory = format.dimensions || 'Various Sizes';
+    const matchesCategory = selectedCategory === "all" || formatCategory === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -82,7 +84,7 @@ const FormatDirectory = () => {
           
           <div className="text-center">
             <p className="text-muted-foreground">
-              Showing {filteredFormats.length} of {oohFormats.length} formats
+              Showing {filteredFormats.length} of {mediaFormats.length} formats
             </p>
           </div>
         </div>
@@ -93,36 +95,36 @@ const FormatDirectory = () => {
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredFormats.map((format) => (
-              <Card key={format.id} className="group hover:shadow-lg transition-all duration-300 cursor-pointer" onClick={() => handleFormatClick(format.slug)}>
+              <Card key={format.id} className="group hover:shadow-lg transition-all duration-300 cursor-pointer" onClick={() => handleFormatClick(format.format_slug)}>
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
                     <Badge variant="outline" className="text-xs">
-                      {format.category}
+                      {format.dimensions || 'Various Sizes'}
                     </Badge>
-                    <Badge variant={format.type === 'digital' ? 'default' : 'secondary'}>
-                      {format.type === 'digital' ? 'Digital' : 'Static'}
+                    <Badge variant="secondary">
+                      OOH Format
                     </Badge>
                   </div>
                   <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                    {format.name}
+                    {format.format_name}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                    {format.description}
+                    {format.description || 'Professional outdoor advertising format available across London.'}
                   </p>
                   
                   <div className="space-y-2 mb-4">
-                    {format.physicalSize && (
+                    {format.dimensions && (
                       <div className="text-xs">
-                        <span className="font-medium">Size:</span> {format.physicalSize}
+                        <span className="font-medium">Size:</span> {format.dimensions}
                       </div>
                     )}
                     <div className="text-xs">
-                      <span className="font-medium">Placement:</span> {format.placement}
+                      <span className="font-medium">Format:</span> {format.format_name}
                     </div>
                     <div className="text-xs">
-                      <span className="font-medium">Price Range:</span> {format.priceRange}
+                      <span className="font-medium">Status:</span> {format.is_active ? 'Available' : 'Unavailable'}
                     </div>
                   </div>
 
@@ -157,7 +159,7 @@ const FormatDirectory = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
             <Card>
               <CardContent className="pt-6">
-                <div className="text-3xl font-bold text-primary mb-2">{oohFormats.length}+</div>
+                <div className="text-3xl font-bold text-primary mb-2">{mediaFormats.length}+</div>
                 <h3 className="font-semibold">Format Types</h3>
                 <p className="text-sm text-muted-foreground">Available across London</p>
               </CardContent>

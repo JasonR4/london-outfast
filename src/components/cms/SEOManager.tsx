@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Globe, Target, BarChart3, Zap, MapPin } from "lucide-react";
-import { oohFormats } from "@/data/oohFormats";
+import { useMediaFormats } from "@/hooks/useMediaFormats";
 
 interface SEOData {
   id?: string;
@@ -57,14 +57,17 @@ const LONDON_AREAS = [
   'Covent Garden', 'London Bridge', 'Borough Market', 'Kings Cross', 'Paddington'
 ];
 
-// Extract all format slugs from oohFormats to ensure we generate SEO for all 55+ formats
-const MEDIA_TYPES = oohFormats.map(format => format.slug);
+// Note: MEDIA_TYPES will be populated from database in component
 
 export const SEOManager = () => {
   const { toast } = useToast();
+  const { mediaFormats } = useMediaFormats();
   const [seoPages, setSeoPages] = useState<SEOData[]>([]);
   const [selectedPage, setSelectedPage] = useState<SEOData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Get media types from database
+  const MEDIA_TYPES = mediaFormats.map(format => format.format_slug);
 
   useEffect(() => {
     fetchSEOPages();

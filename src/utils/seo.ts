@@ -1,13 +1,19 @@
-import { oohFormats } from "@/data/oohFormats";
 import { supabase } from "@/integrations/supabase/client";
 
-export const generateSitemapUrls = () => {
+export const generateSitemapUrls = async () => {
   const baseUrl = "https://mediabuyinglondon.co.uk";
+  
+  // Fetch media formats from database
+  const { data: mediaFormats } = await supabase
+    .from('media_formats')
+    .select('format_slug')
+    .eq('is_active', true);
+
   const urls = [
     `${baseUrl}/`,
     `${baseUrl}/quote`,
     `${baseUrl}/outdoor-media`,
-    ...oohFormats.map(format => `${baseUrl}/outdoor-media/${format.slug}`)
+    ...(mediaFormats || []).map(format => `${baseUrl}/outdoor-media/${format.format_slug}`)
   ];
   return urls;
 };

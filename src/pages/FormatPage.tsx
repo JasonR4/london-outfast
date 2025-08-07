@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
-import { getFormatBySlug } from '@/data/oohFormats';
+import { useMediaFormats } from '@/hooks/useMediaFormats';
 import { updateMetaTags, generateStructuredData, getSEODataForPage } from '@/utils/seo';
 import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone, CalendarIcon } from 'lucide-react';
 import { useRateCards } from '@/hooks/useRateCards';
@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 
 const FormatPage = () => {
   const { formatSlug } = useParams();
+  const { getFormatBySlug } = useMediaFormats();
   const navigate = useNavigate();
   const [format, setFormat] = useState<any>(null);
   const [cmsContent, setCmsContent] = useState<any>(null);
@@ -191,7 +192,7 @@ const FormatPage = () => {
       setCmsContent(cmsData);
 
       // Get static format data as fallback
-      const staticFormat = getFormatBySlug(formatSlug);
+      const staticFormat = getFormatBySlug(formatSlug || '');
       
       if (!staticFormat && !cmsData) {
         navigate('/404');
@@ -200,9 +201,12 @@ const FormatPage = () => {
 
       // Use CMS content if available, otherwise use static data
       const finalFormat = cmsData ? {
-        ...staticFormat,
-        name: cmsData.title,
+        id: staticFormat?.id || cmsData.id,
+        format_slug: staticFormat?.format_slug || formatSlug,
+        format_name: cmsData.title,
         description: (cmsData.content as any)?.hero_description || staticFormat?.description,
+        dimensions: staticFormat?.dimensions,
+        is_active: staticFormat?.is_active || true,
         ...(cmsData.content as any)
       } : staticFormat;
 

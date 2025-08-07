@@ -22,7 +22,7 @@ import { useCreativeCapacity } from "@/hooks/useCreativeCapacity";
 import { useNavigate } from "react-router-dom";
 import { CreativeCapacityIndicator } from "@/components/CreativeCapacityIndicator";
 import { LocationSelector } from "@/components/LocationSelector";
-import { oohFormats, OOHFormat } from "@/data/oohFormats";
+import { useMediaFormats } from "@/hooks/useMediaFormats";
 import { londonAreas } from "@/data/londonAreas";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -49,7 +49,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   // Form state
   const [activeTab, setActiveTab] = useState("search");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFormats, setSelectedFormats] = useState<OOHFormat[]>([]);
+  const [selectedFormats, setSelectedFormats] = useState<any[]>([]);
   const [formatQuantities, setFormatQuantities] = useState<Record<string, number>>({});
   const [selectedPeriods, setSelectedPeriods] = useState<number[]>([]);
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
@@ -150,21 +150,23 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     createOrGetQuote();
   }, []);
 
+  const { mediaFormats, loading: formatsLoading } = useMediaFormats();
+  
   // Filter formats based on search
-  const filteredFormats = oohFormats.filter(format =>
-    format.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    format.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    format.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredFormats = mediaFormats.filter(format =>
+    format.format_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (format.description && format.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  // Group formats by category
+  // Group formats by category (we'll use dimensions as a proxy for category)
   const formatsByCategory = filteredFormats.reduce((acc, format) => {
-    if (!acc[format.category]) {
-      acc[format.category] = [];
+    const category = format.dimensions || 'Various Sizes';
+    if (!acc[category]) {
+      acc[category] = [];
     }
-    acc[format.category].push(format);
+    acc[category].push(format);
     return acc;
-  }, {} as Record<string, OOHFormat[]>);
+  }, {} as Record<string, any[]>);
 
   // Calculate total costs from all quote items
   const calculateQuoteTotalCosts = () => {
@@ -293,9 +295,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const pricing = calculateTotalPrice();
   const quoteTotals = calculateQuoteTotalCosts();
 
-  const handleFormatToggle = (format: OOHFormat) => {
-    console.log('🔄 Format toggle clicked:', format.name);
-    console.log('📋 Current selectedFormats:', selectedFormats.map(f => f.name));
+  const handleFormatToggle = (format: any) => {
+    console.log('🔄 Format toggle clicked:', format.format_name);
+    console.log('📋 Current selectedFormats:', selectedFormats.map(f => f.format_name));
     
     setSelectedFormats(prev => {
       const isSelected = prev.some(f => f.slug === format.slug);
