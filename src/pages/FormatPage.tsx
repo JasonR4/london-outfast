@@ -279,7 +279,10 @@ const FormatPage = () => {
     const representativeArea = selectedAreas[0];
     const availableLocations = getAvailableLocations();
     const matchingLocation = availableLocations.find(loc => 
-      selectedAreas.some(area => loc.toLowerCase().includes(area.toLowerCase()) || area.toLowerCase().includes(loc.toLowerCase()))
+      selectedAreas.some(area => 
+        loc?.toLowerCase().includes(area?.toLowerCase() || '') || 
+        area?.toLowerCase().includes(loc?.toLowerCase() || '')
+      )
     ) || availableLocations[0];
     
     const locationForPricing = matchingLocation || representativeArea;
@@ -594,7 +597,7 @@ const FormatPage = () => {
                   {format.name} Costs & Coverage in London
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                  Explore pricing and available locations for {format.name.toLowerCase()} advertising across London.
+                  Explore pricing and available locations for {format?.format_name?.toLowerCase() || 'outdoor'} advertising across London.
                 </p>
               </div>
 
@@ -990,7 +993,10 @@ const FormatPage = () => {
                         const representativeArea = selectedAreas[0];
                         const availableLocations = getAvailableLocations();
                         const matchingLocation = availableLocations.find(loc => 
-                          selectedAreas.some(area => loc.toLowerCase().includes(area.toLowerCase()) || area.toLowerCase().includes(loc.toLowerCase()))
+                          selectedAreas.some(area => 
+                            loc?.toLowerCase().includes(area?.toLowerCase() || '') || 
+                            area?.toLowerCase().includes(loc?.toLowerCase() || '')
+                          )
                         ) || availableLocations[0]; // Fallback to first available location
                         
                         const locationForPricing = matchingLocation || representativeArea;
