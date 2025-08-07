@@ -764,41 +764,64 @@ export function RateCardManager() {
     try {
       const data = await uploadedFile.arrayBuffer();
       const workbook = XLSX.read(data);
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-      // Validate data against existing formats and areas
-      const formatNames = mediaFormats.map(f => f.format_name.toLowerCase());
-      const validAreas = londonAreas.flatMap(zone => zone.areas).map(area => area.toLowerCase());
       
-      const validRows: any[] = [];
-      const invalidRows: any[] = [];
+      console.log('Available sheets:', workbook.SheetNames);
+      
+      let allValidRows: any[] = [];
+      let allInvalidRows: any[] = [];
+      let totalRowsProcessed = 0;
 
-      jsonData.forEach((row: any, index) => {
-        const errors: string[] = [];
+      // Process each sheet
+      for (const sheetName of workbook.SheetNames) {
+        console.log(`Processing sheet: ${sheetName}`);
         
-        // Skip header/example row
-        if (index === 0 && (
-          row['Media Format']?.includes('Select from') ||
-          (row['Min Periods']?.toString().includes('1') && bulkUploadType === 'discounts') ||
-          (row['Min Quantity']?.toString().includes('1') && (bulkUploadType === 'quantity-discounts' || bulkUploadType === 'production' || bulkUploadType === 'creative'))
-        )) return;
-
-        // Skip completely empty rows
-        const hasAnyData = Object.values(row).some(value => value && value.toString().trim() !== '');
-        if (!hasAnyData) return;
-
-        // Validate pre-populated format fields (read-only)
-        if (!row['Media Format ID']) {
-          errors.push('Media format ID is required (row data: ' + JSON.stringify(Object.keys(row)) + ')');
+        // Skip reference sheets that aren't for rate cards
+        if (['Volume Discounts', 'Quantity Discounts', 'Production Costs', 'Creative Design Costs', 'Media Formats Reference'].includes(sheetName)) {
+          console.log(`Skipping reference sheet: ${sheetName}`);
+          continue;
         }
-        if (!row['Media Format Name']) {
-          errors.push('Media format name is required');
+        
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        
+        if (jsonData.length === 0) {
+          console.log(`Sheet ${sheetName} is empty, skipping`);
+          continue;
         }
 
-        // Type-specific validation
-        switch (bulkUploadType) {
-          case 'rates':
+        console.log(`Sheet ${sheetName} has ${jsonData.length} rows`);
+
+        // Validate data against existing formats and areas
+        const formatNames = mediaFormats.map(f => f.format_name.toLowerCase());
+        const validAreas = londonAreas.flatMap(zone => zone.areas).map(area => area.toLowerCase());
+        
+        const validRows: any[] = [];
+        const invalidRows: any[] = [];
+
+        jsonData.forEach((row: any, index) => {
+          const errors: string[] = [];
+          
+          // Skip header/example row
+          if (index === 0 && (
+            row['Media Format']?.includes('Select from') ||
+            (row['Min Periods']?.toString().includes('1') && bulkUploadType === 'discounts') ||
+            (row['Min Quantity']?.toString().includes('1') && (bulkUploadType === 'quantity-discounts' || bulkUploadType === 'production' || bulkUploadType === 'creative'))
+          )) return;
+
+          // Skip completely empty rows
+          const hasAnyData = Object.values(row).some(value => value && value.toString().trim() !== '');
+          if (!hasAnyData) return;
+
+          // Validate pre-populated format fields (read-only)
+          if (!row['Media Format ID']) {
+            errors.push('Media format ID is required (row data: ' + JSON.stringify(Object.keys(row)) + ')');
+          }
+          if (!row['Media Format Name']) {
+            errors.push('Media format name is required');
+          }
+
+          // For rate card sheets, validate that there's actual rate data
+          if (bulkUploadType === 'rates') {
             // Validate location area for rates - allow empty for template
             if (row['Location Area'] && !validAreas.includes(row['Location Area'].toLowerCase()) && row['Location Area'].toLowerCase() !== 'gd') {
               errors.push('Invalid location area (use valid London area or "GD")');
@@ -807,81 +830,96 @@ export function RateCardManager() {
             if (!row['Base Rate Per Incharge'] || isNaN(parseFloat(row['Base Rate Per Incharge']))) {
               errors.push('Invalid base rate');
             }
-            break;
             
-          case 'discounts':
-            // Validate periods
-            if (!row['Min Periods'] || isNaN(parseInt(row['Min Periods'])) || parseInt(row['Min Periods']) < 1) {
-              errors.push('Invalid min periods');
+            // Skip rows with default/empty rate data
+            if (row['Base Rate Per Incharge'] === '0.00' || row['Base Rate Per Incharge'] === 0) {
+              return; // Skip template rows with no actual data
             }
-            if (row['Max Periods'] && (isNaN(parseInt(row['Max Periods'])) || parseInt(row['Max Periods']) < parseInt(row['Min Periods']))) {
-              errors.push('Invalid max periods');
-            }
-            if (!row['Discount Percentage'] || isNaN(parseFloat(row['Discount Percentage']))) {
-              errors.push('Invalid discount percentage');
-            }
-            break;
-            
-          case 'quantity-discounts':
-            // Validate location area (can be empty, global or valid area)
-            if (row['Location Area'] && row['Location Area'].toLowerCase() !== 'global' && 
-                row['Location Area'].toLowerCase() !== 'gd' && !validAreas.includes(row['Location Area'].toLowerCase())) {
-              errors.push('Invalid location area (use "global", "GD", or valid London area)');
-            }
-            // Validate quantity ranges
-            if (!row['Min Quantity'] || isNaN(parseInt(row['Min Quantity'])) || parseInt(row['Min Quantity']) < 1) {
-              errors.push('Invalid min quantity');
-            }
-            if (row['Max Quantity'] && (isNaN(parseInt(row['Max Quantity'])) || parseInt(row['Max Quantity']) < parseInt(row['Min Quantity']))) {
-              errors.push('Invalid max quantity');
-            }
-            if (!row['Discount Percentage'] || isNaN(parseFloat(row['Discount Percentage']))) {
-              errors.push('Invalid discount percentage');
-            }
-            break;
-            
-          case 'production':
-          case 'creative':
-            // Validate location area (can be empty, global, or valid area)
-            if (row['Location Area'] && row['Location Area'].toLowerCase() !== 'global' && 
-                row['Location Area'].toLowerCase() !== 'gd' && !validAreas.includes(row['Location Area'].toLowerCase())) {
-              errors.push('Invalid location area (use "global", "GD", or valid London area)');
-            }
-            // Validate quantity ranges
-            if (!row['Min Quantity'] || isNaN(parseInt(row['Min Quantity'])) || parseInt(row['Min Quantity']) < 1) {
-              errors.push('Invalid min quantity');
-            }
-            if (row['Max Quantity'] && (isNaN(parseInt(row['Max Quantity'])) || parseInt(row['Max Quantity']) < parseInt(row['Min Quantity']))) {
-              errors.push('Invalid max quantity');
-            }
-            if (!row['Cost Per Unit'] || isNaN(parseFloat(row['Cost Per Unit']))) {
-              errors.push('Invalid cost per unit');
-            }
-            break;
-        }
+          }
 
-        // Validate boolean fields (common)
-        if (row['Is Active'] && !['TRUE', 'FALSE', true, false].includes(row['Is Active'])) {
-          errors.push('Invalid Is Active value (must be TRUE or FALSE)');
-        }
+          // Type-specific validation for other types
+          switch (bulkUploadType) {
+            case 'discounts':
+              // Validate periods
+              if (!row['Min Periods'] || isNaN(parseInt(row['Min Periods'])) || parseInt(row['Min Periods']) < 1) {
+                errors.push('Invalid min periods');
+              }
+              if (row['Max Periods'] && (isNaN(parseInt(row['Max Periods'])) || parseInt(row['Max Periods']) < parseInt(row['Min Periods']))) {
+                errors.push('Invalid max periods');
+              }
+              if (!row['Discount Percentage'] || isNaN(parseFloat(row['Discount Percentage']))) {
+                errors.push('Invalid discount percentage');
+              }
+              break;
+              
+            case 'quantity-discounts':
+              // Validate location area (can be empty, global or valid area)
+              if (row['Location Area'] && row['Location Area'].toLowerCase() !== 'global' && 
+                  row['Location Area'].toLowerCase() !== 'gd' && !validAreas.includes(row['Location Area'].toLowerCase())) {
+                errors.push('Invalid location area (use "global", "GD", or valid London area)');
+              }
+              // Validate quantity ranges
+              if (!row['Min Quantity'] || isNaN(parseInt(row['Min Quantity'])) || parseInt(row['Min Quantity']) < 1) {
+                errors.push('Invalid min quantity');
+              }
+              if (row['Max Quantity'] && (isNaN(parseInt(row['Max Quantity'])) || parseInt(row['Max Quantity']) < parseInt(row['Min Quantity']))) {
+                errors.push('Invalid max quantity');
+              }
+              if (!row['Discount Percentage'] || isNaN(parseFloat(row['Discount Percentage']))) {
+                errors.push('Invalid discount percentage');
+              }
+              break;
+              
+            case 'production':
+            case 'creative':
+              // Validate location area (can be empty, global, or valid area)
+              if (row['Location Area'] && row['Location Area'].toLowerCase() !== 'global' && 
+                  row['Location Area'].toLowerCase() !== 'gd' && !validAreas.includes(row['Location Area'].toLowerCase())) {
+                errors.push('Invalid location area (use "global", "GD", or valid London area)');
+              }
+              // Validate quantity ranges
+              if (!row['Min Quantity'] || isNaN(parseInt(row['Min Quantity'])) || parseInt(row['Min Quantity']) < 1) {
+                errors.push('Invalid min quantity');
+              }
+              if (row['Max Quantity'] && (isNaN(parseInt(row['Max Quantity'])) || parseInt(row['Max Quantity']) < parseInt(row['Min Quantity']))) {
+                errors.push('Invalid max quantity');
+              }
+              if (!row['Cost Per Unit'] || isNaN(parseFloat(row['Cost Per Unit']))) {
+                errors.push('Invalid cost per unit');
+              }
+              break;
+          }
 
-        if (errors.length > 0) {
-          console.log('Row', index + 1, 'errors:', errors, 'data:', row);
-          invalidRows.push({ ...row, rowNumber: index + 1, errors });
-        } else {
-          validRows.push({ ...row, rowNumber: index + 1 });
-        }
-      });
+          // Validate boolean fields (common)
+          if (row['Is Active'] && !['TRUE', 'FALSE', true, false].includes(row['Is Active'])) {
+            errors.push('Invalid Is Active value (must be TRUE or FALSE)');
+          }
+
+          if (errors.length > 0) {
+            console.log('Row', index + 1, 'in sheet', sheetName, 'errors:', errors, 'data:', row);
+            invalidRows.push({ ...row, rowNumber: index + 1, sheetName, errors });
+          } else {
+            validRows.push({ ...row, rowNumber: index + 1, sheetName });
+          }
+        });
+
+        allValidRows = allValidRows.concat(validRows);
+        allInvalidRows = allInvalidRows.concat(invalidRows);
+        totalRowsProcessed += jsonData.length;
+        
+        console.log(`Sheet ${sheetName} processed: ${validRows.length} valid, ${invalidRows.length} invalid`);
+      }
 
       setAnalysisResults({
-        validRows,
-        invalidRows,
-        totalRows: jsonData.length,
-        validCount: validRows.length,
-        invalidCount: invalidRows.length
+        validRows: allValidRows,
+        invalidRows: allInvalidRows,
+        totalRows: totalRowsProcessed,
+        validCount: allValidRows.length,
+        invalidCount: allInvalidRows.length
       });
 
-      toast.success(`Analysis complete: ${validRows.length} valid rows, ${invalidRows.length} invalid rows`);
+      console.log(`Total analysis complete: ${allValidRows.length} valid rows, ${allInvalidRows.length} invalid rows from ${workbook.SheetNames.length} sheets`);
+      toast.success(`Analysis complete: ${allValidRows.length} valid rows, ${allInvalidRows.length} invalid rows from ${workbook.SheetNames.length} sheets`);
     } catch (error) {
       console.error('Error analyzing file:', error);
       toast.error('Failed to analyze uploaded file');
