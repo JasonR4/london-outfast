@@ -160,7 +160,7 @@ export class MediaPlanGenerator {
 
   private getBudgetFromAnswers(answers: Answer[]): number {
     console.log('Looking for budget in answers:', answers);
-    const budgetAnswer = answers.find(a => a.questionId === 'budget' || a.questionId === 'campaign_budget');
+    const budgetAnswer = answers.find(a => a.questionId === 'budget_range');
     console.log('Found budget answer:', budgetAnswer);
     
     if (!budgetAnswer?.value) return 0;
@@ -168,18 +168,23 @@ export class MediaPlanGenerator {
     const budgetStr = budgetAnswer.value as string;
     console.log('Budget string:', budgetStr);
     
-    // Handle different budget formats
-    if (typeof budgetStr === 'string') {
-      const match = budgetStr.match(/£?([\d,]+)/);
-      if (match) {
-        const budget = parseInt(match[1].replace(/,/g, ''));
-        console.log('Parsed budget:', budget);
-        return budget;
-      }
+    // Map budget ranges to actual amounts
+    const budgetMap: Record<string, number> = {
+      'startup': 5000,
+      'small': 15000,
+      'medium': 35000,
+      'large': 75000,
+      'premium': 150000
+    };
+    
+    if (typeof budgetStr === 'string' && budgetMap[budgetStr]) {
+      const budget = budgetMap[budgetStr];
+      console.log('Mapped budget:', budget);
+      return budget;
     }
     
-    console.log('Could not parse budget, returning 0');
-    return 0;
+    console.log('Could not map budget, returning 25000 as default');
+    return 25000; // Default fallback
   }
 
   private getRecommendationsFromAnswers(answers: Answer[]): Array<{name: string, score: number, reasons: string[]}> {
@@ -222,23 +227,50 @@ export class MediaPlanGenerator {
   }
 
   private getSelectedAreasFromAnswers(answers: Answer[]): string[] {
-    const locationAnswer = answers.find(a => a.questionId === 'locations' || a.questionId === 'target_locations');
+    const locationAnswer = answers.find(a => a.questionId === 'preferred_locations');
     console.log('Location answer:', locationAnswer);
-    const areas = locationAnswer?.value as string[] || [];
+    const areas = locationAnswer?.value as string[] || ['Central London'];
     console.log('Selected areas:', areas);
     return areas;
   }
 
   private getCampaignObjectiveFromAnswers(answers: Answer[]): string {
-    const objectiveAnswer = answers.find(a => a.questionId === 'objective' || a.questionId === 'campaign_objective');
+    const objectiveAnswer = answers.find(a => a.questionId === 'campaign_objective');
     console.log('Objective answer:', objectiveAnswer);
-    return objectiveAnswer?.value as string || 'Brand Awareness';
+    const objective = objectiveAnswer?.value;
+    
+    if (Array.isArray(objective)) {
+      // Map array values to readable text
+      const objectiveMap: Record<string, string> = {
+        'awareness': 'Brand Awareness',
+        'sales': 'Drive Sales',
+        'traffic': 'Increase Traffic',
+        'engagement': 'Boost Engagement'
+      };
+      return objective.map(obj => objectiveMap[obj] || obj).join(' + ');
+    }
+    
+    return objective as string || 'Brand Awareness';
   }
 
   private getTargetAudienceFromAnswers(answers: Answer[]): string {
-    const audienceAnswer = answers.find(a => a.questionId === 'audience' || a.questionId === 'target_audience');
+    const audienceAnswer = answers.find(a => a.questionId === 'target_audience');
     console.log('Audience answer:', audienceAnswer);
-    return audienceAnswer?.value as string || 'General Public';
+    const audience = audienceAnswer?.value;
+    
+    if (Array.isArray(audience)) {
+      // Map array values to readable text
+      const audienceMap: Record<string, string> = {
+        'commuters': 'Commuters & Office Workers',
+        'shoppers': 'Shoppers & Consumers',
+        'tourists': 'Tourists & Visitors',
+        'residents': 'Local Residents',
+        'young': 'Young Demographics (18-35)'
+      };
+      return audience.map(aud => audienceMap[aud] || aud).join(' + ');
+    }
+    
+    return audience as string || 'General Public';
   }
 
   private getFormatSlug(formatName: string): string | null {
@@ -260,9 +292,13 @@ export class MediaPlanGenerator {
       'rail_advertising': 'Rail Advertising',
       'taxi_advertising': 'Taxi Advertising', 
       'bus_advertising': 'Bus Advertising',
-      'tube_advertising': 'Tube Advertising'
+      'tube_advertising': 'Tube Advertising',
+      'tube_ads': 'Tube Advertising',
+      'taxi_ads': 'Taxi Advertising',
+      'bus_shelters': 'Bus Shelter Advertising',
+      'local_billboards': 'Local Billboards'
     };
-    return nameMap[slug] || slug;
+    return nameMap[slug] || slug.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
 
   private calculateEstimatedReach(items: MediaPlanItem[]): string {
