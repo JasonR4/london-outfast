@@ -1019,7 +1019,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                      </div>
                                      <div className="flex justify-between items-center text-green-600 text-xs">
                                        <span>Savings per unit:</span>
-                                       <span>-£{(((firstLocationPrice.adjustedRate * selectedPeriods.length * selectedLocations.length) - (pricing.mediaPrice / (1 - firstLocationPrice.discount / 100))) / (selectedLocations.length * selectedPeriods.length)).toFixed(2)}</span>
+                                       <span>-£{((firstLocationPrice.adjustedRate - (pricing.mediaPrice / (selectedLocations.length * selectedPeriods.length)))).toFixed(2)}</span>
                                      </div>
                                   </>
                                 )}
@@ -1036,7 +1036,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                      </div>
                                      <div className="flex justify-between items-center text-blue-600 text-xs">
                                        <span>Savings per unit:</span>
-                                       <span>-£{(((firstLocationPrice.adjustedRate * selectedPeriods.length * selectedLocations.length) - (pricing.mediaPrice / (1 - firstLocationPrice.discount / 100))) / (selectedLocations.length * selectedPeriods.length)).toFixed(2)}</span>
+                                       <span>-£{((firstLocationPrice.adjustedRate - (pricing.mediaPrice / (selectedLocations.length * selectedPeriods.length)))).toFixed(2)}</span>
                                      </div>
                                   </>
                                 )}
