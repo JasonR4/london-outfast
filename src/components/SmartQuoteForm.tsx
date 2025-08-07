@@ -404,24 +404,23 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       contactDetails
     });
 
-    // Require authentication for quote submission
-    if (!user) {
-      console.log('🔐 User not authenticated, redirecting to login');
-      toast({
-        title: "Login Required",
-        description: "Please sign in or create an account to submit your quote.",
-        variant: "default"
-      });
-      navigate('/auth');
-      return;
-    }
-
-    // Check for quote items for authenticated users
+    // Check for quote items
     if (!currentQuote || currentQuote.quote_items?.length === 0) {
-      console.log('❌ No quote items for authenticated user');
+      console.log('❌ No quote items');
       toast({
         title: "No Items in Quote",
         description: "Please add at least one item to your quote before submitting.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // For non-authenticated users, require contact details
+    if (!user && (!contactDetails.contact_name || !contactDetails.contact_email)) {
+      console.log('❌ Missing contact details for non-authenticated user');
+      toast({
+        title: "Missing Contact Information",
+        description: "Please provide your name and email to submit the quote.",
         variant: "destructive"
       });
       return;
@@ -433,8 +432,14 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       console.log('✅ Submit result:', success);
       
       if (success) {
-        console.log('🔄 Navigating to client portal');
-        navigate('/client-portal');
+        // Navigate based on authentication status
+        if (user) {
+          console.log('🔄 Navigating to client portal');
+          navigate('/client-portal');
+        } else {
+          console.log('🔄 Navigating to create account');
+          navigate('/create-account');
+        }
       } else {
         console.log('❌ Submit returned false');
         toast({
@@ -1367,38 +1372,80 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                   </Button>
                 </div>
               ) : (
-                // Login prompt for non-authenticated users
-                <div className="space-y-4 text-center">
-                  <div className="bg-muted/30 p-6 rounded-lg border border-border">
-                    <h3 className="font-semibold text-lg mb-2">Account Required</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Please sign in or create an account to submit your quote. This allows us to:
-                    </p>
-                    <ul className="text-sm text-muted-foreground space-y-1 mb-6 text-left">
-                      <li>• Save your quote for future reference</li>
-                      <li>• Send updates to your client portal</li>
-                      <li>• Track your campaign progress</li>
-                      <li>• Provide dedicated account support</li>
-                    </ul>
-                    <div className="flex gap-3">
-                      <Button
-                        onClick={() => navigate('/auth')}
-                        size="lg"
-                        className="flex-1"
-                      >
-                        Sign In
-                      </Button>
-                      <Button
-                        onClick={() => navigate('/auth')}
-                        variant="outline"
-                        size="lg"
-                        className="flex-1"
-                      >
-                        Create Account
-                      </Button>
-                    </div>
+                // Contact form for non-authenticated users
+                <>
+                  <div>
+                    <Label htmlFor="contact_name">Full Name *</Label>
+                    <Input
+                      id="contact_name"
+                      value={contactDetails.contact_name}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_name: e.target.value }))}
+                      placeholder="Your full name"
+                    />
                   </div>
-                </div>
+
+                  <div>
+                    <Label htmlFor="contact_email">Email *</Label>
+                    <Input
+                      id="contact_email"
+                      type="email"
+                      value={contactDetails.contact_email}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_email: e.target.value }))}
+                      placeholder="your@email.com"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="contact_phone">Phone</Label>
+                    <Input
+                      id="contact_phone"
+                      type="tel"
+                      value={contactDetails.contact_phone}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_phone: e.target.value }))}
+                      placeholder="+44 20 1234 5678"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="contact_company">Company</Label>
+                    <Input
+                      id="contact_company"
+                      value={contactDetails.contact_company}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_company: e.target.value }))}
+                      placeholder="Your company"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      value={contactDetails.website}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, website: e.target.value }))}
+                      placeholder="https://yourwebsite.com"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="additional_requirements">Additional Requirements</Label>
+                    <Textarea
+                      id="additional_requirements"
+                      value={contactDetails.additional_requirements}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, additional_requirements: e.target.value }))}
+                      placeholder="Tell us about your campaign objectives, timeline, or any special requirements..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleSubmitQuote}
+                    size="lg"
+                    className="w-full"
+                    disabled={quotesLoading}
+                  >
+                    {quotesLoading ? "Submitting..." : "Submit Quote Request"}
+                  </Button>
+                </>
               )}
             </CardContent>
           </Card>
