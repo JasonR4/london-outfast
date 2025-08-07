@@ -397,7 +397,12 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
   };
 
   const goNext = () => {
-    if (selectedValues.length === 0) return;
+    // Check if we can proceed based on question type
+    if (currentQuestion.type === 'budget_input') {
+      if (!budgetInput.trim()) return;
+    } else {
+      if (selectedValues.length === 0) return;
+    }
 
     // Calculate scores for this answer
     let combinedScores: Record<string, number> = {};
