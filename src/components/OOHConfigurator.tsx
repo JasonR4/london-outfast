@@ -130,29 +130,6 @@ const questions: Question[] = [
     options: [] // Will be handled by period selector
   },
   {
-    id: 'creative_needs',
-    title: 'What are your creative requirements?',
-    subtitle: 'This helps us understand your design and creative needs',
-    type: 'single',
-    options: [
-      {
-        label: 'I have my creative assets ready',
-        value: 'ready',
-        scores: { 'billboards': 2, 'digital_billboards': 2, 'bus_shelters': 2, 'tube_ads': 2, 'taxi_ads': 2 }
-      },
-      {
-        label: 'I need design assistance',
-        value: 'design_help',
-        scores: { 'billboards': 1, 'digital_billboards': 1, 'bus_shelters': 1, 'tube_ads': 1, 'taxi_ads': 1 }
-      },
-      {
-        label: 'I need full creative development',
-        value: 'full_creative',
-        scores: { 'billboards': 0, 'digital_billboards': 0, 'bus_shelters': 0, 'tube_ads': 0, 'taxi_ads': 0 }
-      }
-    ]
-  },
-  {
     id: 'creative_ready',
     title: 'Do you have creative assets ready?',
     subtitle: 'This affects timeline and format options',
