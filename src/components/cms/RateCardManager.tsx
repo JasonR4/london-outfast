@@ -166,6 +166,8 @@ export function RateCardManager() {
       setCreativeTiers((creativeRes.data as any) || []);
       setInchargePeriods(periodsRes.data || []);
       setRateCardPeriods(rateCardPeriodsRes.data || []);
+      
+      console.log('Media formats loaded:', formatsRes.data?.length || 0);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load rate card data');
@@ -478,6 +480,8 @@ export function RateCardManager() {
 
   // Bulk upload functionality
   const downloadTemplate = (type: 'rates' | 'discounts' | 'quantity-discounts' | 'production' | 'creative' = 'rates') => {
+    console.log('Download called, mediaFormats:', mediaFormats.length);
+    
     // Check if media formats are loaded
     if (!mediaFormats || mediaFormats.length === 0) {
       toast.error('Media formats not loaded yet. Please wait and try again.');
