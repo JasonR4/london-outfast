@@ -480,10 +480,13 @@ export function RateCardManager() {
 
   // Bulk upload functionality
   const downloadTemplate = (type: 'rates' | 'discounts' | 'quantity-discounts' | 'production' | 'creative' = 'rates') => {
-    console.log('Download called, mediaFormats:', mediaFormats.length);
+    console.log('Download function called with type:', type);
+    console.log('Media formats loaded:', mediaFormats.length);
+    console.log('Media formats:', mediaFormats.slice(0, 3)); // Log first 3 for debugging
     
     // Check if media formats are loaded
     if (!mediaFormats || mediaFormats.length === 0) {
+      console.error('No media formats available for download');
       toast.error('Media formats not loaded yet. Please wait and try again.');
       return;
     }
@@ -567,22 +570,33 @@ export function RateCardManager() {
     
     // Check if we have template data
     if (!templateData || templateData.length === 0) {
+      console.error('Template data generation failed');
       toast.error('No template data generated. Please try again.');
       return;
     }
 
-    const worksheet = XLSX.utils.json_to_sheet(templateData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, `${type.charAt(0).toUpperCase() + type.slice(1)} Template`);
-    
-    // Set column widths - safely check if templateData[0] exists
-    if (templateData[0]) {
-      const colWidths = Array(Object.keys(templateData[0]).length).fill({ wch: 20 });
-      worksheet['!cols'] = colWidths;
-    }
+    console.log('Template data created:', templateData.length, 'rows');
+    console.log('First template row:', templateData[0]);
 
-    XLSX.writeFile(workbook, filename);
-    toast.success('Template downloaded successfully');
+    try {
+      const worksheet = XLSX.utils.json_to_sheet(templateData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, `${type.charAt(0).toUpperCase() + type.slice(1)} Template`);
+      
+      // Set column widths - safely check if templateData[0] exists
+      if (templateData[0]) {
+        const colWidths = Array(Object.keys(templateData[0]).length).fill({ wch: 20 });
+        worksheet['!cols'] = colWidths;
+      }
+
+      console.log('About to download file:', filename);
+      XLSX.writeFile(workbook, filename);
+      console.log('File download triggered successfully');
+      toast.success('Template downloaded successfully');
+    } catch (error) {
+      console.error('Error during file generation/download:', error);
+      toast.error('Failed to generate template file');
+    }
   };
 
   const analyzeUploadedFile = async () => {
