@@ -106,11 +106,58 @@ export default function Configurator() {
                       </div>
                     ))}
                     
-                    <div className="pt-4 border-t border-border">
-                      <div className="flex justify-between items-center text-lg font-semibold">
-                        <span>Total Campaign Cost</span>
-                        <span>£{currentQuote.total_cost.toFixed(2)} +VAT</span>
-                      </div>
+                    <div className="pt-4 border-t border-border space-y-3">
+                      {/* Calculate breakdown from quote items */}
+                      {(() => {
+                        const totals = currentQuote.quote_items?.reduce((acc, item) => {
+                          acc.mediaCost += item.base_cost || 0;
+                          acc.productionCost += item.production_cost || 0;
+                          acc.creativeCost += item.creative_cost || 0;
+                          return acc;
+                        }, { mediaCost: 0, productionCost: 0, creativeCost: 0 }) || { mediaCost: 0, productionCost: 0, creativeCost: 0 };
+                        
+                        const subtotal = totals.mediaCost + totals.productionCost + totals.creativeCost;
+                        const vatAmount = subtotal * 0.2;
+                        const totalIncVat = subtotal + vatAmount;
+                        
+                        return (
+                          <>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Media Costs:</span>
+                                <span>£{totals.mediaCost.toFixed(2)}</span>
+                              </div>
+                              {totals.productionCost > 0 && (
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Production Costs:</span>
+                                  <span>£{totals.productionCost.toFixed(2)}</span>
+                                </div>
+                              )}
+                              {totals.creativeCost > 0 && (
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Creative Development:</span>
+                                  <span>£{totals.creativeCost.toFixed(2)}</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="pt-2 border-t border-border/50 space-y-2">
+                              <div className="flex justify-between font-medium">
+                                <span>Subtotal (exc VAT):</span>
+                                <span>£{subtotal.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">VAT (20%):</span>
+                                <span>£{vatAmount.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between text-lg font-semibold">
+                                <span>Total inc VAT:</span>
+                                <span>£{totalIncVat.toFixed(2)}</span>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </CardContent>

@@ -82,23 +82,38 @@ export const MediaPlanModal = ({
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-medium">Total Budget</span>
-                  <span className="text-lg font-bold text-primary">
-                    {formatCurrencyWithVAT(mediaPlan.totalBudget)}
-                  </span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-3">
-                  <div 
-                    className="bg-gradient-hero h-3 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${(mediaPlan.totalAllocatedBudget / mediaPlan.totalBudget) * 100}%` 
-                    }}
-                  />
-                </div>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Allocated: {formatCurrencyWithVAT(mediaPlan.totalAllocatedBudget)}</span>
-                  <span>Remaining: {formatCurrencyWithVAT(mediaPlan.remainingBudget)}</span>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-lg font-medium">
+                    <span>Total Budget</span>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Subtotal (exc VAT):</span>
+                      <span className="font-medium">£{mediaPlan.totalBudget.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">VAT (20%):</span>
+                      <span>£{(mediaPlan.totalBudget * 0.2).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-lg font-bold text-primary pt-2 border-t border-border/50">
+                      <span>Total inc VAT:</span>
+                      <span>£{(mediaPlan.totalBudget * 1.2).toLocaleString()}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="w-full bg-muted rounded-full h-3">
+                    <div 
+                      className="bg-gradient-hero h-3 rounded-full transition-all duration-300"
+                      style={{ 
+                        width: `${(mediaPlan.totalAllocatedBudget / mediaPlan.totalBudget) * 100}%` 
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Allocated: £{mediaPlan.totalAllocatedBudget.toLocaleString()}</span>
+                    <span>Remaining: £{mediaPlan.remainingBudget.toLocaleString()}</span>
+                  </div>
                 </div>
               </div>
             </CardContent>

@@ -1017,20 +1017,37 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                     </div>
                     <p className="text-muted-foreground mb-4">{rec.description}</p>
                     
-                    {/* Show calculated quantity and budget breakdown */}
+                     {/* Show calculated quantity and budget breakdown */}
                     <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                         <div>
                           <span className="font-medium">Recommended Units:</span>
                           <div className="text-lg font-bold text-primary">{rec.calculatedQuantity || 'TBC'}</div>
                         </div>
                         <div>
                           <span className="font-medium">Budget Allocation:</span>
-                          <div className="text-lg font-bold">£{rec.budgetAllocation?.toLocaleString() || 'TBC'}</div>
                         </div>
                       </div>
+                      
+                      {rec.budgetAllocation && (
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Subtotal (exc VAT):</span>
+                            <span className="font-medium">£{rec.budgetAllocation.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">VAT (20%):</span>
+                            <span>£{(rec.budgetAllocation * 0.2).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between font-bold text-primary pt-2 border-t border-border/50">
+                            <span>Total inc VAT:</span>
+                            <span>£{(rec.budgetAllocation * 1.2).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      )}
+                      
                       {rec.costPerUnit && (
-                        <div className="mt-2 text-xs text-muted-foreground">
+                        <div className="mt-3 pt-2 border-t border-border/50 text-xs text-muted-foreground">
                           Cost per unit: £{rec.costPerUnit.toLocaleString()} × {rec.calculatedQuantity} units = £{(rec.costPerUnit * rec.calculatedQuantity).toLocaleString()}
                         </div>
                       )}
