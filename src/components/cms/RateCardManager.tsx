@@ -655,8 +655,11 @@ export function RateCardManager() {
           const rateCardsWS = XLSX.utils.json_to_sheet(rateCardsData);
           rateCardsWS['!cols'] = Array(Object.keys(rateCardsData[0]).length).fill({ wch: 20 });
           
-          // Create a clean sheet name (Excel has limitations on sheet names)
-          const sheetName = area.length > 31 ? area.substring(0, 28) + '...' : area;
+          // Create a clean sheet name (Excel has limitations on sheet names - remove invalid characters)
+          const invalidChars = /[:\\\/?*\[\]]/g;
+          const sheetName = area.replace(invalidChars, '').length > 31 
+            ? area.replace(invalidChars, '').substring(0, 28) + '...' 
+            : area.replace(invalidChars, '');
           XLSX.utils.book_append_sheet(workbook, rateCardsWS, sheetName);
         });
       });
