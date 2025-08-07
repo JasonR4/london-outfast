@@ -1051,6 +1051,105 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                               </div>
                             </div>
                           );
+                         })()}
+
+                        {/* Production Cost Details */}
+                        {pricing.productionCost > 0 && (() => {
+                          const productionResult = calculateProductionCost(selectedLocations[0], totalQuantity);
+                          if (!productionResult) return null;
+                          
+                          return (
+                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                              <h4 className="font-medium text-sm mb-3">
+                                Production Costs - {totalQuantity} Units
+                              </h4>
+                              
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Cost per Unit:</span>
+                                  <span>£{productionResult.costPerUnit.toLocaleString()}</span>
+                                </div>
+                                
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Total Quantity:</span>
+                                  <span>{totalQuantity} units</span>
+                                </div>
+                                
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Applicable Tier:</span>
+                                  <span className="text-xs">
+                                    {productionResult.tier.min_quantity}{productionResult.tier.max_quantity ? `-${productionResult.tier.max_quantity}` : '+'} units
+                                  </span>
+                                </div>
+                                
+                                {productionResult.tier.location_area && (
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Location-Specific Rate:</span>
+                                    <span className="text-xs">{productionResult.tier.location_area} area</span>
+                                  </div>
+                                )}
+                                
+                                <div className="border-t border-border/50 pt-2 mt-2">
+                                  <div className="flex justify-between items-center font-medium text-base">
+                                    <span>Total Production Cost:</span>
+                                    <span className="text-primary">£{pricing.productionCost.toLocaleString()}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Creative Cost Details */}
+                        {needsCreative && pricing.creativeCost > 0 && (() => {
+                          const creativeResult = calculateCreativeCost(selectedLocations[0], creativeAssets, creativeLevel);
+                          if (!creativeResult) return null;
+                          
+                          return (
+                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                              <h4 className="font-medium text-sm mb-3">
+                                Creative Development - {creativeAssets} Assets ({creativeLevel})
+                              </h4>
+                              
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Cost per Asset:</span>
+                                  <span>£{creativeResult.costPerUnit.toLocaleString()}</span>
+                                </div>
+                                
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Creative Level:</span>
+                                  <span>{creativeLevel}</span>
+                                </div>
+                                
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Total Assets:</span>
+                                  <span>{creativeAssets} assets</span>
+                                </div>
+                                
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Applicable Tier:</span>
+                                  <span className="text-xs">
+                                    {creativeResult.tier.min_quantity}{creativeResult.tier.max_quantity ? `-${creativeResult.tier.max_quantity}` : '+'} assets
+                                  </span>
+                                </div>
+                                
+                                {creativeResult.tier.location_area && (
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Location-Specific Rate:</span>
+                                    <span className="text-xs">{creativeResult.tier.location_area} area</span>
+                                  </div>
+                                )}
+                                
+                                <div className="border-t border-border/50 pt-2 mt-2">
+                                  <div className="flex justify-between items-center font-medium text-base">
+                                    <span>Total Creative Cost:</span>
+                                    <span className="text-primary">£{pricing.creativeCost.toLocaleString()}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
                         })()}
 
                         {/* Total Summary */}
