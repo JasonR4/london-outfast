@@ -488,7 +488,6 @@ export function RateCardManager() {
       return;
     }
 
-    const allAreas = londonAreas.flatMap(zone => zone.areas);
     let templateData: any[] = [];
     let filename = '';
 
@@ -563,9 +562,7 @@ export function RateCardManager() {
           'Is Active': 'TRUE'
         }));
         filename = 'creative-design-template.xlsx';
-            break;
-            
-          case 'quantity-discounts':
+        break;
     }
     
     // Check if we have template data
