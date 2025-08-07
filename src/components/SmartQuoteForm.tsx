@@ -298,14 +298,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       }
     });
     
-    // Auto-advance to configure tab if this is the first format selected
-    // and no formats were previously selected
-    setTimeout(() => {
-      if (selectedFormats.length === 0) {
-        console.log('🚀 Auto-advancing to configure tab');
-        setActiveTab("configure");
-      }
-    }, 100);
+    // Don't auto-advance - let user manually proceed with button
   };
 
   const handleContinueToConfig = () => {
@@ -607,14 +600,20 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                     ))}
                    </div>
 
-                   {/* Continue Button */}
-                   {selectedFormats.length > 0 && (
-                     <div className="flex justify-center pt-4">
-                       <Button onClick={handleContinueToConfig} className="px-8">
-                         Continue with {selectedFormats.length} format{selectedFormats.length > 1 ? 's' : ''} →
-                       </Button>
-                     </div>
-                   )}
+                   {/* Continue Button - Prominent and Always Visible */}
+                   <div className="flex justify-center pt-6 border-t border-border">
+                     <Button 
+                       onClick={handleContinueToConfig} 
+                       disabled={selectedFormats.length === 0}
+                       size="lg"
+                       className="px-12 py-3 bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold"
+                     >
+                       {selectedFormats.length === 0 
+                         ? "Select formats to continue" 
+                         : `Continue with ${selectedFormats.length} format${selectedFormats.length > 1 ? 's' : ''} →`
+                       }
+                     </Button>
+                   </div>
                  </TabsContent>
 
                  <TabsContent value="configure" className="space-y-6">
