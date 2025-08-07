@@ -773,6 +773,10 @@ export function RateCardManager() {
           (row['Min Quantity']?.toString().includes('1') && (bulkUploadType === 'quantity-discounts' || bulkUploadType === 'production' || bulkUploadType === 'creative'))
         )) return;
 
+        // Skip completely empty rows
+        const hasAnyData = Object.values(row).some(value => value && value.toString().trim() !== '');
+        if (!hasAnyData) return;
+
         // Validate pre-populated format fields (read-only)
         if (!row['Media Format ID']) {
           errors.push('Media format ID is required');
