@@ -5,80 +5,107 @@ export function AnalyticsScripts() {
   const { analyticsCodes, loading } = useAnalyticsCodes();
 
   useEffect(() => {
-    if (loading || analyticsCodes.length === 0) return;
+    if (loading) {
+      console.log('Analytics: Still loading...');
+      return;
+    }
+    
+    if (analyticsCodes.length === 0) {
+      console.log('Analytics: No codes found in database');
+      return;
+    }
 
-    console.log('Analytics codes loaded:', analyticsCodes);
+    console.log('Analytics: Found codes:', analyticsCodes);
 
     // Remove existing analytics scripts first
     const existingScripts = document.querySelectorAll('[data-analytics-id]');
-    existingScripts.forEach(script => script.remove());
-
-    // Helper function to execute scripts properly
-    const executeScript = (code: string, id: string, placement: string) => {
-      console.log(`Injecting ${placement} script:`, code.substring(0, 100) + '...');
-      
-      // Create a container div
-      const container = document.createElement('div');
-      container.setAttribute('data-analytics-id', id);
-      container.style.display = 'none';
-      
-      // Parse the HTML and execute scripts
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = code;
-      
-      // Find all script tags and recreate them to ensure execution
-      const scripts = tempDiv.querySelectorAll('script');
-      scripts.forEach(oldScript => {
-        const newScript = document.createElement('script');
-        
-        // Copy attributes
-        Array.from(oldScript.attributes).forEach(attr => {
-          newScript.setAttribute(attr.name, attr.value);
-        });
-        
-        // Copy content
-        if (oldScript.src) {
-          newScript.src = oldScript.src;
-        } else {
-          newScript.textContent = oldScript.textContent;
-        }
-        
-        container.appendChild(newScript);
-      });
-      
-      // Add non-script elements
-      const nonScripts = tempDiv.querySelectorAll(':not(script)');
-      nonScripts.forEach(element => {
-        container.appendChild(element.cloneNode(true));
-      });
-      
-      return container;
-    };
-
-    // Inject head scripts
-    const headCodes = analyticsCodes.filter(code => code.placement === 'head');
-    headCodes.forEach(code => {
-      const container = executeScript(code.tracking_code, code.id, 'head');
-      document.head.appendChild(container);
+    existingScripts.forEach(script => {
+      console.log('Removing existing script:', script);
+      script.remove();
     });
 
-    // Inject body_start scripts
-    const bodyStartCodes = analyticsCodes.filter(code => code.placement === 'body_start');
-    bodyStartCodes.forEach(code => {
-      const container = executeScript(code.tracking_code, code.id, 'body_start');
-      if (document.body.firstChild) {
-        document.body.insertBefore(container, document.body.firstChild);
+    // Process each analytics code
+    analyticsCodes.forEach(code => {
+      console.log(`Processing ${code.code_type} code for ${code.placement}:`, code.name);
+      
+      if (code.code_type === 'google_analytics' || code.code_type === 'gtm') {
+        // Handle Google Analytics and GTM with special parsing
+        const container = document.createElement('div');
+        container.setAttribute('data-analytics-id', code.id);
+        container.style.display = 'none';
+        
+        // Parse the tracking code to extract scripts
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(code.tracking_code, 'text/html');
+        const scripts = doc.querySelectorAll('script');
+        
+        scripts.forEach(originalScript => {
+          const newScript = document.createElement('script');
+          
+          // Copy all attributes
+          Array.from(originalScript.attributes).forEach(attr => {
+            newScript.setAttribute(attr.name, attr.value);
+          });
+          
+          // Handle async/src scripts (like gtag.js)
+          if (originalScript.src) {
+            newScript.src = originalScript.src;
+            newScript.async = true;
+            console.log('Adding external script:', originalScript.src);
+          } else {
+            // Handle inline scripts
+            newScript.textContent = originalScript.textContent;
+            console.log('Adding inline script');
+          }
+          
+          // Add to appropriate location
+          if (code.placement === 'head') {
+            document.head.appendChild(newScript);
+          } else if (code.placement === 'body_start') {
+            if (document.body.firstChild) {
+              document.body.insertBefore(newScript, document.body.firstChild);
+            } else {
+              document.body.appendChild(newScript);
+            }
+          } else {
+            document.body.appendChild(newScript);
+          }
+          
+          container.appendChild(newScript.cloneNode(true));
+        });
+        
+        console.log(`${code.code_type} scripts injected successfully`);
       } else {
-        document.body.appendChild(container);
+        // Handle other tracking codes
+        const container = document.createElement('div');
+        container.innerHTML = code.tracking_code;
+        container.setAttribute('data-analytics-id', code.id);
+        container.style.display = 'none';
+        
+        if (code.placement === 'head') {
+          document.head.appendChild(container);
+        } else if (code.placement === 'body_start') {
+          if (document.body.firstChild) {
+            document.body.insertBefore(container, document.body.firstChild);
+          } else {
+            document.body.appendChild(container);
+          }
+        } else {
+          document.body.appendChild(container);
+        }
       }
     });
 
-    // Inject body_end scripts  
-    const bodyEndCodes = analyticsCodes.filter(code => code.placement === 'body_end');
-    bodyEndCodes.forEach(code => {
-      const container = executeScript(code.tracking_code, code.id, 'body_end');
-      document.body.appendChild(container);
-    });
+    // Verify Google Analytics is loaded
+    setTimeout(() => {
+      if ((window as any).gtag) {
+        console.log('✅ Google Analytics (gtag) successfully loaded');
+      } else if ((window as any).ga) {
+        console.log('✅ Google Analytics (ga) successfully loaded');  
+      } else {
+        console.warn('⚠️ Google Analytics not detected in window object');
+      }
+    }, 2000);
 
     // Cleanup function
     return () => {
