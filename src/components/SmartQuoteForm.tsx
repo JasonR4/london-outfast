@@ -110,7 +110,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
   // Get creative cost
   const creativeResult = needsCreative && selectedLocations.length > 0 
-    ? calculateCreativeCost(selectedLocations[0], creativeQuantity, "Standard")
+    ? calculateCreativeCost(selectedLocations[0], creativeQuantity, "London Underground (TfL)")
     : null;
   
   // Creative capacity logic
