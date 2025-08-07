@@ -234,7 +234,7 @@ export default function QuotePlan() {
                             <span>{item.selected_areas.length} location{item.selected_areas.length !== 1 ? 's' : ''}</span>
                           </div>
                           <div className="font-semibold text-foreground">
-                            {formatCurrency(item.total_cost)}
+                            {formatCurrency(item.base_cost)}
                           </div>
                         </div>
 
