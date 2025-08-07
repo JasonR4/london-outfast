@@ -617,7 +617,7 @@ export function RateCardManager() {
     }
   };
 
-  // Comprehensive download with all pricing data in one file
+  // Comprehensive download with all pricing data in one file, organized by London areas
   const downloadComprehensiveTemplate = () => {
     console.log('Comprehensive download function called');
     console.log('Media formats loaded:', mediaFormats.length);
@@ -632,27 +632,38 @@ export function RateCardManager() {
     try {
       const workbook = XLSX.utils.book_new();
       
-      // Sheet 1: Rate Cards
-      const rateCardsData = mediaFormats.map(format => ({
-        'Media Format ID': format.id,
-        'Media Format Name': format.format_name,
-        'Location Area': '', // Leave blank - configure in CMS
-        'Base Rate Per Incharge': '0.00',
-        'Sale Price': '0.00',
-        'Reduced Price': '0.00',
-        'Location Markup Percentage': '0.00',
-        'Quantity Per Medium': '1',
-        'Is Active': 'TRUE',
-        'Is Date Specific': 'FALSE',
-        'Start Date': '',
-        'End Date': '',
-        'Incharge Period': '1'
-      }));
-      const rateCardsWS = XLSX.utils.json_to_sheet(rateCardsData);
-      rateCardsWS['!cols'] = Array(Object.keys(rateCardsData[0]).length).fill({ wch: 20 });
-      XLSX.utils.book_append_sheet(workbook, rateCardsWS, 'Rate Cards');
+      // Create separate sheets for each London zone/area
+      londonAreas.forEach((zone, zoneIndex) => {
+        zone.areas.forEach((area, areaIndex) => {
+          // Rate Cards data for this specific area
+          const rateCardsData = mediaFormats.map(format => ({
+            'Media Format ID': format.id,
+            'Media Format Name': format.format_name,
+            'Location Area': area,
+            'Base Rate Per Incharge': '0.00',
+            'Sale Price': '0.00',
+            'Reduced Price': '0.00',
+            'Location Markup Percentage': '0.00',
+            'Quantity Per Medium': '1',
+            'Is Active': 'TRUE',
+            'Is Date Specific': 'FALSE',
+            'Start Date': '',
+            'End Date': '',
+            'Incharge Period': '1'
+          }));
+          
+          const rateCardsWS = XLSX.utils.json_to_sheet(rateCardsData);
+          rateCardsWS['!cols'] = Array(Object.keys(rateCardsData[0]).length).fill({ wch: 20 });
+          
+          // Create a clean sheet name (Excel has limitations on sheet names)
+          const sheetName = area.length > 31 ? area.substring(0, 28) + '...' : area;
+          XLSX.utils.book_append_sheet(workbook, rateCardsWS, sheetName);
+        });
+      });
 
-      // Sheet 2: Volume Discounts
+      // Add reference sheets at the end
+      
+      // Volume Discounts (applies globally)
       const discountsData = mediaFormats.map(format => ({
         'Media Format ID': format.id,
         'Media Format Name': format.format_name,
@@ -665,7 +676,7 @@ export function RateCardManager() {
       discountsWS['!cols'] = Array(Object.keys(discountsData[0]).length).fill({ wch: 20 });
       XLSX.utils.book_append_sheet(workbook, discountsWS, 'Volume Discounts');
 
-      // Sheet 3: Quantity Discounts
+      // Quantity Discounts (can be area-specific)
       const quantityDiscountsData = mediaFormats.map(format => ({
         'Media Format ID': format.id,
         'Media Format Name': format.format_name,
@@ -679,7 +690,7 @@ export function RateCardManager() {
       quantityDiscountsWS['!cols'] = Array(Object.keys(quantityDiscountsData[0]).length).fill({ wch: 20 });
       XLSX.utils.book_append_sheet(workbook, quantityDiscountsWS, 'Quantity Discounts');
 
-      // Sheet 4: Production Costs
+      // Production Costs (can be area-specific)
       const productionData = mediaFormats.map(format => ({
         'Media Format ID': format.id,
         'Media Format Name': format.format_name,
@@ -694,7 +705,7 @@ export function RateCardManager() {
       productionWS['!cols'] = Array(Object.keys(productionData[0]).length).fill({ wch: 20 });
       XLSX.utils.book_append_sheet(workbook, productionWS, 'Production Costs');
 
-      // Sheet 5: Creative Design Costs
+      // Creative Design Costs (can be area-specific)
       const creativeData = mediaFormats.map(format => ({
         'Media Format ID': format.id,
         'Media Format Name': format.format_name,
