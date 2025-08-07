@@ -9,8 +9,11 @@ import { LocationSelector } from './LocationSelector';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuotes } from '@/hooks/useQuotes';
+import { MediaPlanModal } from './MediaPlanModal';
+import { MediaPlanGenerator, GeneratedMediaPlan } from '@/services/MediaPlanGenerator';
+import { useToast } from '@/hooks/use-toast';
 
-interface Answer {
+export interface Answer {
   questionId: string;
   value: string | number | (string | number)[];
   scores: Record<string, number>;
@@ -376,7 +379,11 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
   const [showQuoteForm, setShowQuoteForm] = useState(false);
   const [inchargePeriods, setInchargePeriods] = useState<any[]>([]);
   const [isCreatingQuote, setIsCreatingQuote] = useState(false);
+  const [showMediaPlan, setShowMediaPlan] = useState(false);
+  const [generatedPlan, setGeneratedPlan] = useState<GeneratedMediaPlan | null>(null);
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const { addQuoteItem, createOrGetQuote } = useQuotes();
+  const { toast } = useToast();
 
   // Fetch incharge periods on component mount
   useEffect(() => {
@@ -717,6 +724,75 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
     }
   };
 
+  const generateMediaPlan = async () => {
+    setIsGeneratingPlan(true);
+    try {
+      const generator = new MediaPlanGenerator();
+      const plan = await generator.generatePlan(answers, inchargePeriods);
+      
+      if (plan) {
+        setGeneratedPlan(plan);
+        setShowMediaPlan(true);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Unable to generate media plan. Please try again."
+        });
+      }
+    } catch (error) {
+      console.error('Error generating media plan:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to generate media plan"
+      });
+    } finally {
+      setIsGeneratingPlan(false);
+    }
+  };
+
+  const submitMediaPlan = async () => {
+    if (!generatedPlan) return;
+    
+    setIsCreatingQuote(true);
+    try {
+      // Add plan items to quote with real calculated costs
+      for (const item of generatedPlan.items) {
+        await addQuoteItem({
+          format_slug: item.formatSlug,
+          format_name: item.formatName,
+          quantity: item.recommendedQuantity,
+          selected_areas: item.selectedAreas,
+          selected_periods: item.selectedPeriods,
+          base_cost: item.baseCost,
+          production_cost: item.productionCost,
+          creative_cost: item.creativeCost,
+          total_cost: item.totalCost,
+          creative_needs: `${generatedPlan.campaignObjective} campaign targeting ${generatedPlan.targetAudience}`
+        });
+      }
+      
+      setShowMediaPlan(false);
+      toast({
+        title: "Success",
+        description: "Media plan submitted successfully!"
+      });
+      if (onComplete) {
+        onComplete();
+      }
+    } catch (error) {
+      console.error('Error submitting media plan:', error);
+      toast({
+        variant: "destructive",
+        title: "Error", 
+        description: "Failed to submit media plan"
+      });
+    } finally {
+      setIsCreatingQuote(false);
+    }
+  };
+
 
   if (showQuoteForm) {
     return <QuoteFormSection 
@@ -778,6 +854,13 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
               <Button onClick={restart} variant="outline" className="flex-1">
                 Start Over
               </Button>
+              <Button
+                onClick={generateMediaPlan}
+                disabled={isGeneratingPlan}
+                className="flex-1 bg-gradient-hero hover:opacity-90"
+              >
+                {isGeneratingPlan ? 'Generating Plan...' : 'Generate Media Plan'}
+              </Button>
               <Button 
                 onClick={async () => {
                   setIsCreatingQuote(true);
@@ -814,14 +897,23 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                     setIsCreatingQuote(false);
                   }
                 }} 
+                variant="outline"
                 className="flex-1"
                 disabled={isCreatingQuote}
               >
-                {isCreatingQuote ? 'Creating Quote...' : 'Get Detailed Quote'}
+                {isCreatingQuote ? 'Creating Quote...' : 'Quick Quote'}
               </Button>
             </div>
           </CardContent>
         </Card>
+
+        <MediaPlanModal
+          isOpen={showMediaPlan}
+          onClose={() => setShowMediaPlan(false)}
+          onSubmitPlan={submitMediaPlan}
+          mediaPlan={generatedPlan}
+          isSubmitting={isCreatingQuote}
+        />
       </div>
     );
   }
