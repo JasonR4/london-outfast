@@ -82,7 +82,12 @@ export const useCentralizedMediaFormats = (includeInactive = false) => {
     }
   };
 
-  const getFormatBySlug = (slug: string): MediaFormat | undefined => {
+  const getFormatBySlug = async (slug: string): Promise<MediaFormat | undefined> => {
+    const service = MediaFormatsService.getInstance();
+    return await service.getFormatBySlugAsync(slug);
+  };
+
+  const getFormatBySlugSync = (slug: string): MediaFormat | undefined => {
     const service = MediaFormatsService.getInstance();
     return service.getFormatBySlug(slug);
   };
@@ -101,6 +106,7 @@ export const useCentralizedMediaFormats = (includeInactive = false) => {
     deleteFormat,
     refetch,
     getFormatBySlug,
+    getFormatBySlugSync,
     getFormatsBySearch
   };
 };

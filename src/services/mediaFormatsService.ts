@@ -260,6 +260,24 @@ class MediaFormatsService {
     }
   }
 
+  async getFormatBySlugAsync(slug: string): Promise<MediaFormat | undefined> {
+    // First check cache
+    let format = this.cachedFormats.find(format => format.format_slug === slug);
+    
+    // If not in cache, fetch fresh data
+    if (!format) {
+      try {
+        const formats = await this.fetchFormats(false);
+        this.cachedFormats = formats;
+        format = formats.find(format => format.format_slug === slug);
+      } catch (error) {
+        console.error('Error fetching format by slug:', error);
+      }
+    }
+    
+    return format;
+  }
+
   getFormatBySlug(slug: string): MediaFormat | undefined {
     return this.cachedFormats.find(format => format.format_slug === slug);
   }

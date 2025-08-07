@@ -19,7 +19,7 @@ export const useMediaFormats = () => {
     loading,
     error,
     refetch,
-    getFormatBySlug,
+    getFormatBySlugSync,
     getFormatsBySearch
   } = useCentralizedMediaFormats(false); // Only active formats for public use
 
@@ -32,10 +32,10 @@ export const useMediaFormats = () => {
     error,
     refetch,
     getFormatBySlug: (slug: string) => {
-      const format = getFormatBySlug(slug);
+      const format = getFormatBySlugSync(slug);
       if (!format) return undefined;
       const { categories, ...transformed } = format;
-      return transformed;
+      return transformed as MediaFormat;
     },
     getFormatsBySearch: (searchQuery: string) => {
       const formats = getFormatsBySearch(searchQuery);
