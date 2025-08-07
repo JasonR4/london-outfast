@@ -672,7 +672,7 @@ export type Database = {
       }
       rate_cards: {
         Row: {
-          base_rate_per_incharge: number
+          base_rate_per_incharge: number | null
           created_at: string
           created_by: string | null
           end_date: string | null
@@ -691,7 +691,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
-          base_rate_per_incharge: number
+          base_rate_per_incharge?: number | null
           created_at?: string
           created_by?: string | null
           end_date?: string | null
@@ -710,7 +710,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
-          base_rate_per_incharge?: number
+          base_rate_per_incharge?: number | null
           created_at?: string
           created_by?: string | null
           end_date?: string | null
