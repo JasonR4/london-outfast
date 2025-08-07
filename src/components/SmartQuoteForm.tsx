@@ -98,6 +98,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
   // Rate cards for selected formats (using first format for now)
   const { 
+    rateCards,
     calculatePrice, 
     calculateProductionCost, 
     calculateCreativeCost,
@@ -1011,7 +1012,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                   <>
                                     <div className="flex justify-between items-center text-green-600">
                                       <span>Sale Rate (per unit, per {selectedPeriods.length} period):</span>
-                                      <span>£{(pricing.mediaPrice / (totalQuantity * selectedPeriods.length)).toLocaleString()}</span>
+                                      <span>£{rateCards[0]?.sale_price?.toLocaleString() || '800'}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-green-600">
                                       <span>Subtotal ({totalQuantity} units × {selectedPeriods.length} periods):</span>
