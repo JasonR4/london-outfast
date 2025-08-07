@@ -213,6 +213,20 @@ const HomepageContentManager = () => {
                   />
                 </div>
               </div>
+              
+              <div className="flex justify-end pt-4">
+                <Button 
+                  onClick={() => {
+                    const heroContent = homepageData.hero?.content || {};
+                    updateContent('hero', heroContent);
+                  }}
+                  disabled={saving}
+                  className="flex items-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  {saving ? 'Saving...' : 'Save Hero Section'}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
