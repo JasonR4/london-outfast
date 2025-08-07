@@ -1039,10 +1039,6 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 
                                 {firstLocationPrice.isOnSale && (
                                   <>
-                                    <div className="flex justify-between items-center text-green-600 font-medium">
-                                      <span>🏷️ Sale Price Applied:</span>
-                                      <span>£{(pricing.mediaPrice / (1 - firstLocationPrice.discount / 100)).toLocaleString()}</span>
-                                    </div>
                                      <div className="flex justify-between items-center text-green-600 text-xs">
                                        <span>Sale Savings:</span>
                                        <span>-£{((firstLocationPrice.adjustedRate * selectedPeriods.length * totalQuantity) - pricing.mediaPrice).toLocaleString()}</span>
