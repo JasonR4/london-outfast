@@ -16,6 +16,7 @@ import { SEOManager } from '@/components/cms/SEOManager';
 import IndustryContentManager from '@/components/cms/IndustryContentManager';
 import HomepageContentManager from '@/components/cms/HomepageContentManager';
 import { RateCardManager } from '@/components/cms/RateCardManager';
+import { RateCardBulkManager } from '@/components/cms/RateCardManagerSimple';
 import { QuoteManager } from '@/components/cms/QuoteManager';
 import { AnalyticsManager } from '@/components/cms/AnalyticsManager';
 import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator, ClipboardList, BarChart3 } from 'lucide-react';
