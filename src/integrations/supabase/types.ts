@@ -59,7 +59,7 @@ export type Database = {
       creative_design_cost_tiers: {
         Row: {
           category: string
-          cost_per_unit: number
+          cost_per_unit: number | null
           created_at: string
           created_by: string | null
           id: string
@@ -73,7 +73,7 @@ export type Database = {
         }
         Insert: {
           category: string
-          cost_per_unit: number
+          cost_per_unit?: number | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -87,7 +87,7 @@ export type Database = {
         }
         Update: {
           category?: string
-          cost_per_unit?: number
+          cost_per_unit?: number | null
           created_at?: string
           created_by?: string | null
           id?: string
