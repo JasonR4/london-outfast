@@ -194,8 +194,14 @@ const FormatPage = () => {
       // Get static format data as fallback
       const staticFormat = getFormatBySlug(formatSlug || '') || null;
       
-      console.log('Format lookup:', { formatSlug, staticFormat, mediaFormatsCount: mediaFormats.length });
+      console.log('Format lookup result:', { 
+        formatSlug, 
+        staticFormat: staticFormat ? staticFormat.format_name : null, 
+        mediaFormatsCount: mediaFormats.length,
+        allSlugs: mediaFormats.map(f => f.format_slug).slice(0, 5)
+      });
       
+      // If we have either static format OR CMS data, we can proceed
       if (!staticFormat && !cmsData && !formatsLoading) {
         console.log('No format found, redirecting to 404');
         navigate('/404');
@@ -263,8 +269,11 @@ const FormatPage = () => {
       }
     };
 
-    initializePage();
-  }, [formatSlug, navigate]);
+    // Only initialize if we have media formats loaded or if we're not loading
+    if (!formatsLoading) {
+      initializePage();
+    }
+  }, [formatSlug, navigate, formatsLoading]);
 
   const handleGetQuote = () => {
     navigate('/quote');
@@ -366,6 +375,7 @@ const FormatPage = () => {
     }
   };
 
+  // Show loading while data is being fetched
   if (loading || formatsLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -374,15 +384,22 @@ const FormatPage = () => {
     );
   }
 
+  // Show error only if we're not loading and have no format
   if (!format && !formatsLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Format Not Found</h1>
           <p>The outdoor advertising format you're looking for could not be found.</p>
+          <p className="text-sm text-muted-foreground mt-2">Format slug: {formatSlug}</p>
         </div>
       </div>
     );
+  }
+
+  // Don't render if we don't have format data yet
+  if (!format) {
+    return null;
   }
 
   return (
