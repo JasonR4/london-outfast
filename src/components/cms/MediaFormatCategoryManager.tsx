@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Pencil, Plus, Trash2, Tags } from 'lucide-react';
 // Categories constant
-const CREATIVE_CATEGORIES = ['Digital', 'Transport', 'Roadside', 'Premium', 'Retail', 'Standard'];
+const CREATIVE_CATEGORIES = ['Transport', 'Retail', 'Rail', 'Supermarket', 'Roadside', 'London Underground'];
 
 interface MediaFormat {
   id: string;
@@ -80,17 +80,21 @@ export function MediaFormatCategoryManager() {
     // Default category assignment based on format name
     const name = formatName.toLowerCase();
     
-    if (name.includes('digital') || name.includes('led')) {
-      return ['Digital'];
-    } else if (name.includes('transport') || name.includes('bus') || name.includes('tube') || name.includes('rail')) {
+    if (name.includes('transport') || name.includes('bus')) {
       return ['Transport'];
-    } else if (name.includes('billboard') || name.includes('poster')) {
-      return ['Roadside', 'Premium'];
+    } else if (name.includes('tube') || name.includes('underground')) {
+      return ['London Underground'];
+    } else if (name.includes('rail') || name.includes('railway') || name.includes('train')) {
+      return ['Rail'];
     } else if (name.includes('retail') || name.includes('shopping')) {
       return ['Retail'];
+    } else if (name.includes('supermarket') || name.includes('grocery')) {
+      return ['Supermarket'];
+    } else if (name.includes('billboard') || name.includes('poster') || name.includes('roadside')) {
+      return ['Roadside'];
     }
     
-    return ['Standard'];
+    return ['Transport']; // Default fallback
   };
 
   const handleEditCategories = (format: MediaFormat) => {
@@ -160,12 +164,12 @@ export function MediaFormatCategoryManager() {
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      'Digital': 'bg-blue-100 text-blue-800',
-      'Transport': 'bg-green-100 text-green-800',
+      'Transport': 'bg-blue-100 text-blue-800',
+      'Retail': 'bg-green-100 text-green-800',
+      'Rail': 'bg-purple-100 text-purple-800',
+      'Supermarket': 'bg-orange-100 text-orange-800',
       'Roadside': 'bg-yellow-100 text-yellow-800',
-      'Premium': 'bg-purple-100 text-purple-800',
-      'Retail': 'bg-orange-100 text-orange-800',
-      'Standard': 'bg-gray-100 text-gray-800'
+      'London Underground': 'bg-red-100 text-red-800'
     };
     return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
