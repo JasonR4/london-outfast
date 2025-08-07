@@ -1634,14 +1634,26 @@ export function RateCardManager() {
               </Card>
             </TabsContent>
             <TabsContent value="rates" className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">OOH Media Rate Cards</h3>
-                <div className="flex items-center gap-4">
-                  {selectedRateCardIds.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
-                        {selectedRateCardIds.length} selected
+              {/* Bulk Actions Navigation Bar */}
+              {selectedRateCardIds.length > 0 && (
+                <div className="bg-muted/50 border border-border rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm font-medium">
+                        {selectedRateCardIds.length} rate card{selectedRateCardIds.length > 1 ? 's' : ''} selected
                       </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedRateCardIds([]);
+                          setIsAllSelected(false);
+                        }}
+                      >
+                        Clear Selection
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="destructive"
                         size="sm"
@@ -1653,7 +1665,13 @@ export function RateCardManager() {
                         {isDeletingBulk ? 'Deleting...' : `Delete ${selectedRateCardIds.length}`}
                       </Button>
                     </div>
-                  )}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">OOH Media Rate Cards</h3>
+                <div className="flex items-center gap-4">
                   <Dialog open={isRateDialogOpen} onOpenChange={setIsRateDialogOpen}>
                     <DialogTrigger asChild>
                       <Button onClick={() => {
