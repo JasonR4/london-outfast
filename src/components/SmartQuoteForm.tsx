@@ -206,7 +206,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const calculateTotalPrice = () => {
     console.log('💰 calculateTotalPrice called');
     console.log('📊 Current state:', {
-      selectedFormats: selectedFormats.map(f => f.name),
+      selectedFormats: selectedFormats.map(f => f.format_name),
       selectedLocations,
       selectedPeriods,
       formatQuantities
@@ -300,22 +300,22 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     console.log('📋 Current selectedFormats:', selectedFormats.map(f => f.format_name));
     
     setSelectedFormats(prev => {
-      const isSelected = prev.some(f => f.slug === format.slug);
+      const isSelected = prev.some(f => f.format_slug === format.format_slug);
       if (isSelected) {
-        console.log('❌ Removing format:', format.name);
+        console.log('❌ Removing format:', format.format_name);
         // Remove quantity when format is deselected
         setFormatQuantities(prevQuantities => {
           const newQuantities = { ...prevQuantities };
-          delete newQuantities[format.slug];
+          delete newQuantities[format.format_slug];
           return newQuantities;
         });
-        return prev.filter(f => f.slug !== format.slug);
+        return prev.filter(f => f.format_slug !== format.format_slug);
       } else {
-        console.log('✅ Adding format:', format.name);
+        console.log('✅ Adding format:', format.format_name);
         // Add default quantity when format is selected
         setFormatQuantities(prevQuantities => ({
           ...prevQuantities,
-          [format.slug]: 1
+          [format.format_slug]: 1
         }));
         return [...prev, format];
       }
@@ -365,9 +365,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       // Add each selected format as a separate quote item
       for (const format of selectedFormats) {
         await addQuoteItem({
-          format_slug: format.slug,
-          format_name: format.name,
-          quantity: formatQuantities[format.slug] || 1,
+          format_slug: format.format_slug,
+          format_name: format.format_name,
+          quantity: formatQuantities[format.format_slug] || 1,
           selected_periods: selectedPeriods,
           selected_areas: selectedLocations,
           production_cost: pricing.productionCost / selectedFormats.length,
@@ -536,7 +536,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                   <CardTitle className="text-lg">Quick Summary</CardTitle>
                 </CardHeader>
                   <CardContent className="space-y-2 text-sm">
-                    <div><strong>Formats:</strong> {selectedFormats.map(f => f.name).join(', ')}</div>
+                    <div><strong>Formats:</strong> {selectedFormats.map(f => f.format_name).join(', ')}</div>
                     <div><strong>Total Quantity:</strong> {totalQuantity}</div>
                     <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
                    <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
@@ -631,7 +631,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                  <CardContent className="p-4">
                                    <div className="flex items-start justify-between">
                                      <div className="space-y-1">
-                                       <h4 className="font-medium text-foreground">{format.name}</h4>
+                                       <h4 className="font-medium text-foreground">{format.format_name}</h4>
                                        <p className="text-sm text-muted-foreground line-clamp-2">
                                          {format.description}
                                        </p>
@@ -681,7 +681,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                            <div className="space-y-2">
                              {selectedFormats.map((format) => (
                                <div key={format.id} className="flex items-center justify-between text-sm">
-                                 <span className="font-medium">{format.name}</span>
+                                 <span className="font-medium">{format.format_name}</span>
                                  <Badge variant="outline">{format.type}</Badge>
                                </div>
                              ))}
@@ -704,17 +704,17 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                             {selectedFormats.map((format) => (
                               <div key={format.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border">
                                 <div className="flex-1">
-                                  <div className="font-medium text-sm">{format.name}</div>
+                                  <div className="font-medium text-sm">{format.format_name}</div>
                                   <div className="text-xs text-muted-foreground">
-                                    {format.name.includes('Digital') ? 'Sites' : 'Units'} per Incharge Period
+                                    {format.format_name.includes('Digital') ? 'Sites' : 'Units'} per Incharge Period
                                   </div>
                                 </div>
                                 <div className="w-24">
                                   <Select 
-                                    value={(formatQuantities[format.slug] || 1).toString()} 
+                                    value={(formatQuantities[format.format_slug] || 1).toString()} 
                                     onValueChange={(value) => setFormatQuantities(prev => ({
                                       ...prev,
-                                      [format.slug]: parseInt(value)
+                                      [format.format_slug]: parseInt(value)
                                     }))}
                                   >
                                     <SelectTrigger className="h-8">
@@ -1046,7 +1046,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           <CardTitle className="text-lg">Campaign Summary</CardTitle>
                         </CardHeader>
                          <CardContent className="space-y-2">
-                           <div><strong>Formats:</strong> {selectedFormats.map(f => f.name).join(', ')}</div>
+                           <div><strong>Formats:</strong> {selectedFormats.map(f => f.format_name).join(', ')}</div>
                            <div><strong>Total Quantity:</strong> {totalQuantity}</div>
                            <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
                           <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
