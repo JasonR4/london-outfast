@@ -706,22 +706,95 @@ export const SEOManager = () => {
             <CardContent>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <h4 className="font-medium mb-2">Primary Keywords</h4>
-                  <div className="space-y-1">
-                    {MEDIA_TYPES.slice(0, 6).map(type => (
+                  <h4 className="font-medium mb-2">Primary Keywords (100 Variations)</h4>
+                  <div className="space-y-1 max-h-96 overflow-y-auto">
+                    {MEDIA_TYPES.slice(0, 100).map(type => (
                       <Badge key={type} variant="default" className="mr-1 mb-1">
                         {type.replace('-', ' ')} london
+                      </Badge>
+                    ))}
+                    {/* Generate additional primary keyword variations */}
+                    {MEDIA_TYPES.slice(0, 20).map(type => [
+                      `${type.replace('-', ' ')} advertising london`,
+                      `london ${type.replace('-', ' ')}`,
+                      `${type.replace('-', ' ')} london rates`,
+                      `${type.replace('-', ' ')} london pricing`,
+                      `${type.replace('-', ' ')} london booking`
+                    ]).flat().slice(0, 100 - MEDIA_TYPES.length).map((keyword, index) => (
+                      <Badge key={`primary-${index}`} variant="secondary" className="mr-1 mb-1">
+                        {keyword}
                       </Badge>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">Long-tail Keywords</h4>
-                  <div className="space-y-1">
-                    <Badge variant="secondary" className="mr-1 mb-1">outdoor advertising agency london</Badge>
-                    <Badge variant="secondary" className="mr-1 mb-1">ooh media buying london</Badge>
-                    <Badge variant="secondary" className="mr-1 mb-1">billboard advertising london cheap</Badge>
-                    <Badge variant="secondary" className="mr-1 mb-1">london outdoor advertising prices</Badge>
+                  <h4 className="font-medium mb-2">Long-tail Keywords (100 Variations)</h4>
+                  <div className="space-y-1 max-h-96 overflow-y-auto">
+                    {/* Generate 100 long-tail keyword variations */}
+                    {[
+                      // Location + Format + Intent Keywords
+                      ...LONDON_AREAS.slice(0, 15).map(area => [
+                        `outdoor advertising ${area.toLowerCase()}`,
+                        `billboard advertising ${area.toLowerCase()}`,
+                        `${area.toLowerCase()} ooh advertising`,
+                        `digital advertising ${area.toLowerCase()}`,
+                        `${area.toLowerCase()} media buying`,
+                        `outdoor media ${area.toLowerCase()} london`,
+                        `advertising rates ${area.toLowerCase()}`
+                      ]).flat(),
+                      
+                      // Service + Location Keywords  
+                      'outdoor advertising agency london',
+                      'ooh media buying london',
+                      'billboard advertising london cheap',
+                      'london outdoor advertising prices',
+                      'digital billboard advertising london',
+                      'bus shelter advertising london',
+                      'tube advertising london rates',
+                      'london underground advertising',
+                      'street furniture advertising london',
+                      'ambient advertising london',
+                      'guerrilla marketing london',
+                      'outdoor media planning london',
+                      'london advertising campaign management',
+                      'ooh advertising london same day quotes',
+                      'fast outdoor advertising london',
+                      'london billboard booking online',
+                      'outdoor advertising london 48 hours',
+                      'emergency billboard advertising london',
+                      'last minute ooh london',
+                      'urgent outdoor advertising london',
+                      'weekend billboard advertising london',
+                      'london outdoor advertising specialists',
+                      'professional ooh agency london',
+                      'experienced outdoor advertising london',
+                      'premium billboard locations london',
+                      'high traffic outdoor sites london',
+                      'london transport advertising',
+                      'london bus advertising rates',
+                      'london tube car panels',
+                      'escalator advertising london',
+                      'platform advertising london underground',
+                      'london bridge advertising',
+                      'canary wharf outdoor advertising',
+                      'city of london billboard advertising',
+                      'westminster outdoor advertising',
+                      'shoreditch billboard advertising',
+                      'camden outdoor media',
+                      'islington advertising opportunities',
+                      'hackney outdoor advertising',
+                      'tower hamlets billboard sites',
+                      'greenwich outdoor advertising',
+                      'southwark billboard advertising',
+                      'lambeth outdoor media',
+                      'wandsworth advertising sites',
+                      'kensington chelsea billboards',
+                      'hammersmith fulham outdoor advertising'
+                    ].slice(0, 100).map((keyword, index) => (
+                      <Badge key={`longtail-${index}`} variant="secondary" className="mr-1 mb-1">
+                        {keyword}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               </div>
