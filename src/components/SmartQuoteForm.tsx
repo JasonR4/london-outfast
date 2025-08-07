@@ -670,25 +670,45 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                          </CardContent>
                        </Card>
 
-                       {/* Quantity */}
-                       <div className="space-y-2">
-                         <Label className="text-base font-medium">
-                           Quantity - {selectedFormats[0]?.name?.includes('Digital') ? 'Sites' : 'Units'} per Incharge Period
-                         </Label>
-                         <p className="text-sm text-muted-foreground">
-                           Each {selectedFormats[0]?.name?.includes('Digital') ? 'site' : 'unit'} can display across multiple locations during rotation periods
-                         </p>
-                        <Select value={quantity.toString()} onValueChange={(value) => setQuantity(parseInt(value))}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {[1, 2, 3, 4, 5, 10, 15, 20, 25, 50].map(num => (
-                              <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                        {/* Quantity per Format */}
+                        <div className="space-y-4">
+                          <div>
+                            <Label className="text-base font-medium">
+                              Quantity per Format
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Set the quantity for each selected media format
+                            </p>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            {selectedFormats.map((format) => (
+                              <div key={format.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border">
+                                <div className="flex-1">
+                                  <div className="font-medium text-sm">{format.name}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {format.name.includes('Digital') ? 'Sites' : 'Units'} per Incharge Period
+                                  </div>
+                                </div>
+                                <div className="w-24">
+                                  <Select 
+                                    value={quantity.toString()} 
+                                    onValueChange={(value) => setQuantity(parseInt(value))}
+                                  >
+                                    <SelectTrigger className="h-8">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {[1, 2, 3, 4, 5, 10, 15, 20, 25, 50].map(num => (
+                                        <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
                             ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                          </div>
+                        </div>
 
                       {/* Location Selection */}
                       <div className="space-y-4">
