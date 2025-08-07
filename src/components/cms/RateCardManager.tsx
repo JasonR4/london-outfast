@@ -1097,6 +1097,7 @@ export function RateCardManager() {
             <TabsList>
               <TabsTrigger value="rates">Rate Cards</TabsTrigger>
               <TabsTrigger value="periods">In-Charge Periods</TabsTrigger>
+              <TabsTrigger value="period-associations">Period Associations</TabsTrigger>
               <TabsTrigger value="bulk-upload">Bulk Upload</TabsTrigger>
               <TabsTrigger value="discounts">Period Discounts</TabsTrigger>
               <TabsTrigger value="quantity-discounts">Quantity Discounts</TabsTrigger>
@@ -2654,6 +2655,193 @@ export function RateCardManager() {
                   ))}
                 </TableBody>
               </Table>
+            </TabsContent>
+
+            <TabsContent value="period-associations" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Associate In-Charge Periods with Media Formats</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label>Select Media Formats</Label>
+                      <div className="border rounded-md p-4 max-h-48 overflow-y-auto space-y-2">
+                        {mediaFormats.map((format) => (
+                          <div key={format.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`format-${format.id}`}
+                              checked={selectedMediaFormats.includes(format.id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedMediaFormats([...selectedMediaFormats, format.id]);
+                                } else {
+                                  setSelectedMediaFormats(selectedMediaFormats.filter(id => id !== format.id));
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`format-${format.id}`} className="text-sm">
+                              {format.format_name}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label>Select Categories</Label>
+                      <div className="border rounded-md p-4 max-h-48 overflow-y-auto space-y-2">
+                        {['Standard', 'Premium', 'Digital', 'Transport', 'Roadside', 'Shopping'].map((category) => (
+                          <div key={category} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`category-${category}`}
+                              checked={selectedCategories.includes(category)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedCategories([...selectedCategories, category]);
+                                } else {
+                                  setSelectedCategories(selectedCategories.filter(c => c !== category));
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`category-${category}`} className="text-sm">
+                              {category}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Select In-Charge Periods</Label>
+                    <div className="border rounded-md p-4 max-h-48 overflow-y-auto">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                        {inchargePeriods.map((period) => (
+                          <div key={period.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`period-assoc-${period.id}`}
+                              checked={selectedPeriods.includes(period.id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedPeriods([...selectedPeriods, period.id]);
+                                } else {
+                                  setSelectedPeriods(selectedPeriods.filter(id => id !== period.id));
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`period-assoc-${period.id}`} className="text-sm">
+                              Period {period.period_number} ({format(new Date(period.start_date), 'MMM dd')} - {format(new Date(period.end_date), 'MMM dd')})
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-4">
+                    <Button 
+                      onClick={async () => {
+                        if (selectedMediaFormats.length === 0 || selectedPeriods.length === 0) {
+                          toast.error('Please select at least one media format and one period');
+                          return;
+                        }
+
+                        try {
+                          // Create rate card associations
+                          const associations = [];
+                          for (const formatId of selectedMediaFormats) {
+                            for (const category of selectedCategories.length > 0 ? selectedCategories : ['Standard']) {
+                              for (const periodId of selectedPeriods) {
+                                associations.push({
+                                  rate_card_id: formatId, // Using format ID as placeholder - you might need to create actual rate cards first
+                                  incharge_period_id: periodId
+                                });
+                              }
+                            }
+                          }
+
+                          // Note: This creates period associations. You might want to create actual rate cards first
+                          toast.success(`Would create ${associations.length} period associations`);
+                          console.log('Associations to create:', associations);
+                          
+                        } catch (error) {
+                          console.error('Error creating associations:', error);
+                          toast.error('Failed to create associations');
+                        }
+                      }}
+                      disabled={selectedMediaFormats.length === 0 || selectedPeriods.length === 0}
+                    >
+                      Create Associations
+                    </Button>
+                    
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedMediaFormats([]);
+                        setSelectedCategories([]);
+                        setSelectedPeriods([]);
+                      }}
+                    >
+                      Clear All
+                    </Button>
+                  </div>
+
+                  <div className="mt-6">
+                    <h4 className="text-lg font-semibold mb-4">Current Period Associations</h4>
+                    <div className="border rounded-md">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Period</TableHead>
+                            <TableHead>Date Range</TableHead>
+                            <TableHead>Associated Rate Cards</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {inchargePeriods.map((period) => {
+                            const associatedCards = rateCardPeriods.filter(rcp => rcp.incharge_period_id === period.id);
+                            return (
+                              <TableRow key={period.id}>
+                                <TableCell>Period {period.period_number}</TableCell>
+                                <TableCell>
+                                  {format(new Date(period.start_date), 'MMM dd, yyyy')} - {format(new Date(period.end_date), 'MMM dd, yyyy')}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex flex-wrap gap-1">
+                                    {associatedCards.length > 0 ? (
+                                      associatedCards.map((card, index) => (
+                                        <Badge key={index} variant="secondary" className="text-xs">
+                                          Rate Card {card.rate_card_id.substring(0, 8)}...
+                                        </Badge>
+                                      ))
+                                    ) : (
+                                      <span className="text-muted-foreground text-sm">No associations</span>
+                                    )}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      // Logic to manage individual period associations
+                                      toast.info('Edit associations for Period ' + period.period_number);
+                                    }}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </CardContent>
