@@ -197,8 +197,8 @@ const FormatPage = () => {
       // First try to get from cache
       staticFormat = getFormatBySlug(formatSlug || '');
       
-      // If not in cache and we have media formats loaded, try to find it there
-      if (!staticFormat && mediaFormats.length > 0) {
+      // If not in cache, try direct lookup from media formats
+      if (!staticFormat && !formatsLoading) {
         staticFormat = mediaFormats.find(f => f.format_slug === formatSlug);
       }
       
@@ -206,7 +206,6 @@ const FormatPage = () => {
         formatSlug, 
         staticFormat: staticFormat ? staticFormat.format_name : null, 
         mediaFormatsCount: mediaFormats.length,
-        allSlugs: mediaFormats.map(f => f.format_slug).slice(0, 5),
         formatsLoading
       });
       
@@ -278,11 +277,11 @@ const FormatPage = () => {
       }
     };
 
-    // Initialize when we have media formats loaded or if we're not loading anymore
-    if (!formatsLoading || mediaFormats.length > 0) {
+    // Only run when formatSlug changes or when formats finish loading
+    if (formatSlug && !formatsLoading) {
       initializePage();
     }
-  }, [formatSlug, navigate, formatsLoading, mediaFormats]);
+  }, [formatSlug, formatsLoading]);
 
   const handleGetQuote = () => {
     navigate('/quote');
