@@ -104,10 +104,10 @@ interface QuantityDiscountTier {
 export function RateCardManager() {
   const [mediaFormats, setMediaFormats] = useState<MediaFormat[]>([]);
   const [rateCards, setRateCards] = useState<RateCard[]>([]);
-  const [discountTiers, setDiscountTiers] = useState<any[]>([]);
-  const [quantityDiscountTiers, setQuantityDiscountTiers] = useState<any[]>([]);
-  const [productionTiers, setProductionTiers] = useState<any[]>([]);
-  const [creativeTiers, setCreativeTiers] = useState<any[]>([]);
+  const [discountTiers, setDiscountTiers] = useState<DiscountTier[]>([]);
+  const [quantityDiscountTiers, setQuantityDiscountTiers] = useState<QuantityDiscountTier[]>([]);
+  const [productionTiers, setProductionTiers] = useState<ProductionCostTier[]>([]);
+  const [creativeTiers, setCreativeTiers] = useState<CreativeDesignCostTier[]>([]);
   const [inchargePeriods, setInchargePeriods] = useState<any[]>([]);
   const [rateCardPeriods, setRateCardPeriods] = useState<any[]>([]);
   const [selectedPeriods, setSelectedPeriods] = useState<string[]>([]);
@@ -116,10 +116,10 @@ export function RateCardManager() {
   const [customEndDate, setCustomEndDate] = useState<Date | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [editingRate, setEditingRate] = useState<RateCard | null>(null);
-  const [editingDiscount, setEditingDiscount] = useState<any>(null);
-  const [editingQuantityDiscount, setEditingQuantityDiscount] = useState<any>(null);
-  const [editingProduction, setEditingProduction] = useState<any>(null);
-  const [editingCreative, setEditingCreative] = useState<any>(null);
+  const [editingDiscount, setEditingDiscount] = useState<DiscountTier | null>(null);
+  const [editingQuantityDiscount, setEditingQuantityDiscount] = useState<QuantityDiscountTier | null>(null);
+  const [editingProduction, setEditingProduction] = useState<ProductionCostTier | null>(null);
+  const [editingCreative, setEditingCreative] = useState<CreativeDesignCostTier | null>(null);
   const [isRateDialogOpen, setIsRateDialogOpen] = useState(false);
   const [isDiscountDialogOpen, setIsDiscountDialogOpen] = useState(false);
   const [isQuantityDiscountDialogOpen, setIsQuantityDiscountDialogOpen] = useState(false);
@@ -130,6 +130,7 @@ export function RateCardManager() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
   const [bulkUploadType, setBulkUploadType] = useState<'rates' | 'discounts' | 'quantity-discounts' | 'production' | 'creative'>('rates');
+  const [selectedMediaFormat, setSelectedMediaFormat] = useState<MediaFormat | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -137,21 +138,27 @@ export function RateCardManager() {
 
   const fetchData = async () => {
     try {
-      setIsLoading(true);
+      console.log('Starting data fetch...');
       
-      // First fetch media formats
-      const formatsRes = await supabase
-        .from('media_formats')
-        .select('*')
-        .order('format_name');
-
+      // First, try to fetch just media formats to isolate the issue
+      const formatsRes = await supabase.from('media_formats').select('*').order('format_name');
+      console.log('Media formats query result:', formatsRes);
+      
       if (formatsRes.error) {
+        console.error('Media formats query error:', formatsRes.error);
         throw formatsRes.error;
       }
       
+      if (!formatsRes.data || formatsRes.data.length === 0) {
+        console.error('No media formats found in database');
+        toast.error('No media formats found in database');
+        return;
+      }
+      
+      console.log('Successfully fetched', formatsRes.data.length, 'media formats');
       setMediaFormats(formatsRes.data);
       
-      // Then fetch other data
+      // Now fetch the rest of the data
       const [ratesRes, discountsRes, quantityDiscountsRes, productionRes, creativeRes, periodsRes, rateCardPeriodsRes] = await Promise.all([
         supabase.from('rate_cards').select('*, media_formats(format_name)').order('location_area'),
         supabase.from('discount_tiers').select('*, media_formats(format_name)').order('min_periods'),
@@ -164,9 +171,7 @@ export function RateCardManager() {
 
       if (ratesRes.error) throw ratesRes.error;
       if (discountsRes.error) throw discountsRes.error;
-      if (quantityDiscountsRes.error) {
-        console.warn('Failed to fetch quantity discount tiers:', quantityDiscountsRes.error);
-      }
+      if (quantityDiscountsRes.error) throw quantityDiscountsRes.error;
       if (productionRes.error) throw productionRes.error;
       if (creativeRes.error) throw creativeRes.error;
       if (periodsRes.error) throw periodsRes.error;
@@ -174,11 +179,13 @@ export function RateCardManager() {
 
       setRateCards(ratesRes.data || []);
       setDiscountTiers(discountsRes.data || []);
-      setQuantityDiscountTiers(quantityDiscountsRes.data || []);
+      setQuantityDiscountTiers((quantityDiscountsRes.data as any) || []);
       setProductionTiers(productionRes.data || []);
-      setCreativeTiers(creativeRes.data || []);
+      setCreativeTiers((creativeRes.data as any) || []);
       setInchargePeriods(periodsRes.data || []);
       setRateCardPeriods(rateCardPeriodsRes.data || []);
+      
+      console.log('All data loaded successfully');
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load rate card data');
@@ -187,6 +194,309 @@ export function RateCardManager() {
     }
   };
 
+  const handleSaveRateCard = async (formData: FormData) => {
+    try {
+      const isDateSpecificValue = formData.get('is_date_specific') === 'true';
+      
+      const rateData = {
+        media_format_id: formData.get('media_format_id') as string,
+        location_area: formData.get('location_area') as string,
+        base_rate_per_incharge: parseFloat(formData.get('base_rate_per_incharge') as string),
+        sale_price: formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null,
+        reduced_price: formData.get('reduced_price') ? parseFloat(formData.get('reduced_price') as string) : null,
+        location_markup_percentage: parseFloat(formData.get('location_markup_percentage') as string) || 0,
+        quantity_per_medium: parseInt(formData.get('quantity_per_medium') as string) || 1,
+        is_active: formData.get('is_active') === 'true',
+        is_date_specific: isDateSpecificValue,
+        start_date: !isDateSpecificValue && customStartDate ? customStartDate.toISOString().split('T')[0] : null,
+        end_date: !isDateSpecificValue && customEndDate ? customEndDate.toISOString().split('T')[0] : null
+      };
+
+      let rateCardId: string;
+
+      if (editingRate) {
+        const { error } = await supabase
+          .from('rate_cards')
+          .update(rateData)
+          .eq('id', editingRate.id);
+        if (error) throw error;
+        rateCardId = editingRate.id;
+        
+        // Delete existing rate card periods for this rate card
+        await supabase
+          .from('rate_card_periods')
+          .delete()
+          .eq('rate_card_id', rateCardId);
+      } else {
+        const { data, error } = await supabase
+          .from('rate_cards')
+          .insert(rateData)
+          .select()
+          .single();
+        if (error) throw error;
+        rateCardId = data.id;
+      }
+
+      // Save selected incharge periods if date-specific
+      if (isDateSpecificValue && selectedPeriods.length > 0) {
+        const periodInserts = selectedPeriods.map(periodId => ({
+          rate_card_id: rateCardId,
+          incharge_period_id: periodId
+        }));
+
+        const { error: periodsError } = await supabase
+          .from('rate_card_periods')
+          .insert(periodInserts);
+        
+        if (periodsError) throw periodsError;
+      }
+
+      toast.success(editingRate ? 'Rate card updated successfully' : 'Rate card created successfully');
+      setIsRateDialogOpen(false);
+      setEditingRate(null);
+      setSelectedPeriods([]);
+      setIsDateSpecific(false);
+      setCustomStartDate(undefined);
+      setCustomEndDate(undefined);
+      fetchData();
+    } catch (error) {
+      console.error('Error saving rate card:', error);
+      toast.error('Failed to save rate card');
+    }
+  };
+
+  const handleSaveDiscountTier = async (formData: FormData) => {
+    try {
+      const discountData = {
+        media_format_id: formData.get('media_format_id') as string,
+        min_periods: parseInt(formData.get('min_periods') as string),
+        max_periods: formData.get('max_periods') ? parseInt(formData.get('max_periods') as string) : null,
+        discount_percentage: parseFloat(formData.get('discount_percentage') as string),
+        is_active: formData.get('is_active') === 'true'
+      };
+
+      if (editingDiscount) {
+        const { error } = await supabase
+          .from('discount_tiers')
+          .update(discountData)
+          .eq('id', editingDiscount.id);
+        if (error) throw error;
+        toast.success('Discount tier updated successfully');
+      } else {
+        const { error } = await supabase
+          .from('discount_tiers')
+          .insert(discountData);
+        if (error) throw error;
+        toast.success('Discount tier created successfully');
+      }
+
+      setIsDiscountDialogOpen(false);
+      setEditingDiscount(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error saving discount tier:', error);
+      toast.error('Failed to save discount tier');
+    }
+  };
+
+  const handleSaveQuantityDiscountTier = async (formData: FormData) => {
+    try {
+      const quantityDiscountData = {
+        media_format_id: formData.get('media_format_id') as string,
+        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
+        min_quantity: parseInt(formData.get('min_quantity') as string),
+        max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
+        discount_percentage: parseFloat(formData.get('discount_percentage') as string),
+        is_active: formData.get('is_active') === 'true'
+      };
+
+      if (editingQuantityDiscount) {
+        const { error } = await supabase
+          .from('quantity_discount_tiers')
+          .update(quantityDiscountData)
+          .eq('id', editingQuantityDiscount.id);
+        if (error) throw error;
+        toast.success('Quantity discount tier updated successfully');
+      } else {
+        const { error } = await supabase
+          .from('quantity_discount_tiers')
+          .insert(quantityDiscountData);
+        if (error) throw error;
+        toast.success('Quantity discount tier created successfully');
+      }
+
+      setIsQuantityDiscountDialogOpen(false);
+      setEditingQuantityDiscount(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error saving quantity discount tier:', error);
+      toast.error('Failed to save quantity discount tier');
+    }
+  };
+
+  const handleSaveProductionTier = async (formData: FormData) => {
+    try {
+      const productionData = {
+        media_format_id: formData.get('media_format_id') as string,
+        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
+        category: formData.get('category') as string,
+        min_quantity: parseInt(formData.get('min_quantity') as string),
+        max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
+        cost_per_unit: parseFloat(formData.get('cost_per_unit') as string),
+        is_active: formData.get('is_active') === 'true'
+      };
+
+      if (editingProduction) {
+        const { error } = await supabase
+          .from('production_cost_tiers')
+          .update(productionData)
+          .eq('id', editingProduction.id);
+        if (error) throw error;
+        toast.success('Production cost tier updated successfully');
+      } else {
+        const { error } = await supabase
+          .from('production_cost_tiers')
+          .insert(productionData);
+        if (error) throw error;
+        toast.success('Production cost tier created successfully');
+      }
+
+      setIsProductionDialogOpen(false);
+      setEditingProduction(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error saving production cost tier:', error);
+      toast.error('Failed to save production cost tier');
+    }
+  };
+
+  const handleSaveCreativeTier = async (formData: FormData) => {
+    try {
+      const creativeData = {
+        media_format_id: formData.get('media_format_id') as string,
+        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
+        category: formData.get('category') as string,
+        min_quantity: parseInt(formData.get('min_quantity') as string),
+        max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
+        cost_per_unit: parseFloat(formData.get('cost_per_unit') as string),
+        is_active: formData.get('is_active') === 'true'
+      };
+
+      if (editingCreative) {
+        const { error } = await supabase
+          .from('creative_design_cost_tiers')
+          .update(creativeData)
+          .eq('id', editingCreative.id);
+        if (error) throw error;
+        toast.success('Creative design cost tier updated successfully');
+      } else {
+        const { error } = await supabase
+          .from('creative_design_cost_tiers')
+          .insert(creativeData);
+        if (error) throw error;
+        toast.success('Creative design cost tier created successfully');
+      }
+
+      setIsCreativeDialogOpen(false);
+      setEditingCreative(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error saving creative design cost tier:', error);
+      toast.error('Failed to save creative design cost tier');
+    }
+  };
+
+  const handleDeleteRateCard = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this rate card?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('rate_cards')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      toast.success('Rate card deleted successfully');
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting rate card:', error);
+      toast.error('Failed to delete rate card');
+    }
+  };
+
+  const handleDeleteDiscountTier = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this discount tier?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('discount_tiers')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      toast.success('Discount tier deleted successfully');
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting discount tier:', error);
+      toast.error('Failed to delete discount tier');
+    }
+  };
+
+  const handleDeleteProductionTier = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this production cost tier?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('production_cost_tiers')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      toast.success('Production cost tier deleted successfully');
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting production cost tier:', error);
+      toast.error('Failed to delete production cost tier');
+    }
+  };
+
+  const handleDeleteCreativeTier = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this creative design cost tier?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('creative_design_cost_tiers')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      toast.success('Creative design cost tier deleted successfully');
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting creative design cost tier:', error);
+      toast.error('Failed to delete creative design cost tier');
+    }
+  };
+
+  const handleDeleteQuantityDiscountTier = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this quantity discount tier?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('quantity_discount_tiers')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      toast.success('Quantity discount tier deleted successfully');
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting quantity discount tier:', error);
+      toast.error('Failed to delete quantity discount tier');
+    }
+  };
+
+  // Bulk upload functionality
   const downloadTemplate = (type: 'rates' | 'discounts' | 'quantity-discounts' | 'production' | 'creative' = 'rates') => {
     console.log('Download function called with type:', type);
     console.log('Media formats loaded:', mediaFormats.length);
@@ -307,8 +617,14 @@ export function RateCardManager() {
     }
   };
 
+  // Comprehensive download with all pricing data in one file
   const downloadComprehensiveTemplate = () => {
+    console.log('Comprehensive download function called');
+    console.log('Media formats loaded:', mediaFormats.length);
+    
+    // Check if media formats are loaded
     if (!mediaFormats || mediaFormats.length === 0) {
+      console.error('No media formats available for download');
       toast.error('Media formats not loaded yet. Please wait and try again.');
       return;
     }
@@ -320,7 +636,7 @@ export function RateCardManager() {
       const rateCardsData = mediaFormats.map(format => ({
         'Media Format ID': format.id,
         'Media Format Name': format.format_name,
-        'Location Area': '',
+        'Location Area': '', // Leave blank - configure in CMS
         'Base Rate Per Incharge': '0.00',
         'Sale Price': '0.00',
         'Reduced Price': '0.00',
@@ -332,12 +648,12 @@ export function RateCardManager() {
         'End Date': '',
         'Incharge Period': '1'
       }));
-
-      const rateCardsSheet = XLSX.utils.json_to_sheet(rateCardsData);
-      XLSX.utils.book_append_sheet(workbook, rateCardsSheet, 'Rate Cards');
+      const rateCardsWS = XLSX.utils.json_to_sheet(rateCardsData);
+      rateCardsWS['!cols'] = Array(Object.keys(rateCardsData[0]).length).fill({ wch: 20 });
+      XLSX.utils.book_append_sheet(workbook, rateCardsWS, 'Rate Cards');
 
       // Sheet 2: Volume Discounts
-      const volumeDiscountsData = mediaFormats.map(format => ({
+      const discountsData = mediaFormats.map(format => ({
         'Media Format ID': format.id,
         'Media Format Name': format.format_name,
         'Min Periods': '1',
@@ -345,17 +661,88 @@ export function RateCardManager() {
         'Discount Percentage': '10.00',
         'Is Active': 'TRUE'
       }));
+      const discountsWS = XLSX.utils.json_to_sheet(discountsData);
+      discountsWS['!cols'] = Array(Object.keys(discountsData[0]).length).fill({ wch: 20 });
+      XLSX.utils.book_append_sheet(workbook, discountsWS, 'Volume Discounts');
 
-      const volumeDiscountsSheet = XLSX.utils.json_to_sheet(volumeDiscountsData);
-      XLSX.utils.book_append_sheet(workbook, volumeDiscountsSheet, 'Volume Discounts');
+      // Sheet 3: Quantity Discounts
+      const quantityDiscountsData = mediaFormats.map(format => ({
+        'Media Format ID': format.id,
+        'Media Format Name': format.format_name,
+        'Location Area': '', // Leave blank - configure in CMS
+        'Min Quantity': '1',
+        'Max Quantity': '',
+        'Discount Percentage': '5.00',
+        'Is Active': 'TRUE'
+      }));
+      const quantityDiscountsWS = XLSX.utils.json_to_sheet(quantityDiscountsData);
+      quantityDiscountsWS['!cols'] = Array(Object.keys(quantityDiscountsData[0]).length).fill({ wch: 20 });
+      XLSX.utils.book_append_sheet(workbook, quantityDiscountsWS, 'Quantity Discounts');
 
-      // Add other sheets...
-      
-      XLSX.writeFile(workbook, 'comprehensive-rate-cards-template.xlsx');
-      toast.success('Comprehensive template downloaded successfully');
+      // Sheet 4: Production Costs
+      const productionData = mediaFormats.map(format => ({
+        'Media Format ID': format.id,
+        'Media Format Name': format.format_name,
+        'Location Area': '', // Leave blank - configure in CMS
+        'Category': '', // Leave blank - configure in CMS
+        'Min Quantity': '1',
+        'Max Quantity': '',
+        'Cost Per Unit': '50.00',
+        'Is Active': 'TRUE'
+      }));
+      const productionWS = XLSX.utils.json_to_sheet(productionData);
+      productionWS['!cols'] = Array(Object.keys(productionData[0]).length).fill({ wch: 20 });
+      XLSX.utils.book_append_sheet(workbook, productionWS, 'Production Costs');
+
+      // Sheet 5: Creative Design Costs
+      const creativeData = mediaFormats.map(format => ({
+        'Media Format ID': format.id,
+        'Media Format Name': format.format_name,
+        'Location Area': '', // Leave blank - configure in CMS
+        'Category': '', // Leave blank - configure in CMS
+        'Min Quantity': '1',
+        'Max Quantity': '',
+        'Cost Per Unit': '85.00',
+        'Is Active': 'TRUE'
+      }));
+      const creativeWS = XLSX.utils.json_to_sheet(creativeData);
+      creativeWS['!cols'] = Array(Object.keys(creativeData[0]).length).fill({ wch: 20 });
+      XLSX.utils.book_append_sheet(workbook, creativeWS, 'Creative Design Costs');
+
+      // Sheet 6: Media Formats Reference
+      const formatsData = mediaFormats.map(format => ({
+        'Format ID': format.id,
+        'Format Name': format.format_name,
+        'Format Slug': format.format_slug,
+        'Description': format.description,
+        'Dimensions': format.dimensions,
+        'Is Active': format.is_active ? 'TRUE' : 'FALSE'
+      }));
+      const formatsWS = XLSX.utils.json_to_sheet(formatsData);
+      formatsWS['!cols'] = Array(Object.keys(formatsData[0]).length).fill({ wch: 25 });
+      XLSX.utils.book_append_sheet(workbook, formatsWS, 'Media Formats Reference');
+
+      // Sheet 7: London Areas Reference
+      const areasData = londonAreas.flatMap(zone => 
+        zone.areas.map(area => ({
+          'Area Name': area,
+          'Zone': zone.zone,
+          'Zone Color': zone.color
+        }))
+      );
+      const areasWS = XLSX.utils.json_to_sheet(areasData);
+      areasWS['!cols'] = Array(Object.keys(areasData[0]).length).fill({ wch: 25 });
+      XLSX.utils.book_append_sheet(workbook, areasWS, 'London Areas Reference');
+
+      // Download the comprehensive file
+      const filename = `comprehensive-rate-cards-template-${new Date().toISOString().split('T')[0]}.xlsx`;
+      console.log('About to download comprehensive file:', filename);
+      XLSX.writeFile(workbook, filename);
+      console.log('Comprehensive file download triggered successfully');
+      toast.success('Comprehensive rate cards template downloaded successfully');
     } catch (error) {
-      console.error('Error generating comprehensive template:', error);
-      toast.error('Failed to generate comprehensive template');
+      console.error('Error during comprehensive file generation/download:', error);
+      toast.error('Failed to generate comprehensive template file');
     }
   };
 
@@ -369,22 +756,106 @@ export function RateCardManager() {
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
+      // Validate data against existing formats and areas
+      const formatNames = mediaFormats.map(f => f.format_name.toLowerCase());
+      const validAreas = londonAreas.flatMap(zone => zone.areas).map(area => area.toLowerCase());
+      
       const validRows: any[] = [];
       const invalidRows: any[] = [];
 
       jsonData.forEach((row: any, index) => {
         const errors: string[] = [];
         
-        // Skip empty rows
+        // Skip header/example row
+        if (index === 0 && (
+          row['Media Format']?.includes('Select from') ||
+          (row['Min Periods']?.toString().includes('1') && bulkUploadType === 'discounts') ||
+          (row['Min Quantity']?.toString().includes('1') && (bulkUploadType === 'quantity-discounts' || bulkUploadType === 'production' || bulkUploadType === 'creative'))
+        )) return;
+
+        // Skip completely empty rows
         const hasAnyData = Object.values(row).some(value => value && value.toString().trim() !== '');
         if (!hasAnyData) return;
 
-        // Basic validation
+        // Validate pre-populated format fields (read-only)
         if (!row['Media Format ID']) {
-          errors.push('Media format ID is required');
+          errors.push('Media format ID is required (row data: ' + JSON.stringify(Object.keys(row)) + ')');
+        }
+        if (!row['Media Format Name']) {
+          errors.push('Media format name is required');
+        }
+
+        // Type-specific validation
+        switch (bulkUploadType) {
+          case 'rates':
+            // Validate location area for rates - allow empty for template
+            if (row['Location Area'] && !validAreas.includes(row['Location Area'].toLowerCase()) && row['Location Area'].toLowerCase() !== 'gd') {
+              errors.push('Invalid location area (use valid London area or "GD")');
+            }
+            // Validate numeric fields
+            if (!row['Base Rate Per Incharge'] || isNaN(parseFloat(row['Base Rate Per Incharge']))) {
+              errors.push('Invalid base rate');
+            }
+            break;
+            
+          case 'discounts':
+            // Validate periods
+            if (!row['Min Periods'] || isNaN(parseInt(row['Min Periods'])) || parseInt(row['Min Periods']) < 1) {
+              errors.push('Invalid min periods');
+            }
+            if (row['Max Periods'] && (isNaN(parseInt(row['Max Periods'])) || parseInt(row['Max Periods']) < parseInt(row['Min Periods']))) {
+              errors.push('Invalid max periods');
+            }
+            if (!row['Discount Percentage'] || isNaN(parseFloat(row['Discount Percentage']))) {
+              errors.push('Invalid discount percentage');
+            }
+            break;
+            
+          case 'quantity-discounts':
+            // Validate location area (can be empty, global or valid area)
+            if (row['Location Area'] && row['Location Area'].toLowerCase() !== 'global' && 
+                row['Location Area'].toLowerCase() !== 'gd' && !validAreas.includes(row['Location Area'].toLowerCase())) {
+              errors.push('Invalid location area (use "global", "GD", or valid London area)');
+            }
+            // Validate quantity ranges
+            if (!row['Min Quantity'] || isNaN(parseInt(row['Min Quantity'])) || parseInt(row['Min Quantity']) < 1) {
+              errors.push('Invalid min quantity');
+            }
+            if (row['Max Quantity'] && (isNaN(parseInt(row['Max Quantity'])) || parseInt(row['Max Quantity']) < parseInt(row['Min Quantity']))) {
+              errors.push('Invalid max quantity');
+            }
+            if (!row['Discount Percentage'] || isNaN(parseFloat(row['Discount Percentage']))) {
+              errors.push('Invalid discount percentage');
+            }
+            break;
+            
+          case 'production':
+          case 'creative':
+            // Validate location area (can be empty, global, or valid area)
+            if (row['Location Area'] && row['Location Area'].toLowerCase() !== 'global' && 
+                row['Location Area'].toLowerCase() !== 'gd' && !validAreas.includes(row['Location Area'].toLowerCase())) {
+              errors.push('Invalid location area (use "global", "GD", or valid London area)');
+            }
+            // Validate quantity ranges
+            if (!row['Min Quantity'] || isNaN(parseInt(row['Min Quantity'])) || parseInt(row['Min Quantity']) < 1) {
+              errors.push('Invalid min quantity');
+            }
+            if (row['Max Quantity'] && (isNaN(parseInt(row['Max Quantity'])) || parseInt(row['Max Quantity']) < parseInt(row['Min Quantity']))) {
+              errors.push('Invalid max quantity');
+            }
+            if (!row['Cost Per Unit'] || isNaN(parseFloat(row['Cost Per Unit']))) {
+              errors.push('Invalid cost per unit');
+            }
+            break;
+        }
+
+        // Validate boolean fields (common)
+        if (row['Is Active'] && !['TRUE', 'FALSE', true, false].includes(row['Is Active'])) {
+          errors.push('Invalid Is Active value (must be TRUE or FALSE)');
         }
 
         if (errors.length > 0) {
+          console.log('Row', index + 1, 'errors:', errors, 'data:', row);
           invalidRows.push({ ...row, rowNumber: index + 1, errors });
         } else {
           validRows.push({ ...row, rowNumber: index + 1 });
@@ -416,7 +887,9 @@ export function RateCardManager() {
       const dataToInsert = [];
 
       for (const row of analysisResults.validRows) {
+        // Use pre-populated media format ID from template
         const mediaFormatId = row['Media Format ID'];
+
         if (!mediaFormatId) continue;
 
         let dataEntry: any = {};
@@ -425,8 +898,8 @@ export function RateCardManager() {
           case 'rates':
             dataEntry = {
               media_format_id: mediaFormatId,
-              location_area: row['Location Area'] || '',
-              base_rate_per_incharge: parseFloat(row['Base Rate Per Incharge']) || 0,
+              location_area: row['Location Area'],
+              base_rate_per_incharge: parseFloat(row['Base Rate Per Incharge']),
               sale_price: row['Sale Price'] ? parseFloat(row['Sale Price']) : null,
               reduced_price: row['Reduced Price'] ? parseFloat(row['Reduced Price']) : null,
               location_markup_percentage: parseFloat(row['Location Markup Percentage']) || 0,
@@ -438,22 +911,101 @@ export function RateCardManager() {
               incharge_period: row['Incharge Period'] ? parseInt(row['Incharge Period']) : 1
             };
             break;
+            
+          case 'quantity-discounts':
+            dataEntry = {
+              media_format_id: mediaFormatId,
+              location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
+              min_quantity: parseInt(row['Min Quantity']),
+              max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
+              discount_percentage: parseFloat(row['Discount Percentage']),
+              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+            };
+            break;
+            
+          case 'discounts':
+            dataEntry = {
+              media_format_id: mediaFormatId,
+              min_periods: parseInt(row['Min Periods']),
+              max_periods: row['Max Periods'] ? parseInt(row['Max Periods']) : null,
+              discount_percentage: parseFloat(row['Discount Percentage']),
+              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+            };
+            break;
+            
+          case 'production':
+            dataEntry = {
+              media_format_id: mediaFormatId,
+              location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
+              category: row['Category'],
+              min_quantity: parseInt(row['Min Quantity']),
+              max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
+              cost_per_unit: parseFloat(row['Cost Per Unit']),
+              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+            };
+            break;
+            
+          case 'creative':
+            dataEntry = {
+              media_format_id: mediaFormatId,
+              location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
+              category: row['Category'],
+              min_quantity: parseInt(row['Min Quantity']),
+              max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
+              cost_per_unit: parseFloat(row['Cost Per Unit']),
+              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+            };
+            break;
         }
 
         dataToInsert.push(dataEntry);
       }
 
-      // Insert data
-      const { error } = await supabase.from('rate_cards').insert(dataToInsert);
-      if (error) throw error;
+      // Insert data in smaller batches to prevent timeout
+      const batchSize = 20;
+      let insertedCount = 0;
+      let error: any = null;
+      
+      for (let i = 0; i < dataToInsert.length; i += batchSize) {
+        const batch = dataToInsert.slice(i, i + batchSize);
+        
+        switch (bulkUploadType) {
+          case 'rates':
+            ({ error } = await supabase.from('rate_cards').insert(batch));
+            break;
+          case 'discounts':
+            ({ error } = await supabase.from('discount_tiers').insert(batch));
+            break;
+          case 'quantity-discounts':
+            ({ error } = await supabase.from('quantity_discount_tiers').insert(batch));
+            break;
+          case 'production':
+            ({ error } = await supabase.from('production_cost_tiers').insert(batch));
+            break;
+          case 'creative':
+            ({ error } = await supabase.from('creative_design_cost_tiers').insert(batch));
+            break;
+        }
 
-      toast.success(`Successfully imported ${dataToInsert.length} rate cards`);
+        if (error) throw error;
+        insertedCount += batch.length;
+      }
+
+      const successMessages = {
+        rates: 'rate cards',
+        discounts: 'discount tiers',
+        'quantity-discounts': 'quantity discount tiers', 
+        production: 'production cost tiers',
+        creative: 'creative design cost tiers'
+      };
+
+      toast.success(`Successfully imported ${insertedCount} ${successMessages[bulkUploadType]}`);
       setUploadedFile(null);
       setAnalysisResults(null);
       fetchData();
     } catch (error) {
       console.error('Error processing bulk upload:', error);
-      toast.error('Failed to import data');
+      toast.error(`Failed to import ${bulkUploadType}`);
     } finally {
       setIsBulkUploading(false);
     }
@@ -523,11 +1075,41 @@ export function RateCardManager() {
                       Complete Rate Cards Package
                     </h3>
                     <p className="text-muted-foreground">
-                      Download a comprehensive Excel file with all pricing data in one place. Note: For now, each sheet needs to be uploaded separately.
+                      Download a comprehensive Excel file with all pricing data in one place: rate cards, volume discounts, quantity discounts, production costs, creative costs, plus reference sheets for all media formats and London areas.
                     </p>
+                    <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                      <span className="px-2 py-1 bg-background rounded">Rate Cards</span>
+                      <span className="px-2 py-1 bg-background rounded">Volume Discounts</span>
+                      <span className="px-2 py-1 bg-background rounded">Quantity Discounts</span>
+                      <span className="px-2 py-1 bg-background rounded">Production Costs</span>
+                      <span className="px-2 py-1 bg-background rounded">Creative Costs</span>
+                      <span className="px-2 py-1 bg-background rounded">Media Formats</span>
+                      <span className="px-2 py-1 bg-background rounded">London Areas</span>
+                    </div>
                     <Button onClick={downloadComprehensiveTemplate} className="flex items-center gap-2" size="lg">
                       <Download className="w-4 h-4" />
                       Download Complete Package
+                    </Button>
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">or download individual templates</span>
+                    </div>
+                  </div>
+
+                  {/* Step 1: Download Individual Template */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Individual Template Download</h3>
+                    <p className="text-muted-foreground">
+                      Download a specific template for one data type only.
+                    </p>
+                    <Button onClick={() => downloadTemplate(bulkUploadType)} variant="outline" className="flex items-center gap-2">
+                      <Download className="w-4 h-4" />
+                      Download {bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1).replace('-', ' ')} Template
                     </Button>
                   </div>
 
@@ -535,7 +1117,7 @@ export function RateCardManager() {
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Step 2: Upload Completed File</h3>
                     <p className="text-muted-foreground">
-                      Upload your completed Excel file for analysis and validation. For comprehensive templates, upload each sheet separately by selecting the appropriate data type above.
+                      Upload your completed Excel file for analysis and validation.
                     </p>
                     <div className="border-2 border-dashed border-border rounded-lg p-6">
                       <Input
@@ -564,10 +1146,7 @@ export function RateCardManager() {
                         className="flex items-center gap-2"
                       >
                         <Upload className="w-4 h-4" />
-                        {isAnalyzing ? 'Analyzing...' : 
-                          uploadedFile?.name?.includes('comprehensive') ? 
-                          'Analyze Comprehensive Template' : 
-                          `Analyze ${bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1).replace('-', ' ')} File`}
+                        {isAnalyzing ? 'Analyzing...' : `Analyze ${bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1).replace('-', ' ')} File`}
                       </Button>
                     )}
                   </div>
@@ -642,10 +1221,1086 @@ export function RateCardManager() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="rates">
-              <div className="text-center p-8 text-muted-foreground">
-                Rate Cards tab content...
+            <TabsContent value="rates" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">OOH Media Rate Cards</h3>
+                <Dialog open={isRateDialogOpen} onOpenChange={setIsRateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => {
+                      setEditingRate(null);
+                      setSelectedPeriods([]);
+                      setIsDateSpecific(false);
+                      setCustomStartDate(undefined);
+                      setCustomEndDate(undefined);
+                    }}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Rate Card
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingRate ? 'Edit Rate Card' : 'Add New Rate Card'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveRateCard(new FormData(e.currentTarget));
+                    }} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="media_format_id">Media Format</Label>
+                          <Select name="media_format_id" defaultValue={editingRate?.media_format_id} required>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select format" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {mediaFormats.map((format) => (
+                                <SelectItem key={format.id} value={format.id}>
+                                  {format.format_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="location_area">Location Area</Label>
+                          <Select name="location_area" defaultValue={editingRate?.location_area} required>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select location area" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="GD">GD (General Distribution)</SelectItem>
+                              {londonAreas.flatMap(area => 
+                                area.areas.map(borough => (
+                                  <SelectItem key={borough} value={borough}>{borough}</SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                         </div>
+                       </div>
+                       <div>
+                         <Label htmlFor="category">OOH Category</Label>
+                         <Select name="category" defaultValue={editingRate?.category} required>
+                           <SelectTrigger>
+                             <SelectValue placeholder="Select category" />
+                           </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
+                              <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
+                              <SelectItem value="National Rail & Commuter Rail">National Rail & Commuter Rail</SelectItem>
+                              <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
+                              <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
+                              <SelectItem value="Retail & Leisure Environments">Retail & Leisure Environments</SelectItem>
+                              <SelectItem value="Airports">Airports</SelectItem>
+                              <SelectItem value="Street Furniture">Street Furniture</SelectItem>
+                              <SelectItem value="Programmatic DOOH (pDOOH)">Programmatic DOOH (pDOOH)</SelectItem>
+                              <SelectItem value="Ambient / Guerrilla OOH">Ambient / Guerrilla OOH</SelectItem>
+                              <SelectItem value="Sampling, Stunts & Flash Mob Advertising">Sampling, Stunts & Flash Mob Advertising</SelectItem>
+                              <SelectItem value="Brand Experience & Pop-Up Activations">Brand Experience & Pop-Up Activations</SelectItem>
+                              <SelectItem value="Mobile Advertising Solutions">Mobile Advertising Solutions</SelectItem>
+                              <SelectItem value="Aerial Advertising">Aerial Advertising</SelectItem>
+                              <SelectItem value="Cinema Advertising">Cinema Advertising</SelectItem>
+                              <SelectItem value="Sports Ground & Stadium Advertising">Sports Ground & Stadium Advertising</SelectItem>
+                              <SelectItem value="Radio">Radio</SelectItem>
+                            </SelectContent>
+                         </Select>
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                         <div>
+                           <Label htmlFor="base_rate_per_incharge">Base Rate per Incharge (£)</Label>
+                           <Input
+                             name="base_rate_per_incharge"
+                             type="number"
+                             step="0.01"
+                             defaultValue={editingRate?.base_rate_per_incharge}
+                             required
+                           />
+                         </div>
+                         <div>
+                           <Label htmlFor="location_markup_percentage">Location Markup (%)</Label>
+                           <Input
+                             name="location_markup_percentage"
+                             type="number"
+                             step="0.01"
+                             defaultValue={editingRate?.location_markup_percentage || 0}
+                             placeholder="0"
+                           />
+                          </div>
+                          <div>
+                            <Label htmlFor="quantity_per_medium">Quantity per Medium</Label>
+                            <Input
+                              name="quantity_per_medium"
+                              type="number"
+                              min="1"
+                              defaultValue={editingRate?.quantity_per_medium || 1}
+                              required
+                            />
+                          </div>
+                         <div>
+                           <Label htmlFor="sale_price">Sale Price (£)</Label>
+                           <Input
+                             name="sale_price"
+                             type="number"
+                             step="0.01"
+                             defaultValue={editingRate?.sale_price || ''}
+                             placeholder="Optional special sale price"
+                           />
+                         </div>
+                        <div>
+                          <Label htmlFor="reduced_price">Reduced Price (£)</Label>
+                          <Input
+                            name="reduced_price"
+                            type="number"
+                            step="0.01"
+                            defaultValue={editingRate?.reduced_price || ''}
+                            placeholder="Optional reduced price"
+                          />
+                         </div>
+                         
+                         {/* Date-specific checkbox */}
+                         <div className="col-span-2">
+                           <div className="flex items-center space-x-2">
+                               <Checkbox 
+                                 id="is_date_specific" 
+                                 name="is_date_specific"
+                                 checked={isDateSpecific}
+                                 onCheckedChange={(checked) => setIsDateSpecific(checked as boolean)}
+                                 value="true"
+                              />
+                             <Label htmlFor="is_date_specific">
+                               This is date-specific media (incharge-based)
+                             </Label>
+                           </div>
+                           <p className="text-sm text-muted-foreground mt-1">
+                             Check this for media that requires specific start/end dates (not for guerrilla or ambient)
+                            </p>
+                          </div>
+
+                          {/* Conditional rendering based on date-specific checkbox */}
+                          {isDateSpecific ? (
+                            /* Incharge Periods Selection - when checked */
+                            <div>
+                              <Label>Available Incharge Periods</Label>
+                              <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-3">
+                                {inchargePeriods.map(period => (
+                                  <div key={period.id} className="flex items-center space-x-2">
+                                    <input
+                                      type="checkbox"
+                                      id={`period-${period.id}`}
+                                      checked={selectedPeriods.includes(period.id)}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setSelectedPeriods(prev => [...prev, period.id]);
+                                        } else {
+                                          setSelectedPeriods(prev => prev.filter(p => p !== period.id));
+                                        }
+                                      }}
+                                      className="h-4 w-4"
+                                    />
+                                    <Label htmlFor={`period-${period.id}`} className="text-sm">
+                                      Period {period.period_number}: {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-2">
+                                Select which periods are available for this rate card
+                              </p>
+                            </div>
+                          ) : (
+                            /* Custom Date Selection - when unchecked */
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="start_date">Custom Start Date</Label>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !customStartDate && "text-muted-foreground"
+                                      )}
+                                    >
+                                      <CalendarIcon className="mr-2 h-4 w-4" />
+                                      {customStartDate ? format(customStartDate, "PPP") : <span>Pick start date</span>}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                      mode="single"
+                                      selected={customStartDate}
+                                      onSelect={setCustomStartDate}
+                                      initialFocus
+                                      className={cn("p-3 pointer-events-auto")}
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
+                              
+                              <div>
+                                <Label htmlFor="end_date">Custom End Date</Label>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !customEndDate && "text-muted-foreground"
+                                      )}
+                                    >
+                                      <CalendarIcon className="mr-2 h-4 w-4" />
+                                      {customEndDate ? format(customEndDate, "PPP") : <span>Pick end date</span>}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                      mode="single"
+                                      selected={customEndDate}
+                                      onSelect={setCustomEndDate}
+                                      disabled={(date) => customStartDate ? date < customStartDate : false}
+                                      initialFocus
+                                      className={cn("p-3 pointer-events-auto")}
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
+                            </div>
+                          )}
+                          
+                          
+                          <div>
+                            <Label htmlFor="is_active">Status</Label>
+                           <Select name="is_active" defaultValue={editingRate?.is_active ? 'true' : 'false'}>
+                             <SelectTrigger>
+                               <SelectValue />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="true">Active</SelectItem>
+                               <SelectItem value="false">Inactive</SelectItem>
+                             </SelectContent>
+                           </Select>
+                         </div>
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={() => setIsRateDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit">
+                          {editingRate ? 'Update' : 'Create'} Rate Card
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
+
+               <Table>
+                 <TableHeader>
+                   <TableRow>
+                      <TableHead>Format</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Period</TableHead>
+                      <TableHead>Dates</TableHead>
+                      <TableHead>Base Rate</TableHead>
+                      <TableHead>Quantity</TableHead>
+                      <TableHead>Location Markup</TableHead>
+                      <TableHead>Sale Price</TableHead>
+                      <TableHead>Reduced Price</TableHead>
+                     <TableHead>Status</TableHead>
+                     <TableHead>Actions</TableHead>
+                   </TableRow>
+                 </TableHeader>
+                <TableBody>
+                   {rateCards.map((rate) => (
+                     <TableRow key={rate.id}>
+                        <TableCell>{rate.media_formats?.format_name}</TableCell>
+                        <TableCell>{rate.location_area}</TableCell>
+                        <TableCell>
+                          {rate.is_date_specific ? `Period ${rate.incharge_period}` : '-'}
+                        </TableCell>
+                         <TableCell>
+                           {rate.is_date_specific ? (
+                             (() => {
+                               const ratePeriods = rateCardPeriods
+                                 .filter(rcp => rcp.rate_card_id === rate.id)
+                                 .map(rcp => rcp.incharge_periods)
+                                 .filter(Boolean);
+                               
+                               if (ratePeriods.length > 0) {
+                                 return (
+                                   <div className="text-xs">
+                                     {ratePeriods.map((period, index) => (
+                                       <div key={index}>
+                                         Period {period.period_number}: {format(new Date(period.start_date), 'MMM dd')} - {format(new Date(period.end_date), 'MMM dd, yyyy')}
+                                       </div>
+                                     ))}
+                                   </div>
+                                 );
+                               } else {
+                                 return (
+                                   <Badge variant="outline" className="text-xs">
+                                     No periods selected
+                                   </Badge>
+                                 );
+                               }
+                             })()
+                           ) : rate.start_date && rate.end_date ? (
+                             <div className="text-xs">
+                               <div>{format(new Date(rate.start_date), 'MMM dd, yyyy')}</div>
+                               <div>to {format(new Date(rate.end_date), 'MMM dd, yyyy')}</div>
+                             </div>
+                           ) : (
+                             <Badge variant="outline" className="text-xs">
+                               Custom dates
+                             </Badge>
+                           )}
+                         </TableCell>
+                        <TableCell>£{rate.base_rate_per_incharge}</TableCell>
+                        <TableCell>{rate.quantity_per_medium}</TableCell>
+                        <TableCell>{rate.location_markup_percentage}%</TableCell>
+                        <TableCell>{rate.sale_price ? `£${rate.sale_price}` : '-'}</TableCell>
+                        <TableCell>{rate.reduced_price ? `£${rate.reduced_price}` : '-'}</TableCell>
+                      <TableCell>
+                        <Badge variant={rate.is_active ? 'default' : 'secondary'}>
+                          {rate.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setEditingRate(rate);
+                              setIsDateSpecific(rate.is_date_specific || false);
+                              
+                              if (rate.is_date_specific) {
+                                // Load existing periods for this rate card
+                                const existingPeriods = rateCardPeriods
+                                  .filter(rcp => rcp.rate_card_id === rate.id)
+                                  .map(rcp => rcp.incharge_period_id);
+                                setSelectedPeriods(existingPeriods);
+                                setCustomStartDate(undefined);
+                                setCustomEndDate(undefined);
+                              } else {
+                                // Load custom dates
+                                setSelectedPeriods([]);
+                                setCustomStartDate(rate.start_date ? new Date(rate.start_date) : undefined);
+                                setCustomEndDate(rate.end_date ? new Date(rate.end_date) : undefined);
+                              }
+                              
+                              setIsRateDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteRateCard(rate.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
+
+            <TabsContent value="discounts" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Discount Tiers by Incharge Quantity</h3>
+                <Dialog open={isDiscountDialogOpen} onOpenChange={setIsDiscountDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => setEditingDiscount(null)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Discount Tier
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingDiscount ? 'Edit Discount Tier' : 'Add New Discount Tier'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveDiscountTier(new FormData(e.currentTarget));
+                    }} className="space-y-4">
+                      <div>
+                        <Label htmlFor="media_format_id">Media Format</Label>
+                        <Select name="media_format_id" defaultValue={editingDiscount?.media_format_id} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select format" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {mediaFormats.map((format) => (
+                              <SelectItem key={format.id} value={format.id}>
+                                {format.format_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="min_periods">Min Periods</Label>
+                          <Input
+                            name="min_periods"
+                            type="number"
+                            defaultValue={editingDiscount?.min_periods}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="max_periods">Max Periods</Label>
+                          <Input
+                            name="max_periods"
+                            type="number"
+                            defaultValue={editingDiscount?.max_periods || ''}
+                            placeholder="Leave empty for unlimited"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="discount_percentage">Discount Percentage (%)</Label>
+                        <Input
+                          name="discount_percentage"
+                          type="number"
+                          step="0.01"
+                          defaultValue={editingDiscount?.discount_percentage}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="is_active">Status</Label>
+                        <Select name="is_active" defaultValue={editingDiscount?.is_active ? 'true' : 'false'}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Active</SelectItem>
+                            <SelectItem value="false">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={() => setIsDiscountDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit">
+                          {editingDiscount ? 'Update' : 'Create'} Discount Tier
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Format</TableHead>
+                    <TableHead>Min Incharges</TableHead>
+                    <TableHead>Max Incharges</TableHead>
+                    <TableHead>Discount %</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {discountTiers.map((discount) => (
+                    <TableRow key={discount.id}>
+                      <TableCell>{discount.media_formats?.format_name}</TableCell>
+                      <TableCell>{discount.min_periods}</TableCell>
+                      <TableCell>{discount.max_periods || 'Unlimited'}</TableCell>
+                      <TableCell>{discount.discount_percentage}%</TableCell>
+                      <TableCell>
+                        <Badge variant={discount.is_active ? 'default' : 'secondary'}>
+                          {discount.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setEditingDiscount(discount);
+                              setIsDiscountDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteDiscountTier(discount.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
+
+            <TabsContent value="quantity-discounts" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Quantity Discount Tiers</h3>
+                <Dialog open={isQuantityDiscountDialogOpen} onOpenChange={setIsQuantityDiscountDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => setEditingQuantityDiscount(null)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Quantity Discount Tier
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingQuantityDiscount ? 'Edit Quantity Discount Tier' : 'Add New Quantity Discount Tier'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveQuantityDiscountTier(new FormData(e.currentTarget));
+                    }} className="space-y-4">
+                      <div>
+                        <Label htmlFor="media_format_id">Media Format</Label>
+                        <Select name="media_format_id" defaultValue={editingQuantityDiscount?.media_format_id} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select format" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {mediaFormats.map((format) => (
+                              <SelectItem key={format.id} value={format.id}>
+                                {format.format_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="location_area">Location Area (Optional)</Label>
+                        <Select name="location_area" defaultValue={editingQuantityDiscount?.location_area || 'global'}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select location area (leave empty for global)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="global">Global (All Areas)</SelectItem>
+                            <SelectItem value="GD">GD (General Distribution)</SelectItem>
+                            {londonAreas.flatMap(area => 
+                              area.areas.map(borough => (
+                                <SelectItem key={borough} value={borough}>{borough}</SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="min_quantity">Min Quantity</Label>
+                          <Input
+                            name="min_quantity"
+                            type="number"
+                            min="1"
+                            defaultValue={editingQuantityDiscount?.min_quantity}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="max_quantity">Max Quantity</Label>
+                          <Input
+                            name="max_quantity"
+                            type="number"
+                            defaultValue={editingQuantityDiscount?.max_quantity || ''}
+                            placeholder="Leave empty for unlimited"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="discount_percentage">Discount Percentage (%)</Label>
+                        <Input
+                          name="discount_percentage"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="100"
+                          defaultValue={editingQuantityDiscount?.discount_percentage}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="is_active">Status</Label>
+                        <Select name="is_active" defaultValue={editingQuantityDiscount?.is_active ? 'true' : 'false'}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Active</SelectItem>
+                            <SelectItem value="false">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button type="submit" className="w-full">
+                        {editingQuantityDiscount ? 'Update Quantity Discount Tier' : 'Create Quantity Discount Tier'}
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Media Format</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Quantity Range</TableHead>
+                    <TableHead>Discount %</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {quantityDiscountTiers.map((tier) => (
+                    <TableRow key={tier.id}>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {tier.media_formats?.format_name || 'Unknown Format'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {tier.location_area || 'Global'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="text-sm">
+                            Min: {tier.min_quantity} units
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Max: {tier.max_quantity ? `${tier.max_quantity} units` : 'Unlimited'}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="default">
+                          {tier.discount_percentage}%
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={tier.is_active ? 'default' : 'secondary'}>
+                          {tier.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingQuantityDiscount(tier);
+                              setIsQuantityDiscountDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="w-4 h-4 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteQuantityDiscountTier(tier.id)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
+
+            <TabsContent value="production" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Production Cost Tiers by Quantity</h3>
+                <Dialog open={isProductionDialogOpen} onOpenChange={setIsProductionDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => setEditingProduction(null)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Production Cost Tier
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingProduction ? 'Edit Production Cost Tier' : 'Add New Production Cost Tier'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveProductionTier(new FormData(e.currentTarget));
+                    }} className="space-y-4">
+                      <div>
+                        <Label htmlFor="media_format_id">Media Format</Label>
+                        <Select name="media_format_id" defaultValue={editingProduction?.media_format_id} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select format" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {mediaFormats.map((format) => (
+                              <SelectItem key={format.id} value={format.id}>
+                                {format.format_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="location_area">Location Area (Optional)</Label>
+                          <Select name="location_area" defaultValue={editingProduction?.location_area || 'global'}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select location area (leave empty for global)" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="global">Global (All Areas)</SelectItem>
+                              <SelectItem value="GD">GD (General Distribution)</SelectItem>
+                              {londonAreas.flatMap(area => 
+                                area.areas.map(borough => (
+                                  <SelectItem key={borough} value={borough}>{borough}</SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="category">Production Category</Label>
+                          <Select name="category" defaultValue={editingProduction?.category} required>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
+                              <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
+                              <SelectItem value="National Rail & Commuter Rail">National Rail & Commuter Rail</SelectItem>
+                              <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
+                              <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
+                              <SelectItem value="Retail & Leisure Environments">Retail & Leisure Environments</SelectItem>
+                              <SelectItem value="Airports">Airports</SelectItem>
+                              <SelectItem value="Street Furniture">Street Furniture</SelectItem>
+                              <SelectItem value="Programmatic DOOH (pDOOH)">Programmatic DOOH (pDOOH)</SelectItem>
+                              <SelectItem value="Ambient / Guerrilla OOH">Ambient / Guerrilla OOH</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="min_quantity">Min Quantity</Label>
+                          <Input
+                            name="min_quantity"
+                            type="number"
+                            defaultValue={editingProduction?.min_quantity}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="max_quantity">Max Quantity</Label>
+                          <Input
+                            name="max_quantity"
+                            type="number"
+                            defaultValue={editingProduction?.max_quantity || ''}
+                            placeholder="Leave empty for unlimited"
+                          />
+                        </div>
+                      </div>
+                       <div>
+                         <Label htmlFor="cost_per_unit">Cost per Unit (£)</Label>
+                         <Input
+                           name="cost_per_unit"
+                           type="number"
+                           step="0.01"
+                           defaultValue={editingProduction?.cost_per_unit}
+                           required
+                         />
+                       </div>
+                      <div>
+                        <Label htmlFor="is_active">Status</Label>
+                        <Select name="is_active" defaultValue={editingProduction?.is_active ? 'true' : 'false'}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Active</SelectItem>
+                            <SelectItem value="false">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={() => setIsProductionDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit">
+                          {editingProduction ? 'Update' : 'Create'} Production Cost Tier
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Format</TableHead>
+                    <TableHead>Location Area</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Min Quantity</TableHead>
+                    <TableHead>Max Quantity</TableHead>
+                    <TableHead>Cost per Unit</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {productionTiers.map((production) => (
+                    <TableRow key={production.id}>
+                      <TableCell>{production.media_formats?.format_name}</TableCell>
+                      <TableCell>{production.location_area || 'Global'}</TableCell>
+                      <TableCell>{production.category}</TableCell>
+                      <TableCell>{production.min_quantity}</TableCell>
+                      <TableCell>{production.max_quantity || 'Unlimited'}</TableCell>
+                      <TableCell>£{production.cost_per_unit}</TableCell>
+                      <TableCell>
+                        <Badge variant={production.is_active ? 'default' : 'secondary'}>
+                          {production.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setEditingProduction(production);
+                              setIsProductionDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteProductionTier(production.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
+
+            <TabsContent value="creative" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Creative Design Cost Tiers</h3>
+                <Dialog open={isCreativeDialogOpen} onOpenChange={setIsCreativeDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => setEditingCreative(null)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Creative Design Cost
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingCreative ? 'Edit Creative Design Cost Tier' : 'Add New Creative Design Cost Tier'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveCreativeTier(new FormData(e.currentTarget));
+                    }} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="media_format_id">Media Format</Label>
+                          <Select name="media_format_id" defaultValue={editingCreative?.media_format_id} required>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select format" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {mediaFormats.map((format) => (
+                                <SelectItem key={format.id} value={format.id}>
+                                  {format.format_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="location_area">Location Area (Optional)</Label>
+                          <Select name="location_area" defaultValue={editingCreative?.location_area || 'global'}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select location area (leave empty for global)" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="global">Global (All Areas)</SelectItem>
+                              <SelectItem value="GD">GD (General Distribution)</SelectItem>
+                              {londonAreas.flatMap(area => 
+                                area.areas.map(borough => (
+                                  <SelectItem key={borough} value={borough}>{borough}</SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="category">OOH Category</Label>
+                        <Select name="category" defaultValue={editingCreative?.category} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
+                            <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
+                            <SelectItem value="National Rail & Commuter Rail">National Rail & Commuter Rail</SelectItem>
+                            <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
+                            <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
+                            <SelectItem value="Retail & Leisure Environments">Retail & Leisure Environments</SelectItem>
+                            <SelectItem value="Airports">Airports</SelectItem>
+                            <SelectItem value="Street Furniture">Street Furniture</SelectItem>
+                            <SelectItem value="Programmatic DOOH (pDOOH)">Programmatic DOOH (pDOOH)</SelectItem>
+                            <SelectItem value="Ambient / Guerrilla OOH">Ambient / Guerrilla OOH</SelectItem>
+                            <SelectItem value="Sampling, Stunts & Flash Mob Advertising">Sampling, Stunts & Flash Mob Advertising</SelectItem>
+                            <SelectItem value="Brand Experience & Pop-Up Activations">Brand Experience & Pop-Up Activations</SelectItem>
+                            <SelectItem value="Mobile Advertising Solutions">Mobile Advertising Solutions</SelectItem>
+                            <SelectItem value="Aerial Advertising">Aerial Advertising</SelectItem>
+                            <SelectItem value="Cinema Advertising">Cinema Advertising</SelectItem>
+                            <SelectItem value="Sports Ground & Stadium Advertising">Sports Ground & Stadium Advertising</SelectItem>
+                            <SelectItem value="Radio">Radio</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="min_quantity">Minimum Quantity</Label>
+                          <Input
+                            name="min_quantity"
+                            type="number"
+                            defaultValue={editingCreative?.min_quantity}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="max_quantity">Maximum Quantity</Label>
+                          <Input
+                            name="max_quantity"
+                            type="number"
+                            defaultValue={editingCreative?.max_quantity || ''}
+                            placeholder="Leave empty for unlimited"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="cost_per_unit">Cost per Unit (£)</Label>
+                          <Input
+                            name="cost_per_unit"
+                            type="number"
+                            step="0.01"
+                            defaultValue={editingCreative?.cost_per_unit}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="is_active">Status</Label>
+                          <Select name="is_active" defaultValue={editingCreative?.is_active ? 'true' : 'false'}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="true">Active</SelectItem>
+                              <SelectItem value="false">Inactive</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={() => setIsCreativeDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit">
+                          {editingCreative ? 'Update' : 'Create'} Creative Design Cost
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Media Format</TableHead>
+                    <TableHead>Location Area</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Min Quantity</TableHead>
+                    <TableHead>Max Quantity</TableHead>
+                    <TableHead>Cost per Unit</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {creativeTiers.map((tier) => (
+                    <TableRow key={tier.id}>
+                      <TableCell>{tier.media_formats?.format_name || 'N/A'}</TableCell>
+                      <TableCell>{tier.location_area || 'Global'}</TableCell>
+                      <TableCell>{tier.category}</TableCell>
+                      <TableCell>{tier.min_quantity}</TableCell>
+                      <TableCell>{tier.max_quantity || 'Unlimited'}</TableCell>
+                      <TableCell>£{tier.cost_per_unit}</TableCell>
+                      <TableCell>
+                        <Badge variant={tier.is_active ? 'default' : 'secondary'}>
+                          {tier.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingCreative(tier);
+                              setIsCreativeDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteCreativeTier(tier.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </TabsContent>
           </Tabs>
         </CardContent>
