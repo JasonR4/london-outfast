@@ -119,4 +119,24 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Fix tooltip/popover spacing issues */
+  [data-radix-popper-content-wrapper] {
+    pointer-events: none !important;
+  }
+  
+  [data-radix-popper-content-wrapper][data-state="open"] {
+    pointer-events: auto !important;
+  }
+  
+  /* Ensure hidden tooltips don't take up space */
+  [data-state="closed"] {
+    display: none !important;
+  }
+  
+  /* Fix for tooltip positioning that might cause layout shifts */
+  [role="tooltip"] {
+    position: fixed !important;
+    z-index: 50 !important;
+  }
 }
