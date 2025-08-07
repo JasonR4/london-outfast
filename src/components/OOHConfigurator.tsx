@@ -36,6 +36,7 @@ interface Question {
 
 interface OOHRecommendation {
   format: string;
+  formatName: string;
   score: number;
   reasons: string[];
   description: string;
@@ -581,6 +582,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
 
         recommendations.push({
           format: formatSlug,
+          formatName: mediaFormat.format_name,
           score,
           reasons,
           description: mediaFormat.description || '',
@@ -938,7 +940,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="text-xl font-semibold">{formatInfo?.name}</h3>
+                        <h3 className="text-xl font-semibold">{rec.formatName}</h3>
                         {index === 0 && <Badge variant="default" className="mt-1">Top Recommendation</Badge>}
                       </div>
                       <div className="text-right">
