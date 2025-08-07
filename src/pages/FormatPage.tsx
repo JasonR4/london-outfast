@@ -204,11 +204,35 @@ const FormatPage = () => {
         id: staticFormat?.id || cmsData.id,
         format_slug: staticFormat?.format_slug || formatSlug,
         format_name: cmsData.title,
+        name: cmsData.title, // For compatibility
         description: (cmsData.content as any)?.hero_description || staticFormat?.description,
         dimensions: staticFormat?.dimensions,
+        physicalSize: staticFormat?.dimensions,
         is_active: staticFormat?.is_active || true,
+        category: (cmsData.content as any)?.category || 'Outdoor Advertising',
+        placement: (cmsData.content as any)?.placement || 'Various locations across London',
+        type: (cmsData.content as any)?.format_type || 'static',
+        dwellTime: (cmsData.content as any)?.dwellTime || '3-8 seconds average viewing time',
+        effectiveness: (cmsData.content as any)?.effectiveness || 'High impact advertising for brand awareness',
+        priceRange: (cmsData.content as any)?.pricing || 'Competitive rates available',
+        londonCoverage: (cmsData.content as any)?.coverage || 'Available across London',
+        whoUsesIt: (cmsData.content as any)?.whoUsesThis || ['Brands', 'Retailers', 'Services'],
+        networks: (cmsData.content as any)?.networks || ['Various outdoor advertising networks'],
         ...(cmsData.content as any)
-      } : staticFormat;
+      } : {
+        ...staticFormat,
+        name: staticFormat?.format_name,
+        physicalSize: staticFormat?.dimensions,
+        category: 'Outdoor Advertising',
+        placement: 'Various locations across London',
+        type: 'static',
+        dwellTime: '3-8 seconds average viewing time',
+        effectiveness: 'High impact advertising for brand awareness',
+        priceRange: 'Competitive rates available',
+        londonCoverage: 'Available across London',
+        whoUsesIt: ['Brands', 'Retailers', 'Services'],
+        networks: ['Various outdoor advertising networks']
+      };
 
       setFormat(finalFormat);
       setLoading(false);
@@ -594,10 +618,10 @@ const FormatPage = () => {
             <div className="max-w-6xl mx-auto">
               <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold mb-4">
-                  {format.name} Costs & Coverage in London
+                  {format?.name || format?.format_name} Costs & Coverage in London
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                  Explore pricing and available locations for {format?.format_name?.toLowerCase() || 'outdoor'} advertising across London.
+                  Explore pricing and available locations for {format?.name?.toLowerCase() || format?.format_name?.toLowerCase() || 'outdoor'} advertising across London.
                 </p>
               </div>
 
