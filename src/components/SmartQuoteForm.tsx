@@ -1007,17 +1007,34 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                   <span>£{firstLocationPrice.basePrice.toLocaleString()}</span>
                                 </div>
                                 
-                                {firstLocationPrice.locationMarkup > 0 && (
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">Location Markup (+{firstLocationPrice.locationMarkup}%):</span>
-                                    <span>£{(firstLocationPrice.adjustedRate - firstLocationPrice.basePrice).toLocaleString()}</span>
-                                  </div>
+                                {firstLocationPrice.isOnSale && (
+                                  <>
+                                    <div className="flex justify-between items-center text-green-600">
+                                      <span>Sale Rate (per unit, per {selectedPeriods.length} period):</span>
+                                      <span>£{(pricing.mediaPrice / (totalQuantity * selectedPeriods.length)).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-green-600">
+                                      <span>Subtotal ({totalQuantity} units × {selectedPeriods.length} periods):</span>
+                                      <span>£{pricing.mediaPrice.toLocaleString()}</span>
+                                    </div>
+                                  </>
                                 )}
                                 
-                                <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Subtotal ({totalQuantity} units × {selectedPeriods.length} periods):</span>
-                                  <span>£{(firstLocationPrice.adjustedRate * selectedPeriods.length * totalQuantity).toLocaleString()}</span>
-                                </div>
+                                {!firstLocationPrice.isOnSale && (
+                                  <>
+                                    {firstLocationPrice.locationMarkup > 0 && (
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-muted-foreground">Location Markup (+{firstLocationPrice.locationMarkup}%):</span>
+                                        <span>£{(firstLocationPrice.adjustedRate - firstLocationPrice.basePrice).toLocaleString()}</span>
+                                      </div>
+                                    )}
+                                    
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-muted-foreground">Subtotal ({totalQuantity} units × {selectedPeriods.length} periods):</span>
+                                      <span>£{(firstLocationPrice.adjustedRate * selectedPeriods.length * totalQuantity).toLocaleString()}</span>
+                                    </div>
+                                  </>
+                                )}
                                 
                                 {firstLocationPrice.isOnSale && (
                                   <>
