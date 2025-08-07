@@ -49,28 +49,6 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Handle authenticated user submission
-  const handleAuthenticatedSubmit = async () => {
-    setIsSubmitting(true);
-    
-    const submissionData = {
-      contact_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Unknown User',
-      contact_email: user.email || '',
-      contact_phone: user.user_metadata?.phone || '',
-      contact_company: user.user_metadata?.company || '',
-      additional_requirements: '',
-      website: user.user_metadata?.website || ''
-    };
-    
-    const success = await submitQuote(submissionData);
-    
-    if (success) {
-      // Authenticated users go to client portal, not quote-submitted page
-      navigate('/client-portal');
-    }
-    
-    setIsSubmitting(false);
-  };
 
   // Handle form submission for non-authenticated users
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,6 +72,9 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
     const success = await submitQuote(submissionData);
     
     if (success) {
+      // Sync to HubSpot
+      await syncQuoteToHubSpot('format_quote', submissionData, quote);
+      
       setIsSubmitted(true);
       // Redirect to success page after a delay
       setTimeout(() => {
@@ -102,6 +83,65 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
     }
     
     setIsSubmitting(false);
+  };
+
+  // Handle authenticated user submission
+  const handleAuthenticatedSubmit = async () => {
+    setIsSubmitting(true);
+    
+    const submissionData = {
+      contact_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Unknown User',
+      contact_email: user.email || '',
+      contact_phone: user.user_metadata?.phone || '',
+      contact_company: user.user_metadata?.company || '',
+      additional_requirements: '',
+      website: user.user_metadata?.website || ''
+    };
+    
+    const success = await submitQuote(submissionData);
+    
+    if (success) {
+      // Sync to HubSpot
+      await syncQuoteToHubSpot('format_quote', submissionData, quote);
+      
+      // Authenticated users go to client portal, not quote-submitted page
+      navigate('/client-portal');
+    }
+    
+    setIsSubmitting(false);
+  };
+
+  const syncQuoteToHubSpot = async (submissionType: string, submissionData: any, quote: Quote) => {
+    try {
+      const hubspotData = {
+        firstName: submissionData.contact_name.split(' ')[0] || '',
+        lastName: submissionData.contact_name.split(' ').slice(1).join(' ') || '',
+        email: submissionData.contact_email,
+        phone: submissionData.contact_phone,
+        website: submissionData.website,
+        company: submissionData.contact_company,
+        submissionType,
+        quoteDetails: {
+          formatName: quote.quote_items?.[0]?.format_name || 'Mixed Formats',
+          itemCount: quote.quote_items?.length || 0,
+          totalCost: quote.total_cost,
+          selectedLocations: quote.quote_items?.[0]?.selected_areas || [],
+          additionalDetails: submissionData.additional_requirements
+        }
+      };
+
+      const response = await supabase.functions.invoke('sync-hubspot-contact', {
+        body: hubspotData
+      });
+
+      if (response.error) {
+        console.error('Error syncing to HubSpot:', response.error);
+      } else {
+        console.log('Successfully synced quote to HubSpot');
+      }
+    } catch (error) {
+      console.error('Error syncing to HubSpot:', error);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {

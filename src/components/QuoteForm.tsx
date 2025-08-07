@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -152,7 +153,7 @@ const QuoteForm = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (selectedFormats.length === 0) {
@@ -173,7 +174,6 @@ const QuoteForm = () => {
       return;
     }
 
-    // Here you would integrate with HubSpot
     const quoteData = {
       ...formData,
       selectedFormats,
@@ -181,12 +181,55 @@ const QuoteForm = () => {
       submittedAt: new Date().toISOString()
     };
 
+    // Sync to HubSpot
+    try {
+      const hubspotData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        website: formData.website,
+        company: formData.company,
+        submissionType: 'general_quote' as const,
+        quoteDetails: {
+          selectedFormats,
+          selectedLocations,
+          budgetRange: formData.budget,
+          campaignObjective: formData.campaignObjective,
+          targetAudience: formData.targetAudience,
+          timeline: formData.timeline,
+          additionalDetails: formData.additionalDetails
+        }
+      };
+
+      const response = await supabase.functions.invoke('sync-hubspot-contact', {
+        body: hubspotData
+      });
+
+      if (response.error) {
+        console.error('Error syncing to HubSpot:', response.error);
+        toast({
+          title: "Quote request submitted",
+          description: "There was an issue with our tracking, but your quote request was received. We'll contact you soon!",
+          variant: "default"
+        });
+      } else {
+        console.log('Successfully synced general quote to HubSpot');
+        toast({
+          title: "Quote Request Submitted!",
+          description: "We'll get back to you with a custom quote within hours. Check your email!"
+        });
+      }
+    } catch (error) {
+      console.error('Error syncing to HubSpot:', error);
+      toast({
+        title: "Quote request submitted",
+        description: "There was an issue with our tracking, but your quote request was received. We'll contact you soon!",
+        variant: "default"
+      });
+    }
+
     console.log("Quote submission data for HubSpot:", quoteData);
-    
-    toast({
-      title: "Quote Request Submitted!",
-      description: "We'll get back to you with a custom quote within hours. Check your email!"
-    });
 
     // Reset form
     setSelectedFormats([]);

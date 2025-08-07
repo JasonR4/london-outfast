@@ -17,6 +17,28 @@ interface ContactFormData {
   urgency: string;
 }
 
+interface QuoteFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  website?: string;
+  company?: string;
+  submissionType: 'format_quote' | 'configurator_quote' | 'general_quote';
+  quoteDetails: {
+    selectedFormats?: string[];
+    selectedLocations?: string[];
+    budgetRange?: string;
+    campaignObjective?: string;
+    targetAudience?: string;
+    timeline?: string;
+    additionalDetails?: string;
+    formatName?: string;
+    totalCost?: number;
+    itemCount?: number;
+  };
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -29,7 +51,33 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("HubSpot access token not configured");
     }
 
-    const formData: ContactFormData = await req.json();
+    const requestData = await req.json();
+    
+    // Determine if this is a contact form or quote submission
+    const isQuoteSubmission = requestData.submissionType;
+    
+    if (isQuoteSubmission) {
+      return handleQuoteSubmission(requestData as QuoteFormData, hubspotApiKey);
+    } else {
+      return handleContactSubmission(requestData as ContactFormData, hubspotApiKey);
+    }
+  } catch (error: any) {
+    console.error("Error in sync-hubspot-contact function:", error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message 
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  }
+};
+
+const handleContactSubmission = async (formData: ContactFormData, hubspotApiKey: string): Promise<Response> => {
+  try {
 
     // Prepare notes with header and campaign information
     const notes = `Contact Page - OOH MBL
@@ -156,9 +204,209 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
-
   } catch (error: any) {
-    console.error("Error in sync-hubspot-contact function:", error);
+    console.error("Error in contact submission:", error);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message 
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  }
+};
+
+const handleQuoteSubmission = async (formData: QuoteFormData, hubspotApiKey: string): Promise<Response> => {
+  try {
+    // Format quote details based on submission type
+    let quoteTitle = "";
+    let quoteNotes = "";
+    
+    switch (formData.submissionType) {
+      case 'format_quote':
+        quoteTitle = `Format Quote - OOH MBL - ${formData.quoteDetails.formatName || 'Custom Format'}`;
+        quoteNotes = `Format Page Quote - OOH MBL
+
+Format: ${formData.quoteDetails.formatName || 'Custom Format'}
+${formData.quoteDetails.itemCount ? `Items: ${formData.quoteDetails.itemCount}` : ''}
+${formData.quoteDetails.totalCost ? `Total Cost: £${formData.quoteDetails.totalCost}` : ''}
+${formData.quoteDetails.selectedLocations?.length ? `Locations: ${formData.quoteDetails.selectedLocations.join(', ')}` : ''}
+
+Campaign Details:
+${formData.quoteDetails.additionalDetails || 'No additional details provided'}
+
+Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`;
+        break;
+        
+      case 'configurator_quote':
+        quoteTitle = "Configurator Quote - OOH MBL";
+        quoteNotes = `Configurator Quote - OOH MBL
+
+Recommended Formats (${formData.quoteDetails.selectedFormats?.length || 0}):
+${formData.quoteDetails.selectedFormats?.map(format => `• ${format}`).join('\n') || 'No formats selected'}
+
+Campaign Information:
+• Budget Range: ${formData.quoteDetails.budgetRange || 'Not specified'}
+• Objective: ${formData.quoteDetails.campaignObjective || 'Not specified'}
+• Target Audience: ${formData.quoteDetails.targetAudience || 'Not specified'}
+• Timeline: ${formData.quoteDetails.timeline || 'Not specified'}
+
+${formData.quoteDetails.selectedLocations?.length ? `Priority Locations: ${formData.quoteDetails.selectedLocations.join(', ')}` : ''}
+
+Additional Requirements:
+${formData.quoteDetails.additionalDetails || 'None specified'}
+
+Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`;
+        break;
+        
+      case 'general_quote':
+        quoteTitle = "General Quote Request - OOH MBL";
+        quoteNotes = `General Quote Request - OOH MBL
+
+Selected Formats (${formData.quoteDetails.selectedFormats?.length || 0}):
+${formData.quoteDetails.selectedFormats?.map(format => `• ${format}`).join('\n') || 'No formats selected'}
+
+Campaign Information:
+• Budget Range: ${formData.quoteDetails.budgetRange || 'Not specified'}
+• Objective: ${formData.quoteDetails.campaignObjective || 'Not specified'}
+• Target Audience: ${formData.quoteDetails.targetAudience || 'Not specified'}
+• Timeline: ${formData.quoteDetails.timeline || 'Not specified'}
+
+${formData.quoteDetails.selectedLocations?.length ? `Target Locations: ${formData.quoteDetails.selectedLocations.join(', ')}` : ''}
+
+Additional Details:
+${formData.quoteDetails.additionalDetails || 'None provided'}
+
+Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`;
+        break;
+    }
+
+    // Prepare contact properties for HubSpot
+    const contactProperties: any = {
+      firstname: formData.firstName,
+      lastname: formData.lastName,
+      email: formData.email,
+      hs_lead_status: "NEW",
+      lifecyclestage: "lead",
+      notes: quoteNotes
+    };
+
+    // Add optional fields if provided
+    if (formData.phone) {
+      contactProperties.phone = formData.phone;
+    }
+    if (formData.website) {
+      contactProperties.website = formData.website;
+    }
+    if (formData.company) {
+      contactProperties.company = formData.company;
+    }
+
+    // Add custom properties for OOH quote data
+    contactProperties.lead_source = quoteTitle;
+    if (formData.quoteDetails.budgetRange) {
+      contactProperties.campaign_budget = formData.quoteDetails.budgetRange;
+    }
+    if (formData.quoteDetails.campaignObjective) {
+      contactProperties.campaign_objective = formData.quoteDetails.campaignObjective;
+    }
+
+    // Create or update contact in HubSpot
+    const hubspotResponse = await fetch(
+      "https://api.hubapi.com/crm/v3/objects/contacts",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${hubspotApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          properties: contactProperties
+        }),
+      }
+    );
+
+    if (!hubspotResponse.ok) {
+      const errorText = await hubspotResponse.text();
+      console.error("HubSpot API error:", errorText);
+      
+      // If contact already exists, try to update instead
+      if (hubspotResponse.status === 409) {
+        // Search for existing contact by email
+        const searchResponse = await fetch(
+          `https://api.hubapi.com/crm/v3/objects/contacts/search`,
+          {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${hubspotApiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              filterGroups: [{
+                filters: [{
+                  propertyName: "email",
+                  operator: "EQ",
+                  value: formData.email
+                }]
+              }]
+            }),
+          }
+        );
+
+        if (searchResponse.ok) {
+          const searchResult = await searchResponse.json();
+          if (searchResult.results && searchResult.results.length > 0) {
+            const contactId = searchResult.results[0].id;
+            
+            // Update existing contact
+            const updateResponse = await fetch(
+              `https://api.hubapi.com/crm/v3/objects/contacts/${contactId}`,
+              {
+                method: "PATCH",
+                headers: {
+                  "Authorization": `Bearer ${hubspotApiKey}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  properties: contactProperties
+                }),
+              }
+            );
+
+            if (updateResponse.ok) {
+              const result = await updateResponse.json();
+              return new Response(JSON.stringify({ 
+                success: true, 
+                action: "updated",
+                contactId: result.id 
+              }), {
+                status: 200,
+                headers: { "Content-Type": "application/json", ...corsHeaders },
+              });
+            }
+          }
+        }
+      }
+      
+      throw new Error(`HubSpot API error: ${hubspotResponse.status} - ${errorText}`);
+    }
+
+    const result = await hubspotResponse.json();
+    console.log("Quote synced to HubSpot:", result.id);
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      action: "created",
+      contactId: result.id 
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  } catch (error: any) {
+    console.error("Error in quote submission:", error);
     return new Response(
       JSON.stringify({ 
         success: false, 
