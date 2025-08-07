@@ -537,7 +537,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                     <div><strong>Total Quantity:</strong> {totalQuantity}</div>
                     <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
                    <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
-                   {needsCreative && <div><strong>Creative Assets:</strong> {creativeAssets}</div>}
+                   {needsCreative && <div><strong>Creative Assets:</strong> {creativeQuantity}</div>}
                  </CardContent>
               </Card>
             )}
@@ -745,8 +745,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                              <div className="space-y-2">
                                <Label className="text-sm font-medium">Number of creative assets needed</Label>
                                <Select
-                                 value={creativeAssets.toString()}
-                                 onValueChange={(value) => setCreativeAssets(parseInt(value))}
+                                  value={creativeQuantity.toString()}
+                                  onValueChange={(value) => setCreativeQuantity(parseInt(value))}
                                >
                                  <SelectTrigger className="border-red-500">
                                    <SelectValue />
@@ -759,16 +759,15 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                    ))}
                                  </SelectContent>
                                </Select>
-                               {dynamicCreativeCost && (
-                                 <>
-                                   {console.log('🎨 Creative cost debug:', {
-                                     costPerUnit: dynamicCreativeCost.costPerUnit,
-                                     creativeCostTiers: creativeCostTiers,
-                                     creativeLevel,
-                                     creativeAssets
-                                   })}
+                                {creativeResult && (
+                                  <>
+                                    {console.log('🎨 Creative cost debug:', {
+                                      costPerUnit: creativeResult.costPerUnit,
+                                      creativeCostTiers: creativeCostTiers,
+                                      creativeQuantity
+                                    })}
                                    <p className="text-sm text-muted-foreground">
-                                     £{dynamicCreativeCost.costPerUnit} per creative asset
+                                     £{creativeResult.costPerUnit} per creative asset
                                    </p>
                                  </>
                                )}
@@ -796,8 +795,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                   </div>
                                   <div className="grid grid-cols-2 gap-4 text-center">
                                     <div>
-                                      <div className="text-lg font-semibold text-red-500">{creativeAssets}</div>
-                                      <div className="text-xs text-red-400">creative{creativeAssets > 1 ? 's' : ''}</div>
+                                       <div className="text-lg font-semibold text-red-500">{creativeQuantity}</div>
+                                       <div className="text-xs text-red-400">creative{creativeQuantity > 1 ? 's' : ''}</div>
                                     </div>
                                      <div>
                                        <div className="text-lg font-semibold text-red-500">{totalQuantity}</div>
@@ -810,7 +809,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                       <div className="text-xs text-red-400">Creatives per Site</div>
                                     </div>
                                      <div>
-                                       <div className="font-medium text-red-500">{(totalQuantity / creativeAssets).toFixed(1)}</div>
+                                       <div className="font-medium text-red-500">{(totalQuantity / creativeQuantity).toFixed(1)}</div>
                                        <div className="text-xs text-red-400">Sites per Creative</div>
                                      </div>
                                   </div>
@@ -819,7 +818,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 <div className="space-y-2">
                                   <h5 className="text-sm font-medium text-red-500">Smart Recommendations:</h5>
                                    <div className="text-xs text-red-400 space-y-1">
-                                     <p>Excellent! Your {creativeAssets} creative{creativeAssets > 1 ? 's' : ''} provide optimal coverage for {totalQuantity} site{totalQuantity > 1 ? 's' : ''}.</p>
+                                     <p>Excellent! Your {creativeQuantity} creative{creativeQuantity > 1 ? 's' : ''} provide optimal coverage for {totalQuantity} site{totalQuantity > 1 ? 's' : ''}.</p>
                                      <p>Your creative strategy maximizes both reach and frequency for optimal campaign performance.</p>
                                    </div>
                                 </div>
