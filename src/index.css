@@ -139,4 +139,14 @@ All colors MUST be HSL.
     position: fixed !important;
     z-index: 50 !important;
   }
+  
+  /* Force tooltips to appear above by overriding Radix positioning */
+  [data-radix-tooltip-content] {
+    transform-origin: center bottom !important;
+  }
+  
+  /* Force all tooltips and popovers to appear above */
+  [data-side="left"], [data-side="right"] {
+    display: none !important;
+  }
 }
