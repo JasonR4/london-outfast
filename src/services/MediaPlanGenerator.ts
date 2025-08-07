@@ -75,6 +75,12 @@ export class MediaPlanGenerator {
         return null;
       }
 
+      // Get media formats for ID lookup
+      const { data: mediaFormats } = await supabase
+        .from('media_formats')
+        .select('*')
+        .eq('is_active', true);
+
       const planItems: MediaPlanItem[] = [];
       let allocatedBudget = 0;
 
@@ -95,10 +101,20 @@ export class MediaPlanGenerator {
           recommendedQuantity: rec.calculatedQuantity || 1,
           selectedAreas: selectedAreas, // Use ALL selected areas, not just slice(0, 3)
           selectedPeriods: this.getSelectedPeriodsFromAnswers(),
-          baseCost: actualBudget * 0.7, // 70% for media
-          productionCost: actualBudget * 0.15, // 15% for production
-          creativeCost: actualBudget * 0.15, // 15% for creative
-          totalCost: actualBudget,
+          baseCost: rec.budgetAllocation * 0.7, // 70% for media from recommendation
+          productionCost: await this.calculateProductionCostForFormat(
+            mediaFormats?.find(f => f.format_slug === rec.format)?.id || '',
+            selectedAreas[0] || 'Central London',
+            rec.calculatedQuantity || 1,
+            actualBudget * 0.15
+          ),
+          creativeCost: this.getCreativeNeedsFromAnswers() !== 'ready' ? await this.calculateCreativeCostForFormat(
+            mediaFormats?.find(f => f.format_slug === rec.format)?.id || '',
+            selectedAreas[0] || 'Central London', 
+            rec.calculatedQuantity || 1,
+            actualBudget * 0.15
+          ) : 0,
+          totalCost: rec.budgetAllocation, // Use the recommendation's budget allocation
           budgetAllocation: allocationPercentage * 100,
           reasonForRecommendation: rec.reasons
         };
@@ -278,13 +294,14 @@ export class MediaPlanGenerator {
         budget * 0.15
       );
 
-      // Calculate creative costs using actual tiers
-      const creativeCost = await this.calculateCreativeCostForFormat(
+      // Only calculate creative costs if user needs creative help
+      const needsCreative = this.getCreativeNeedsFromAnswers() !== 'ready';
+      const creativeCost = needsCreative ? await this.calculateCreativeCostForFormat(
         mediaFormat.id,
         selectedAreas[0] || 'Central London',
         optimalQuantity,
         budget * 0.15
-      );
+      ) : 0;
 
       const totalCost = baseCost + productionCost + creativeCost;
       const areas = selectedAreas.length > 0 ? selectedAreas.slice(0, 3) : ['Central London'];
@@ -581,6 +598,12 @@ export class MediaPlanGenerator {
     const selectedPeriods = periodsAnswer?.value as number[] || [];
     console.log('Selected periods from answers:', selectedPeriods);
     return selectedPeriods;
+  }
+
+  private getCreativeNeedsFromAnswers(): string {
+    const creativeAnswer = this.answers.find(a => a.questionId === 'creative_ready');
+    if (!creativeAnswer) return 'ready'; // Default to ready if no answer
+    return String(creativeAnswer.value);
   }
 
   private calculateCampaignDates(inchargePeriods: InchargePeriod[]): { startDate: string; endDate: string } {
