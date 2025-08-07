@@ -242,7 +242,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         
         const mediaPrice = calculatePrice(location, selectedPeriods);
         // Calculate creative cost based on creative quantity
-        const creativePrice = needsCreative ? calculateCreativeCost(location, creativeQuantity, "Standard") : null;
+        const creativePrice = needsCreative ? calculateCreativeCost(location, creativeQuantity, "London Underground (TfL)") : null;
         
         console.log(`💰 Media price result:`, mediaPrice);
         console.log(`🎨 Creative price result:`, creativePrice);

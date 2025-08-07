@@ -291,7 +291,7 @@ export function useRateCards(formatSlug?: string) {
       (tier.location_area === locationArea || tier.location_area === null) &&
       tier.min_quantity <= quantity &&
       (!tier.max_quantity || quantity <= tier.max_quantity) &&
-      tier.category === category
+      (tier.category === category || tier.category === null)
     );
 
     // Prioritize location-specific over global
