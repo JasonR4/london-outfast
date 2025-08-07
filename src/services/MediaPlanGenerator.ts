@@ -167,13 +167,18 @@ export class MediaPlanGenerator {
         .slice(0, 3);
 
       const recommendations = [];
+      
+      // Split budget between top recommendations
+      const budgetPerRecommendation = Math.floor(budget / Math.min(topFormats.length, 2)); // Split between top 2
 
-      for (const [formatSlug, score] of topFormats) {
+      for (let i = 0; i < topFormats.length && i < 2; i++) {
+        const [formatSlug, score] = topFormats[i];
         const mediaFormat = mediaFormats.find(f => f.format_slug === formatSlug);
         if (!mediaFormat) continue;
 
-        // Calculate real costs and quantities
-        const costData = await this.calculateRealCosts(mediaFormat.id, budget, periodsCount);
+        // Use split budget allocation for each recommendation
+        const allocatedBudget = i === 0 ? Math.floor(budget * 0.65) : Math.floor(budget * 0.35); // 65/35 split
+        const costData = await this.calculateRealCosts(mediaFormat.id, allocatedBudget, periodsCount);
         
         recommendations.push({
           format: formatSlug,
