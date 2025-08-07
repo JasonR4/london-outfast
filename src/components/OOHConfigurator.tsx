@@ -40,6 +40,9 @@ interface OOHRecommendation {
   reasons: string[];
   description: string;
   image?: string;
+  calculatedQuantity?: number;
+  budgetAllocation?: number;
+  costPerUnit?: number;
 }
 
 const questions: Question[] = [
@@ -333,6 +336,8 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
   const [showMediaPlan, setShowMediaPlan] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<GeneratedMediaPlan | null>(null);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [recommendations, setRecommendations] = useState<OOHRecommendation[]>([]);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const { addQuoteItem, createOrGetQuote } = useQuotes();
   const { toast } = useToast();
 
@@ -485,9 +490,15 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
       // Scroll to top when moving to next question
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      setShowResults(true);
-      // Scroll to top when showing results
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Load recommendations when showing results
+      setIsLoadingRecommendations(true);
+      calculateRecommendations().then(recs => {
+        setRecommendations(recs);
+        setIsLoadingRecommendations(false);
+        setShowResults(true);
+        // Scroll to top when showing results
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
     }
   };
 
@@ -512,66 +523,197 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
     }
   };
 
-  const calculateRecommendations = (): OOHRecommendation[] => {
-    const formatScores: Record<string, number> = {};
-    const formatReasons: Record<string, string[]> = {};
+  const calculateRecommendations = async (): Promise<OOHRecommendation[]> => {
+    try {
+      // Get actual media formats from database
+      const { data: mediaFormats } = await supabase
+        .from('media_formats')
+        .select('*')
+        .eq('is_active', true);
 
-    // Initialize scores
-    Object.keys(formatDescriptions).forEach(format => {
-      formatScores[format] = 0;
-      formatReasons[format] = [];
-    });
+      if (!mediaFormats) return [];
 
-    // Calculate total scores
-    answers.forEach(answer => {
-      Object.entries(answer.scores).forEach(([format, score]) => {
-        formatScores[format] += score;
+      // Get budget from answers
+      const budgetAnswer = answers.find(a => a.questionId === 'campaign_budget');
+      const budgetInput = budgetAnswer?.value as string || '';
+      const budget = parseBudgetInput(budgetInput);
+      
+      // Get selected periods
+      const selectedPeriods = getSelectedPeriods();
+      const periodsCount = selectedPeriods.length || 2;
+
+      const formatScores: Record<string, number> = {};
+      const formatReasons: Record<string, string[]> = {};
+
+      // Initialize scores for actual media formats
+      mediaFormats.forEach(format => {
+        formatScores[format.format_slug] = 0;
+        formatReasons[format.format_slug] = [];
       });
-    });
 
-    // Generate recommendations with reasons
-    const recommendations: OOHRecommendation[] = Object.entries(formatScores)
-      .map(([format, score]) => {
-        const reasons: string[] = [];
+      // Calculate total scores from answers (map old slugs to new ones where possible)
+      answers.forEach(answer => {
+        Object.entries(answer.scores).forEach(([format, score]) => {
+          // Map old format slugs to new ones
+          const mappedFormat = mapFormatSlug(format);
+          if (formatScores.hasOwnProperty(mappedFormat)) {
+            formatScores[mappedFormat] += score;
+          }
+        });
+      });
+
+      // Get top scoring formats
+      const topFormats = Object.entries(formatScores)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 3);
+
+      const recommendations: OOHRecommendation[] = [];
+
+      for (const [formatSlug, score] of topFormats) {
+        const mediaFormat = mediaFormats.find(f => f.format_slug === formatSlug);
+        if (!mediaFormat) continue;
+
+        // Calculate real costs and quantities
+        const costData = await calculateRealCosts(mediaFormat.id, budget, periodsCount);
         
-        // Add specific reasons based on answers
-        const objective = answers.find(a => a.questionId === 'campaign_objective')?.value;
-        const budget = answers.find(a => a.questionId === 'budget_range')?.value;
-        const audience = answers.find(a => a.questionId === 'target_audience')?.value;
-        const urgency = answers.find(a => a.questionId === 'urgency')?.value;
+        // Generate reasons based on answers
+        const reasons = generateReasons(formatSlug, mediaFormat);
 
-        if (objective === 'awareness' && ['billboards', 'digital_billboards'].includes(format)) {
-          reasons.push('Perfect for brand awareness campaigns');
-        }
-        if (objective === 'local' && ['bus_shelters', 'local_billboards'].includes(format)) {
-          reasons.push('Excellent for local presence and community targeting');
-        }
-        if (budget === 'low' && ['bus_shelters', 'taxi_ads'].includes(format)) {
-          reasons.push('Cost-effective option within your budget');
-        }
-        if (budget === 'premium' && ['digital_billboards', 'billboards'].includes(format)) {
-          reasons.push('Premium format that maximizes your budget');
-        }
-        if (audience === 'commuters' && ['tube_ads', 'taxi_ads'].includes(format)) {
-          reasons.push('Reaches your target commuter audience effectively');
-        }
-        if (urgency === 'urgent' && ['digital_billboards', 'taxi_ads'].includes(format)) {
-          reasons.push('Quick setup and deployment possible');
-        }
-
-        const formatInfo = formatDescriptions[format as keyof typeof formatDescriptions];
-        
-        return {
-          format,
+        recommendations.push({
+          format: formatSlug,
           score,
-          reasons: reasons.length > 0 ? reasons : formatInfo?.strengths.slice(0, 2) || [],
-          description: formatInfo?.description || '',
-        };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3);
+          reasons,
+          description: mediaFormat.description || '',
+          calculatedQuantity: costData.quantity,
+          budgetAllocation: costData.totalCost,
+          costPerUnit: costData.costPerUnit
+        });
+      }
 
-    return recommendations;
+      return recommendations;
+    } catch (error) {
+      console.error('Error calculating recommendations:', error);
+      return [];
+    }
+  };
+
+  const parseBudgetInput = (budgetStr: string): number => {
+    if (!budgetStr) return 25000;
+    
+    const cleanBudget = budgetStr.replace(/[£,\s]/g, '').toLowerCase();
+    
+    if (cleanBudget.endsWith('k')) {
+      const baseAmount = parseFloat(cleanBudget.replace('k', ''));
+      if (!isNaN(baseAmount)) {
+        return baseAmount * 1000;
+      }
+    } else {
+      const budget = parseFloat(cleanBudget);
+      if (!isNaN(budget)) {
+        return budget;
+      }
+    }
+    
+    return 25000;
+  };
+
+  const mapFormatSlug = (oldSlug: string): string => {
+    const mapping: Record<string, string> = {
+      'billboards': '48-sheet-billboard',
+      'digital_billboards': 'digital-48-sheet',
+      'tube_ads': '6-sheet-tube-panel', // Map to most common tube format
+      'taxi_ads': 'taxi-advertising',
+      'bus_shelters': 'bus-shelter-supersites',
+      'local_billboards': 'lamp-post-banners'
+    };
+    return mapping[oldSlug] || oldSlug;
+  };
+
+  const calculateRealCosts = async (mediaFormatId: string, budget: number, periodsCount: number) => {
+    try {
+      // Get rate cards for this format
+      const { data: rateCards } = await supabase
+        .from('rate_cards')
+        .select('*')
+        .eq('media_format_id', mediaFormatId)
+        .eq('is_active', true)
+        .limit(1);
+
+      if (!rateCards || rateCards.length === 0) {
+        return {
+          quantity: Math.floor(budget / 3000),
+          totalCost: budget * 0.7,
+          costPerUnit: 3000
+        };
+      }
+
+      const rateCard = rateCards[0];
+      const baseRate = rateCard.sale_price || rateCard.reduced_price || rateCard.base_rate_per_incharge;
+      const markupMultiplier = 1 + (rateCard.location_markup_percentage / 100);
+      const adjustedRate = baseRate * markupMultiplier;
+
+      // Apply discount tiers
+      const { data: discountTiers } = await supabase
+        .from('discount_tiers')
+        .select('*')
+        .eq('media_format_id', mediaFormatId)
+        .eq('is_active', true)
+        .lte('min_periods', periodsCount)
+        .or(`max_periods.is.null,max_periods.gte.${periodsCount}`)
+        .order('discount_percentage', { ascending: false })
+        .limit(1);
+
+      const discount = discountTiers?.[0]?.discount_percentage || 0;
+      const discountMultiplier = 1 - (discount / 100);
+      const finalRate = adjustedRate * discountMultiplier;
+      
+      const costPerUnit = finalRate * periodsCount;
+      const mediaBudget = budget * 0.7; // 70% for media
+      const quantity = Math.max(1, Math.floor(mediaBudget / costPerUnit));
+      const totalCost = costPerUnit * quantity;
+
+      return {
+        quantity,
+        totalCost,
+        costPerUnit
+      };
+    } catch (error) {
+      console.error('Error calculating real costs:', error);
+      return {
+        quantity: Math.floor(budget / 3000),
+        totalCost: budget * 0.7,
+        costPerUnit: 3000
+      };
+    }
+  };
+
+  const generateReasons = (formatSlug: string, mediaFormat: any): string[] => {
+    const reasons: string[] = [];
+    
+    const objective = answers.find(a => a.questionId === 'campaign_objective')?.value;
+    const audience = answers.find(a => a.questionId === 'target_audience')?.value;
+    
+    // Add specific reasons based on format type and objectives
+    if (formatSlug.includes('billboard') && (objective === 'awareness' || Array.isArray(objective) && objective.includes('awareness'))) {
+      reasons.push('Perfect for brand awareness campaigns');
+    }
+    if (formatSlug.includes('tube') && (audience === 'commuters' || Array.isArray(audience) && audience.includes('commuters'))) {
+      reasons.push('Reaches commuters effectively during peak hours');
+    }
+    if (formatSlug.includes('digital') && (objective === 'traffic' || Array.isArray(objective) && objective.includes('traffic'))) {
+      reasons.push('Dynamic content for real-time campaign updates');
+    }
+    
+    // Add cost-effectiveness reason
+    reasons.push('Optimized for your budget allocation');
+    
+    // Add format-specific strength
+    if (mediaFormat.description) {
+      const descWords = mediaFormat.description.split(' ').slice(0, 8).join(' ');
+      reasons.push(`${descWords}...`);
+    }
+
+    return reasons.slice(0, 3); // Limit to 3 reasons
   };
 
   // Helper functions to extract data from answers
@@ -609,7 +751,6 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
   };
 
   const getSelectedFormats = (): string[] => {
-    const recommendations = calculateRecommendations();
     return recommendations.map(rec => {
       const formatInfo = formatDescriptions[rec.format as keyof typeof formatDescriptions];
       return formatInfo?.name || rec.format;
@@ -766,14 +907,28 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
   }
 
   if (showResults) {
-    const recommendations = calculateRecommendations();
+    if (isLoadingRecommendations) {
+      return (
+        <div className="max-w-4xl mx-auto p-6">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl">Analyzing Your Requirements</CardTitle>
+              <p className="text-muted-foreground">Calculating optimal recommendations based on actual rate cards...</p>
+            </CardHeader>
+            <CardContent className="text-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
     
     return (
       <div className="max-w-4xl mx-auto p-6">
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Your OOH Recommendations</CardTitle>
-            <p className="text-muted-foreground">Based on your preferences, here are our top recommendations</p>
+            <p className="text-muted-foreground">Based on your preferences and actual rate card data</p>
           </CardHeader>
           <CardContent className="space-y-6">
             {recommendations.map((rec, index) => {
@@ -793,20 +948,24 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                     </div>
                     <p className="text-muted-foreground mb-4">{rec.description}</p>
                     
-                    {/* Show platform details */}
-                    {formatInfo?.platforms && (
-                      <div className="mb-4">
-                        <h4 className="font-medium mb-2">Available platforms ({formatInfo.platforms.length} units):</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-1 text-sm text-muted-foreground">
-                          {formatInfo.platforms.map((platform, i) => (
-                            <div key={i} className="flex items-center">
-                              <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full mr-2" />
-                              {platform}
-                            </div>
-                          ))}
+                    {/* Show calculated quantity and budget breakdown */}
+                    <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium">Recommended Units:</span>
+                          <div className="text-lg font-bold text-primary">{rec.calculatedQuantity || 'TBC'}</div>
+                        </div>
+                        <div>
+                          <span className="font-medium">Budget Allocation:</span>
+                          <div className="text-lg font-bold">£{rec.budgetAllocation?.toLocaleString() || 'TBC'}</div>
                         </div>
                       </div>
-                    )}
+                      {rec.costPerUnit && (
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          Cost per unit: £{rec.costPerUnit.toLocaleString()} × {rec.calculatedQuantity} units = £{(rec.costPerUnit * rec.calculatedQuantity).toLocaleString()}
+                        </div>
+                      )}
+                    </div>
                     
                     <div>
                       <h4 className="font-medium mb-2">Why this works for you:</h4>
@@ -843,7 +1002,6 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                     await createOrGetQuote();
                     
                     // Get recommendations and add them as quote items
-                    const recommendations = calculateRecommendations();
                     const selectedLocations = getSelectedLocations();
                     const selectedPeriods = getSelectedPeriods();
                     
