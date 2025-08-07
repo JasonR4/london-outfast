@@ -27,6 +27,10 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        // Check current domain
+        const currentDomain = window.location.hostname;
+        const isCMSDomain = currentDomain === 'r4advertising.agency';
+        
         // Check user role and redirect accordingly
         const { data: profile } = await supabase
           .from('profiles')
@@ -34,12 +38,12 @@ const Auth = () => {
           .eq('user_id', session.user.id)
           .single();
         
-        if (profile?.role === 'client') {
-          navigate('/client-portal');
-        } else if (['super_admin', 'admin', 'editor'].includes(profile?.role)) {
+        // Only allow CMS access from r4advertising.agency domain
+        if (isCMSDomain && ['super_admin', 'admin', 'editor'].includes(profile?.role)) {
           navigate('/cms');
         } else {
-          navigate('/');
+          // All other domains or users go to client portal
+          navigate('/client-portal');
         }
       }
     };
@@ -163,6 +167,10 @@ const Auth = () => {
   };
 
   const redirectUser = async (userId: string) => {
+    // Check current domain
+    const currentDomain = window.location.hostname;
+    const isCMSDomain = currentDomain === 'r4advertising.agency';
+    
     // Check user role and redirect accordingly
     const { data: profile } = await supabase
       .from('profiles')
@@ -170,12 +178,12 @@ const Auth = () => {
       .eq('user_id', userId)
       .single();
     
-    if (profile?.role === 'client') {
-      navigate('/client-portal');
-    } else if (['super_admin', 'admin', 'editor'].includes(profile?.role)) {
+    // Only allow CMS access from r4advertising.agency domain
+    if (isCMSDomain && ['super_admin', 'admin', 'editor'].includes(profile?.role)) {
       navigate('/cms');
     } else {
-      navigate('/');
+      // All other domains or users go to client portal
+      navigate('/client-portal');
     }
   };
 
