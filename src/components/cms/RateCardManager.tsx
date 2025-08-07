@@ -1895,7 +1895,8 @@ export function RateCardManager() {
                                 const ratePeriods = rateCardPeriods
                                   .filter(rcp => rcp.rate_card_id === rate.id && rcp.is_enabled)
                                   .map(rcp => rcp.incharge_periods)
-                                  .filter(Boolean);
+                                  .filter(Boolean)
+                                  .sort((a, b) => a.period_number - b.period_number);
                                 
                                 console.log('Rate card ID:', rate.id, 'Filtered periods:', ratePeriods);
                                 console.log('All rate card periods:', rateCardPeriods.filter(rcp => rcp.rate_card_id === rate.id));
