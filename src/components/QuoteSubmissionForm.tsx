@@ -54,12 +54,12 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
     setIsSubmitting(true);
     
     const submissionData = {
-      contact_name: user.user_metadata?.full_name || user.email,
-      contact_email: user.email,
-      contact_phone: '',
-      contact_company: '',
+      contact_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Unknown User',
+      contact_email: user.email || '',
+      contact_phone: user.user_metadata?.phone || '',
+      contact_company: user.user_metadata?.company || '',
       additional_requirements: '',
-      website: ''
+      website: user.user_metadata?.website || ''
     };
     
     const success = await submitQuote(submissionData);
