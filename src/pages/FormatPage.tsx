@@ -402,11 +402,11 @@ const FormatPage = () => {
             </div>
             
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-              {cmsContent?.content?.hero_title || format.name}
+              {cmsContent?.content?.hero_title || format?.name || format?.format_name}
             </h1>
             
             <p className="text-xl md:text-2xl mb-8 leading-relaxed text-white/90">
-              {cmsContent?.content?.hero_description || format.description}
+              {cmsContent?.content?.hero_description || format?.description || `Professional ${format?.format_name || 'outdoor advertising'} solutions across London.`}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4">
@@ -428,15 +428,15 @@ const FormatPage = () => {
         <section className="py-16 px-4 bg-muted/20">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold mb-4">See {format.shortName} in Action</h2>
+              <h2 className="text-3xl font-bold mb-4">See {format?.shortName || format?.format_name} in Action</h2>
               <p className="text-lg text-muted-foreground">
-                Real examples of {format.name} across London
+                Real examples of {format?.name || format?.format_name} across London
               </p>
             </div>
             <div className="max-w-4xl mx-auto">
               <img 
                 src={cmsContent?.content?.showcase_image || format.showcaseImage} 
-                alt={`${format.name} example`}
+                alt={`${format?.name || format?.format_name} example`}
                 className="w-full h-auto rounded-lg shadow-2xl"
               />
             </div>
