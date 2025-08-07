@@ -776,7 +776,7 @@ export function RateCardManager() {
         console.log(`Processing sheet: ${sheetName}`);
         
         // Skip reference sheets that aren't for rate cards
-        if (['Volume Discounts', 'Quantity Discounts', 'Production Costs', 'Creative Design Costs', 'Media Formats Reference'].includes(sheetName)) {
+        if (['Volume Discounts', 'Quantity Discounts', 'Production Costs', 'Creative Design Costs', 'Media Formats Reference', 'London Areas Reference'].includes(sheetName)) {
           console.log(`Skipping reference sheet: ${sheetName}`);
           continue;
         }
