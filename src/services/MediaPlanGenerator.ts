@@ -43,13 +43,19 @@ export class MediaPlanGenerator {
     inchargePeriods: InchargePeriod[]
   ): Promise<GeneratedMediaPlan | null> {
     try {
+      console.log('Generating media plan with answers:', answers);
+      console.log('Incharge periods:', inchargePeriods);
+      
       const budget = this.getBudgetFromAnswers(answers);
       const recommendations = this.getRecommendationsFromAnswers(answers);
       const selectedAreas = this.getSelectedAreasFromAnswers(answers);
       const objective = this.getCampaignObjectiveFromAnswers(answers);
       const audience = this.getTargetAudienceFromAnswers(answers);
       
+      console.log('Extracted data:', { budget, recommendations, selectedAreas, objective, audience });
+      
       if (!budget || recommendations.length === 0) {
+        console.error('Missing budget or recommendations:', { budget, recommendations });
         return null;
       }
 
@@ -61,9 +67,13 @@ export class MediaPlanGenerator {
         .sort((a, b) => b.score - a.score)
         .slice(0, 2); // Take top 2 recommendations
 
+      console.log('Sorted recommendations:', sortedRecommendations);
+
       for (let i = 0; i < sortedRecommendations.length; i++) {
         const rec = sortedRecommendations[i];
         const formatSlug = this.getFormatSlug(rec.name);
+        
+        console.log('Processing recommendation:', rec.name, 'slug:', formatSlug);
         
         if (!formatSlug) continue;
 
@@ -88,6 +98,8 @@ export class MediaPlanGenerator {
           allocatedBudget += planItem.totalCost;
         }
       }
+
+      console.log('Generated plan items:', planItems);
 
       return {
         totalBudget: budget,
@@ -147,59 +159,85 @@ export class MediaPlanGenerator {
   }
 
   private getBudgetFromAnswers(answers: Answer[]): number {
-    const budgetAnswer = answers.find(a => a.questionId === 'budget');
+    console.log('Looking for budget in answers:', answers);
+    const budgetAnswer = answers.find(a => a.questionId === 'budget' || a.questionId === 'campaign_budget');
+    console.log('Found budget answer:', budgetAnswer);
+    
     if (!budgetAnswer?.value) return 0;
     
     const budgetStr = budgetAnswer.value as string;
-    const match = budgetStr.match(/£([\d,]+)/);
-    if (match) {
-      return parseInt(match[1].replace(/,/g, ''));
+    console.log('Budget string:', budgetStr);
+    
+    // Handle different budget formats
+    if (typeof budgetStr === 'string') {
+      const match = budgetStr.match(/£?([\d,]+)/);
+      if (match) {
+        const budget = parseInt(match[1].replace(/,/g, ''));
+        console.log('Parsed budget:', budget);
+        return budget;
+      }
     }
+    
+    console.log('Could not parse budget, returning 0');
     return 0;
   }
 
   private getRecommendationsFromAnswers(answers: Answer[]): Array<{name: string, score: number, reasons: string[]}> {
+    console.log('Getting recommendations from answers:', answers);
+    
     // Extract format scores from all answers
     const formatScores: Record<string, number> = {};
     const formatReasons: Record<string, string[]> = {};
     
     answers.forEach(answer => {
+      console.log('Processing answer:', answer.questionId, answer.scores);
       Object.entries(answer.scores || {}).forEach(([format, score]) => {
         formatScores[format] = (formatScores[format] || 0) + (score as number);
         
         // Add reasoning based on question type
         if (!formatReasons[format]) formatReasons[format] = [];
-        if (answer.questionId === 'objective') {
+        if (answer.questionId === 'campaign_objective') {
           formatReasons[format].push(`Aligns with ${answer.value} objective`);
-        } else if (answer.questionId === 'audience') {
+        } else if (answer.questionId === 'target_audience') {
           formatReasons[format].push(`Targets ${answer.value} demographic`);
-        } else if (answer.questionId === 'budget') {
+        } else if (answer.questionId === 'budget' || answer.questionId === 'campaign_budget') {
           formatReasons[format].push(`Fits within ${answer.value} budget range`);
         }
       });
     });
 
-    return Object.entries(formatScores)
+    console.log('Format scores:', formatScores);
+    
+    const recommendations = Object.entries(formatScores)
       .map(([name, score]) => ({
         name: this.formatDisplayName(name),
         score,
-        reasons: formatReasons[name] || []
+        reasons: formatReasons[name] || [`High compatibility score: ${score}`]
       }))
       .filter(item => item.score > 0);
+      
+    console.log('Generated recommendations:', recommendations);
+    
+    return recommendations;
   }
 
   private getSelectedAreasFromAnswers(answers: Answer[]): string[] {
-    const locationAnswer = answers.find(a => a.questionId === 'locations');
-    return locationAnswer?.value as string[] || [];
+    const locationAnswer = answers.find(a => a.questionId === 'locations' || a.questionId === 'target_locations');
+    console.log('Location answer:', locationAnswer);
+    const areas = locationAnswer?.value as string[] || [];
+    console.log('Selected areas:', areas);
+    return areas;
   }
 
   private getCampaignObjectiveFromAnswers(answers: Answer[]): string {
-    const objectiveAnswer = answers.find(a => a.questionId === 'objective');
+    const objectiveAnswer = answers.find(a => a.questionId === 'objective' || a.questionId === 'campaign_objective');
+    console.log('Objective answer:', objectiveAnswer);
     return objectiveAnswer?.value as string || 'Brand Awareness';
   }
 
   private getTargetAudienceFromAnswers(answers: Answer[]): string {
-    const audienceAnswer = answers.find(a => a.questionId === 'audience');
+    const audienceAnswer = answers.find(a => a.questionId === 'audience' || a.questionId === 'target_audience');
+    console.log('Audience answer:', audienceAnswer);
     return audienceAnswer?.value as string || 'General Public';
   }
 
