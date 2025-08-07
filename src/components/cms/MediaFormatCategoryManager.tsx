@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { Pencil, Plus, Trash2, Tags } from 'lucide-react';
 import { useCentralizedMediaFormats } from '@/hooks/useCentralizedMediaFormats';
 import { MediaFormat } from '@/services/mediaFormatsService';
+import { supabase } from '@/integrations/supabase/client';
 // Categories constants - Location and Format categories are managed separately
 const LOCATION_CATEGORIES = ['Transport', 'Retail', 'Rail', 'Supermarket', 'Roadside', 'London Underground'];
 const FORMAT_CATEGORIES = ['Digital', 'Paper & Paste', 'Backlight', 'Illuminated', 'Premium', 'HD', 'Vynl', 'WRB'];
@@ -78,10 +79,40 @@ export function MediaFormatCategoryManager() {
 
   const handleSaveFormatName = async (formatId: string) => {
     try {
+      const format = mediaFormats.find(f => f.id === formatId);
+      if (!format) return;
+
       await updateFormat(formatId, { format_name: newFormatName });
+      
+      // Also update any related CMS content pages
+      const { data: existingContent } = await supabase
+        .from('content_pages')
+        .select('content')
+        .eq('slug', format.format_slug)
+        .maybeSingle();
+
+      if (existingContent) {
+        const updatedContent = {
+          ...existingContent.content as any,
+          hero_title: newFormatName
+        };
+
+        const { error: cmsError } = await supabase
+          .from('content_pages')
+          .update({ 
+            title: newFormatName,
+            content: updatedContent
+          })
+          .eq('slug', format.format_slug);
+
+        if (cmsError) {
+          console.warn('Failed to update CMS content:', cmsError);
+        }
+      }
+
       setEditingFormatName(null);
       setNewFormatName('');
-      toast.success('Format name updated successfully');
+      toast.success('Format name updated successfully across all content');
     } catch (error) {
       console.error('Error updating format name:', error);
       toast.error('Failed to update format name');
@@ -100,10 +131,37 @@ export function MediaFormatCategoryManager() {
 
   const handleSaveDescription = async (formatId: string) => {
     try {
+      const format = mediaFormats.find(f => f.id === formatId);
+      if (!format) return;
+
       await updateFormat(formatId, { description: newDescription });
+      
+      // Also update any related CMS content pages
+      const { data: existingContent } = await supabase
+        .from('content_pages')
+        .select('content')
+        .eq('slug', format.format_slug)
+        .maybeSingle();
+
+      if (existingContent) {
+        const updatedContent = {
+          ...existingContent.content as any,
+          hero_description: newDescription
+        };
+
+        const { error: cmsError } = await supabase
+          .from('content_pages')
+          .update({ content: updatedContent })
+          .eq('slug', format.format_slug);
+
+        if (cmsError) {
+          console.warn('Failed to update CMS content description:', cmsError);
+        }
+      }
+
       setEditingDescription(null);
       setNewDescription('');
-      toast.success('Description updated successfully');
+      toast.success('Description updated successfully across all content');
     } catch (error) {
       console.error('Error updating description:', error);
       toast.error('Failed to update description');

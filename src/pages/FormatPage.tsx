@@ -437,7 +437,7 @@ const FormatPage = () => {
             </div>
             
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-              {format?.format_name || cmsContent?.content?.hero_title || format?.name || cmsContent?.title}
+              {cmsContent?.content?.hero_title || cmsContent?.title || format?.format_name || format?.name}
             </h1>
             
             <p className="text-xl md:text-2xl mb-8 leading-relaxed text-white/90">
