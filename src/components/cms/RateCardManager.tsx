@@ -517,7 +517,7 @@ export function RateCardManager() {
         templateData = mediaFormats.map(format => ({
           'Media Format ID': format.id,
           'Media Format Name': format.format_name,
-          'Location Area': 'Enter location area',
+          'Location Area': '', // Leave blank - configure in CMS
           'Base Rate Per Incharge': '0.00',
           'Sale Price': '0.00',
           'Reduced Price': '0.00',
@@ -548,7 +548,7 @@ export function RateCardManager() {
         templateData = mediaFormats.map(format => ({
           'Media Format ID': format.id,
           'Media Format Name': format.format_name,
-          'Location Area': 'global or specific area',
+          'Location Area': '', // Leave blank - configure in CMS
           'Min Quantity': '1',
           'Max Quantity': '',
           'Discount Percentage': '5.00',
@@ -561,8 +561,8 @@ export function RateCardManager() {
         templateData = mediaFormats.map(format => ({
           'Media Format ID': format.id,
           'Media Format Name': format.format_name,
-          'Location Area': 'global or specific area',
-          'Category': 'Standard',
+          'Location Area': '', // Leave blank - configure in CMS
+          'Category': '', // Leave blank - configure in CMS
           'Min Quantity': '1',
           'Max Quantity': '',
           'Cost Per Unit': '50.00',
@@ -575,8 +575,8 @@ export function RateCardManager() {
         templateData = mediaFormats.map(format => ({
           'Media Format ID': format.id,
           'Media Format Name': format.format_name,
-          'Location Area': 'global or specific area',
-          'Category': 'Basic Design',
+          'Location Area': '', // Leave blank - configure in CMS
+          'Category': '', // Leave blank - configure in CMS
           'Min Quantity': '1',
           'Max Quantity': '',
           'Cost Per Unit': '85.00',
