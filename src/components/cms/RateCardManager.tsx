@@ -788,9 +788,9 @@ export function RateCardManager() {
         // Type-specific validation
         switch (bulkUploadType) {
           case 'rates':
-            // Validate location area for rates
-            if (!row['Location Area'] || !validAreas.includes(row['Location Area'].toLowerCase())) {
-              errors.push('Invalid location area');
+            // Validate location area for rates - allow empty for template
+            if (row['Location Area'] && !validAreas.includes(row['Location Area'].toLowerCase()) && row['Location Area'].toLowerCase() !== 'gd') {
+              errors.push('Invalid location area (use valid London area or "GD")');
             }
             // Validate numeric fields
             if (!row['Base Rate Per Incharge'] || isNaN(parseFloat(row['Base Rate Per Incharge']))) {
@@ -812,10 +812,10 @@ export function RateCardManager() {
             break;
             
           case 'quantity-discounts':
-            // Validate location area (can be global or valid area)
+            // Validate location area (can be empty, global or valid area)
             if (row['Location Area'] && row['Location Area'].toLowerCase() !== 'global' && 
-                !validAreas.includes(row['Location Area'].toLowerCase())) {
-              errors.push('Invalid location area (use "global" or valid area)');
+                row['Location Area'].toLowerCase() !== 'gd' && !validAreas.includes(row['Location Area'].toLowerCase())) {
+              errors.push('Invalid location area (use "global", "GD", or valid London area)');
             }
             // Validate quantity ranges
             if (!row['Min Quantity'] || isNaN(parseInt(row['Min Quantity'])) || parseInt(row['Min Quantity']) < 1) {
@@ -831,10 +831,10 @@ export function RateCardManager() {
             
           case 'production':
           case 'creative':
-            // Validate location area (can be global)
+            // Validate location area (can be empty, global, or valid area)
             if (row['Location Area'] && row['Location Area'].toLowerCase() !== 'global' && 
-                !validAreas.includes(row['Location Area'].toLowerCase())) {
-              errors.push('Invalid location area (use "global" or valid area)');
+                row['Location Area'].toLowerCase() !== 'gd' && !validAreas.includes(row['Location Area'].toLowerCase())) {
+              errors.push('Invalid location area (use "global", "GD", or valid London area)');
             }
             // Validate quantity ranges
             if (!row['Min Quantity'] || isNaN(parseInt(row['Min Quantity'])) || parseInt(row['Min Quantity']) < 1) {
