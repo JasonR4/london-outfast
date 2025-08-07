@@ -998,8 +998,12 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
 
       <div className="flex justify-between mt-8">
         <Button
+          type="button"
           variant="outline"
-          onClick={goBack}
+          onClick={(e) => {
+            e.preventDefault();
+            goBack();
+          }}
           disabled={currentQuestionIndex === 0}
           className="flex items-center space-x-2"
         >
@@ -1008,7 +1012,11 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
         </Button>
         
         <Button
-          onClick={goNext}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            goNext();
+          }}
           disabled={selectedValues.length === 0}
           className="flex items-center space-x-2"
         >
