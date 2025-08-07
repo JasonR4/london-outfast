@@ -152,7 +152,11 @@ export function RateCardManager() {
   const [isAddingIncharges, setIsAddingIncharges] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    const initializeData = async () => {
+      await fetchData();
+      await syncRateCardPeriodFlags(); // Fix existing data
+    };
+    initializeData();
   }, []);
 
   const fetchData = async () => {
@@ -513,14 +517,6 @@ export function RateCardManager() {
 
     setIsAddingIncharges(true);
     try {
-      // First, update rate cards to set is_date_specific to true
-      const { error: updateError } = await supabase
-        .from('rate_cards')
-        .update({ is_date_specific: true })
-        .in('id', selectedRateCardIds);
-      
-      if (updateError) throw updateError;
-
       // Get existing rate card periods to avoid duplicates
       const { data: existingPeriods, error: fetchError } = await supabase
         .from('rate_card_periods')
@@ -557,11 +553,27 @@ export function RateCardManager() {
         return;
       }
 
+      // Insert new rate card periods first
       const { error } = await supabase
         .from('rate_card_periods')
         .insert(entries);
       
       if (error) throw error;
+
+      // Now update rate cards to set is_date_specific to true
+      // Only update rate cards that now have incharge periods
+      const rateCardsToUpdate = Array.from(new Set(entries.map(entry => entry.rate_card_id)));
+      
+      const { error: updateError } = await supabase
+        .from('rate_cards')
+        .update({ 
+          is_date_specific: true,
+          start_date: null,
+          end_date: null
+        })
+        .in('id', rateCardsToUpdate);
+      
+      if (updateError) throw updateError;
       
       const skippedCount = (selectedRateCardIds.length * selectedInchargePeriods.length) - entries.length;
       let message = `Successfully added ${entries.length} new period assignment${entries.length !== 1 ? 's' : ''}`;
@@ -580,6 +592,38 @@ export function RateCardManager() {
       toast.error('Failed to add incharge periods');
     } finally {
       setIsAddingIncharges(false);
+    }
+  };
+
+  const syncRateCardPeriodFlags = async () => {
+    try {
+      // Get all rate cards that have periods but aren't marked as date specific
+      const { data: rateCardsWithPeriods, error: fetchError } = await supabase
+        .from('rate_card_periods')
+        .select('rate_card_id, rate_cards!inner(is_date_specific)')
+        .eq('rate_cards.is_date_specific', false);
+
+      if (fetchError) throw fetchError;
+
+      if (rateCardsWithPeriods && rateCardsWithPeriods.length > 0) {
+        const rateCardIds = Array.from(new Set(rateCardsWithPeriods.map(rcp => rcp.rate_card_id)));
+        
+        const { error: updateError } = await supabase
+          .from('rate_cards')
+          .update({ 
+            is_date_specific: true,
+            start_date: null,
+            end_date: null
+          })
+          .in('id', rateCardIds);
+        
+        if (updateError) throw updateError;
+        
+        console.log(`Updated ${rateCardIds.length} rate cards to use date-specific periods`);
+        fetchData(); // Refresh data
+      }
+    } catch (error) {
+      console.error('Error syncing rate card period flags:', error);
     }
   };
 
