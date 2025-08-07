@@ -67,6 +67,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     website: ""
   });
 
+  console.log('🔍 Component state initialized:', { formatQuantities, selectedFormats: selectedFormats.length });
+
   // Location selection
   const {
     selectedLocations,
@@ -77,11 +79,14 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   
   console.log('📊 SmartQuoteForm location state:', {
     selectedLocationsCount: selectedLocations.length,
-    selectedFormatsCount: selectedFormats.length
+    selectedFormatsCount: selectedFormats.length,
+    formatQuantities
   });
 
   // Get total quantity across all formats
+  console.log('🔍 formatQuantities before calculation:', formatQuantities);
   const totalQuantity = Object.values(formatQuantities).reduce((sum, qty) => sum + qty, 0);
+  console.log('🔍 totalQuantity calculated:', totalQuantity);
 
   // Location capacity logic
   const locationCapacity = useLocationCapacity({
