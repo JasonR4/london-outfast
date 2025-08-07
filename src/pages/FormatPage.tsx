@@ -33,7 +33,7 @@ import { cn } from '@/lib/utils';
 
 const FormatPage = () => {
   const { formatSlug } = useParams();
-  const { getFormatBySlug, loading: formatsLoading } = useMediaFormats();
+  const { getFormatBySlug, loading: formatsLoading, mediaFormats } = useMediaFormats();
   const navigate = useNavigate();
   const [format, setFormat] = useState<any>(null);
   const [cmsContent, setCmsContent] = useState<any>(null);
@@ -194,7 +194,10 @@ const FormatPage = () => {
       // Get static format data as fallback
       const staticFormat = getFormatBySlug(formatSlug || '') || null;
       
-      if (!staticFormat && !cmsData) {
+      console.log('Format lookup:', { formatSlug, staticFormat, mediaFormatsCount: mediaFormats.length });
+      
+      if (!staticFormat && !cmsData && !formatsLoading) {
+        console.log('No format found, redirecting to 404');
         navigate('/404');
         return;
       }
@@ -364,10 +367,10 @@ const FormatPage = () => {
     }
   };
 
-  if (loading) {
+  if (loading || formatsLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Loading...</div>
+        <div className="text-center">Loading format details...</div>
       </div>
     );
   }
