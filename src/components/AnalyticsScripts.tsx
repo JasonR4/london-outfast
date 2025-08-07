@@ -7,46 +7,80 @@ export function AnalyticsScripts() {
   useEffect(() => {
     if (loading || analyticsCodes.length === 0) return;
 
+    console.log('Analytics codes loaded:', analyticsCodes);
+
     // Remove existing analytics scripts first
     const existingScripts = document.querySelectorAll('[data-analytics-id]');
     existingScripts.forEach(script => script.remove());
 
+    // Helper function to execute scripts properly
+    const executeScript = (code: string, id: string, placement: string) => {
+      console.log(`Injecting ${placement} script:`, code.substring(0, 100) + '...');
+      
+      // Create a container div
+      const container = document.createElement('div');
+      container.setAttribute('data-analytics-id', id);
+      container.style.display = 'none';
+      
+      // Parse the HTML and execute scripts
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = code;
+      
+      // Find all script tags and recreate them to ensure execution
+      const scripts = tempDiv.querySelectorAll('script');
+      scripts.forEach(oldScript => {
+        const newScript = document.createElement('script');
+        
+        // Copy attributes
+        Array.from(oldScript.attributes).forEach(attr => {
+          newScript.setAttribute(attr.name, attr.value);
+        });
+        
+        // Copy content
+        if (oldScript.src) {
+          newScript.src = oldScript.src;
+        } else {
+          newScript.textContent = oldScript.textContent;
+        }
+        
+        container.appendChild(newScript);
+      });
+      
+      // Add non-script elements
+      const nonScripts = tempDiv.querySelectorAll(':not(script)');
+      nonScripts.forEach(element => {
+        container.appendChild(element.cloneNode(true));
+      });
+      
+      return container;
+    };
+
     // Inject head scripts
     const headCodes = analyticsCodes.filter(code => code.placement === 'head');
     headCodes.forEach(code => {
-      const script = document.createElement('script');
-      script.innerHTML = code.tracking_code;
-      script.setAttribute('data-analytics-id', code.id);
-      document.head.appendChild(script);
+      const container = executeScript(code.tracking_code, code.id, 'head');
+      document.head.appendChild(container);
     });
 
     // Inject body_start scripts
     const bodyStartCodes = analyticsCodes.filter(code => code.placement === 'body_start');
     bodyStartCodes.forEach(code => {
-      const div = document.createElement('div');
-      div.innerHTML = code.tracking_code;
-      div.setAttribute('data-analytics-id', code.id);
-      div.style.display = 'none';
-      
-      // Insert at the beginning of body
+      const container = executeScript(code.tracking_code, code.id, 'body_start');
       if (document.body.firstChild) {
-        document.body.insertBefore(div, document.body.firstChild);
+        document.body.insertBefore(container, document.body.firstChild);
       } else {
-        document.body.appendChild(div);
+        document.body.appendChild(container);
       }
     });
 
-    // Inject body_end scripts
+    // Inject body_end scripts  
     const bodyEndCodes = analyticsCodes.filter(code => code.placement === 'body_end');
     bodyEndCodes.forEach(code => {
-      const div = document.createElement('div');
-      div.innerHTML = code.tracking_code;
-      div.setAttribute('data-analytics-id', code.id);
-      div.style.display = 'none';
-      document.body.appendChild(div);
+      const container = executeScript(code.tracking_code, code.id, 'body_end');
+      document.body.appendChild(container);
     });
 
-    // Cleanup function to remove scripts when component unmounts
+    // Cleanup function
     return () => {
       const scripts = document.querySelectorAll('[data-analytics-id]');
       scripts.forEach(script => script.remove());
