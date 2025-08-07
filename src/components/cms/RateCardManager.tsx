@@ -779,7 +779,7 @@ export function RateCardManager() {
 
         // Validate pre-populated format fields (read-only)
         if (!row['Media Format ID']) {
-          errors.push('Media format ID is required');
+          errors.push('Media format ID is required (row data: ' + JSON.stringify(Object.keys(row)) + ')');
         }
         if (!row['Media Format Name']) {
           errors.push('Media format name is required');
@@ -855,6 +855,7 @@ export function RateCardManager() {
         }
 
         if (errors.length > 0) {
+          console.log('Row', index + 1, 'errors:', errors, 'data:', row);
           invalidRows.push({ ...row, rowNumber: index + 1, errors });
         } else {
           validRows.push({ ...row, rowNumber: index + 1 });
