@@ -151,29 +151,6 @@ const questions: Question[] = [
     ]
   },
   {
-    id: 'campaign_duration',
-    title: 'How long will your campaign run?',
-    subtitle: 'Campaign length affects format recommendations and pricing',
-    type: 'single',
-    options: [
-      {
-        label: '1-2 weeks',
-        value: 'short',
-        scores: { 'digital_billboards': 9, 'taxi_ads': 8, 'tube_ads': 7, 'bus_shelters': 6, 'billboards': 5 }
-      },
-      {
-        label: '1 month',
-        value: 'medium',
-        scores: { 'billboards': 8, 'bus_shelters': 8, 'digital_billboards': 7, 'tube_ads': 8, 'taxi_ads': 7 }
-      },
-      {
-        label: '3+ months',
-        value: 'long',
-        scores: { 'billboards': 9, 'bus_shelters': 9, 'tube_ads': 8, 'digital_billboards': 6, 'taxi_ads': 6 }
-      }
-    ]
-  },
-  {
     id: 'preferred_locations',
     title: 'Which London areas are most important?',
     subtitle: 'Select your priority locations for maximum impact',
