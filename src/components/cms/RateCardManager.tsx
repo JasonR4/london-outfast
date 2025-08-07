@@ -155,16 +155,16 @@ export function RateCardManager() {
   const getFilteredRateCards = () => {
     return rateCards.filter(rate => {
       // Media format filter
-      if (filters.mediaFormat && rate.media_format_id !== filters.mediaFormat) return false;
+      if (filters.mediaFormat && filters.mediaFormat !== 'all' && rate.media_format_id !== filters.mediaFormat) return false;
       
       // Location area filter
-      if (filters.locationArea && rate.location_area !== filters.locationArea) return false;
+      if (filters.locationArea && filters.locationArea !== 'all' && rate.location_area !== filters.locationArea) return false;
       
       // Active status filter
       if (filters.isActive !== 'all' && rate.is_active.toString() !== filters.isActive) return false;
       
       // Category filter
-      if (filters.category && rate.category !== filters.category) return false;
+      if (filters.category && filters.category !== 'all' && rate.category !== filters.category) return false;
       
       // Search text filter
       if (filters.searchText) {
@@ -186,7 +186,7 @@ export function RateCardManager() {
 
   const getFilteredDiscountTiers = () => {
     return discountTiers.filter(discount => {
-      if (filters.mediaFormat && discount.media_format_id !== filters.mediaFormat) return false;
+      if (filters.mediaFormat && filters.mediaFormat !== 'all' && discount.media_format_id !== filters.mediaFormat) return false;
       if (filters.isActive !== 'all' && discount.is_active.toString() !== filters.isActive) return false;
       
       if (filters.searchText) {
