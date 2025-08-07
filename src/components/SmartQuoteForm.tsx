@@ -1118,6 +1118,39 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                   <span>{productionResult.productionRuns} run{productionResult.productionRuns > 1 ? 's' : ''}</span>
                                 </div>
                                 
+                                {/* Dynamic commentary about production runs */}
+                                {(() => {
+                                  const sortedPeriods = [...selectedPeriods].sort((a, b) => a - b);
+                                  const gaps = [];
+                                  for (let i = 1; i < sortedPeriods.length; i++) {
+                                    if (sortedPeriods[i] !== sortedPeriods[i - 1] + 1) {
+                                      gaps.push(`gap between ${sortedPeriods[i - 1]} and ${sortedPeriods[i]}`);
+                                    }
+                                  }
+                                  
+                                  if (productionResult.productionRuns > 1) {
+                                    return (
+                                      <div className="bg-amber-50 border-l-4 border-amber-200 p-3 my-2">
+                                        <div className="text-xs text-amber-800">
+                                          <strong>Multiple production runs required:</strong> As periods {selectedPeriods.join(', ')} are not continuous 
+                                          {gaps.length > 0 && ` (${gaps.join(', ')})`}, posters must be taken down and re-installed, 
+                                          requiring {productionResult.productionRuns} separate production runs.
+                                        </div>
+                                      </div>
+                                    );
+                                  } else if (selectedPeriods.length > 1) {
+                                    return (
+                                      <div className="bg-green-50 border-l-4 border-green-200 p-3 my-2">
+                                        <div className="text-xs text-green-800">
+                                          <strong>Single production run:</strong> Periods {selectedPeriods.join(', ')} are continuous, 
+                                          so posters can remain in place throughout the campaign.
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })()}
+                                
                                 <div className="flex justify-between items-center">
                                   <span className="text-muted-foreground">Cost per Run:</span>
                                   <span>£{productionResult.costPerRun.toLocaleString()}</span>
