@@ -104,20 +104,6 @@ const Contact = () => {
               </CardContent>
             </Card>
 
-            {/* Live Chat */}
-            <Card className="hover-scale group border-accent/20 hover:border-accent/40 transition-all duration-300">
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-accent to-accent/80 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <MessageSquare className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Live Chat</h3>
-                <p className="text-muted-foreground mb-4">Instant responses during business hours.</p>
-                <Button variant="outline" className="w-full">
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Start Chat
-                </Button>
-              </CardContent>
-            </Card>
 
             {/* Office Visit */}
             <Card className="hover-scale group border-secondary/20 hover:border-secondary/40 transition-all duration-300">
