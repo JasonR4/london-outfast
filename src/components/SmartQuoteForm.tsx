@@ -1037,14 +1037,6 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                   </>
                                 )}
                                 
-                                {firstLocationPrice.isOnSale && (
-                                  <>
-                                     <div className="flex justify-between items-center text-green-600 text-xs">
-                                       <span>Sale Savings:</span>
-                                       <span>-£{((firstLocationPrice.basePrice - (rateCards[0]?.sale_price || 800)) * totalQuantity * selectedPeriods.length).toLocaleString()}</span>
-                                     </div>
-                                  </>
-                                )}
                                 
                                 {firstLocationPrice.isReduced && !firstLocationPrice.isOnSale && (
                                   <>
@@ -1077,6 +1069,12 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                     <span>Total Media Cost ({totalQuantity} units × {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''}):</span>
                                     <span className="text-primary">£{(totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)).toLocaleString()}</span>
                                   </div>
+                                  {firstLocationPrice.isOnSale && (
+                                    <div className="flex justify-between items-center text-green-600 text-xs mt-1">
+                                      <span>Sale Savings:</span>
+                                      <span>-£{((firstLocationPrice.basePrice - (rateCards[0]?.sale_price || 800)) * totalQuantity * selectedPeriods.length).toLocaleString()}</span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
