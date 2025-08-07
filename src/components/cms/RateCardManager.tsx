@@ -1669,8 +1669,7 @@ export function RateCardManager() {
                 </div>
               )}
 
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">OOH Media Rate Cards</h3>
+              <div className="flex justify-end items-center">
                 <div className="flex items-center gap-4">
                   <Dialog open={isRateDialogOpen} onOpenChange={setIsRateDialogOpen}>
                     <DialogTrigger asChild>
