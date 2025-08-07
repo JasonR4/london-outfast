@@ -991,7 +991,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                               {/* Rate Card Breakdown */}
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Base Rate (per location, per period):</span>
+                                  <span className="text-muted-foreground">Base Rate (per unit, per period):</span>
                                   <span>£{firstLocationPrice.basePrice.toLocaleString()}</span>
                                 </div>
                                 
