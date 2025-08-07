@@ -48,7 +48,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   // Form state
   const [activeTab, setActiveTab] = useState("search");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFormat, setSelectedFormat] = useState<OOHFormat | null>(null);
+  const [selectedFormats, setSelectedFormats] = useState<OOHFormat[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedPeriods, setSelectedPeriods] = useState<number[]>([]);
   const [needsCreative, setNeedsCreative] = useState(false);
@@ -81,7 +81,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     basePrice: 1000
   });
 
-  // Rate cards for selected format
+  // Rate cards for selected formats (using first format for now)
   const { 
     calculatePrice, 
     calculateProductionCost, 
@@ -91,10 +91,10 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     getAvailableCreativeCategories,
     creativeCostTiers,
     loading: rateCardsLoading 
-  } = useRateCards(selectedFormat?.slug);
+  } = useRateCards(selectedFormats[0]?.slug);
 
   // Get dynamic creative cost per asset from CMS
-  const dynamicCreativeCost = selectedFormat && creativeAssets > 0 
+  const dynamicCreativeCost = selectedFormats.length > 0 && creativeAssets > 0 
     ? (selectedLocations.length > 0 
         ? calculateCreativeCost(selectedLocations[0], creativeAssets, creativeLevel)
         : calculateCreativeCost('GD', creativeAssets, creativeLevel) // Default to GD location
@@ -189,13 +189,13 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const calculateTotalPrice = () => {
     console.log('💰 calculateTotalPrice called');
     console.log('📊 Current state:', {
-      selectedFormat: selectedFormat?.name,
+      selectedFormats: selectedFormats.map(f => f.name),
       selectedLocations,
       selectedPeriods,
       quantity
     });
 
-    if (!selectedFormat || selectedLocations.length === 0 || selectedPeriods.length === 0) {
+    if (selectedFormats.length === 0 || selectedLocations.length === 0 || selectedPeriods.length === 0) {
       console.log('❌ Missing requirements for pricing');
       return { 
         mediaPrice: 0, 
@@ -278,17 +278,39 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const pricing = calculateTotalPrice();
   const quoteTotals = calculateQuoteTotalCosts();
 
-  const handleFormatSelect = (format: OOHFormat) => {
-    setSelectedFormat(format);
-    setSelectedPeriods([]);
+  const handleFormatToggle = (format: OOHFormat) => {
+    setSelectedFormats(prev => {
+      const isSelected = prev.some(f => f.slug === format.slug);
+      if (isSelected) {
+        return prev.filter(f => f.slug !== format.slug);
+      } else {
+        return [...prev, format];
+      }
+    });
+    
+    // Only advance to configure tab if at least one format is selected
+    if (selectedFormats.length === 0) {
+      setActiveTab("configure");
+    }
+  };
+
+  const handleContinueToConfig = () => {
+    if (selectedFormats.length === 0) {
+      toast({
+        title: "No formats selected",
+        description: "Please select at least one media format to continue.",
+        variant: "destructive"
+      });
+      return;
+    }
     setActiveTab("configure");
   };
 
   const handleAddToQuote = async () => {
-    if (!selectedFormat || selectedLocations.length === 0 || selectedPeriods.length === 0) {
+    if (selectedFormats.length === 0 || selectedLocations.length === 0 || selectedPeriods.length === 0) {
       toast({
         title: "Missing Information",
-        description: "Please select a format, locations, and campaign periods.",
+        description: "Please select formats, locations, and campaign periods.",
         variant: "destructive"
       });
       return;
@@ -305,25 +327,28 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     }
 
     try {
-      await addQuoteItem({
-        format_slug: selectedFormat.slug,
-        format_name: selectedFormat.name,
-        quantity,
-        selected_periods: selectedPeriods,
-        selected_areas: selectedLocations,
-        production_cost: pricing.productionCost,
-        creative_cost: needsCreative ? pricing.creativeCost : 0,
-        base_cost: pricing.mediaPrice,
-        total_cost: pricing.totalCost
-      });
+      // Add each selected format as a separate quote item
+      for (const format of selectedFormats) {
+        await addQuoteItem({
+          format_slug: format.slug,
+          format_name: format.name,
+          quantity,
+          selected_periods: selectedPeriods,
+          selected_areas: selectedLocations,
+          production_cost: pricing.productionCost / selectedFormats.length,
+          creative_cost: needsCreative ? (pricing.creativeCost / selectedFormats.length) : 0,
+          base_cost: pricing.mediaPrice / selectedFormats.length,
+          total_cost: pricing.totalCost / selectedFormats.length
+        });
+      }
 
       toast({
         title: "Added to Quote",
-        description: `${selectedFormat.name} has been added to your quote.`,
+        description: `${selectedFormats.length} format${selectedFormats.length > 1 ? 's' : ''} have been added to your quote.`,
       });
 
       // Reset form for next item
-      setSelectedFormat(null);
+      setSelectedFormats([]);
       setQuantity(1);
       setSelectedPeriods([]);
       clearAllLocations();
@@ -407,7 +432,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         <div className="lg:col-span-1">
           <div className="sticky top-8 space-y-6">
             {/* Location Capacity Information */}
-            {selectedFormat && (
+            {selectedFormats.length > 0 && (
               <Card className="border-2" style={{
                 borderColor: locationCapacity.capacityStatus === 'over-limit' ? 'hsl(var(--destructive))' :
                            locationCapacity.capacityStatus === 'warning' ? 'hsl(var(--warning))' : 
@@ -434,7 +459,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                     className="h-3"
                   />
                   <div className="text-xs text-muted-foreground space-y-1">
-                    <p>{quantity} {selectedFormat?.name?.includes('Digital') ? 'sites' : 'units'} × {selectedPeriods.length} periods = {locationCapacity.maxLocationCapacity} total slots</p>
+                    <p>{quantity} {selectedFormats[0]?.name?.includes('Digital') ? 'sites' : 'units'} × {selectedPeriods.length} periods = {locationCapacity.maxLocationCapacity} total slots</p>
                     <p>{locationCapacity.remainingCapacity} slots remaining</p>
                   </div>
                   {locationCapacity.capacityStatus === 'over-limit' && (
@@ -470,18 +495,18 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
             )}
 
             {/* Quick Summary */}
-            {selectedFormat && (
+            {selectedFormats.length > 0 && (
               <Card className="bg-muted/20">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">Quick Summary</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  <div><strong>Format:</strong> {selectedFormat.name}</div>
-                  <div><strong>Quantity:</strong> {quantity}</div>
-                  <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
-                  <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
-                  {needsCreative && <div><strong>Creative Assets:</strong> {creativeAssets}</div>}
-                </CardContent>
+                 <CardContent className="space-y-2 text-sm">
+                   <div><strong>Formats:</strong> {selectedFormats.map(f => f.name).join(', ')}</div>
+                   <div><strong>Quantity:</strong> {quantity}</div>
+                   <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
+                   <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
+                   {needsCreative && <div><strong>Creative Assets:</strong> {creativeAssets}</div>}
+                 </CardContent>
               </Card>
             )}
           </div>
@@ -506,11 +531,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                     <Search className="h-4 w-4" />
                     Search Formats
                   </TabsTrigger>
-                  <TabsTrigger value="configure" disabled={!selectedFormat} className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    Configure
-                  </TabsTrigger>
-                  <TabsTrigger value="pricing" disabled={!selectedFormat} className="flex items-center gap-2">
+                   <TabsTrigger value="configure" disabled={selectedFormats.length === 0} className="flex items-center gap-2">
+                     <MapPin className="h-4 w-4" />
+                     Configure
+                   </TabsTrigger>
+                   <TabsTrigger value="pricing" disabled={selectedFormats.length === 0} className="flex items-center gap-2">
                     <Calculator className="h-4 w-4" />
                     Pricing
                   </TabsTrigger>
@@ -535,63 +560,77 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">
                           {category}
                         </h3>
-                        <div className="grid gap-3">
-                          {formats.map((format) => (
-                            <Card
-                              key={format.id}
-                              className={`cursor-pointer transition-all hover:shadow-md ${
-                                selectedFormat?.id === format.id ? 'ring-2 ring-primary' : ''
-                              }`}
-                              onClick={() => handleFormatSelect(format)}
-                            >
-                              <CardContent className="p-4">
-                                <div className="flex items-start justify-between">
-                                  <div className="space-y-1">
-                                    <h4 className="font-medium text-foreground">{format.name}</h4>
-                                    <p className="text-sm text-muted-foreground line-clamp-2">
-                                      {format.description}
-                                    </p>
-                                    <div className="flex items-center gap-2 text-xs">
-                                      <Badge variant="outline">{format.type}</Badge>
-                                      <Badge variant="secondary">{format.priceRange}</Badge>
-                                    </div>
-                                  </div>
-                                  {selectedFormat?.id === format.id && (
-                                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                                  )}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
+                         <div className="grid gap-3">
+                           {formats.map((format) => (
+                             <Card
+                               key={format.id}
+                               className={`cursor-pointer transition-all hover:shadow-md ${
+                                 selectedFormats.some(f => f.id === format.id) ? 'ring-2 ring-primary bg-primary/5' : ''
+                               }`}
+                               onClick={() => handleFormatToggle(format)}
+                             >
+                               <CardContent className="p-4">
+                                 <div className="flex items-start justify-between">
+                                   <div className="space-y-1">
+                                     <h4 className="font-medium text-foreground">{format.name}</h4>
+                                     <p className="text-sm text-muted-foreground line-clamp-2">
+                                       {format.description}
+                                     </p>
+                                     <div className="flex items-center gap-2 text-xs">
+                                       <Badge variant="outline">{format.type}</Badge>
+                                       <Badge variant="secondary">{format.priceRange}</Badge>
+                                     </div>
+                                   </div>
+                                   {selectedFormats.some(f => f.id === format.id) && (
+                                     <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                                   )}
+                                 </div>
+                               </CardContent>
+                             </Card>
+                           ))}
                         </div>
                       </div>
                     ))}
-                  </div>
-                </TabsContent>
+                   </div>
 
-                <TabsContent value="configure" className="space-y-6">
-                  {selectedFormat && (
-                    <>
-                      {/* Selected Format Info */}
-                      <Card className="bg-primary/5 border-primary/20">
-                        <CardContent className="p-4">
-                          <h3 className="font-medium text-foreground mb-2">{selectedFormat.name}</h3>
-                          <p className="text-sm text-muted-foreground">{selectedFormat.description}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant="outline">{selectedFormat.type}</Badge>
-                            <Badge variant="secondary">{selectedFormat.physicalSize}</Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
+                   {/* Continue Button */}
+                   {selectedFormats.length > 0 && (
+                     <div className="flex justify-center pt-4">
+                       <Button onClick={handleContinueToConfig} className="px-8">
+                         Continue with {selectedFormats.length} format{selectedFormats.length > 1 ? 's' : ''} →
+                       </Button>
+                     </div>
+                   )}
+                 </TabsContent>
 
-                      {/* Quantity */}
-                      <div className="space-y-2">
-                        <Label className="text-base font-medium">
-                          Quantity - {selectedFormat?.name?.includes('Digital') ? 'Sites' : 'Units'} per Incharge Period
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Each {selectedFormat?.name?.includes('Digital') ? 'site' : 'unit'} can display across multiple locations during rotation periods
-                        </p>
+                 <TabsContent value="configure" className="space-y-6">
+                   {selectedFormats.length > 0 && (
+                     <>
+                       {/* Selected Formats Info */}
+                       <Card className="bg-primary/5 border-primary/20">
+                         <CardContent className="p-4">
+                           <h3 className="font-medium text-foreground mb-2">
+                             Selected Formats ({selectedFormats.length})
+                           </h3>
+                           <div className="space-y-2">
+                             {selectedFormats.map((format) => (
+                               <div key={format.id} className="flex items-center justify-between text-sm">
+                                 <span className="font-medium">{format.name}</span>
+                                 <Badge variant="outline">{format.type}</Badge>
+                               </div>
+                             ))}
+                           </div>
+                         </CardContent>
+                       </Card>
+
+                       {/* Quantity */}
+                       <div className="space-y-2">
+                         <Label className="text-base font-medium">
+                           Quantity - {selectedFormats[0]?.name?.includes('Digital') ? 'Sites' : 'Units'} per Incharge Period
+                         </Label>
+                         <p className="text-sm text-muted-foreground">
+                           Each {selectedFormats[0]?.name?.includes('Digital') ? 'site' : 'unit'} can display across multiple locations during rotation periods
+                         </p>
                         <Select value={quantity.toString()} onValueChange={(value) => setQuantity(parseInt(value))}>
                           <SelectTrigger>
                             <SelectValue />
@@ -755,7 +794,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                       </div>
 
                       {/* Campaign Periods */}
-                      {selectedFormat && (
+                      {selectedFormats.length > 0 && (
                         <div className="space-y-2">
                           <Label>Campaign Periods</Label>
                           <p className="text-sm text-muted-foreground">
@@ -855,7 +894,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         </div>
                       </CardContent>
                     </Card>
-                  ) : selectedFormat && selectedLocations.length > 0 && selectedPeriods.length > 0 ? (
+                  ) : selectedFormats.length > 0 && selectedLocations.length > 0 && selectedPeriods.length > 0 ? (
                     // Show current item pricing when no items in quote yet
                     <Card className="bg-gradient-card border-border">
                       <CardHeader>
@@ -911,14 +950,14 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                   ) : null}
 
                   {/* Campaign Summary and Add to Quote - only show for current configuration */}
-                  {selectedFormat && selectedLocations.length > 0 && selectedPeriods.length > 0 && (
+                  {selectedFormats.length > 0 && selectedLocations.length > 0 && selectedPeriods.length > 0 && (
                     <>
                       <Card className="bg-muted/20 border-border">
                         <CardHeader>
                           <CardTitle className="text-lg">Campaign Summary</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
-                          <div><strong>Format:</strong> {selectedFormat.name}</div>
+                          <div><strong>Formats:</strong> {selectedFormats.map(f => f.name).join(', ')}</div>
                           <div><strong>Quantity:</strong> {quantity}</div>
                           <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
                           <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
