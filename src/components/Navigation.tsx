@@ -162,16 +162,14 @@ const Navigation = () => {
               </Button>
             )}
             
-            {navigation.phone && (
-              <Button 
-                onClick={() => window.location.href = `tel:${navigation.phone.replace(/\s/g, '')}`}
-                variant="outline"
-                size="sm"
-              >
-                <Phone className="h-4 w-4 mr-2" />
-                {navigation.phone}
-              </Button>
-            )}
+            <Button 
+              onClick={() => window.location.href = 'tel:+442045243019'}
+              variant="outline"
+              size="sm"
+            >
+              <Phone className="h-4 w-4 mr-2" />
+              +44 204 524 3019
+            </Button>
           </div>
 
           {/* Mobile Nav */}
@@ -235,15 +233,13 @@ const Navigation = () => {
                   </Button>
                 )}
                 
-                {navigation.phone && (
-                  <Button 
-                    onClick={() => window.location.href = `tel:${navigation.phone.replace(/\s/g, '')}`}
-                    className="w-full mt-4"
-                  >
-                    <Phone className="h-4 w-4 mr-2" />
-                    {navigation.phone}
-                  </Button>
-                )}
+                <Button 
+                  onClick={() => window.location.href = 'tel:+442045243019'}
+                  className="w-full mt-4"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  +44 204 524 3019
+                </Button>
               </div>
             </SheetContent>
           </Sheet>
