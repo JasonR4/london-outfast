@@ -1655,6 +1655,30 @@ export function RateCardManager() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // TODO: Implement custom date bulk action
+                          toast.info('Custom date feature coming soon');
+                        }}
+                        className="flex items-center gap-2"
+                      >
+                        <CalendarIcon className="w-4 h-4" />
+                        Custom Date
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // TODO: Implement add incharges bulk action
+                          toast.info('Add incharges feature coming soon');
+                        }}
+                        className="flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Incharges
+                      </Button>
+                      <Button
                         variant="destructive"
                         size="sm"
                         onClick={handleBulkDelete}
