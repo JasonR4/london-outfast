@@ -203,29 +203,10 @@ const FormatPage = () => {
       }
 
       // Use CMS content if available, otherwise use static data
-      const finalFormat = cmsData ? {
-        id: staticFormat?.id || cmsData.id,
-        format_slug: staticFormat?.format_slug || formatSlug,
-        format_name: cmsData.title,
-        name: cmsData.title, // For compatibility
-        description: (cmsData.content as any)?.hero_description || staticFormat?.description,
-        dimensions: staticFormat?.dimensions,
-        physicalSize: staticFormat?.dimensions,
-        is_active: staticFormat?.is_active || true,
-        category: (cmsData.content as any)?.category || 'Outdoor Advertising',
-        placement: (cmsData.content as any)?.placement || 'Various locations across London',
-        type: (cmsData.content as any)?.format_type || 'static',
-        dwellTime: (cmsData.content as any)?.dwellTime || '3-8 seconds average viewing time',
-        effectiveness: (cmsData.content as any)?.effectiveness || 'High impact advertising for brand awareness',
-        priceRange: (cmsData.content as any)?.pricing || 'Competitive rates available',
-        londonCoverage: (cmsData.content as any)?.coverage || 'Available across London',
-        whoUsesIt: (cmsData.content as any)?.whoUsesThis || ['Brands', 'Retailers', 'Services'],
-        networks: (cmsData.content as any)?.networks || ['Various outdoor advertising networks'],
-        ...(cmsData.content as any)
-      } : {
+      const finalFormat = staticFormat ? {
         ...staticFormat,
-        name: staticFormat?.format_name,
-        physicalSize: staticFormat?.dimensions,
+        name: staticFormat.format_name,
+        physicalSize: staticFormat.dimensions,
         category: 'Outdoor Advertising',
         placement: 'Various locations across London',
         type: 'static',
@@ -233,9 +214,27 @@ const FormatPage = () => {
         effectiveness: 'High impact advertising for brand awareness',
         priceRange: 'Competitive rates available',
         londonCoverage: 'Available across London',
-        whoUsesIt: ['Brands', 'Retailers', 'Services'],
-        networks: ['Various outdoor advertising networks']
-      };
+        whoUsesIt: ['Brands', 'Retailers', 'Services', 'Entertainment', 'Financial Services', 'Technology Companies'],
+        networks: ['Various outdoor advertising networks'],
+        shortName: staticFormat.format_name.split(' ')[0] + ' ' + staticFormat.format_name.split(' ')[1],
+        // Override with CMS content if available
+        ...(cmsData && {
+          id: cmsData.id,
+          name: cmsData.title,
+          format_name: cmsData.title,
+          description: (cmsData.content as any)?.hero_description || staticFormat.description,
+          category: (cmsData.content as any)?.category || 'Outdoor Advertising',
+          placement: (cmsData.content as any)?.placement || 'Various locations across London',
+          type: (cmsData.content as any)?.format_type || 'static',
+          dwellTime: (cmsData.content as any)?.dwellTime || '3-8 seconds average viewing time',
+          effectiveness: (cmsData.content as any)?.effectiveness || 'High impact advertising for brand awareness',
+          priceRange: (cmsData.content as any)?.pricing || 'Competitive rates available',
+          londonCoverage: (cmsData.content as any)?.coverage || 'Available across London',
+          whoUsesIt: (cmsData.content as any)?.whoUsesThis || ['Brands', 'Retailers', 'Services'],
+          networks: (cmsData.content as any)?.networks || ['Various outdoor advertising networks'],
+          ...(cmsData.content as any)
+        })
+      } : null;
 
       setFormat(finalFormat);
       setLoading(false);
@@ -375,8 +374,15 @@ const FormatPage = () => {
     );
   }
 
-  if (!format) {
-    return null;
+  if (!format && !formatsLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Format Not Found</h1>
+          <p>The outdoor advertising format you're looking for could not be found.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
