@@ -38,6 +38,8 @@ export function MediaFormatCategoryManager() {
   const [formatCategories, setFormatCategories] = useState<MediaFormatCategory[]>([]);
   const [selectedFormat, setSelectedFormat] = useState<MediaFormat | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [editingFormatName, setEditingFormatName] = useState<string | null>(null);
+  const [newFormatName, setNewFormatName] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -120,6 +122,42 @@ export function MediaFormatCategoryManager() {
     }
   };
 
+  const handleEditFormatName = (format: MediaFormat) => {
+    setEditingFormatName(format.id);
+    setNewFormatName(format.format_name);
+  };
+
+  const handleSaveFormatName = async (formatId: string) => {
+    try {
+      const { error } = await supabase
+        .from('media_formats')
+        .update({ format_name: newFormatName })
+        .eq('id', formatId);
+
+      if (error) throw error;
+
+      // Update local state
+      const updatedFormats = mediaFormats.map(format =>
+        format.id === formatId
+          ? { ...format, format_name: newFormatName }
+          : format
+      );
+      
+      setMediaFormats(updatedFormats);
+      setEditingFormatName(null);
+      setNewFormatName('');
+      toast.success('Format name updated successfully');
+    } catch (error) {
+      console.error('Error updating format name:', error);
+      toast.error('Failed to update format name');
+    }
+  };
+
+  const handleCancelEditFormatName = () => {
+    setEditingFormatName(null);
+    setNewFormatName('');
+  };
+
   const getCategoryColor = (category: string) => {
     const colors = {
       'Digital': 'bg-blue-100 text-blue-800',
@@ -151,7 +189,7 @@ export function MediaFormatCategoryManager() {
             Media Formats & Categories
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Manage the relationship between media formats and their available categories
+            Click on format names to edit them. Use the pencil icon to manage categories. This is the source of truth for all format names and categories across the site.
           </p>
         </CardHeader>
         <CardContent>
@@ -170,10 +208,50 @@ export function MediaFormatCategoryManager() {
                 <TableBody>
                   {mediaFormats.map((format) => (
                     <TableRow key={format.id}>
-                      <TableCell>
-                        <div className="font-medium">{format.format_name}</div>
-                        <div className="text-sm text-muted-foreground">{format.format_slug}</div>
-                      </TableCell>
+                       <TableCell>
+                         {editingFormatName === format.id ? (
+                           <div className="space-y-2">
+                             <Input
+                               value={newFormatName}
+                               onChange={(e) => setNewFormatName(e.target.value)}
+                               className="font-medium"
+                               onKeyDown={(e) => {
+                                 if (e.key === 'Enter') {
+                                   handleSaveFormatName(format.id);
+                                 } else if (e.key === 'Escape') {
+                                   handleCancelEditFormatName();
+                                 }
+                               }}
+                               autoFocus
+                             />
+                             <div className="text-sm text-muted-foreground">{format.format_slug}</div>
+                             <div className="flex gap-1">
+                               <Button
+                                 size="sm"
+                                 onClick={() => handleSaveFormatName(format.id)}
+                                 disabled={!newFormatName.trim()}
+                               >
+                                 Save
+                               </Button>
+                               <Button
+                                 size="sm"
+                                 variant="outline"
+                                 onClick={handleCancelEditFormatName}
+                               >
+                                 Cancel
+                               </Button>
+                             </div>
+                           </div>
+                         ) : (
+                           <div 
+                             className="cursor-pointer hover:bg-muted/50 p-1 rounded"
+                             onClick={() => handleEditFormatName(format)}
+                           >
+                             <div className="font-medium">{format.format_name}</div>
+                             <div className="text-sm text-muted-foreground">{format.format_slug}</div>
+                           </div>
+                         )}
+                       </TableCell>
                       <TableCell>
                         <div className="max-w-xs">
                           {format.description || 'No description'}
