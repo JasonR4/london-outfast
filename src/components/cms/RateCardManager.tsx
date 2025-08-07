@@ -930,128 +930,144 @@ export function RateCardManager() {
 
     setIsBulkUploading(true);
     try {
-      const dataToInsert = [];
+      // Group rows by upload type
+      const rowsByType = analysisResults.validRows.reduce((acc: any, row: any) => {
+        const type = row.uploadType || 'rates';
+        if (!acc[type]) acc[type] = [];
+        acc[type].push(row);
+        return acc;
+      }, {});
 
-      for (const row of analysisResults.validRows) {
-        // Use pre-populated media format ID from template
-        const mediaFormatId = row['Media Format ID'];
+      let totalInserted = 0;
+      let errors: any[] = [];
 
-        if (!mediaFormatId) continue;
-
-        let dataEntry: any = {};
-
-        switch (bulkUploadType) {
-          case 'rates':
-            dataEntry = {
-              media_format_id: mediaFormatId,
-              location_area: row['Location Area'],
-              base_rate_per_incharge: parseFloat(row['Base Rate Per Incharge']),
-              sale_price: row['Sale Price'] ? parseFloat(row['Sale Price']) : null,
-              reduced_price: row['Reduced Price'] ? parseFloat(row['Reduced Price']) : null,
-              location_markup_percentage: parseFloat(row['Location Markup Percentage']) || 0,
-              quantity_per_medium: parseInt(row['Quantity Per Medium']) || 1,
-              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true,
-              is_date_specific: row['Is Date Specific'] === 'TRUE' || row['Is Date Specific'] === true,
-              start_date: row['Start Date'] && row['Start Date'] !== '' ? row['Start Date'] : null,
-              end_date: row['End Date'] && row['End Date'] !== '' ? row['End Date'] : null,
-              incharge_period: row['Incharge Period'] ? parseInt(row['Incharge Period']) : 1
-            };
-            break;
-            
-          case 'quantity-discounts':
-            dataEntry = {
-              media_format_id: mediaFormatId,
-              location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
-              min_quantity: parseInt(row['Min Quantity']),
-              max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
-              discount_percentage: parseFloat(row['Discount Percentage']),
-              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
-            };
-            break;
-            
-          case 'discounts':
-            dataEntry = {
-              media_format_id: mediaFormatId,
-              min_periods: parseInt(row['Min Periods']),
-              max_periods: row['Max Periods'] ? parseInt(row['Max Periods']) : null,
-              discount_percentage: parseFloat(row['Discount Percentage']),
-              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
-            };
-            break;
-            
-          case 'production':
-            dataEntry = {
-              media_format_id: mediaFormatId,
-              location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
-              category: row['Category'],
-              min_quantity: parseInt(row['Min Quantity']),
-              max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
-              cost_per_unit: parseFloat(row['Cost Per Unit']),
-              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
-            };
-            break;
-            
-          case 'creative':
-            dataEntry = {
-              media_format_id: mediaFormatId,
-              location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
-              category: row['Category'],
-              min_quantity: parseInt(row['Min Quantity']),
-              max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
-              cost_per_unit: parseFloat(row['Cost Per Unit']),
-              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
-            };
-            break;
-        }
-
-        dataToInsert.push(dataEntry);
-      }
-
-      // Insert data in smaller batches to prevent timeout
-      const batchSize = 20;
-      let insertedCount = 0;
-      let error: any = null;
-      
-      for (let i = 0; i < dataToInsert.length; i += batchSize) {
-        const batch = dataToInsert.slice(i, i + batchSize);
+      // Process each upload type separately
+      for (const [uploadType, rows] of Object.entries(rowsByType)) {
+        console.log(`Processing ${(rows as any[]).length} rows for type: ${uploadType}`);
         
-        switch (bulkUploadType) {
-          case 'rates':
-            ({ error } = await supabase.from('rate_cards').insert(batch));
-            break;
-          case 'discounts':
-            ({ error } = await supabase.from('discount_tiers').insert(batch));
-            break;
-          case 'quantity-discounts':
-            ({ error } = await supabase.from('quantity_discount_tiers').insert(batch));
-            break;
-          case 'production':
-            ({ error } = await supabase.from('production_cost_tiers').insert(batch));
-            break;
-          case 'creative':
-            ({ error } = await supabase.from('creative_design_cost_tiers').insert(batch));
-            break;
+        const dataToInsert = [];
+
+        for (const row of rows as any[]) {
+          const mediaFormatId = row['Media Format ID'];
+          if (!mediaFormatId) continue;
+
+          let dataEntry: any = {};
+
+          switch (uploadType) {
+            case 'rates':
+              dataEntry = {
+                media_format_id: mediaFormatId,
+                location_area: row['Location Area'] || null,
+                base_rate_per_incharge: row['Base Rate Per Incharge'] ? parseFloat(row['Base Rate Per Incharge']) : null,
+                sale_price: row['Sale Price'] ? parseFloat(row['Sale Price']) : null,
+                reduced_price: row['Reduced Price'] ? parseFloat(row['Reduced Price']) : null,
+                location_markup_percentage: parseFloat(row['Location Markup Percentage']) || 0,
+                quantity_per_medium: parseInt(row['Quantity Per Medium']) || 1,
+                is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true,
+                is_date_specific: row['Is Date Specific'] === 'TRUE' || row['Is Date Specific'] === true,
+                start_date: row['Start Date'] && row['Start Date'] !== '' ? row['Start Date'] : null,
+                end_date: row['End Date'] && row['End Date'] !== '' ? row['End Date'] : null,
+                incharge_period: row['Incharge Period'] ? parseInt(row['Incharge Period']) : 1
+              };
+              break;
+              
+            case 'quantity-discounts':
+              dataEntry = {
+                media_format_id: mediaFormatId,
+                location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
+                min_quantity: parseInt(row['Min Quantity']),
+                max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
+                discount_percentage: parseFloat(row['Discount Percentage']),
+                is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+              };
+              break;
+              
+            case 'discounts':
+              dataEntry = {
+                media_format_id: mediaFormatId,
+                min_periods: parseInt(row['Min Periods']),
+                max_periods: row['Max Periods'] ? parseInt(row['Max Periods']) : null,
+                discount_percentage: parseFloat(row['Discount Percentage']),
+                is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+              };
+              break;
+              
+            case 'production':
+              dataEntry = {
+                media_format_id: mediaFormatId,
+                location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
+                category: row['Category'] || null,
+                min_quantity: parseInt(row['Min Quantity']),
+                max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
+                cost_per_unit: parseFloat(row['Cost Per Unit']),
+                is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+              };
+              break;
+              
+            case 'creative':
+              dataEntry = {
+                media_format_id: mediaFormatId,
+                location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
+                category: row['Category'] || null,
+                min_quantity: parseInt(row['Min Quantity']),
+                max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
+                cost_per_unit: parseFloat(row['Cost Per Unit']),
+                is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+              };
+              break;
+          }
+
+          dataToInsert.push(dataEntry);
         }
 
-        if (error) throw error;
-        insertedCount += batch.length;
+        // Insert data for this type in smaller batches
+        const batchSize = 20;
+        
+        for (let i = 0; i < dataToInsert.length; i += batchSize) {
+          const batch = dataToInsert.slice(i, i + batchSize);
+          let error: any = null;
+          
+          switch (uploadType) {
+            case 'rates':
+              ({ error } = await supabase.from('rate_cards').insert(batch));
+              break;
+            case 'discounts':
+              ({ error } = await supabase.from('discount_tiers').insert(batch));
+              break;
+            case 'quantity-discounts':
+              ({ error } = await supabase.from('quantity_discount_tiers').insert(batch));
+              break;
+            case 'production':
+              ({ error } = await supabase.from('production_cost_tiers').insert(batch));
+              break;
+            case 'creative':
+              ({ error } = await supabase.from('creative_design_cost_tiers').insert(batch));
+              break;
+          }
+          
+          if (error) {
+            console.error(`Error inserting batch for ${uploadType}:`, error);
+            errors.push({ type: uploadType, batch: i / batchSize + 1, error });
+          } else {
+            totalInserted += batch.length;
+            console.log(`Successfully inserted batch ${i / batchSize + 1} for ${uploadType}: ${batch.length} records`);
+          }
+        }
       }
 
-      const successMessages = {
-        rates: 'rate cards',
-        discounts: 'discount tiers',
-        'quantity-discounts': 'quantity discount tiers', 
-        production: 'production cost tiers',
-        creative: 'creative design cost tiers'
-      };
+      if (errors.length > 0) {
+        console.error('Some batches failed:', errors);
+        toast.error(`Partial upload completed. ${totalInserted} records inserted, but ${errors.length} batches failed.`);
+      } else {
+        toast.success(`Successfully uploaded ${totalInserted} records across all data types!`);
+      }
 
-      toast.success(`Successfully imported ${insertedCount} ${successMessages[bulkUploadType]}`);
-      setUploadedFile(null);
+      fetchData(); // Refresh all data
       setAnalysisResults(null);
-      fetchData();
+      setUploadedFile(null);
     } catch (error) {
       console.error('Error processing bulk upload:', error);
-      toast.error(`Failed to import ${bulkUploadType}`);
+      toast.error('Failed to process bulk upload');
     } finally {
       setIsBulkUploading(false);
     }
