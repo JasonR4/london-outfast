@@ -52,14 +52,10 @@ const Contact = () => {
             {content?.hero?.description || "From quick quotes to complex campaigns. We're here to get your brand seen across London."}
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex justify-center">
             <Button size="lg" className="text-lg px-8 py-6 shadow-glow">
               <Phone className="w-5 h-5 mr-2" />
               Call Now: +44 204 524 3019
-            </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-              <Calendar className="w-5 h-5 mr-2" />
-              Book a Meeting
             </Button>
           </div>
         </div>
