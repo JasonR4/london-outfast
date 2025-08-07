@@ -617,6 +617,135 @@ export function RateCardManager() {
     }
   };
 
+  // Comprehensive download with all pricing data in one file
+  const downloadComprehensiveTemplate = () => {
+    console.log('Comprehensive download function called');
+    console.log('Media formats loaded:', mediaFormats.length);
+    
+    // Check if media formats are loaded
+    if (!mediaFormats || mediaFormats.length === 0) {
+      console.error('No media formats available for download');
+      toast.error('Media formats not loaded yet. Please wait and try again.');
+      return;
+    }
+
+    try {
+      const workbook = XLSX.utils.book_new();
+      
+      // Sheet 1: Rate Cards
+      const rateCardsData = mediaFormats.map(format => ({
+        'Media Format ID': format.id,
+        'Media Format Name': format.format_name,
+        'Location Area': '', // Leave blank - configure in CMS
+        'Base Rate Per Incharge': '0.00',
+        'Sale Price': '0.00',
+        'Reduced Price': '0.00',
+        'Location Markup Percentage': '0.00',
+        'Quantity Per Medium': '1',
+        'Is Active': 'TRUE',
+        'Is Date Specific': 'FALSE',
+        'Start Date': '',
+        'End Date': '',
+        'Incharge Period': '1'
+      }));
+      const rateCardsWS = XLSX.utils.json_to_sheet(rateCardsData);
+      rateCardsWS['!cols'] = Array(Object.keys(rateCardsData[0]).length).fill({ wch: 20 });
+      XLSX.utils.book_append_sheet(workbook, rateCardsWS, 'Rate Cards');
+
+      // Sheet 2: Volume Discounts
+      const discountsData = mediaFormats.map(format => ({
+        'Media Format ID': format.id,
+        'Media Format Name': format.format_name,
+        'Min Periods': '1',
+        'Max Periods': '',
+        'Discount Percentage': '10.00',
+        'Is Active': 'TRUE'
+      }));
+      const discountsWS = XLSX.utils.json_to_sheet(discountsData);
+      discountsWS['!cols'] = Array(Object.keys(discountsData[0]).length).fill({ wch: 20 });
+      XLSX.utils.book_append_sheet(workbook, discountsWS, 'Volume Discounts');
+
+      // Sheet 3: Quantity Discounts
+      const quantityDiscountsData = mediaFormats.map(format => ({
+        'Media Format ID': format.id,
+        'Media Format Name': format.format_name,
+        'Location Area': '', // Leave blank - configure in CMS
+        'Min Quantity': '1',
+        'Max Quantity': '',
+        'Discount Percentage': '5.00',
+        'Is Active': 'TRUE'
+      }));
+      const quantityDiscountsWS = XLSX.utils.json_to_sheet(quantityDiscountsData);
+      quantityDiscountsWS['!cols'] = Array(Object.keys(quantityDiscountsData[0]).length).fill({ wch: 20 });
+      XLSX.utils.book_append_sheet(workbook, quantityDiscountsWS, 'Quantity Discounts');
+
+      // Sheet 4: Production Costs
+      const productionData = mediaFormats.map(format => ({
+        'Media Format ID': format.id,
+        'Media Format Name': format.format_name,
+        'Location Area': '', // Leave blank - configure in CMS
+        'Category': '', // Leave blank - configure in CMS
+        'Min Quantity': '1',
+        'Max Quantity': '',
+        'Cost Per Unit': '50.00',
+        'Is Active': 'TRUE'
+      }));
+      const productionWS = XLSX.utils.json_to_sheet(productionData);
+      productionWS['!cols'] = Array(Object.keys(productionData[0]).length).fill({ wch: 20 });
+      XLSX.utils.book_append_sheet(workbook, productionWS, 'Production Costs');
+
+      // Sheet 5: Creative Design Costs
+      const creativeData = mediaFormats.map(format => ({
+        'Media Format ID': format.id,
+        'Media Format Name': format.format_name,
+        'Location Area': '', // Leave blank - configure in CMS
+        'Category': '', // Leave blank - configure in CMS
+        'Min Quantity': '1',
+        'Max Quantity': '',
+        'Cost Per Unit': '85.00',
+        'Is Active': 'TRUE'
+      }));
+      const creativeWS = XLSX.utils.json_to_sheet(creativeData);
+      creativeWS['!cols'] = Array(Object.keys(creativeData[0]).length).fill({ wch: 20 });
+      XLSX.utils.book_append_sheet(workbook, creativeWS, 'Creative Design Costs');
+
+      // Sheet 6: Media Formats Reference
+      const formatsData = mediaFormats.map(format => ({
+        'Format ID': format.id,
+        'Format Name': format.format_name,
+        'Format Slug': format.format_slug,
+        'Description': format.description,
+        'Dimensions': format.dimensions,
+        'Is Active': format.is_active ? 'TRUE' : 'FALSE'
+      }));
+      const formatsWS = XLSX.utils.json_to_sheet(formatsData);
+      formatsWS['!cols'] = Array(Object.keys(formatsData[0]).length).fill({ wch: 25 });
+      XLSX.utils.book_append_sheet(workbook, formatsWS, 'Media Formats Reference');
+
+      // Sheet 7: London Areas Reference
+      const areasData = londonAreas.flatMap(zone => 
+        zone.areas.map(area => ({
+          'Area Name': area,
+          'Zone': zone.zone,
+          'Zone Color': zone.color
+        }))
+      );
+      const areasWS = XLSX.utils.json_to_sheet(areasData);
+      areasWS['!cols'] = Array(Object.keys(areasData[0]).length).fill({ wch: 25 });
+      XLSX.utils.book_append_sheet(workbook, areasWS, 'London Areas Reference');
+
+      // Download the comprehensive file
+      const filename = `comprehensive-rate-cards-template-${new Date().toISOString().split('T')[0]}.xlsx`;
+      console.log('About to download comprehensive file:', filename);
+      XLSX.writeFile(workbook, filename);
+      console.log('Comprehensive file download triggered successfully');
+      toast.success('Comprehensive rate cards template downloaded successfully');
+    } catch (error) {
+      console.error('Error during comprehensive file generation/download:', error);
+      toast.error('Failed to generate comprehensive template file');
+    }
+  };
+
   const analyzeUploadedFile = async () => {
     if (!uploadedFile) return;
 
@@ -927,13 +1056,46 @@ export function RateCardManager() {
                     </div>
                   </div>
 
-                  {/* Step 1: Download Template */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Step 1: Download Template</h3>
+                  {/* Comprehensive Download Option */}
+                  <div className="space-y-4 p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <FileSpreadsheet className="w-5 h-5 text-primary" />
+                      Complete Rate Cards Package
+                    </h3>
                     <p className="text-muted-foreground">
-                      Download the Excel template with all media formats pre-filled. Just fill in the variable data for each format.
+                      Download a comprehensive Excel file with all pricing data in one place: rate cards, volume discounts, quantity discounts, production costs, creative costs, plus reference sheets for all media formats and London areas.
                     </p>
-                    <Button onClick={() => downloadTemplate(bulkUploadType)} className="flex items-center gap-2">
+                    <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                      <span className="px-2 py-1 bg-background rounded">Rate Cards</span>
+                      <span className="px-2 py-1 bg-background rounded">Volume Discounts</span>
+                      <span className="px-2 py-1 bg-background rounded">Quantity Discounts</span>
+                      <span className="px-2 py-1 bg-background rounded">Production Costs</span>
+                      <span className="px-2 py-1 bg-background rounded">Creative Costs</span>
+                      <span className="px-2 py-1 bg-background rounded">Media Formats</span>
+                      <span className="px-2 py-1 bg-background rounded">London Areas</span>
+                    </div>
+                    <Button onClick={downloadComprehensiveTemplate} className="flex items-center gap-2" size="lg">
+                      <Download className="w-4 h-4" />
+                      Download Complete Package
+                    </Button>
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">or download individual templates</span>
+                    </div>
+                  </div>
+
+                  {/* Step 1: Download Individual Template */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Individual Template Download</h3>
+                    <p className="text-muted-foreground">
+                      Download a specific template for one data type only.
+                    </p>
+                    <Button onClick={() => downloadTemplate(bulkUploadType)} variant="outline" className="flex items-center gap-2">
                       <Download className="w-4 h-4" />
                       Download {bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1).replace('-', ' ')} Template
                     </Button>
