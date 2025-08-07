@@ -1196,7 +1196,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
                               <span>Total Media Costs:</span>
-                              <span className="font-medium">£{pricing.mediaPrice.toLocaleString()}</span>
+                              <span className="font-medium">£{(totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between items-center">
                               <span>Production Costs:</span>
@@ -1213,15 +1213,15 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           <div className="border-t border-border pt-4 mt-4 space-y-2">
                             <div className="flex justify-between items-center">
                               <span>Subtotal (exc VAT):</span>
-                              <span className="font-medium">£{pricing.totalCost.toLocaleString()}</span>
+                              <span className="font-medium">£{((totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)) + pricing.productionCost + pricing.creativeCost).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm text-muted-foreground">
                               <span>VAT (20%):</span>
-                              <span>£{(pricing.totalCost * 0.20).toLocaleString()}</span>
+                              <span>£{(((totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)) + pricing.productionCost + pricing.creativeCost) * 0.20).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
                               <span>Total inc VAT:</span>
-                              <span className="text-primary">£{(pricing.totalCost * 1.20).toLocaleString()}</span>
+                              <span className="text-primary">£{(((totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)) + pricing.productionCost + pricing.creativeCost) * 1.20).toLocaleString()}</span>
                             </div>
                           </div>
                         </div>
