@@ -131,6 +131,15 @@ export function RateCardManager() {
   const [isBulkUploading, setIsBulkUploading] = useState(false);
   const [bulkUploadType, setBulkUploadType] = useState<'rates' | 'discounts' | 'quantity-discounts' | 'production' | 'creative'>('rates');
   const [selectedMediaFormat, setSelectedMediaFormat] = useState<MediaFormat | null>(null);
+  const [editingPeriod, setEditingPeriod] = useState<any | null>(null);
+  const [isPeriodDialogOpen, setIsPeriodDialogOpen] = useState(false);
+  const [selectedMediaFormats, setSelectedMediaFormats] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [bulkPeriodData, setBulkPeriodData] = useState({
+    period_number: '',
+    start_date: undefined as Date | undefined,
+    end_date: undefined as Date | undefined,
+  });
 
   useEffect(() => {
     fetchData();
@@ -1087,6 +1096,7 @@ export function RateCardManager() {
           <Tabs defaultValue="rates" className="w-full">
             <TabsList>
               <TabsTrigger value="rates">Rate Cards</TabsTrigger>
+              <TabsTrigger value="periods">In-Charge Periods</TabsTrigger>
               <TabsTrigger value="bulk-upload">Bulk Upload</TabsTrigger>
               <TabsTrigger value="discounts">Period Discounts</TabsTrigger>
               <TabsTrigger value="quantity-discounts">Quantity Discounts</TabsTrigger>
@@ -1283,6 +1293,287 @@ export function RateCardManager() {
               </Card>
             </TabsContent>
 
+            <TabsContent value="periods" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CalendarIcon className="w-5 h-5" />
+                    In-Charge Periods Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Bulk Period Creation */}
+                  <div className="p-6 bg-primary/5 rounded-lg border-2 border-primary/20">
+                    <h3 className="text-lg font-semibold mb-4">Bulk Period Setup</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      <div>
+                        <Label htmlFor="period_number">Period Number</Label>
+                        <Input
+                          type="number"
+                          value={bulkPeriodData.period_number}
+                          onChange={(e) => setBulkPeriodData(prev => ({ ...prev, period_number: e.target.value }))}
+                          placeholder="e.g. 27"
+                        />
+                      </div>
+                      <div>
+                        <Label>Start Date</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !bulkPeriodData.start_date && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {bulkPeriodData.start_date ? format(bulkPeriodData.start_date, "PPP") : "Select date"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={bulkPeriodData.start_date}
+                              onSelect={(date) => setBulkPeriodData(prev => ({ ...prev, start_date: date }))}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div>
+                        <Label>End Date</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !bulkPeriodData.end_date && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {bulkPeriodData.end_date ? format(bulkPeriodData.end_date, "PPP") : "Select date"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={bulkPeriodData.end_date}
+                              onSelect={(date) => setBulkPeriodData(prev => ({ ...prev, end_date: date }))}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
+
+                    {/* Media Format Bulk Selection */}
+                    <div className="mb-4">
+                      <Label className="text-base font-semibold">Select Media Formats</Label>
+                      <div className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 overflow-y-auto border rounded-lg p-4">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Checkbox
+                            id="select-all-formats"
+                            checked={selectedMediaFormats.length === mediaFormats.length}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedMediaFormats(mediaFormats.map(f => f.id));
+                              } else {
+                                setSelectedMediaFormats([]);
+                              }
+                            }}
+                          />
+                          <Label htmlFor="select-all-formats" className="font-medium">Select All</Label>
+                        </div>
+                        {mediaFormats.map((format) => (
+                          <div key={format.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`format-${format.id}`}
+                              checked={selectedMediaFormats.includes(format.id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedMediaFormats(prev => [...prev, format.id]);
+                                } else {
+                                  setSelectedMediaFormats(prev => prev.filter(id => id !== format.id));
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`format-${format.id}`} className="text-sm">
+                              {format.format_name}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Category Bulk Selection */}
+                    <div className="mb-4">
+                      <Label className="text-base font-semibold">Select Categories</Label>
+                      <div className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-32 overflow-y-auto border rounded-lg p-4">
+                        {[
+                          "Classic & Digital Roadside",
+                          "London Underground (TfL)",
+                          "National Rail & Commuter Rail",
+                          "Bus Advertising",
+                          "Taxi Advertising",
+                          "Retail & Leisure Environments",
+                          "Airports",
+                          "Street Furniture",
+                          "Programmatic DOOH (pDOOH)",
+                          "Ambient / Guerrilla OOH"
+                        ].map((category) => (
+                          <div key={category} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`category-${category}`}
+                              checked={selectedCategories.includes(category)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedCategories(prev => [...prev, category]);
+                                } else {
+                                  setSelectedCategories(prev => prev.filter(cat => cat !== category));
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`category-${category}`} className="text-sm">
+                              {category}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <Button 
+                      onClick={() => {
+                        // Handle bulk period creation
+                        console.log('Bulk period creation:', {
+                          period: bulkPeriodData,
+                          mediaFormats: selectedMediaFormats,
+                          categories: selectedCategories
+                        });
+                        toast.success('Bulk period creation functionality will be implemented');
+                      }}
+                      disabled={!bulkPeriodData.period_number || !bulkPeriodData.start_date || !bulkPeriodData.end_date}
+                      className="w-full"
+                    >
+                      Create Period & Apply to Selected Items
+                    </Button>
+                  </div>
+
+                  {/* Individual Period Management */}
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold">Existing In-Charge Periods</h3>
+                    <Dialog open={isPeriodDialogOpen} onOpenChange={setIsPeriodDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button onClick={() => setEditingPeriod(null)}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Individual Period
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>
+                            {editingPeriod ? 'Edit' : 'Create'} In-Charge Period
+                          </DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={(e) => {
+                          e.preventDefault();
+                          const formData = new FormData(e.currentTarget);
+                          console.log('Individual period form:', Object.fromEntries(formData));
+                          toast.success('Individual period creation functionality will be implemented');
+                          setIsPeriodDialogOpen(false);
+                        }} className="space-y-4">
+                          <div>
+                            <Label htmlFor="period_number">Period Number</Label>
+                            <Input
+                              name="period_number"
+                              type="number"
+                              defaultValue={editingPeriod?.period_number}
+                              required
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="start_date">Start Date</Label>
+                              <Input
+                                name="start_date"
+                                type="date"
+                                defaultValue={editingPeriod?.start_date}
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="end_date">End Date</Label>
+                              <Input
+                                name="end_date"
+                                type="date"
+                                defaultValue={editingPeriod?.end_date}
+                                required
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button type="button" variant="outline" onClick={() => setIsPeriodDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button type="submit">
+                              {editingPeriod ? 'Update' : 'Create'} Period
+                            </Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Period Number</TableHead>
+                        <TableHead>Start Date</TableHead>
+                        <TableHead>End Date</TableHead>
+                        <TableHead>Duration (Days)</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {inchargePeriods.map((period) => (
+                        <TableRow key={period.id}>
+                          <TableCell className="font-medium">Period {period.period_number}</TableCell>
+                          <TableCell>{format(new Date(period.start_date), 'PPP')}</TableCell>
+                          <TableCell>{format(new Date(period.end_date), 'PPP')}</TableCell>
+                          <TableCell>
+                            {Math.ceil((new Date(period.end_date).getTime() - new Date(period.start_date).getTime()) / (1000 * 60 * 60 * 24))} days
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingPeriod(period);
+                                  setIsPeriodDialogOpen(true);
+                                }}
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  console.log('Delete period:', period.id);
+                                  toast.success('Delete functionality will be implemented');
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
             <TabsContent value="rates" className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">OOH Media Rate Cards</h3>
