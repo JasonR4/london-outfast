@@ -632,41 +632,27 @@ export function RateCardManager() {
     try {
       const workbook = XLSX.utils.book_new();
       
-      // Create separate sheets for each London zone/area
-      londonAreas.forEach((zone, zoneIndex) => {
-        zone.areas.forEach((area, areaIndex) => {
-          // Rate Cards data for this specific area
-          const rateCardsData = mediaFormats.map(format => ({
-            'Media Format ID': format.id,
-            'Media Format Name': format.format_name,
-            'Location Area': area,
-            'Base Rate Per Incharge': '0.00',
-            'Sale Price': '0.00',
-            'Reduced Price': '0.00',
-            'Location Markup Percentage': '0.00',
-            'Quantity Per Medium': '1',
-            'Is Active': 'TRUE',
-            'Is Date Specific': 'FALSE',
-            'Start Date': '',
-            'End Date': '',
-            'Incharge Period': '1'
-          }));
-          
-          const rateCardsWS = XLSX.utils.json_to_sheet(rateCardsData);
-          rateCardsWS['!cols'] = Array(Object.keys(rateCardsData[0]).length).fill({ wch: 20 });
-          
-          // Create a clean sheet name (Excel has limitations on sheet names - remove invalid characters)
-          const invalidChars = /[:\\\/?*\[\]]/g;
-          const sheetName = area.replace(invalidChars, '').length > 31 
-            ? area.replace(invalidChars, '').substring(0, 28) + '...' 
-            : area.replace(invalidChars, '');
-          XLSX.utils.book_append_sheet(workbook, rateCardsWS, sheetName);
-        });
-      });
+      // Sheet 1: Rate Cards (location area left blank for manual entry)
+      const rateCardsData = mediaFormats.map(format => ({
+        'Media Format ID': format.id,
+        'Media Format Name': format.format_name,
+        'Location Area': '', // Leave blank - configure manually
+        'Base Rate Per Incharge': '0.00',
+        'Sale Price': '0.00',
+        'Reduced Price': '0.00',
+        'Location Markup Percentage': '0.00',
+        'Quantity Per Medium': '1',
+        'Is Active': 'TRUE',
+        'Is Date Specific': 'FALSE',
+        'Start Date': '',
+        'End Date': '',
+        'Incharge Period': '1'
+      }));
+      const rateCardsWS = XLSX.utils.json_to_sheet(rateCardsData);
+      rateCardsWS['!cols'] = Array(Object.keys(rateCardsData[0]).length).fill({ wch: 20 });
+      XLSX.utils.book_append_sheet(workbook, rateCardsWS, 'Rate Cards');
 
-      // Add reference sheets at the end
-      
-      // Volume Discounts (applies globally)
+      // Sheet 2: Volume Discounts
       const discountsData = mediaFormats.map(format => ({
         'Media Format ID': format.id,
         'Media Format Name': format.format_name,
@@ -679,11 +665,11 @@ export function RateCardManager() {
       discountsWS['!cols'] = Array(Object.keys(discountsData[0]).length).fill({ wch: 20 });
       XLSX.utils.book_append_sheet(workbook, discountsWS, 'Volume Discounts');
 
-      // Quantity Discounts (can be area-specific)
+      // Sheet 3: Quantity Discounts
       const quantityDiscountsData = mediaFormats.map(format => ({
         'Media Format ID': format.id,
         'Media Format Name': format.format_name,
-        'Location Area': '', // Leave blank - configure in CMS
+        'Location Area': '', // Leave blank - configure manually
         'Min Quantity': '1',
         'Max Quantity': '',
         'Discount Percentage': '5.00',
@@ -693,12 +679,12 @@ export function RateCardManager() {
       quantityDiscountsWS['!cols'] = Array(Object.keys(quantityDiscountsData[0]).length).fill({ wch: 20 });
       XLSX.utils.book_append_sheet(workbook, quantityDiscountsWS, 'Quantity Discounts');
 
-      // Production Costs (can be area-specific)
+      // Sheet 4: Production Costs
       const productionData = mediaFormats.map(format => ({
         'Media Format ID': format.id,
         'Media Format Name': format.format_name,
-        'Location Area': '', // Leave blank - configure in CMS
-        'Category': '', // Leave blank - configure in CMS
+        'Location Area': '', // Leave blank - configure manually
+        'Category': '', // Leave blank - configure manually
         'Min Quantity': '1',
         'Max Quantity': '',
         'Cost Per Unit': '50.00',
@@ -708,12 +694,12 @@ export function RateCardManager() {
       productionWS['!cols'] = Array(Object.keys(productionData[0]).length).fill({ wch: 20 });
       XLSX.utils.book_append_sheet(workbook, productionWS, 'Production Costs');
 
-      // Creative Design Costs (can be area-specific)
+      // Sheet 5: Creative Design Costs
       const creativeData = mediaFormats.map(format => ({
         'Media Format ID': format.id,
         'Media Format Name': format.format_name,
-        'Location Area': '', // Leave blank - configure in CMS
-        'Category': '', // Leave blank - configure in CMS
+        'Location Area': '', // Leave blank - configure manually
+        'Category': '', // Leave blank - configure manually
         'Min Quantity': '1',
         'Max Quantity': '',
         'Cost Per Unit': '85.00',
@@ -778,8 +764,8 @@ export function RateCardManager() {
       for (const sheetName of workbook.SheetNames) {
         console.log(`Processing sheet: ${sheetName}`);
         
-        // Skip reference sheets that aren't for rate cards
-        if (['Volume Discounts', 'Quantity Discounts', 'Production Costs', 'Creative Design Costs', 'Media Formats Reference', 'London Areas Reference'].includes(sheetName)) {
+        // Skip only actual reference sheets that aren't for data upload
+        if (['Media Formats Reference', 'London Areas Reference'].includes(sheetName)) {
           console.log(`Skipping reference sheet: ${sheetName}`);
           continue;
         }
@@ -801,14 +787,22 @@ export function RateCardManager() {
         const validRows: any[] = [];
         const invalidRows: any[] = [];
 
+        // Determine upload type based on sheet name
+        let currentUploadType = bulkUploadType;
+        if (sheetName === 'Volume Discounts') currentUploadType = 'discounts';
+        else if (sheetName === 'Quantity Discounts') currentUploadType = 'quantity-discounts';
+        else if (sheetName === 'Production Costs') currentUploadType = 'production';
+        else if (sheetName === 'Creative Design Costs') currentUploadType = 'creative';
+        else if (sheetName === 'Rate Cards') currentUploadType = 'rates';
+
         jsonData.forEach((row: any, index) => {
           const errors: string[] = [];
           
           // Skip header/example row
           if (index === 0 && (
             row['Media Format']?.includes('Select from') ||
-            (row['Min Periods']?.toString().includes('1') && bulkUploadType === 'discounts') ||
-            (row['Min Quantity']?.toString().includes('1') && (bulkUploadType === 'quantity-discounts' || bulkUploadType === 'production' || bulkUploadType === 'creative'))
+            (row['Min Periods']?.toString().includes('1') && currentUploadType === 'discounts') ||
+            (row['Min Quantity']?.toString().includes('1') && (currentUploadType === 'quantity-discounts' || currentUploadType === 'production' || currentUploadType === 'creative'))
           )) return;
 
           // Skip completely empty rows
@@ -824,7 +818,7 @@ export function RateCardManager() {
           }
 
           // For rate card sheets, validate that there's actual rate data
-          if (bulkUploadType === 'rates') {
+          if (currentUploadType === 'rates') {
             // Validate location area for rates - allow empty for template
             if (row['Location Area'] && !validAreas.includes(row['Location Area'].toLowerCase()) && row['Location Area'].toLowerCase() !== 'gd') {
               errors.push('Invalid location area (use valid London area or "GD")');
@@ -841,7 +835,7 @@ export function RateCardManager() {
           }
 
           // Type-specific validation for other types
-          switch (bulkUploadType) {
+          switch (currentUploadType) {
             case 'discounts':
               // Validate periods
               if (!row['Min Periods'] || isNaN(parseInt(row['Min Periods'])) || parseInt(row['Min Periods']) < 1) {
@@ -900,9 +894,9 @@ export function RateCardManager() {
 
           if (errors.length > 0) {
             console.log('Row', index + 1, 'in sheet', sheetName, 'errors:', errors, 'data:', row);
-            invalidRows.push({ ...row, rowNumber: index + 1, sheetName, errors });
+            invalidRows.push({ ...row, rowNumber: index + 1, sheetName, uploadType: currentUploadType, errors });
           } else {
-            validRows.push({ ...row, rowNumber: index + 1, sheetName });
+            validRows.push({ ...row, rowNumber: index + 1, sheetName, uploadType: currentUploadType });
           }
         });
 
