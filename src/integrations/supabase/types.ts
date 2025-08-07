@@ -680,7 +680,7 @@ export type Database = {
           incharge_period: number | null
           is_active: boolean
           is_date_specific: boolean | null
-          location_area: string
+          location_area: string | null
           location_markup_percentage: number | null
           media_format_id: string
           quantity_per_medium: number | null
@@ -699,7 +699,7 @@ export type Database = {
           incharge_period?: number | null
           is_active?: boolean
           is_date_specific?: boolean | null
-          location_area: string
+          location_area?: string | null
           location_markup_percentage?: number | null
           media_format_id: string
           quantity_per_medium?: number | null
@@ -718,7 +718,7 @@ export type Database = {
           incharge_period?: number | null
           is_active?: boolean
           is_date_specific?: boolean | null
-          location_area?: string
+          location_area?: string | null
           location_markup_percentage?: number | null
           media_format_id?: string
           quantity_per_medium?: number | null
