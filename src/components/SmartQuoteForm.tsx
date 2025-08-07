@@ -969,78 +969,89 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         <CardTitle className="text-lg">Pricing Breakdown</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        {/* Rate Card Details */}
-                        {selectedLocations.map(location => {
-                          const priceResult = calculatePrice(location, selectedPeriods);
-                          if (!priceResult) return null;
+                        {/* Rate Card Details - Grouped */}
+                        {(() => {
+                          const firstLocationPrice = calculatePrice(selectedLocations[0], selectedPeriods);
+                          if (!firstLocationPrice) return null;
                           
                           return (
-                            <div key={location} className="bg-muted/30 p-4 rounded-lg border border-border">
-                              <h4 className="font-medium text-sm mb-3">{location} - {selectedPeriods.length} Period{selectedPeriods.length > 1 ? 's' : ''}</h4>
+                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                              <h4 className="font-medium text-sm mb-3">
+                                {selectedLocations.length} Location{selectedLocations.length > 1 ? 's' : ''} × {selectedPeriods.length} Period{selectedPeriods.length > 1 ? 's' : ''}
+                              </h4>
+                              
+                              {/* Locations List */}
+                              <div className="mb-4 p-3 bg-background/50 rounded border">
+                                <div className="text-xs font-medium text-muted-foreground mb-2">Selected Locations:</div>
+                                <div className="text-xs text-foreground leading-relaxed">
+                                  {selectedLocations.join(' • ')}
+                                </div>
+                              </div>
+                              
+                              {/* Rate Card Breakdown */}
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Base Rate (per period):</span>
-                                  <span>£{priceResult.basePrice.toLocaleString()}</span>
+                                  <span className="text-muted-foreground">Base Rate (per location, per period):</span>
+                                  <span>£{firstLocationPrice.basePrice.toLocaleString()}</span>
                                 </div>
                                 
-                                {priceResult.locationMarkup > 0 && (
+                                {firstLocationPrice.locationMarkup > 0 && (
                                   <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">Location Markup (+{priceResult.locationMarkup}%):</span>
-                                    <span>£{(priceResult.adjustedRate - priceResult.basePrice).toLocaleString()}</span>
+                                    <span className="text-muted-foreground">Location Markup (+{firstLocationPrice.locationMarkup}%):</span>
+                                    <span>£{(firstLocationPrice.adjustedRate - firstLocationPrice.basePrice).toLocaleString()}</span>
                                   </div>
                                 )}
                                 
-                                {priceResult.isOnSale && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Subtotal ({selectedLocations.length} locations × {selectedPeriods.length} periods):</span>
+                                  <span>£{(firstLocationPrice.adjustedRate * selectedPeriods.length * selectedLocations.length).toLocaleString()}</span>
+                                </div>
+                                
+                                {firstLocationPrice.isOnSale && (
                                   <>
-                                    <div className="flex justify-between items-center line-through text-muted-foreground">
-                                      <span>Regular Price:</span>
-                                      <span>£{(priceResult.adjustedRate * selectedPeriods.length).toLocaleString()}</span>
-                                    </div>
                                     <div className="flex justify-between items-center text-green-600 font-medium">
-                                      <span>Sale Price:</span>
-                                      <span>£{((priceResult.totalPrice / (1 - priceResult.discount / 100)) || priceResult.totalPrice).toLocaleString()}</span>
+                                      <span>🏷️ Sale Price Applied:</span>
+                                      <span>£{(pricing.mediaPrice / (1 - firstLocationPrice.discount / 100)).toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-green-600 text-xs">
-                                      <span>💰 Sale Savings:</span>
-                                      <span>£{((priceResult.adjustedRate * selectedPeriods.length) - ((priceResult.totalPrice / (1 - priceResult.discount / 100)) || priceResult.totalPrice)).toLocaleString()}</span>
+                                      <span>Sale Savings:</span>
+                                      <span>-£{((firstLocationPrice.adjustedRate * selectedPeriods.length * selectedLocations.length) - (pricing.mediaPrice / (1 - firstLocationPrice.discount / 100))).toLocaleString()}</span>
                                     </div>
                                   </>
                                 )}
                                 
-                                {priceResult.isReduced && !priceResult.isOnSale && (
+                                {firstLocationPrice.isReduced && !firstLocationPrice.isOnSale && (
                                   <>
-                                    <div className="flex justify-between items-center line-through text-muted-foreground">
-                                      <span>Regular Price:</span>
-                                      <span>£{(priceResult.adjustedRate * selectedPeriods.length).toLocaleString()}</span>
-                                    </div>
                                     <div className="flex justify-between items-center text-blue-600 font-medium">
-                                      <span>Reduced Price:</span>
-                                      <span>£{((priceResult.totalPrice / (1 - priceResult.discount / 100)) || priceResult.totalPrice).toLocaleString()}</span>
+                                      <span>🔽 Reduced Price Applied:</span>
+                                      <span>£{(pricing.mediaPrice / (1 - firstLocationPrice.discount / 100)).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-blue-600 text-xs">
+                                      <span>Reduction Savings:</span>
+                                      <span>-£{((firstLocationPrice.adjustedRate * selectedPeriods.length * selectedLocations.length) - (pricing.mediaPrice / (1 - firstLocationPrice.discount / 100))).toLocaleString()}</span>
                                     </div>
                                   </>
                                 )}
                                 
-                                {priceResult.discount > 0 && (
-                                  <>
-                                    <div className="border-t border-border/50 pt-2 mt-2">
-                                      <div className="flex justify-between items-center text-orange-600">
-                                        <span>Volume Discount ({priceResult.discount}%):</span>
-                                        <span>-£{(((priceResult.totalPrice / (1 - priceResult.discount / 100)) || priceResult.totalPrice) * (priceResult.discount / 100)).toLocaleString()}</span>
-                                      </div>
+                                {firstLocationPrice.discount > 0 && (
+                                  <div className="border-t border-border/50 pt-2 mt-2">
+                                    <div className="flex justify-between items-center text-orange-600 font-medium">
+                                      <span>💰 Volume Discount ({firstLocationPrice.discount}%):</span>
+                                      <span>-£{pricing.totalDiscount.toLocaleString()}</span>
                                     </div>
-                                  </>
+                                  </div>
                                 )}
                                 
                                 <div className="border-t border-border/50 pt-2 mt-2">
-                                  <div className="flex justify-between items-center font-medium">
-                                    <span>Media Cost (this location):</span>
-                                    <span className="text-primary">£{priceResult.totalPrice.toLocaleString()}</span>
+                                  <div className="flex justify-between items-center font-medium text-base">
+                                    <span>Total Media Cost:</span>
+                                    <span className="text-primary">£{pricing.mediaPrice.toLocaleString()}</span>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           );
-                        })}
+                        })()}
 
                         {/* Total Summary */}
                         <div className="border-t border-border pt-4">
