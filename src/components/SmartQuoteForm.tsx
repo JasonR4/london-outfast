@@ -1079,7 +1079,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 <div className="border-t border-border/50 pt-2 mt-2">
                                   <div className="flex justify-between items-center font-medium text-base">
                                     <span>Total Media Cost:</span>
-                                    <span className="text-primary">£{pricing.mediaPrice.toLocaleString()}</span>
+                                    <span className="text-primary">£{(totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)).toLocaleString()}</span>
                                   </div>
                                 </div>
                               </div>
