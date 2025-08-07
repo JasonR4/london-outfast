@@ -232,18 +232,25 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     let totalDiscount = 0;
     let originalMediaCost = 0;
 
+    // Calculate production cost once for total units (not per location)
+    if (selectedLocations.length > 0) {
+      const productionPrice = calculateProductionCost(selectedLocations[0], totalQuantity, selectedPeriods);
+      if (productionPrice && productionPrice.totalCost !== undefined) {
+        totalProductionCost = productionPrice.totalCost;
+        console.log(`🏭 Production cost for ${totalQuantity} units: ${totalProductionCost}`);
+      }
+    }
+
     selectedLocations.forEach(location => {
       try {
         console.log(`🏙️ Calculating price for location: ${location}`);
         console.log(`📅 Selected periods: ${selectedPeriods}`);
         
         const mediaPrice = calculatePrice(location, selectedPeriods);
-        const productionPrice = calculateProductionCost(location, totalQuantity, selectedPeriods);
         // Calculate creative cost based on creative assets and selected level
         const creativePrice = needsCreative ? calculateCreativeCost(location, creativeAssets, creativeLevel) : null;
         
         console.log(`💰 Media price result:`, mediaPrice);
-        console.log(`🏭 Production price result:`, productionPrice);
         console.log(`🎨 Creative price result:`, creativePrice);
         
         // Handle media price and discount
@@ -264,12 +271,6 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
           console.log(`➕ Added media price: ${priceToAdd}, original: ${originalPrice}, total: ${totalMediaPrice}`);
         }
         
-        // Handle production price
-        if (productionPrice && productionPrice.totalCost !== undefined) {
-          totalProductionCost += productionPrice.totalCost;
-          console.log(`➕ Added production cost: ${productionPrice.totalCost}, total: ${totalProductionCost}`);
-        }
-
         // Handle creative price (only if needed)
         if (needsCreative && creativePrice && creativePrice.totalCost !== undefined) {
           totalCreativeCost += creativePrice.totalCost;
