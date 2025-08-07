@@ -50,7 +50,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   const [activeTab, setActiveTab] = useState("search");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFormats, setSelectedFormats] = useState<OOHFormat[]>([]);
-  const [quantity, setQuantity] = useState(1);
+  const [formatQuantities, setFormatQuantities] = useState<Record<string, number>>({});
   const [selectedPeriods, setSelectedPeriods] = useState<number[]>([]);
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
   const [needsCreative, setNeedsCreative] = useState(false);
@@ -80,9 +80,12 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     selectedFormatsCount: selectedFormats.length
   });
 
+  // Get total quantity across all formats
+  const totalQuantity = Object.values(formatQuantities).reduce((sum, qty) => sum + qty, 0);
+
   // Location capacity logic
   const locationCapacity = useLocationCapacity({
-    quantity,
+    quantity: totalQuantity,
     selectedPeriods,
     selectedAreas: selectedLocations,
     basePrice: 1000
@@ -110,7 +113,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   
   // Creative capacity logic
   const creativeCapacity = useCreativeCapacity({
-    sites: quantity,
+    sites: totalQuantity,
     creativeAssets,
     needsCreative,
     creativeCostPerAsset: dynamicCreativeCost?.costPerUnit || 0,
@@ -199,7 +202,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       selectedFormats: selectedFormats.map(f => f.name),
       selectedLocations,
       selectedPeriods,
-      quantity
+      formatQuantities
     });
 
     if (selectedFormats.length === 0 || selectedLocations.length === 0 || selectedPeriods.length === 0) {
@@ -226,7 +229,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         console.log(`📅 Selected periods: ${selectedPeriods}`);
         
         const mediaPrice = calculatePrice(location, selectedPeriods);
-        const productionPrice = calculateProductionCost(location, quantity);
+        const productionPrice = calculateProductionCost(location, totalQuantity);
         // Calculate creative cost based on creative assets and selected level
         const creativePrice = needsCreative ? calculateCreativeCost(location, creativeAssets, creativeLevel) : null;
         
@@ -293,14 +296,23 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       const isSelected = prev.some(f => f.slug === format.slug);
       if (isSelected) {
         console.log('❌ Removing format:', format.name);
+        // Remove quantity when format is deselected
+        setFormatQuantities(prevQuantities => {
+          const newQuantities = { ...prevQuantities };
+          delete newQuantities[format.slug];
+          return newQuantities;
+        });
         return prev.filter(f => f.slug !== format.slug);
       } else {
         console.log('✅ Adding format:', format.name);
+        // Add default quantity when format is selected
+        setFormatQuantities(prevQuantities => ({
+          ...prevQuantities,
+          [format.slug]: 1
+        }));
         return [...prev, format];
       }
     });
-    
-    // Don't auto-advance - let user manually proceed with button
   };
 
   const handleContinueToConfig = () => {
@@ -348,7 +360,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         await addQuoteItem({
           format_slug: format.slug,
           format_name: format.name,
-          quantity,
+          quantity: formatQuantities[format.slug] || 1,
           selected_periods: selectedPeriods,
           selected_areas: selectedLocations,
           production_cost: pricing.productionCost / selectedFormats.length,
@@ -365,7 +377,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
       // Reset form for next item
       setSelectedFormats([]);
-      setQuantity(1);
+      setFormatQuantities({});
       setSelectedPeriods([]);
       clearAllLocations();
       setActiveTab("search");
@@ -474,9 +486,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                     value={Math.min(locationCapacity.capacityUtilization, 100)} 
                     className="h-3"
                   />
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <p>{quantity} {selectedFormats[0]?.name?.includes('Digital') ? 'sites' : 'units'} × {selectedPeriods.length} periods = {locationCapacity.maxLocationCapacity} total slots</p>
-                    <p>{locationCapacity.remainingCapacity} slots remaining</p>
+                   <div className="text-xs text-muted-foreground space-y-1">
+                     <p>{totalQuantity} {selectedFormats[0]?.name?.includes('Digital') ? 'sites' : 'units'} × {selectedPeriods.length} periods = {locationCapacity.maxLocationCapacity} total slots</p>
+                     <p>{locationCapacity.remainingCapacity} slots remaining</p>
                   </div>
                   {locationCapacity.capacityStatus === 'over-limit' && (
                     <Alert className="border-destructive">
@@ -491,14 +503,14 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
             )}
 
             {/* Creative Capacity Information */}
-            {needsCreative && (
-              <CreativeCapacityIndicator
-                sites={quantity}
-                creativeAssets={creativeAssets}
-                needsCreative={needsCreative}
-                efficiency={creativeCapacity.efficiency}
-                status={creativeCapacity.status}
-                creativesPerSite={creativeCapacity.creativesPerSite}
+             {needsCreative && (
+               <CreativeCapacityIndicator
+                 sites={totalQuantity}
+                 creativeAssets={creativeAssets}
+                 needsCreative={needsCreative}
+                 efficiency={creativeCapacity.efficiency}
+                 status={creativeCapacity.status}
+                 creativesPerSite={creativeCapacity.creativesPerSite}
                 recommendations={creativeCapacity.getCreativeRecommendations()}
                 onOptimizeClick={() => {
                   const recommendations = creativeCapacity.getCreativeRecommendations();
@@ -516,10 +528,10 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">Quick Summary</CardTitle>
                 </CardHeader>
-                 <CardContent className="space-y-2 text-sm">
-                   <div><strong>Formats:</strong> {selectedFormats.map(f => f.name).join(', ')}</div>
-                   <div><strong>Quantity:</strong> {quantity}</div>
-                   <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
+                  <CardContent className="space-y-2 text-sm">
+                    <div><strong>Formats:</strong> {selectedFormats.map(f => f.name).join(', ')}</div>
+                    <div><strong>Total Quantity:</strong> {totalQuantity}</div>
+                    <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
                    <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
                    {needsCreative && <div><strong>Creative Assets:</strong> {creativeAssets}</div>}
                  </CardContent>
@@ -692,8 +704,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 </div>
                                 <div className="w-24">
                                   <Select 
-                                    value={quantity.toString()} 
-                                    onValueChange={(value) => setQuantity(parseInt(value))}
+                                    value={(formatQuantities[format.slug] || 1).toString()} 
+                                    onValueChange={(value) => setFormatQuantities(prev => ({
+                                      ...prev,
+                                      [format.slug]: parseInt(value)
+                                    }))}
                                   >
                                     <SelectTrigger className="h-8">
                                       <SelectValue />
@@ -831,29 +846,29 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                       <div className="text-lg font-semibold text-red-500">{creativeAssets}</div>
                                       <div className="text-xs text-red-400">creative{creativeAssets > 1 ? 's' : ''}</div>
                                     </div>
-                                    <div>
-                                      <div className="text-lg font-semibold text-red-500">{quantity}</div>
-                                      <div className="text-xs text-red-400">site{quantity > 1 ? 's' : ''}</div>
-                                    </div>
+                                     <div>
+                                       <div className="text-lg font-semibold text-red-500">{totalQuantity}</div>
+                                       <div className="text-xs text-red-400">site{totalQuantity > 1 ? 's' : ''}</div>
+                                     </div>
                                   </div>
                                   <div className="grid grid-cols-2 gap-4 text-center text-sm">
                                     <div>
                                       <div className="font-medium text-red-500">{creativeCapacity.creativesPerSite.toFixed(2)}</div>
                                       <div className="text-xs text-red-400">Creatives per Site</div>
                                     </div>
-                                    <div>
-                                      <div className="font-medium text-red-500">{(quantity / creativeAssets).toFixed(1)}</div>
-                                      <div className="text-xs text-red-400">Sites per Creative</div>
-                                    </div>
+                                     <div>
+                                       <div className="font-medium text-red-500">{(totalQuantity / creativeAssets).toFixed(1)}</div>
+                                       <div className="text-xs text-red-400">Sites per Creative</div>
+                                     </div>
                                   </div>
                                 </div>
 
                                 <div className="space-y-2">
                                   <h5 className="text-sm font-medium text-red-500">Smart Recommendations:</h5>
-                                  <div className="text-xs text-red-400 space-y-1">
-                                    <p>Excellent! Your {creativeAssets} creative{creativeAssets > 1 ? 's' : ''} provide optimal coverage for {quantity} site{quantity > 1 ? 's' : ''}.</p>
-                                    <p>Your creative strategy maximizes both reach and frequency for optimal campaign performance.</p>
-                                  </div>
+                                   <div className="text-xs text-red-400 space-y-1">
+                                     <p>Excellent! Your {creativeAssets} creative{creativeAssets > 1 ? 's' : ''} provide optimal coverage for {totalQuantity} site{totalQuantity > 1 ? 's' : ''}.</p>
+                                     <p>Your creative strategy maximizes both reach and frequency for optimal campaign performance.</p>
+                                   </div>
                                 </div>
                              </div>
                            </>
@@ -909,11 +924,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                               );
                             })}
                           </div>
-                          {selectedPeriods.length > 0 && (
-                            <div className="text-sm text-muted-foreground">
-                              {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''} selected
-                              <br />
-                              <span className="text-xs">Now you can select up to {quantity * selectedPeriods.length} locations</span>
+                           {selectedPeriods.length > 0 && (
+                             <div className="text-sm text-muted-foreground">
+                               {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''} selected
+                               <br />
+                               <span className="text-xs">Now you can select up to {totalQuantity * selectedPeriods.length} locations</span>
                             </div>
                           )}
                         </div>
@@ -978,13 +993,13 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                             </div>
                           </div>
                         )}
-                         <div className="flex justify-between items-center">
-                           <span>Media Costs:</span>
-                           <span className="font-medium">£{(pricing.mediaPrice * quantity).toLocaleString()}</span>
-                         </div>
-                         <div className="flex justify-between items-center">
-                           <span>Production Costs:</span>
-                           <span className="font-medium">£{(pricing.productionCost * quantity).toLocaleString()}</span>
+                          <div className="flex justify-between items-center">
+                            <span>Media Costs:</span>
+                            <span className="font-medium">£{pricing.mediaPrice.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Production Costs:</span>
+                            <span className="font-medium">£{pricing.productionCost.toLocaleString()}</span>
                          </div>
                          {needsCreative && pricing.creativeCost > 0 && (
                            <div className="flex justify-between items-center">
@@ -1023,10 +1038,10 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         <CardHeader>
                           <CardTitle className="text-lg">Campaign Summary</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-2">
-                          <div><strong>Formats:</strong> {selectedFormats.map(f => f.name).join(', ')}</div>
-                          <div><strong>Quantity:</strong> {quantity}</div>
-                          <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
+                         <CardContent className="space-y-2">
+                           <div><strong>Formats:</strong> {selectedFormats.map(f => f.name).join(', ')}</div>
+                           <div><strong>Total Quantity:</strong> {totalQuantity}</div>
+                           <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
                           <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
                         </CardContent>
                       </Card>
