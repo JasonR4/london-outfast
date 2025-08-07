@@ -456,7 +456,15 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_quantity_discount_tiers_media_format"
+            columns: ["media_format_id"]
+            isOneToOne: false
+            referencedRelation: "media_formats"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quote_items: {
         Row: {
