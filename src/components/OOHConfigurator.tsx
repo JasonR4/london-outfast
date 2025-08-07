@@ -339,7 +339,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [recommendations, setRecommendations] = useState<OOHRecommendation[]>([]);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
-  const { addQuoteItem, createOrGetQuote } = useQuotes();
+  const { addQuoteItem, createOrGetQuote, fetchCurrentQuote } = useQuotes();
   const { toast } = useToast();
 
   // Fetch incharge periods on component mount
@@ -1145,6 +1145,11 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                       
                       console.log('Successfully inserted item:', insertedItem);
                      }
+                     
+                     // Refresh the current quote data to include new items
+                     console.log('Refreshing quote data...');
+                     await fetchCurrentQuote();
+                     console.log('Quote data refreshed');
                      
                      onComplete?.();
                    } catch (error) {
