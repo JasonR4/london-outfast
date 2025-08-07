@@ -1889,31 +1889,31 @@ export function RateCardManager() {
                           {rate.is_date_specific ? `Period ${rate.incharge_period}` : '-'}
                         </TableCell>
                          <TableCell>
-                           {rate.is_date_specific ? (
-                             (() => {
-                               const ratePeriods = rateCardPeriods
-                                 .filter(rcp => rcp.rate_card_id === rate.id)
-                                 .map(rcp => rcp.incharge_periods)
-                                 .filter(Boolean);
-                               
-                               if (ratePeriods.length > 0) {
-                                 return (
-                                   <div className="text-xs">
-                                     {ratePeriods.map((period, index) => (
-                                       <div key={index}>
-                                         Period {period.period_number}: {format(new Date(period.start_date), 'MMM dd')} - {format(new Date(period.end_date), 'MMM dd, yyyy')}
-                                       </div>
-                                     ))}
-                                   </div>
-                                 );
-                               } else {
-                                 return (
-                                   <Badge variant="outline" className="text-xs">
-                                     No periods selected
-                                   </Badge>
-                                 );
-                               }
-                             })()
+                            {rate.is_date_specific ? (
+                              (() => {
+                                const ratePeriods = rateCardPeriods
+                                  .filter(rcp => rcp.rate_card_id === rate.id && rcp.is_enabled)
+                                  .map(rcp => rcp.incharge_periods)
+                                  .filter(Boolean);
+                                
+                                if (ratePeriods.length > 0) {
+                                  return (
+                                    <div className="text-xs space-y-1">
+                                      {ratePeriods.map((period, index) => (
+                                        <div key={period.id || index} className="text-xs">
+                                          Period {period.period_number}: {format(new Date(period.start_date), 'MMM dd')} - {format(new Date(period.end_date), 'MMM dd, yyyy')}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  );
+                                } else {
+                                  return (
+                                    <Badge variant="outline" className="text-xs">
+                                      No periods selected
+                                    </Badge>
+                                  );
+                                }
+                              })()
                            ) : rate.start_date && rate.end_date ? (
                              <div className="text-xs">
                                <div>{format(new Date(rate.start_date), 'MMM dd, yyyy')}</div>
