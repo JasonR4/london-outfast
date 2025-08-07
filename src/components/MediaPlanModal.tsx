@@ -197,7 +197,7 @@ export const MediaPlanModal = ({
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-primary">
-                        £{item.totalCost.toLocaleString()}
+                        £{(item.baseCost + item.productionCost + item.creativeCost).toLocaleString()}
                       </p>
                       <p className="text-sm text-muted-foreground">exc VAT</p>
                     </div>
