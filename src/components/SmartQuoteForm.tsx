@@ -99,6 +99,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   // Rate cards for selected formats (using first format for now)
   const { 
     rateCards,
+    inchargePeriods,
     calculatePrice, 
     calculateProductionCost, 
     calculateCreativeCost,
@@ -978,7 +979,15 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           return (
                             <div className="bg-muted/30 p-4 rounded-lg border border-border">
                               <h4 className="font-medium text-sm mb-3">
-                                Media Rate Card - {totalQuantity} Units - {selectedLocations.length} Location{selectedLocations.length > 1 ? 's' : ''} × Period{selectedPeriods.length > 1 ? 's' : ''} {selectedPeriods.join(', ')}
+                                Media Rate Card - {totalQuantity} Units - {selectedLocations.length} Location{selectedLocations.length > 1 ? 's' : ''} × Period{selectedPeriods.length > 1 ? 's' : ''} {selectedPeriods.map(periodNum => {
+                                  const period = inchargePeriods?.find(p => p.period_number === periodNum);
+                                  if (period) {
+                                    const startDate = new Date(period.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                                    const endDate = new Date(period.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                                    return `${periodNum} (${startDate} - ${endDate})`;
+                                  }
+                                  return periodNum;
+                                }).join(', ')}
                               </h4>
                               
                               {/* Locations List */}
