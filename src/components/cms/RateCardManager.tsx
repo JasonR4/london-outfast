@@ -602,12 +602,12 @@ export function RateCardManager() {
           (row['Min Quantity']?.toString().includes('1') && (bulkUploadType === 'quantity-discounts' || bulkUploadType === 'production' || bulkUploadType === 'creative'))
         )) return;
 
-        // Common validation for all types - validate pre-populated format ID
-        if (!row['Media Format ID'] || row['Media Format ID'] !== selectedMediaFormat?.id) {
-          errors.push('Media format ID must match selected format - do not edit this field');
+        // Validate pre-populated format fields (read-only)
+        if (!row['Media Format ID']) {
+          errors.push('Media format ID is required');
         }
-        if (!row['Media Format Name'] || row['Media Format Name'] !== selectedMediaFormat?.format_name) {
-          errors.push('Media format name must match selected format - do not edit this field');
+        if (!row['Media Format Name']) {
+          errors.push('Media format name is required');
         }
 
         // Type-specific validation
@@ -885,39 +885,16 @@ export function RateCardManager() {
                     </div>
                   </div>
 
-                  {/* Step 1: Select Media Format & Download Template */}
+                  {/* Step 1: Download Template */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Step 1: Select Media Format & Download Template</h3>
+                    <h3 className="text-lg font-semibold">Step 1: Download Template</h3>
                     <p className="text-muted-foreground">
-                      First select the media format, then download the Excel template pre-populated with the format details.
+                      Download the Excel template with all media formats pre-filled. Just fill in the variable data for each format.
                     </p>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="mediaFormat">Media Format</Label>
-                        <Select onValueChange={(value) => setSelectedMediaFormat(mediaFormats.find(f => f.id === value) || null)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select media format" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {mediaFormats.map(format => (
-                              <SelectItem key={format.id} value={format.id}>
-                                {format.format_name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="flex items-end">
-                        <Button 
-                          onClick={() => downloadTemplate(bulkUploadType)} 
-                          className="flex items-center gap-2"
-                          disabled={!selectedMediaFormat}
-                        >
-                          <Download className="w-4 h-4" />
-                          Download Template
-                        </Button>
-                      </div>
-                    </div>
+                    <Button onClick={() => downloadTemplate(bulkUploadType)} className="flex items-center gap-2">
+                      <Download className="w-4 h-4" />
+                      Download {bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1).replace('-', ' ')} Template
+                    </Button>
                   </div>
 
                   {/* Step 2: Upload File */}
