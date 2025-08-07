@@ -43,6 +43,10 @@ export function MediaFormatCategoryManager() {
   const [selectedFormatCategories, setSelectedFormatCategories] = useState<string[]>([]);
   const [editingFormatName, setEditingFormatName] = useState<string | null>(null);
   const [newFormatName, setNewFormatName] = useState<string>('');
+  const [editingDescription, setEditingDescription] = useState<string | null>(null);
+  const [newDescription, setNewDescription] = useState<string>('');
+  const [editingDimensions, setEditingDimensions] = useState<string | null>(null);
+  const [newDimensions, setNewDimensions] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -201,6 +205,78 @@ export function MediaFormatCategoryManager() {
     setNewFormatName('');
   };
 
+  const handleEditDescription = (format: MediaFormat) => {
+    setEditingDescription(format.id);
+    setNewDescription(format.description || '');
+  };
+
+  const handleSaveDescription = async (formatId: string) => {
+    try {
+      const { error } = await supabase
+        .from('media_formats')
+        .update({ description: newDescription })
+        .eq('id', formatId);
+
+      if (error) throw error;
+
+      // Update local state
+      const updatedFormats = mediaFormats.map(format =>
+        format.id === formatId
+          ? { ...format, description: newDescription }
+          : format
+      );
+      
+      setMediaFormats(updatedFormats);
+      setEditingDescription(null);
+      setNewDescription('');
+      toast.success('Description updated successfully');
+    } catch (error) {
+      console.error('Error updating description:', error);
+      toast.error('Failed to update description');
+    }
+  };
+
+  const handleCancelEditDescription = () => {
+    setEditingDescription(null);
+    setNewDescription('');
+  };
+
+  const handleEditDimensions = (format: MediaFormat) => {
+    setEditingDimensions(format.id);
+    setNewDimensions(format.dimensions || '');
+  };
+
+  const handleSaveDimensions = async (formatId: string) => {
+    try {
+      const { error } = await supabase
+        .from('media_formats')
+        .update({ dimensions: newDimensions })
+        .eq('id', formatId);
+
+      if (error) throw error;
+
+      // Update local state
+      const updatedFormats = mediaFormats.map(format =>
+        format.id === formatId
+          ? { ...format, dimensions: newDimensions }
+          : format
+      );
+      
+      setMediaFormats(updatedFormats);
+      setEditingDimensions(null);
+      setNewDimensions('');
+      toast.success('Dimensions updated successfully');
+    } catch (error) {
+      console.error('Error updating dimensions:', error);
+      toast.error('Failed to update dimensions');
+    }
+  };
+
+  const handleCancelEditDimensions = () => {
+    setEditingDimensions(null);
+    setNewDimensions('');
+  };
+
   const getCategoryColor = (category: string) => {
     const colors = {
       // Location categories
@@ -242,7 +318,7 @@ export function MediaFormatCategoryManager() {
             Media Formats & Categories
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Click on format names to edit them. Use the pencil icon to manage categories. This is the source of truth for all format names and categories across the site.
+            Click on format names, descriptions, or dimensions to edit them. Use the pencil icon to manage categories. This is the source of truth for all format data across the site.
           </p>
         </CardHeader>
         <CardContent>
@@ -305,14 +381,88 @@ export function MediaFormatCategoryManager() {
                            </div>
                          )}
                        </TableCell>
-                      <TableCell>
-                        <div className="max-w-xs">
-                          {format.description || 'No description'}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {format.dimensions || 'Not specified'}
-                      </TableCell>
+                       <TableCell>
+                         {editingDescription === format.id ? (
+                           <div className="space-y-2">
+                             <Input
+                               value={newDescription}
+                               onChange={(e) => setNewDescription(e.target.value)}
+                               placeholder="Enter description"
+                               onKeyDown={(e) => {
+                                 if (e.key === 'Enter') {
+                                   handleSaveDescription(format.id);
+                                 } else if (e.key === 'Escape') {
+                                   handleCancelEditDescription();
+                                 }
+                               }}
+                               autoFocus
+                             />
+                             <div className="flex gap-1">
+                               <Button
+                                 size="sm"
+                                 onClick={() => handleSaveDescription(format.id)}
+                               >
+                                 Save
+                               </Button>
+                               <Button
+                                 size="sm"
+                                 variant="outline"
+                                 onClick={handleCancelEditDescription}
+                               >
+                                 Cancel
+                               </Button>
+                             </div>
+                           </div>
+                         ) : (
+                           <div 
+                             className="cursor-pointer hover:bg-muted/50 p-1 rounded max-w-xs"
+                             onClick={() => handleEditDescription(format)}
+                           >
+                             {format.description || 'No description'}
+                           </div>
+                         )}
+                       </TableCell>
+                       <TableCell>
+                         {editingDimensions === format.id ? (
+                           <div className="space-y-2">
+                             <Input
+                               value={newDimensions}
+                               onChange={(e) => setNewDimensions(e.target.value)}
+                               placeholder="Enter dimensions"
+                               onKeyDown={(e) => {
+                                 if (e.key === 'Enter') {
+                                   handleSaveDimensions(format.id);
+                                 } else if (e.key === 'Escape') {
+                                   handleCancelEditDimensions();
+                                 }
+                               }}
+                               autoFocus
+                             />
+                             <div className="flex gap-1">
+                               <Button
+                                 size="sm"
+                                 onClick={() => handleSaveDimensions(format.id)}
+                               >
+                                 Save
+                               </Button>
+                               <Button
+                                 size="sm"
+                                 variant="outline"
+                                 onClick={handleCancelEditDimensions}
+                               >
+                                 Cancel
+                               </Button>
+                             </div>
+                           </div>
+                         ) : (
+                           <div 
+                             className="cursor-pointer hover:bg-muted/50 p-1 rounded"
+                             onClick={() => handleEditDimensions(format)}
+                           >
+                             {format.dimensions || 'Not specified'}
+                           </div>
+                         )}
+                       </TableCell>
                        <TableCell>
                          <div className="space-y-2">
                            <div className="flex flex-wrap gap-1">
