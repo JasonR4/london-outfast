@@ -10,8 +10,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Pencil, Plus, Trash2, Tags } from 'lucide-react';
-// Categories constant
-const CREATIVE_CATEGORIES = ['Transport', 'Retail', 'Rail', 'Supermarket', 'Roadside', 'London Underground'];
+// Categories constants
+const LOCATION_CATEGORIES = ['Transport', 'Retail', 'Rail', 'Supermarket', 'Roadside', 'London Underground'];
+const FORMAT_CATEGORIES = ['Digital', 'Paper & Paste', 'Backlight', 'Illuminated', 'Premium', 'HD', 'Vynl', 'WRB'];
 
 interface MediaFormat {
   id: string;
@@ -79,22 +80,47 @@ export function MediaFormatCategoryManager() {
   const getDefaultCategoriesForFormat = (formatName: string): string[] => {
     // Default category assignment based on format name
     const name = formatName.toLowerCase();
+    const categories: string[] = [];
     
+    // Location categories
     if (name.includes('transport') || name.includes('bus')) {
-      return ['Transport'];
+      categories.push('Transport');
     } else if (name.includes('tube') || name.includes('underground')) {
-      return ['London Underground'];
+      categories.push('London Underground');
     } else if (name.includes('rail') || name.includes('railway') || name.includes('train')) {
-      return ['Rail'];
+      categories.push('Rail');
     } else if (name.includes('retail') || name.includes('shopping')) {
-      return ['Retail'];
+      categories.push('Retail');
     } else if (name.includes('supermarket') || name.includes('grocery')) {
-      return ['Supermarket'];
+      categories.push('Supermarket');
     } else if (name.includes('billboard') || name.includes('poster') || name.includes('roadside')) {
-      return ['Roadside'];
+      categories.push('Roadside');
+    } else {
+      categories.push('Transport'); // Default location fallback
     }
     
-    return ['Transport']; // Default fallback
+    // Format categories
+    if (name.includes('digital') || name.includes('led')) {
+      categories.push('Digital');
+    } else if (name.includes('paper') || name.includes('paste')) {
+      categories.push('Paper & Paste');
+    } else if (name.includes('backlight')) {
+      categories.push('Backlight');
+    } else if (name.includes('illuminated')) {
+      categories.push('Illuminated');
+    } else if (name.includes('premium')) {
+      categories.push('Premium');
+    } else if (name.includes('hd')) {
+      categories.push('HD');
+    } else if (name.includes('vinyl') || name.includes('vynl')) {
+      categories.push('Vynl');
+    } else if (name.includes('wrb')) {
+      categories.push('WRB');
+    } else {
+      categories.push('Paper & Paste'); // Default format fallback
+    }
+    
+    return categories;
   };
 
   const handleEditCategories = (format: MediaFormat) => {
@@ -164,12 +190,22 @@ export function MediaFormatCategoryManager() {
 
   const getCategoryColor = (category: string) => {
     const colors = {
+      // Location categories
       'Transport': 'bg-blue-100 text-blue-800',
       'Retail': 'bg-green-100 text-green-800',
       'Rail': 'bg-purple-100 text-purple-800',
       'Supermarket': 'bg-orange-100 text-orange-800',
       'Roadside': 'bg-yellow-100 text-yellow-800',
-      'London Underground': 'bg-red-100 text-red-800'
+      'London Underground': 'bg-red-100 text-red-800',
+      // Format categories
+      'Digital': 'bg-cyan-100 text-cyan-800',
+      'Paper & Paste': 'bg-amber-100 text-amber-800',
+      'Backlight': 'bg-indigo-100 text-indigo-800',
+      'Illuminated': 'bg-lime-100 text-lime-800',
+      'Premium': 'bg-pink-100 text-pink-800',
+      'HD': 'bg-violet-100 text-violet-800',
+      'Vynl': 'bg-teal-100 text-teal-800',
+      'WRB': 'bg-slate-100 text-slate-800'
     };
     return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
@@ -308,12 +344,12 @@ export function MediaFormatCategoryManager() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Available Categories</Label>
+              <Label>Location Categories</Label>
               <div className="grid grid-cols-1 gap-2 mt-2">
-                {CREATIVE_CATEGORIES.map((category) => (
+                {LOCATION_CATEGORIES.map((category) => (
                   <div key={category} className="flex items-center space-x-2">
                     <Checkbox
-                      id={`category-${category}`}
+                      id={`location-${category}`}
                       checked={selectedCategories.includes(category)}
                       onCheckedChange={(checked) => {
                         if (checked) {
@@ -323,7 +359,31 @@ export function MediaFormatCategoryManager() {
                         }
                       }}
                     />
-                    <Label htmlFor={`category-${category}`} className="text-sm">
+                    <Label htmlFor={`location-${category}`} className="text-sm">
+                      {category}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <Label>Format Categories</Label>
+              <div className="grid grid-cols-1 gap-2 mt-2">
+                {FORMAT_CATEGORIES.map((category) => (
+                  <div key={category} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`format-${category}`}
+                      checked={selectedCategories.includes(category)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedCategories([...selectedCategories, category]);
+                        } else {
+                          setSelectedCategories(selectedCategories.filter(c => c !== category));
+                        }
+                      }}
+                    />
+                    <Label htmlFor={`format-${category}`} className="text-sm">
                       {category}
                     </Label>
                   </div>
