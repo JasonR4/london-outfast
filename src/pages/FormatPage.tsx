@@ -1124,10 +1124,16 @@ const FormatPage = () => {
                                     <span>£{priceCalculation.basePrice.toFixed(2)}</span>
                                    </div>
                                    {(priceCalculation.isOnSale || priceCalculation.isReduced) && (
-                                     <div className="flex justify-between text-sm text-green-600 font-medium">
-                                       <span>{priceCalculation.isOnSale ? 'Sale Price' : 'Reduced Price'} per Incharge:</span>
-                                       <span>£{(priceCalculation.totalPrice / selectedPeriods.length).toFixed(2)}</span>
-                                     </div>
+                                     <>
+                                       <div className="flex justify-between text-sm text-green-600 font-medium">
+                                         <span>{priceCalculation.isOnSale ? 'Sale Price' : 'Reduced Price'} per Incharge:</span>
+                                         <span>£{(priceCalculation.totalPrice / selectedPeriods.length).toFixed(2)}</span>
+                                       </div>
+                                       <div className="flex justify-between text-xs text-green-700 bg-green-50 px-2 py-1 rounded">
+                                         <span>You Save:</span>
+                                         <span className="font-semibold">£{(priceCalculation.basePrice - (priceCalculation.totalPrice / selectedPeriods.length)).toFixed(2)} per Incharge</span>
+                                       </div>
+                                     </>
                                    )}
                                   {priceCalculation.discount > 0 && (
                                     <div className="flex justify-between text-xs text-muted-foreground">
