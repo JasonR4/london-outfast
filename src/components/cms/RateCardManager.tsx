@@ -150,6 +150,11 @@ export function RateCardManager() {
   const [availableInchargePeriods, setAvailableInchargePeriods] = useState<any[]>([]);
   const [selectedInchargePeriods, setSelectedInchargePeriods] = useState<string[]>([]);
   const [isAddingIncharges, setIsAddingIncharges] = useState(false);
+  
+  // Form field state for controlled components
+  const [selectedMediaFormatId, setSelectedMediaFormatId] = useState<string>('');
+  const [selectedLocationArea, setSelectedLocationArea] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   useEffect(() => {
     const initializeData = async () => {
@@ -221,10 +226,10 @@ export function RateCardManager() {
     try {
       const isDateSpecificValue = formData.get('is_date_specific') === 'true';
       
-      const locationArea = formData.get('location_area') as string;
       const rateData = {
-        media_format_id: formData.get('media_format_id') as string,
-        location_area: locationArea || 'GD', // Default to 'GD' if empty
+        media_format_id: selectedMediaFormatId || (formData.get('media_format_id') as string),
+        location_area: selectedLocationArea || 'GD', // Default to 'GD' if empty
+        category: selectedCategory || (formData.get('category') as string),
         base_rate_per_incharge: parseFloat(formData.get('base_rate_per_incharge') as string),
         sale_price: formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null,
         reduced_price: formData.get('reduced_price') ? parseFloat(formData.get('reduced_price') as string) : null,
@@ -1850,6 +1855,9 @@ export function RateCardManager() {
                         setIsDateSpecific(false);
                         setCustomStartDate(undefined);
                         setCustomEndDate(undefined);
+                        setSelectedMediaFormatId('');
+                        setSelectedLocationArea('');
+                        setSelectedCategory('');
                       }}>
                         <Plus className="w-4 h-4 mr-2" />
                         Add Rate Card
@@ -1868,7 +1876,12 @@ export function RateCardManager() {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="media_format_id">Media Format</Label>
-                            <Select name="media_format_id" defaultValue={editingRate?.media_format_id} required>
+                            <Select 
+                              name="media_format_id" 
+                              value={selectedMediaFormatId || editingRate?.media_format_id || ''} 
+                              onValueChange={setSelectedMediaFormatId}
+                              required
+                            >
                               <SelectTrigger>
                                 <SelectValue placeholder="Select format" />
                               </SelectTrigger>
@@ -1883,7 +1896,12 @@ export function RateCardManager() {
                           </div>
                           <div>
                             <Label htmlFor="location_area">Location Area</Label>
-                            <Select name="location_area" defaultValue={editingRate?.location_area || 'GD'} required>
+                            <Select 
+                              name="location_area" 
+                              value={selectedLocationArea || editingRate?.location_area || 'GD'} 
+                              onValueChange={setSelectedLocationArea}
+                              required
+                            >
                               <SelectTrigger>
                                 <SelectValue placeholder="Select location area" />
                               </SelectTrigger>
@@ -1900,7 +1918,12 @@ export function RateCardManager() {
                          </div>
                          <div>
                            <Label htmlFor="category">OOH Category</Label>
-                           <Select name="category" defaultValue={editingRate?.category} required>
+                           <Select 
+                             name="category" 
+                             value={selectedCategory || editingRate?.category || ''} 
+                             onValueChange={setSelectedCategory}
+                             required
+                           >
                              <SelectTrigger>
                                <SelectValue placeholder="Select category" />
                              </SelectTrigger>
@@ -2207,6 +2230,11 @@ export function RateCardManager() {
                             onClick={() => {
                               setEditingRate(rate);
                               setIsDateSpecific(rate.is_date_specific || false);
+                              
+                              // Populate form fields
+                              setSelectedMediaFormatId(rate.media_format_id);
+                              setSelectedLocationArea(rate.location_area);
+                              setSelectedCategory(rate.category || '');
                               
                               if (rate.is_date_specific) {
                                 // Load existing periods for this rate card
