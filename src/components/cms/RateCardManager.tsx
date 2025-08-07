@@ -753,6 +753,19 @@ export function RateCardManager() {
     try {
       const data = await uploadedFile.arrayBuffer();
       const workbook = XLSX.read(data);
+      
+      // Check if this is a comprehensive template (multiple sheets)
+      const isComprehensiveTemplate = workbook.SheetNames.length > 1 && 
+        workbook.SheetNames.some(name => name.includes('Rate Cards')) &&
+        workbook.SheetNames.some(name => name.includes('Volume Discounts'));
+
+      if (isComprehensiveTemplate) {
+        // Process comprehensive template with multiple sheets
+        await analyzeComprehensiveTemplate(workbook);
+        return;
+      }
+
+      // Single sheet processing (existing logic)
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
@@ -879,137 +892,262 @@ export function RateCardManager() {
     }
   };
 
+  const analyzeComprehensiveTemplate = async (workbook: any) => {
+    try {
+      const allResults: any = {
+        rates: { validRows: [], invalidRows: [] },
+        discounts: { validRows: [], invalidRows: [] },
+        'quantity-discounts': { validRows: [], invalidRows: [] },
+        production: { validRows: [], invalidRows: [] },
+        creative: { validRows: [], invalidRows: [] }
+      };
+
+      // Process each relevant sheet
+      const sheetMappings = [
+        { sheetName: 'Rate Cards', type: 'rates' },
+        { sheetName: 'Volume Discounts', type: 'discounts' },
+        { sheetName: 'Quantity Discounts', type: 'quantity-discounts' },
+        { sheetName: 'Production Costs', type: 'production' },
+        { sheetName: 'Creative Costs', type: 'creative' }
+      ];
+
+      for (const mapping of sheetMappings) {
+        if (workbook.SheetNames.includes(mapping.sheetName)) {
+          const worksheet = workbook.Sheets[mapping.sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          
+          const result = await analyzeSheetData(jsonData, mapping.type);
+          allResults[mapping.type] = result;
+        }
+      }
+
+      // Calculate totals
+      const totalValid = Object.values(allResults).reduce((sum: number, result: any) => sum + (result?.validRows?.length || 0), 0);
+      const totalInvalid = Object.values(allResults).reduce((sum: number, result: any) => sum + (result?.invalidRows?.length || 0), 0);
+      const totalRows = totalValid + totalInvalid;
+
+      setAnalysisResults({
+        validRows: [], // Will be used differently for comprehensive
+        invalidRows: [], // Will be used differently for comprehensive
+        totalRows,
+        validCount: totalValid,
+        invalidCount: totalInvalid,
+        comprehensive: true,
+        sheetResults: allResults
+      });
+
+      toast.success(`Comprehensive analysis complete: ${totalValid} valid rows, ${totalInvalid} invalid rows across all sheets`);
+    } catch (error) {
+      console.error('Error analyzing comprehensive template:', error);
+      toast.error('Failed to analyze comprehensive template');
+    }
+  };
+
+  const analyzeSheetData = async (jsonData: any[], uploadType: string) => {
+    const formatNames = mediaFormats.map(f => f.format_name.toLowerCase());
+    const validAreas = londonAreas.flatMap(zone => zone.areas).map(area => area.toLowerCase());
+    
+    const validRows: any[] = [];
+    const invalidRows: any[] = [];
+
+    jsonData.forEach((row: any, index) => {
+      const errors: string[] = [];
+      
+      // Skip header/example row and empty rows
+      if (index === 0 && (
+        row['Media Format']?.includes('Select from') ||
+        (row['Min Periods']?.toString().includes('1') && uploadType === 'discounts') ||
+        (row['Min Quantity']?.toString().includes('1') && (uploadType === 'quantity-discounts' || uploadType === 'production' || uploadType === 'creative'))
+      )) return;
+
+      const hasAnyData = Object.values(row).some(value => value && value.toString().trim() !== '');
+      if (!hasAnyData) return;
+
+      // Validate based on upload type (same validation logic as before)
+      // Add basic validation for required fields
+      if (!row['Media Format ID']) {
+        errors.push('Media format ID is required');
+      }
+      if (!row['Media Format Name']) {
+        errors.push('Media format name is required');
+      }
+
+      if (errors.length > 0) {
+        invalidRows.push({ ...row, rowNumber: index + 1, errors, sheetType: uploadType });
+      } else {
+        validRows.push({ ...row, rowNumber: index + 1, sheetType: uploadType });
+      }
+    });
+
+    return { validRows, invalidRows };
+  };
+
   const processBulkUpload = async () => {
-    if (!analysisResults?.validRows.length) return;
+    if (!analysisResults) return;
 
     setIsBulkUploading(true);
     try {
-      const dataToInsert = [];
-
-      for (const row of analysisResults.validRows) {
-        // Use pre-populated media format ID from template
-        const mediaFormatId = row['Media Format ID'];
-
-        if (!mediaFormatId) continue;
-
-        let dataEntry: any = {};
-
-        switch (bulkUploadType) {
-          case 'rates':
-            dataEntry = {
-              media_format_id: mediaFormatId,
-              location_area: row['Location Area'],
-              base_rate_per_incharge: parseFloat(row['Base Rate Per Incharge']),
-              sale_price: row['Sale Price'] ? parseFloat(row['Sale Price']) : null,
-              reduced_price: row['Reduced Price'] ? parseFloat(row['Reduced Price']) : null,
-              location_markup_percentage: parseFloat(row['Location Markup Percentage']) || 0,
-              quantity_per_medium: parseInt(row['Quantity Per Medium']) || 1,
-              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true,
-              is_date_specific: row['Is Date Specific'] === 'TRUE' || row['Is Date Specific'] === true,
-              start_date: row['Start Date'] && row['Start Date'] !== '' ? row['Start Date'] : null,
-              end_date: row['End Date'] && row['End Date'] !== '' ? row['End Date'] : null,
-              incharge_period: row['Incharge Period'] ? parseInt(row['Incharge Period']) : 1
-            };
-            break;
-            
-          case 'quantity-discounts':
-            dataEntry = {
-              media_format_id: mediaFormatId,
-              location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
-              min_quantity: parseInt(row['Min Quantity']),
-              max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
-              discount_percentage: parseFloat(row['Discount Percentage']),
-              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
-            };
-            break;
-            
-          case 'discounts':
-            dataEntry = {
-              media_format_id: mediaFormatId,
-              min_periods: parseInt(row['Min Periods']),
-              max_periods: row['Max Periods'] ? parseInt(row['Max Periods']) : null,
-              discount_percentage: parseFloat(row['Discount Percentage']),
-              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
-            };
-            break;
-            
-          case 'production':
-            dataEntry = {
-              media_format_id: mediaFormatId,
-              location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
-              category: row['Category'],
-              min_quantity: parseInt(row['Min Quantity']),
-              max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
-              cost_per_unit: parseFloat(row['Cost Per Unit']),
-              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
-            };
-            break;
-            
-          case 'creative':
-            dataEntry = {
-              media_format_id: mediaFormatId,
-              location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
-              category: row['Category'],
-              min_quantity: parseInt(row['Min Quantity']),
-              max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
-              cost_per_unit: parseFloat(row['Cost Per Unit']),
-              is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
-            };
-            break;
-        }
-
-        dataToInsert.push(dataEntry);
+      if (analysisResults.comprehensive) {
+        // Process comprehensive template
+        await processComprehensiveUpload();
+      } else {
+        // Process single sheet (existing logic)
+        await processSingleSheetUpload();
       }
-
-      // Insert data in smaller batches to prevent timeout
-      const batchSize = 20;
-      let insertedCount = 0;
-      let error: any = null;
-      
-      for (let i = 0; i < dataToInsert.length; i += batchSize) {
-        const batch = dataToInsert.slice(i, i + batchSize);
-        
-        switch (bulkUploadType) {
-          case 'rates':
-            ({ error } = await supabase.from('rate_cards').insert(batch));
-            break;
-          case 'discounts':
-            ({ error } = await supabase.from('discount_tiers').insert(batch));
-            break;
-          case 'quantity-discounts':
-            ({ error } = await supabase.from('quantity_discount_tiers').insert(batch));
-            break;
-          case 'production':
-            ({ error } = await supabase.from('production_cost_tiers').insert(batch));
-            break;
-          case 'creative':
-            ({ error } = await supabase.from('creative_design_cost_tiers').insert(batch));
-            break;
-        }
-
-        if (error) throw error;
-        insertedCount += batch.length;
-      }
-
-      const successMessages = {
-        rates: 'rate cards',
-        discounts: 'discount tiers',
-        'quantity-discounts': 'quantity discount tiers', 
-        production: 'production cost tiers',
-        creative: 'creative design cost tiers'
-      };
-
-      toast.success(`Successfully imported ${insertedCount} ${successMessages[bulkUploadType]}`);
-      setUploadedFile(null);
-      setAnalysisResults(null);
-      fetchData();
     } catch (error) {
       console.error('Error processing bulk upload:', error);
-      toast.error(`Failed to import ${bulkUploadType}`);
+      toast.error('Failed to import data');
     } finally {
       setIsBulkUploading(false);
     }
   };
+
+  const processComprehensiveUpload = async () => {
+    let totalInserted = 0;
+    
+    for (const [uploadType, sheetData] of Object.entries(analysisResults.sheetResults)) {
+      const typedSheetData = sheetData as { validRows: any[]; invalidRows: any[] };
+      if (typedSheetData.validRows && typedSheetData.validRows.length > 0) {
+        const inserted = await processSheetUpload(uploadType, typedSheetData.validRows);
+        totalInserted += inserted;
+      }
+    }
+
+    toast.success(`Successfully imported ${totalInserted} records across all sheets`);
+    setAnalysisResults(null);
+    setUploadedFile(null);
+    fetchData();
+  };
+
+  const processSingleSheetUpload = async () => {
+    if (!analysisResults?.validRows.length) return;
+
+    const inserted = await processSheetUpload(bulkUploadType, analysisResults.validRows);
+    
+    const successMessages = {
+      rates: 'rate cards',
+      discounts: 'discount tiers',
+      'quantity-discounts': 'quantity discount tiers', 
+      production: 'production cost tiers',
+      creative: 'creative design cost tiers'
+    };
+
+    toast.success(`Successfully imported ${inserted} ${successMessages[bulkUploadType]}`);
+    setUploadedFile(null);
+    setAnalysisResults(null);
+    fetchData();
+  };
+
+  const processSheetUpload = async (uploadType: string, validRows: any[]): Promise<number> => {
+    const dataToInsert = [];
+
+    for (const row of validRows) {
+      // Use pre-populated media format ID from template
+      const mediaFormatId = row['Media Format ID'];
+
+      if (!mediaFormatId) continue;
+
+      let dataEntry: any = {};
+
+      switch (uploadType) {
+        case 'rates':
+          dataEntry = {
+            media_format_id: mediaFormatId,
+            location_area: row['Location Area'],
+            base_rate_per_incharge: parseFloat(row['Base Rate Per Incharge']),
+            sale_price: row['Sale Price'] ? parseFloat(row['Sale Price']) : null,
+            reduced_price: row['Reduced Price'] ? parseFloat(row['Reduced Price']) : null,
+            location_markup_percentage: parseFloat(row['Location Markup Percentage']) || 0,
+            quantity_per_medium: parseInt(row['Quantity Per Medium']) || 1,
+            is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true,
+            is_date_specific: row['Is Date Specific'] === 'TRUE' || row['Is Date Specific'] === true,
+            start_date: row['Start Date'] && row['Start Date'] !== '' ? row['Start Date'] : null,
+            end_date: row['End Date'] && row['End Date'] !== '' ? row['End Date'] : null,
+            incharge_period: row['Incharge Period'] ? parseInt(row['Incharge Period']) : 1
+          };
+          break;
+          
+        case 'quantity-discounts':
+          dataEntry = {
+            media_format_id: mediaFormatId,
+            location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
+            min_quantity: parseInt(row['Min Quantity']),
+            max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
+            discount_percentage: parseFloat(row['Discount Percentage']),
+            is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+          };
+          break;
+          
+        case 'discounts':
+          dataEntry = {
+            media_format_id: mediaFormatId,
+            min_periods: parseInt(row['Min Periods']),
+            max_periods: row['Max Periods'] ? parseInt(row['Max Periods']) : null,
+            discount_percentage: parseFloat(row['Discount Percentage']),
+            is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+          };
+          break;
+          
+        case 'production':
+          dataEntry = {
+            media_format_id: mediaFormatId,
+            location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
+            category: row['Category'],
+            min_quantity: parseInt(row['Min Quantity']),
+            max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
+            cost_per_unit: parseFloat(row['Cost Per Unit']),
+            is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+          };
+          break;
+          
+        case 'creative':
+          dataEntry = {
+            media_format_id: mediaFormatId,
+            location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
+            category: row['Category'],
+            min_quantity: parseInt(row['Min Quantity']),
+            max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
+            cost_per_unit: parseFloat(row['Cost Per Unit']),
+            is_active: row['Is Active'] === 'TRUE' || row['Is Active'] === true
+  };
+}
+          break;
+      }
+
+      dataToInsert.push(dataEntry);
+    }
+
+    // Insert data in smaller batches to prevent timeout
+    const batchSize = 20;
+    let insertedCount = 0;
+    let error: any = null;
+    
+    for (let i = 0; i < dataToInsert.length; i += batchSize) {
+      const batch = dataToInsert.slice(i, i + batchSize);
+      
+      switch (uploadType) {
+        case 'rates':
+          ({ error } = await supabase.from('rate_cards').insert(batch));
+          break;
+        case 'discounts':
+          ({ error } = await supabase.from('discount_tiers').insert(batch));
+          break;
+        case 'quantity-discounts':
+          ({ error } = await supabase.from('quantity_discount_tiers').insert(batch));
+          break;
+        case 'production':
+          ({ error } = await supabase.from('production_cost_tiers').insert(batch));
+          break;
+        case 'creative':
+          ({ error } = await supabase.from('creative_design_cost_tiers').insert(batch));
+          break;
+      }
+
+      if (error) throw error;
+      insertedCount += batch.length;
+    }
+
+    return insertedCount;
 
   if (isLoading) {
     return <div className="flex items-center justify-center p-8">Loading rate cards...</div>;
@@ -1113,23 +1251,23 @@ export function RateCardManager() {
                     </Button>
                   </div>
 
-                  {/* Step 2: Upload File */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Step 2: Upload Completed File</h3>
-                    <p className="text-muted-foreground">
-                      Upload your completed Excel file for analysis and validation.
-                    </p>
-                    <div className="border-2 border-dashed border-border rounded-lg p-6">
-                      <Input
-                        type="file"
-                        accept=".xlsx,.xls"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setUploadedFile(file);
-                            setAnalysisResults(null);
-                          }
-                        }}
+                   {/* Step 2: Upload File */}
+                   <div className="space-y-4">
+                     <h3 className="text-lg font-semibold">Step 2: Upload Completed File</h3>
+                     <p className="text-muted-foreground">
+                       Upload your completed Excel file for analysis and validation. For comprehensive templates with multiple sheets, all sheets will be processed automatically.
+                     </p>
+                     <div className="border-2 border-dashed border-border rounded-lg p-6">
+                       <Input
+                         type="file"
+                         accept=".xlsx,.xls"
+                         onChange={(e) => {
+                           const file = e.target.files?.[0];
+                           if (file) {
+                             setUploadedFile(file);
+                             setAnalysisResults(null);
+                           }
+                         }}
                         className="mb-4"
                       />
                       {uploadedFile && (
@@ -1146,7 +1284,10 @@ export function RateCardManager() {
                         className="flex items-center gap-2"
                       >
                         <Upload className="w-4 h-4" />
-                        {isAnalyzing ? 'Analyzing...' : `Analyze ${bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1).replace('-', ' ')} File`}
+                         {isAnalyzing ? 'Analyzing...' : 
+                           uploadedFile?.name?.includes('comprehensive') ? 
+                           'Analyze Comprehensive Template' : 
+                           `Analyze ${bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1).replace('-', ' ')} File`}
                       </Button>
                     )}
                   </div>
