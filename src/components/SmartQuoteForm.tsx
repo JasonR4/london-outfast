@@ -106,7 +106,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     getAvailableCreativeCategories,
     creativeCostTiers,
     loading: rateCardsLoading 
-  } = useRateCards(selectedFormats[0]?.slug);
+  } = useRateCards(selectedFormats[0]?.format_slug);
 
   // Get dynamic creative cost per asset from CMS
   const dynamicCreativeCost = selectedFormats.length > 0 && creativeAssets > 0 
