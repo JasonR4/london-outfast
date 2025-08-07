@@ -1902,10 +1902,10 @@ export function RateCardManager() {
                                 
                                 if (ratePeriods.length > 0) {
                                   return (
-                                    <div className="text-xs space-y-1">
+                                    <div className="text-xs">
                                       {ratePeriods.map((period, index) => (
-                                        <div key={period.id || index} className="text-xs">
-                                          Period {period.period_number}: {format(new Date(period.start_date), 'MMM dd')} - {format(new Date(period.end_date), 'MMM dd, yyyy')}
+                                        <div key={period.id || index} className="text-xs border-b pb-1 mb-1">
+                                          Period {period.period_number}: {period.start_date} - {period.end_date}
                                         </div>
                                       ))}
                                     </div>
