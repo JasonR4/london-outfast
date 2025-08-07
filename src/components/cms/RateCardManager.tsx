@@ -142,6 +142,122 @@ export function RateCardManager() {
     end_date: undefined as Date | undefined,
   });
 
+  // Filter states
+  const [filters, setFilters] = useState({
+    mediaFormat: '',
+    locationArea: '',
+    isActive: 'all',
+    category: '',
+    searchText: ''
+  });
+
+  // Filter functions
+  const getFilteredRateCards = () => {
+    return rateCards.filter(rate => {
+      // Media format filter
+      if (filters.mediaFormat && rate.media_format_id !== filters.mediaFormat) return false;
+      
+      // Location area filter
+      if (filters.locationArea && rate.location_area !== filters.locationArea) return false;
+      
+      // Active status filter
+      if (filters.isActive !== 'all' && rate.is_active.toString() !== filters.isActive) return false;
+      
+      // Category filter
+      if (filters.category && rate.category !== filters.category) return false;
+      
+      // Search text filter
+      if (filters.searchText) {
+        const searchLower = filters.searchText.toLowerCase();
+        const formatName = rate.media_formats?.format_name?.toLowerCase() || '';
+        const locationArea = rate.location_area?.toLowerCase() || '';
+        const category = rate.category?.toLowerCase() || '';
+        
+        if (!formatName.includes(searchLower) && 
+            !locationArea.includes(searchLower) && 
+            !category.includes(searchLower)) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  };
+
+  const getFilteredDiscountTiers = () => {
+    return discountTiers.filter(discount => {
+      if (filters.mediaFormat && discount.media_format_id !== filters.mediaFormat) return false;
+      if (filters.isActive !== 'all' && discount.is_active.toString() !== filters.isActive) return false;
+      
+      if (filters.searchText) {
+        const searchLower = filters.searchText.toLowerCase();
+        const formatName = discount.media_formats?.format_name?.toLowerCase() || '';
+        if (!formatName.includes(searchLower)) return false;
+      }
+      
+      return true;
+    });
+  };
+
+  const getFilteredQuantityDiscountTiers = () => {
+    return quantityDiscountTiers.filter(discount => {
+      if (filters.mediaFormat && discount.media_format_id !== filters.mediaFormat) return false;
+      if (filters.locationArea && discount.location_area !== filters.locationArea) return false;
+      if (filters.isActive !== 'all' && discount.is_active.toString() !== filters.isActive) return false;
+      
+      if (filters.searchText) {
+        const searchLower = filters.searchText.toLowerCase();
+        const formatName = discount.media_formats?.format_name?.toLowerCase() || '';
+        const locationArea = discount.location_area?.toLowerCase() || '';
+        if (!formatName.includes(searchLower) && !locationArea.includes(searchLower)) return false;
+      }
+      
+      return true;
+    });
+  };
+
+  const getFilteredProductionTiers = () => {
+    return productionTiers.filter(tier => {
+      if (filters.mediaFormat && tier.media_format_id !== filters.mediaFormat) return false;
+      if (filters.locationArea && tier.location_area !== filters.locationArea) return false;
+      if (filters.category && tier.category !== filters.category) return false;
+      if (filters.isActive !== 'all' && tier.is_active.toString() !== filters.isActive) return false;
+      
+      if (filters.searchText) {
+        const searchLower = filters.searchText.toLowerCase();
+        const formatName = tier.media_formats?.format_name?.toLowerCase() || '';
+        const locationArea = tier.location_area?.toLowerCase() || '';
+        const category = tier.category?.toLowerCase() || '';
+        if (!formatName.includes(searchLower) && 
+            !locationArea.includes(searchLower) && 
+            !category.includes(searchLower)) return false;
+      }
+      
+      return true;
+    });
+  };
+
+  const getFilteredCreativeTiers = () => {
+    return creativeTiers.filter(tier => {
+      if (filters.mediaFormat && tier.media_format_id !== filters.mediaFormat) return false;
+      if (filters.locationArea && tier.location_area !== filters.locationArea) return false;
+      if (filters.category && tier.category !== filters.category) return false;
+      if (filters.isActive !== 'all' && tier.is_active.toString() !== filters.isActive) return false;
+      
+      if (filters.searchText) {
+        const searchLower = filters.searchText.toLowerCase();
+        const formatName = tier.media_formats?.format_name?.toLowerCase() || '';
+        const locationArea = tier.location_area?.toLowerCase() || '';
+        const category = tier.category?.toLowerCase() || '';
+        if (!formatName.includes(searchLower) && 
+            !locationArea.includes(searchLower) && 
+            !category.includes(searchLower)) return false;
+      }
+      
+      return true;
+    });
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -1538,9 +1654,112 @@ export function RateCardManager() {
                         </form>
                       </DialogContent>
                     </Dialog>
-                  </div>
+              </div>
 
-                  <Table>
+              {/* Filter Section */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div>
+                      <Label htmlFor="search">Search</Label>
+                      <Input
+                        id="search"
+                        placeholder="Search creative costs..."
+                        value={filters.searchText}
+                        onChange={(e) => setFilters({...filters, searchText: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="filterMediaFormat">Media Format</Label>
+                      <Select 
+                        value={filters.mediaFormat} 
+                        onValueChange={(value) => setFilters({...filters, mediaFormat: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Formats" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Formats</SelectItem>
+                          {mediaFormats.map((format) => (
+                            <SelectItem key={format.id} value={format.id}>
+                              {format.format_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="filterLocation">Location Area</Label>
+                      <Select 
+                        value={filters.locationArea} 
+                        onValueChange={(value) => setFilters({...filters, locationArea: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Locations" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Locations</SelectItem>
+                          <SelectItem value="GD">GD (General Distribution)</SelectItem>
+                          {londonAreas.flatMap(area => 
+                            area.areas.map(borough => (
+                              <SelectItem key={borough} value={borough}>{borough}</SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="filterCategory">Category</Label>
+                      <Select 
+                        value={filters.category} 
+                        onValueChange={(value) => setFilters({...filters, category: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Categories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Categories</SelectItem>
+                          <SelectItem value="Standard">Standard</SelectItem>
+                          <SelectItem value="Premium">Premium</SelectItem>
+                          <SelectItem value="Digital">Digital</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="filterStatus">Status</Label>
+                      <Select 
+                        value={filters.isActive} 
+                        onValueChange={(value) => setFilters({...filters, isActive: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Status</SelectItem>
+                          <SelectItem value="true">Active</SelectItem>
+                          <SelectItem value="false">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end mt-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setFilters({
+                        mediaFormat: '',
+                        locationArea: '',
+                        isActive: 'all',
+                        category: '',
+                        searchText: ''
+                      })}
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Period Number</TableHead>
@@ -1865,7 +2084,117 @@ export function RateCardManager() {
                 </Dialog>
               </div>
 
-               <Table>
+              {/* Filter Section */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div>
+                      <Label htmlFor="search">Search</Label>
+                      <Input
+                        id="search"
+                        placeholder="Search rates..."
+                        value={filters.searchText}
+                        onChange={(e) => setFilters({...filters, searchText: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="filterMediaFormat">Media Format</Label>
+                      <Select 
+                        value={filters.mediaFormat} 
+                        onValueChange={(value) => setFilters({...filters, mediaFormat: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Formats" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Formats</SelectItem>
+                          {mediaFormats.map((format) => (
+                            <SelectItem key={format.id} value={format.id}>
+                              {format.format_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="filterLocation">Location Area</Label>
+                      <Select 
+                        value={filters.locationArea} 
+                        onValueChange={(value) => setFilters({...filters, locationArea: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Locations" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Locations</SelectItem>
+                          <SelectItem value="GD">GD (General Distribution)</SelectItem>
+                          {londonAreas.flatMap(area => 
+                            area.areas.map(borough => (
+                              <SelectItem key={borough} value={borough}>{borough}</SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="filterCategory">Category</Label>
+                      <Select 
+                        value={filters.category} 
+                        onValueChange={(value) => setFilters({...filters, category: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Categories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Categories</SelectItem>
+                          <SelectItem value="Classic & Digital Roadside">Classic & Digital Roadside</SelectItem>
+                          <SelectItem value="London Underground (TfL)">London Underground (TfL)</SelectItem>
+                          <SelectItem value="National Rail & Commuter Rail">National Rail & Commuter Rail</SelectItem>
+                          <SelectItem value="Bus Advertising">Bus Advertising</SelectItem>
+                          <SelectItem value="Taxi Advertising">Taxi Advertising</SelectItem>
+                          <SelectItem value="Retail & Leisure Environments">Retail & Leisure Environments</SelectItem>
+                          <SelectItem value="Airports">Airports</SelectItem>
+                          <SelectItem value="Street Furniture">Street Furniture</SelectItem>
+                          <SelectItem value="Programmatic DOOH (pDOOH)">Programmatic DOOH (pDOOH)</SelectItem>
+                          <SelectItem value="Ambient / Guerrilla OOH">Ambient / Guerrilla OOH</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="filterStatus">Status</Label>
+                      <Select 
+                        value={filters.isActive} 
+                        onValueChange={(value) => setFilters({...filters, isActive: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Status</SelectItem>
+                          <SelectItem value="true">Active</SelectItem>
+                          <SelectItem value="false">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end mt-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setFilters({
+                        mediaFormat: '',
+                        locationArea: '',
+                        isActive: 'all',
+                        category: '',
+                        searchText: ''
+                      })}
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+                <Table>
                  <TableHeader>
                    <TableRow>
                       <TableHead>Format</TableHead>
@@ -1881,8 +2210,8 @@ export function RateCardManager() {
                      <TableHead>Actions</TableHead>
                    </TableRow>
                  </TableHeader>
-                <TableBody>
-                   {rateCards.map((rate) => (
+                 <TableBody>
+                    {getFilteredRateCards().map((rate) => (
                      <TableRow key={rate.id}>
                         <TableCell>{rate.media_formats?.format_name}</TableCell>
                         <TableCell>{rate.location_area}</TableCell>
@@ -2074,6 +2403,72 @@ export function RateCardManager() {
                 </Dialog>
               </div>
 
+              {/* Filter Section */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <Label htmlFor="search">Search</Label>
+                      <Input
+                        id="search"
+                        placeholder="Search discounts..."
+                        value={filters.searchText}
+                        onChange={(e) => setFilters({...filters, searchText: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="filterMediaFormat">Media Format</Label>
+                      <Select 
+                        value={filters.mediaFormat} 
+                        onValueChange={(value) => setFilters({...filters, mediaFormat: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Formats" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Formats</SelectItem>
+                          {mediaFormats.map((format) => (
+                            <SelectItem key={format.id} value={format.id}>
+                              {format.format_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="filterStatus">Status</Label>
+                      <Select 
+                        value={filters.isActive} 
+                        onValueChange={(value) => setFilters({...filters, isActive: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Status</SelectItem>
+                          <SelectItem value="true">Active</SelectItem>
+                          <SelectItem value="false">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-end">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setFilters({
+                          mediaFormat: '',
+                          locationArea: '',
+                          isActive: 'all',
+                          category: '',
+                          searchText: ''
+                        })}
+                      >
+                        Clear Filters
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -2086,7 +2481,7 @@ export function RateCardManager() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {discountTiers.map((discount) => (
+                  {getFilteredDiscountTiers().map((discount) => (
                     <TableRow key={discount.id}>
                       <TableCell>{discount.media_formats?.format_name}</TableCell>
                       <TableCell>{discount.min_periods}</TableCell>
@@ -2240,7 +2635,7 @@ export function RateCardManager() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {quantityDiscountTiers.map((tier) => (
+                  {getFilteredQuantityDiscountTiers().map((tier) => (
                     <TableRow key={tier.id}>
                       <TableCell>
                         <Badge variant="outline">
@@ -2430,6 +2825,92 @@ export function RateCardManager() {
                 </Dialog>
               </div>
 
+              {/* Filter Section */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div>
+                      <Label htmlFor="search">Search</Label>
+                      <Input
+                        id="search"
+                        placeholder="Search quantity discounts..."
+                        value={filters.searchText}
+                        onChange={(e) => setFilters({...filters, searchText: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="filterMediaFormat">Media Format</Label>
+                      <Select 
+                        value={filters.mediaFormat} 
+                        onValueChange={(value) => setFilters({...filters, mediaFormat: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Formats" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Formats</SelectItem>
+                          {mediaFormats.map((format) => (
+                            <SelectItem key={format.id} value={format.id}>
+                              {format.format_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="filterLocation">Location Area</Label>
+                      <Select 
+                        value={filters.locationArea} 
+                        onValueChange={(value) => setFilters({...filters, locationArea: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Locations" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Locations</SelectItem>
+                          <SelectItem value="GD">GD (General Distribution)</SelectItem>
+                          {londonAreas.flatMap(area => 
+                            area.areas.map(borough => (
+                              <SelectItem key={borough} value={borough}>{borough}</SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="filterStatus">Status</Label>
+                      <Select 
+                        value={filters.isActive} 
+                        onValueChange={(value) => setFilters({...filters, isActive: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Status</SelectItem>
+                          <SelectItem value="true">Active</SelectItem>
+                          <SelectItem value="false">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-end">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setFilters({
+                          mediaFormat: '',
+                          locationArea: '',
+                          isActive: 'all',
+                          category: '',
+                          searchText: ''
+                        })}
+                      >
+                        Clear Filters
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -2444,7 +2925,7 @@ export function RateCardManager() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {productionTiers.map((production) => (
+                  {getFilteredProductionTiers().map((production) => (
                     <TableRow key={production.id}>
                       <TableCell>{production.media_formats?.format_name}</TableCell>
                       <TableCell>{production.location_area || 'Global'}</TableCell>
@@ -2622,6 +3103,109 @@ export function RateCardManager() {
                 </Dialog>
               </div>
 
+              {/* Filter Section */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div>
+                      <Label htmlFor="search">Search</Label>
+                      <Input
+                        id="search"
+                        placeholder="Search production costs..."
+                        value={filters.searchText}
+                        onChange={(e) => setFilters({...filters, searchText: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="filterMediaFormat">Media Format</Label>
+                      <Select 
+                        value={filters.mediaFormat} 
+                        onValueChange={(value) => setFilters({...filters, mediaFormat: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Formats" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Formats</SelectItem>
+                          {mediaFormats.map((format) => (
+                            <SelectItem key={format.id} value={format.id}>
+                              {format.format_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="filterLocation">Location Area</Label>
+                      <Select 
+                        value={filters.locationArea} 
+                        onValueChange={(value) => setFilters({...filters, locationArea: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Locations" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Locations</SelectItem>
+                          <SelectItem value="GD">GD (General Distribution)</SelectItem>
+                          {londonAreas.flatMap(area => 
+                            area.areas.map(borough => (
+                              <SelectItem key={borough} value={borough}>{borough}</SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="filterCategory">Category</Label>
+                      <Select 
+                        value={filters.category} 
+                        onValueChange={(value) => setFilters({...filters, category: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Categories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Categories</SelectItem>
+                          <SelectItem value="Standard">Standard</SelectItem>
+                          <SelectItem value="Premium">Premium</SelectItem>
+                          <SelectItem value="Digital">Digital</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="filterStatus">Status</Label>
+                      <Select 
+                        value={filters.isActive} 
+                        onValueChange={(value) => setFilters({...filters, isActive: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Status</SelectItem>
+                          <SelectItem value="true">Active</SelectItem>
+                          <SelectItem value="false">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end mt-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setFilters({
+                        mediaFormat: '',
+                        locationArea: '',
+                        isActive: 'all',
+                        category: '',
+                        searchText: ''
+                      })}
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -2636,7 +3220,7 @@ export function RateCardManager() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {creativeTiers.map((tier) => (
+                  {getFilteredCreativeTiers().map((tier) => (
                     <TableRow key={tier.id}>
                       <TableCell>{tier.media_formats?.format_name || 'N/A'}</TableCell>
                       <TableCell>{tier.location_area || 'Global'}</TableCell>
