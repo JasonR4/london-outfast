@@ -1045,7 +1045,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                      </div>
                                      <div className="flex justify-between items-center text-green-600 text-xs">
                                        <span>Savings per unit:</span>
-                                       <span>-£{((firstLocationPrice.adjustedRate - (pricing.mediaPrice / (totalQuantity * selectedPeriods.length)))).toFixed(2)}</span>
+                                       <span>-£{(firstLocationPrice.basePrice - (rateCards[0]?.sale_price || 800)).toFixed(2)}</span>
                                      </div>
                                   </>
                                 )}
