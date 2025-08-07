@@ -238,7 +238,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         console.log(`📅 Selected periods: ${selectedPeriods}`);
         
         const mediaPrice = calculatePrice(location, selectedPeriods);
-        const productionPrice = calculateProductionCost(location, totalQuantity);
+        const productionPrice = calculateProductionCost(location, totalQuantity, selectedPeriods);
         // Calculate creative cost based on creative assets and selected level
         const creativePrice = needsCreative ? calculateCreativeCost(location, creativeAssets, creativeLevel) : null;
         
@@ -1092,7 +1092,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
                         {/* Production Cost Details */}
                         {pricing.productionCost > 0 && (() => {
-                          const productionResult = calculateProductionCost(selectedLocations[0], totalQuantity);
+                          const productionResult = calculateProductionCost(selectedLocations[0], totalQuantity, selectedPeriods);
                           if (!productionResult) return null;
                           
                           return (
@@ -1113,6 +1113,16 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 </div>
                                 
                                 <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Production Runs:</span>
+                                  <span>{productionResult.productionRuns} run{productionResult.productionRuns > 1 ? 's' : ''}</span>
+                                </div>
+                                
+                                <div className="flex justify-between items-center">
+                                  <span className="text-muted-foreground">Cost per Run:</span>
+                                  <span>£{productionResult.costPerRun.toLocaleString()}</span>
+                                </div>
+                                
+                                <div className="flex justify-between items-center">
                                   <span className="text-muted-foreground">Applicable Tier:</span>
                                   <span className="text-xs">
                                     {productionResult.tier.min_quantity}{productionResult.tier.max_quantity ? `-${productionResult.tier.max_quantity}` : '+'} units
@@ -1130,6 +1140,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                   <div className="flex justify-between items-center font-medium text-base">
                                     <span>Total Production Cost:</span>
                                     <span className="text-primary">£{pricing.productionCost.toLocaleString()}</span>
+                                  </div>
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    {productionResult.productionRuns} run{productionResult.productionRuns > 1 ? 's' : ''} × {totalQuantity} units × £{productionResult.costPerUnit}
                                   </div>
                                 </div>
                               </div>

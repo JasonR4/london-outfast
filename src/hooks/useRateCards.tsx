@@ -212,10 +212,28 @@ export function useRateCards(formatSlug?: string) {
     }
   };
 
-  const calculateProductionCost = (locationArea: string, quantity: number, category?: string) => {
+  // Helper function to calculate number of production runs based on period continuity
+  const calculateProductionRuns = (selectedPeriods: number[]) => {
+    if (selectedPeriods.length === 0) return 0;
+    
+    const sortedPeriods = [...selectedPeriods].sort((a, b) => a - b);
+    let runs = 1;
+    
+    for (let i = 1; i < sortedPeriods.length; i++) {
+      // If there's a gap between consecutive periods, it's a new production run
+      if (sortedPeriods[i] !== sortedPeriods[i - 1] + 1) {
+        runs++;
+      }
+    }
+    
+    return runs;
+  };
+
+  const calculateProductionCost = (locationArea: string, quantity: number, selectedPeriods: number[] = [], category?: string) => {
     console.log('🔍 Production Cost Debug:', {
       locationArea,
       quantity,
+      selectedPeriods,
       category,
       availableTiers: productionCostTiers.length,
       allTiers: productionCostTiers.map(t => ({
@@ -250,11 +268,18 @@ export function useRateCards(formatSlug?: string) {
 
     if (!bestTier) return null;
 
+    // Calculate production runs based on period continuity
+    const productionRuns = calculateProductionRuns(selectedPeriods);
+    const costPerRun = bestTier.cost_per_unit * quantity;
+    const totalCost = costPerRun * productionRuns;
+
     const result = {
       costPerUnit: bestTier.cost_per_unit,
-      totalCost: bestTier.cost_per_unit * quantity,
+      costPerRun,
+      productionRuns,
+      totalCost,
       tier: bestTier,
-      ...calculateVAT(bestTier.cost_per_unit * quantity) // Add VAT calculations
+      ...calculateVAT(totalCost) // Add VAT calculations
     };
 
     console.log('💰 Production Cost Result:', result);
