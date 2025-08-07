@@ -1003,8 +1003,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 )}
                                 
                                 <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Subtotal ({selectedLocations.length} locations × {selectedPeriods.length} periods):</span>
-                                  <span>£{(firstLocationPrice.adjustedRate * selectedPeriods.length * selectedLocations.length).toLocaleString()}</span>
+                                  <span className="text-muted-foreground">Subtotal ({totalQuantity} units × {selectedPeriods.length} periods):</span>
+                                  <span>£{(firstLocationPrice.adjustedRate * selectedPeriods.length * totalQuantity).toLocaleString()}</span>
                                 </div>
                                 
                                 {firstLocationPrice.isOnSale && (
