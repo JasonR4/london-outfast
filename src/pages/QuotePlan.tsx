@@ -444,33 +444,93 @@ export default function QuotePlan() {
                     </div>
                   ))}
                   
-                  {/* Total discount summary */}
-                  {currentQuote.quote_items?.some(item => item.discount_percentage && item.discount_percentage > 0) && (
-                    <div className="pt-2 border-t">
-                      <div className="bg-green-50 p-3 rounded-lg">
-                        <div className="text-sm font-medium text-green-800 mb-1">
-                          Volume Discount Applied!
-                        </div>
-                        <div className="text-xs text-green-700">
-                          Total periods: {currentQuote.quote_items?.reduce((sum, item) => sum + item.selected_periods.length, 0)} periods
-                          {currentQuote.quote_items?.reduce((sum, item) => sum + item.selected_periods.length, 0) >= 4 && (
-                            <span className="ml-1">(4+ periods qualifies for bulk discount)</span>
+                  <Separator />
+                  
+                  {/* Overall Campaign Breakdown */}
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-lg">Campaign Cost Breakdown</h4>
+                    
+                    {/* Calculate totals */}
+                    {(() => {
+                      const totalBaseCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.base_cost || 0), 0) || 0;
+                      const totalProductionCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.production_cost || 0), 0) || 0;
+                      const totalCreativeCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.creative_cost || 0), 0) || 0;
+                      const totalDiscountAmount = currentQuote.quote_items?.reduce((sum, item) => sum + (item.discount_amount || 0), 0) || 0;
+                      const totalSaleDiscount = currentQuote.quote_items?.reduce((sum, item) => {
+                        const originalCost = item.original_cost || 0;
+                        const baseCost = item.base_cost || 0;
+                        return sum + Math.max(0, originalCost - baseCost);
+                      }, 0) || 0;
+                      
+                      return (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Base Campaign Cost:</span>
+                            <span>{formatCurrency(totalBaseCost)}</span>
+                          </div>
+                          
+                          {totalSaleDiscount > 0 && (
+                            <div className="flex justify-between text-sm text-orange-600">
+                              <span>Sale Price Savings:</span>
+                              <span>-{formatCurrency(totalSaleDiscount)}</span>
+                            </div>
                           )}
+                          
+                          <div className="flex justify-between text-sm">
+                            <span>Production Costs:</span>
+                            <span>{formatCurrency(totalProductionCost)}</span>
+                          </div>
+                          
+                          <div className="flex justify-between text-sm">
+                            <span>Creative Costs:</span>
+                            <span>{formatCurrency(totalCreativeCost)}</span>
+                          </div>
+                          
+                          {totalDiscountAmount > 0 && (
+                            <div className="flex justify-between text-sm text-green-600">
+                              <span>Volume Discount:</span>
+                              <span>-{formatCurrency(totalDiscountAmount)}</span>
+                            </div>
+                          )}
+                          
+                          <Separator />
+                          
+                          <div className="flex justify-between text-sm font-medium">
+                            <span>Subtotal (exc VAT):</span>
+                            <span>{formatCurrency((totalBaseCost + totalProductionCost + totalCreativeCost - totalDiscountAmount))}</span>
+                          </div>
+                          
+                          <div className="flex justify-between text-sm">
+                            <span>VAT (20%):</span>
+                            <span>{formatCurrency((totalBaseCost + totalProductionCost + totalCreativeCost - totalDiscountAmount) * 0.2)}</span>
+                          </div>
                         </div>
-                        <div className="flex justify-between text-sm font-medium text-green-800 mt-1">
-                          <span>Total savings:</span>
-                          <span>-{formatCurrency(
-                            currentQuote.quote_items?.reduce((sum, item) => sum + (item.discount_amount || 0), 0) || 0
-                          )}</span>
-                        </div>
+                      );
+                    })()}
+                  </div>
+                  
+                  {/* Volume discount summary if applicable */}
+                  {currentQuote.quote_items?.some(item => item.discount_percentage && item.discount_percentage > 0) && (
+                    <div className="bg-green-50 p-3 rounded-lg">
+                      <div className="text-sm font-medium text-green-800 mb-1">
+                        🎉 Volume Discount Applied!
+                      </div>
+                      <div className="text-xs text-green-700">
+                        Total periods: {currentQuote.quote_items?.reduce((sum, item) => sum + item.selected_periods.length, 0)} periods
+                        {currentQuote.quote_items?.reduce((sum, item) => sum + item.selected_periods.length, 0) >= 4 && (
+                          <span className="ml-1">(4+ periods qualifies for bulk pricing)</span>
+                        )}
                       </div>
                     </div>
                   )}
                   
                   <Separator />
-                  <div className="flex justify-between font-semibold text-lg">
+                  <div className="flex justify-between font-bold text-xl text-primary">
                     <span>Total Campaign Cost</span>
                     <span>{formatCurrency(currentQuote.total_cost)}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground text-center">
+                    All prices include VAT
                   </div>
                 </div>
               </CardContent>
