@@ -130,6 +130,7 @@ export function RateCardManager() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
   const [bulkUploadType, setBulkUploadType] = useState<'rates' | 'discounts' | 'quantity-discounts' | 'production' | 'creative'>('rates');
+  const [selectedMediaFormat, setSelectedMediaFormat] = useState<MediaFormat | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -601,9 +602,12 @@ export function RateCardManager() {
           (row['Min Quantity']?.toString().includes('1') && (bulkUploadType === 'quantity-discounts' || bulkUploadType === 'production' || bulkUploadType === 'creative'))
         )) return;
 
-        // Common validation for all types
-        if (!row['Media Format'] || !formatNames.includes(row['Media Format'].toLowerCase())) {
-          errors.push('Invalid media format');
+        // Common validation for all types - validate pre-populated format ID
+        if (!row['Media Format ID'] || row['Media Format ID'] !== selectedMediaFormat?.id) {
+          errors.push('Media format ID must match selected format - do not edit this field');
+        }
+        if (!row['Media Format Name'] || row['Media Format Name'] !== selectedMediaFormat?.format_name) {
+          errors.push('Media format name must match selected format - do not edit this field');
         }
 
         // Type-specific validation
@@ -707,19 +711,17 @@ export function RateCardManager() {
       const dataToInsert = [];
 
       for (const row of analysisResults.validRows) {
-        // Find media format ID
-        const mediaFormat = mediaFormats.find(f => 
-          f.format_name.toLowerCase() === row['Media Format'].toLowerCase()
-        );
+        // Use pre-populated media format ID from template
+        const mediaFormatId = row['Media Format ID'];
 
-        if (!mediaFormat) continue;
+        if (!mediaFormatId) continue;
 
         let dataEntry: any = {};
 
         switch (bulkUploadType) {
           case 'rates':
             dataEntry = {
-              media_format_id: mediaFormat.id,
+              media_format_id: mediaFormatId,
               location_area: row['Location Area'],
               base_rate_per_incharge: parseFloat(row['Base Rate Per Incharge']),
               sale_price: row['Sale Price'] ? parseFloat(row['Sale Price']) : null,
@@ -736,7 +738,7 @@ export function RateCardManager() {
             
           case 'quantity-discounts':
             dataEntry = {
-              media_format_id: mediaFormat.id,
+              media_format_id: mediaFormatId,
               location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
               min_quantity: parseInt(row['Min Quantity']),
               max_quantity: row['Max Quantity'] ? parseInt(row['Max Quantity']) : null,
@@ -747,7 +749,7 @@ export function RateCardManager() {
             
           case 'discounts':
             dataEntry = {
-              media_format_id: mediaFormat.id,
+              media_format_id: mediaFormatId,
               min_periods: parseInt(row['Min Periods']),
               max_periods: row['Max Periods'] ? parseInt(row['Max Periods']) : null,
               discount_percentage: parseFloat(row['Discount Percentage']),
@@ -757,7 +759,7 @@ export function RateCardManager() {
             
           case 'production':
             dataEntry = {
-              media_format_id: mediaFormat.id,
+              media_format_id: mediaFormatId,
               location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
               category: row['Category'],
               min_quantity: parseInt(row['Min Quantity']),
@@ -769,7 +771,7 @@ export function RateCardManager() {
             
           case 'creative':
             dataEntry = {
-              media_format_id: mediaFormat.id,
+              media_format_id: mediaFormatId,
               location_area: row['Location Area'] && row['Location Area'].toLowerCase() === 'global' ? null : row['Location Area'],
               category: row['Category'],
               min_quantity: parseInt(row['Min Quantity']),
@@ -883,20 +885,39 @@ export function RateCardManager() {
                     </div>
                   </div>
 
-                  {/* Step 1: Download Template */}
+                  {/* Step 1: Select Media Format & Download Template */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Step 1: Download Template</h3>
+                    <h3 className="text-lg font-semibold">Step 1: Select Media Format & Download Template</h3>
                     <p className="text-muted-foreground">
-                      Download the Excel template for {bulkUploadType === 'rates' ? 'rate cards' : 
-                        bulkUploadType === 'discounts' ? 'period discount tiers' :
-                        bulkUploadType === 'quantity-discounts' ? 'quantity discount tiers' :
-                        bulkUploadType === 'production' ? 'production costs' : 'creative design costs'} 
-                      with the correct format and validation examples.
+                      First select the media format, then download the Excel template pre-populated with the format details.
                     </p>
-                    <Button onClick={() => downloadTemplate(bulkUploadType)} className="flex items-center gap-2">
-                      <Download className="w-4 h-4" />
-                      Download {bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1).replace('-', ' ')} Template
-                    </Button>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="mediaFormat">Media Format</Label>
+                        <Select onValueChange={(value) => setSelectedMediaFormat(mediaFormats.find(f => f.id === value) || null)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select media format" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {mediaFormats.map(format => (
+                              <SelectItem key={format.id} value={format.id}>
+                                {format.format_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-end">
+                        <Button 
+                          onClick={() => downloadTemplate(bulkUploadType)} 
+                          className="flex items-center gap-2"
+                          disabled={!selectedMediaFormat}
+                        >
+                          <Download className="w-4 h-4" />
+                          Download Template
+                        </Button>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Step 2: Upload File */}
