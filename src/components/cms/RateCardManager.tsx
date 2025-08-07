@@ -278,18 +278,6 @@ export function RateCardManager() {
     }
   };
 
-  const handleSaveProductionTier = async (formData: FormData) => {
-    try {
-      const productionData = {
-        media_format_id: formData.get('media_format_id') as string,
-        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
-        category: formData.get('category') as string,
-        min_quantity: parseInt(formData.get('min_quantity') as string),
-        max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
-        cost_per_unit: parseFloat(formData.get('cost_per_unit') as string),
-        is_active: formData.get('is_active') === 'true'
-  };
-
   const handleSaveQuantityDiscountTier = async (formData: FormData) => {
     try {
       const quantityDiscountData = {
@@ -324,6 +312,18 @@ export function RateCardManager() {
       toast.error('Failed to save quantity discount tier');
     }
   };
+
+  const handleSaveProductionTier = async (formData: FormData) => {
+    try {
+      const productionData = {
+        media_format_id: formData.get('media_format_id') as string,
+        location_area: formData.get('location_area') === 'global' ? null : formData.get('location_area') as string,
+        category: formData.get('category') as string,
+        min_quantity: parseInt(formData.get('min_quantity') as string),
+        max_quantity: formData.get('max_quantity') ? parseInt(formData.get('max_quantity') as string) : null,
+        cost_per_unit: parseFloat(formData.get('cost_per_unit') as string),
+        is_active: formData.get('is_active') === 'true'
+      };
 
       if (editingProduction) {
         const { error } = await supabase
@@ -1528,6 +1528,183 @@ export function RateCardManager() {
                             onClick={() => handleDeleteDiscountTier(discount.id)}
                           >
                             <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
+
+            <TabsContent value="quantity-discounts" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Quantity Discount Tiers</h3>
+                <Dialog open={isQuantityDiscountDialogOpen} onOpenChange={setIsQuantityDiscountDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => setEditingQuantityDiscount(null)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Quantity Discount Tier
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingQuantityDiscount ? 'Edit Quantity Discount Tier' : 'Add New Quantity Discount Tier'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveQuantityDiscountTier(new FormData(e.currentTarget));
+                    }} className="space-y-4">
+                      <div>
+                        <Label htmlFor="media_format_id">Media Format</Label>
+                        <Select name="media_format_id" defaultValue={editingQuantityDiscount?.media_format_id} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select format" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {mediaFormats.map((format) => (
+                              <SelectItem key={format.id} value={format.id}>
+                                {format.format_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="location_area">Location Area (Optional)</Label>
+                        <Select name="location_area" defaultValue={editingQuantityDiscount?.location_area || 'global'}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select location area (leave empty for global)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="global">Global (All Areas)</SelectItem>
+                            <SelectItem value="GD">GD (General Distribution)</SelectItem>
+                            {londonAreas.flatMap(area => 
+                              area.areas.map(borough => (
+                                <SelectItem key={borough} value={borough}>{borough}</SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="min_quantity">Min Quantity</Label>
+                          <Input
+                            name="min_quantity"
+                            type="number"
+                            min="1"
+                            defaultValue={editingQuantityDiscount?.min_quantity}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="max_quantity">Max Quantity</Label>
+                          <Input
+                            name="max_quantity"
+                            type="number"
+                            defaultValue={editingQuantityDiscount?.max_quantity || ''}
+                            placeholder="Leave empty for unlimited"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="discount_percentage">Discount Percentage (%)</Label>
+                        <Input
+                          name="discount_percentage"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="100"
+                          defaultValue={editingQuantityDiscount?.discount_percentage}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="is_active">Status</Label>
+                        <Select name="is_active" defaultValue={editingQuantityDiscount?.is_active ? 'true' : 'false'}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Active</SelectItem>
+                            <SelectItem value="false">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button type="submit" className="w-full">
+                        {editingQuantityDiscount ? 'Update Quantity Discount Tier' : 'Create Quantity Discount Tier'}
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Media Format</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Quantity Range</TableHead>
+                    <TableHead>Discount %</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {quantityDiscountTiers.map((tier) => (
+                    <TableRow key={tier.id}>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {tier.media_formats?.format_name || 'Unknown Format'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {tier.location_area || 'Global'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="text-sm">
+                            Min: {tier.min_quantity} units
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Max: {tier.max_quantity ? `${tier.max_quantity} units` : 'Unlimited'}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="default">
+                          {tier.discount_percentage}%
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={tier.is_active ? 'default' : 'secondary'}>
+                          {tier.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingQuantityDiscount(tier);
+                              setIsQuantityDiscountDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="w-4 h-4 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteQuantityDiscountTier(tier.id)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete
                           </Button>
                         </div>
                       </TableCell>
