@@ -24,9 +24,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const hubspotApiKey = Deno.env.get("HUBSPOT_API_KEY");
+    const hubspotApiKey = Deno.env.get("HUBSPOT_ACCESS_TOKEN");
     if (!hubspotApiKey) {
-      throw new Error("HubSpot API key not configured");
+      throw new Error("HubSpot access token not configured");
     }
 
     const formData: ContactFormData = await req.json();
