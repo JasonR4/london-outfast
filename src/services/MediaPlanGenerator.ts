@@ -2,6 +2,7 @@ import { Answer } from '@/components/OOHConfigurator';
 import { useRateCards } from '@/hooks/useRateCards';
 import { InchargePeriod } from '@/hooks/useRateCards';
 import { calculateVAT } from '@/utils/vat';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface MediaPlanItem {
   formatSlug: string;
@@ -137,22 +138,120 @@ export class MediaPlanGenerator {
     reasons: string[]
   ): Promise<Omit<MediaPlanItem, 'budgetAllocation'> | null> {
     
-    // Use dynamic import to avoid circular dependencies
-    const { useRateCards } = await import('@/hooks/useRateCards');
-    
-    // This is a simplified version - in real implementation you'd need to:
-    // 1. Get rate card data for the format
-    // 2. Calculate optimal quantity based on budget
-    // 3. Select best periods based on availability
-    
-    // For now, using placeholder logic
-    const defaultQuantity = Math.floor(budget / 3000); // Estimate ~£3k per unit
-    const defaultPeriods = inchargePeriods.slice(0, 2).map(p => p.period_number);
+    try {
+      // Get actual rate card data for this format
+      const { data: mediaFormat } = await supabase
+        .from('media_formats')
+        .select('*')
+        .eq('format_slug', formatSlug)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (!mediaFormat) {
+        console.warn(`No media format found for slug: ${formatSlug}`);
+        return this.getFallbackPlanItem(formatSlug, formatName, budget, selectedAreas, inchargePeriods, reasons);
+      }
+
+      // Get rate cards for this format
+      const { data: rateCards } = await supabase
+        .from('rate_cards')
+        .select('*')
+        .eq('media_format_id', mediaFormat.id)
+        .eq('is_active', true);
+
+      // Get selected periods from answers
+      const selectedPeriods = this.getSelectedPeriodsFromAnswers();
+      const periodsCount = selectedPeriods.length || 2; // Default to 2 periods
+
+      // Calculate optimal quantity based on budget and rate cards
+      let optimalQuantity = 1;
+      let baseCost = 0;
+      
+      if (rateCards && rateCards.length > 0) {
+        // Use first available rate card for estimation
+        const rateCard = rateCards[0];
+        const baseRate = rateCard.sale_price || rateCard.reduced_price || rateCard.base_rate_per_incharge;
+        const markupMultiplier = 1 + (rateCard.location_markup_percentage / 100);
+        const adjustedRate = baseRate * markupMultiplier;
+        
+        // Apply discount tiers
+        const { data: discountTiers } = await supabase
+          .from('discount_tiers')
+          .select('*')
+          .eq('media_format_id', mediaFormat.id)
+          .eq('is_active', true)
+          .lte('min_periods', periodsCount)
+          .or(`max_periods.is.null,max_periods.gte.${periodsCount}`)
+          .order('discount_percentage', { ascending: false })
+          .limit(1);
+
+        const discount = discountTiers?.[0]?.discount_percentage || 0;
+        const discountMultiplier = 1 - (discount / 100);
+        const finalRate = adjustedRate * discountMultiplier;
+        
+        // Calculate how many units we can afford for media spend (70% of budget)
+        const mediaBudget = budget * 0.7;
+        const costPerUnit = finalRate * periodsCount;
+        optimalQuantity = Math.max(1, Math.floor(mediaBudget / costPerUnit));
+        baseCost = costPerUnit * optimalQuantity;
+      } else {
+        // Fallback calculation if no rate cards
+        baseCost = budget * 0.7;
+        optimalQuantity = Math.max(1, Math.floor(baseCost / 3000));
+      }
+
+      // Calculate production costs using actual tiers
+      const productionCost = await this.calculateProductionCostForFormat(
+        mediaFormat.id,
+        selectedAreas[0] || 'Central London',
+        optimalQuantity,
+        budget * 0.15
+      );
+
+      // Calculate creative costs using actual tiers
+      const creativeCost = await this.calculateCreativeCostForFormat(
+        mediaFormat.id,
+        selectedAreas[0] || 'Central London',
+        optimalQuantity,
+        budget * 0.15
+      );
+
+      const totalCost = baseCost + productionCost + creativeCost;
+      const areas = selectedAreas.length > 0 ? selectedAreas.slice(0, 3) : ['Central London'];
+
+      return {
+        formatSlug,
+        formatName,
+        recommendedQuantity: optimalQuantity,
+        selectedAreas: areas,
+        selectedPeriods,
+        baseCost,
+        productionCost,
+        creativeCost,
+        totalCost,
+        reasonForRecommendation: reasons
+      };
+    } catch (error) {
+      console.error('Error generating plan item for format:', formatSlug, error);
+      return this.getFallbackPlanItem(formatSlug, formatName, budget, selectedAreas, inchargePeriods, reasons);
+    }
+  }
+
+  private getFallbackPlanItem(
+    formatSlug: string,
+    formatName: string,
+    budget: number,
+    selectedAreas: string[],
+    inchargePeriods: InchargePeriod[],
+    reasons: string[]
+  ): Omit<MediaPlanItem, 'budgetAllocation'> {
+    const defaultQuantity = Math.floor(budget / 3000);
+    const defaultPeriods = this.getSelectedPeriodsFromAnswers() || inchargePeriods.slice(0, 2).map(p => p.period_number);
     const areas = selectedAreas.length > 0 ? selectedAreas.slice(0, 3) : ['Central London'];
     
-    const baseCost = budget * 0.7; // 70% for media
-    const productionCost = budget * 0.15; // 15% for production  
-    const creativeCost = budget * 0.15; // 15% for creative
+    const baseCost = budget * 0.7;
+    const productionCost = budget * 0.15;
+    const creativeCost = budget * 0.15;
     const totalCost = baseCost + productionCost + creativeCost;
 
     return {
@@ -162,11 +261,69 @@ export class MediaPlanGenerator {
       selectedAreas: areas,
       selectedPeriods: defaultPeriods,
       baseCost,
-      productionCost, 
+      productionCost,
       creativeCost,
       totalCost,
       reasonForRecommendation: reasons
     };
+  }
+
+  private async calculateProductionCostForFormat(
+    mediaFormatId: string,
+    locationArea: string,
+    quantity: number,
+    maxBudget: number
+  ): Promise<number> {
+    try {
+      const { data: productionTiers } = await supabase
+        .from('production_cost_tiers')
+        .select('*')
+        .eq('media_format_id', mediaFormatId)
+        .eq('is_active', true)
+        .lte('min_quantity', quantity)
+        .or(`max_quantity.is.null,max_quantity.gte.${quantity}`)
+        .order('cost_per_unit', { ascending: true })
+        .limit(1);
+
+      if (productionTiers && productionTiers.length > 0) {
+        const cost = productionTiers[0].cost_per_unit * quantity;
+        return Math.min(cost, maxBudget);
+      }
+
+      return maxBudget; // Fallback to max budget if no tiers found
+    } catch (error) {
+      console.error('Error calculating production cost:', error);
+      return maxBudget;
+    }
+  }
+
+  private async calculateCreativeCostForFormat(
+    mediaFormatId: string,
+    locationArea: string,
+    quantity: number,
+    maxBudget: number
+  ): Promise<number> {
+    try {
+      const { data: creativeTiers } = await supabase
+        .from('creative_design_cost_tiers')
+        .select('*')
+        .eq('media_format_id', mediaFormatId)
+        .eq('is_active', true)
+        .lte('min_quantity', quantity)
+        .or(`max_quantity.is.null,max_quantity.gte.${quantity}`)
+        .order('cost_per_unit', { ascending: true })
+        .limit(1);
+
+      if (creativeTiers && creativeTiers.length > 0) {
+        const cost = creativeTiers[0].cost_per_unit * quantity;
+        return Math.min(cost, maxBudget);
+      }
+
+      return maxBudget; // Fallback to max budget if no tiers found
+    } catch (error) {
+      console.error('Error calculating creative cost:', error);
+      return maxBudget;
+    }
   }
 
   private getBudgetFromAnswers(answers: Answer[]): number {
