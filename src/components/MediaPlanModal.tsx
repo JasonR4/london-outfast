@@ -88,18 +88,32 @@ export const MediaPlanModal = ({
                   </div>
                   
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Media Costs:</span>
-                      <span>£{(mediaPlan.totalBudget * 0.7).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Production Costs:</span>
-                      <span>£{(mediaPlan.totalBudget * 0.15).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Creative Development:</span>
-                      <span>£{(mediaPlan.totalBudget * 0.15).toLocaleString()}</span>
-                    </div>
+                    {(() => {
+                      // Calculate actual costs from media plan items
+                      const actualCosts = mediaPlan.items.reduce((acc, item) => {
+                        acc.mediaCosts += item.baseCost;
+                        acc.productionCosts += item.productionCost;
+                        acc.creativeCosts += item.creativeCost;
+                        return acc;
+                      }, { mediaCosts: 0, productionCosts: 0, creativeCosts: 0 });
+                      
+                      return (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Media Costs:</span>
+                            <span>£{actualCosts.mediaCosts.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Production Costs:</span>
+                            <span>£{actualCosts.productionCosts.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Creative Development:</span>
+                            <span>£{actualCosts.creativeCosts.toLocaleString()}</span>
+                          </div>
+                        </>
+                      );
+                    })()}
                     
                     {/* Show potential volume discount */}
                     {mediaPlan.items.some(item => item.recommendedQuantity >= 5) && (
