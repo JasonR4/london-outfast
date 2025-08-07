@@ -191,14 +191,23 @@ const FormatPage = () => {
 
       setCmsContent(cmsData);
 
-      // Get static format data as fallback
-      const staticFormat = getFormatBySlug(formatSlug || '') || null;
+      // Get format data - try both cached and fresh fetch
+      let staticFormat = null;
+      
+      // First try to get from cache
+      staticFormat = getFormatBySlug(formatSlug || '');
+      
+      // If not in cache and we have media formats loaded, try to find it there
+      if (!staticFormat && mediaFormats.length > 0) {
+        staticFormat = mediaFormats.find(f => f.format_slug === formatSlug);
+      }
       
       console.log('Format lookup result:', { 
         formatSlug, 
         staticFormat: staticFormat ? staticFormat.format_name : null, 
         mediaFormatsCount: mediaFormats.length,
-        allSlugs: mediaFormats.map(f => f.format_slug).slice(0, 5)
+        allSlugs: mediaFormats.map(f => f.format_slug).slice(0, 5),
+        formatsLoading
       });
       
       // If we have either static format OR CMS data, we can proceed
@@ -269,11 +278,11 @@ const FormatPage = () => {
       }
     };
 
-    // Only initialize if we have media formats loaded or if we're not loading
-    if (!formatsLoading) {
+    // Initialize when we have media formats loaded or if we're not loading anymore
+    if (!formatsLoading || mediaFormats.length > 0) {
       initializePage();
     }
-  }, [formatSlug, navigate, formatsLoading]);
+  }, [formatSlug, navigate, formatsLoading, mediaFormats]);
 
   const handleGetQuote = () => {
     navigate('/quote');
