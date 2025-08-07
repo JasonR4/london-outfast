@@ -235,32 +235,85 @@ const formatDescriptions = {
   'billboards': {
     name: '48 Sheet Billboards',
     description: 'Large format billboards for maximum impact and brand awareness',
-    strengths: ['High visibility', 'Strong brand presence', 'Cost-effective for awareness']
+    strengths: ['High visibility', 'Strong brand presence', 'Cost-effective for awareness'],
+    platforms: [
+      'Prime roadside locations across London',
+      'High-traffic arterial routes',
+      'Strategic junction positions',
+      'Major approach roads to central London',
+      'Key commuter corridors'
+    ]
   },
   'digital_billboards': {
     name: 'Digital Billboards', 
     description: 'Dynamic digital displays with real-time content updates and targeting',
-    strengths: ['Real-time updates', 'Dynamic content', 'Better measurement', 'Flexible scheduling']
+    strengths: ['Real-time updates', 'Dynamic content', 'Better measurement', 'Flexible scheduling'],
+    platforms: [
+      'Premium digital sites in Zone 1',
+      'Major shopping center displays',
+      'Transport interchange screens',
+      'High-footfall pedestrian areas',
+      'Strategic roadside digital panels',
+      'Interactive touch screen displays'
+    ]
   },
   'bus_shelters': {
     name: 'Bus Shelter Advertising',
     description: 'Street-level advertising with high local impact and dwell time',
-    strengths: ['Local targeting', 'High dwell time', 'Weather protection', 'Pedestrian focus']
+    strengths: ['Local targeting', 'High dwell time', 'Weather protection', 'Pedestrian focus'],
+    platforms: [
+      'Central London bus shelter network',
+      'High Street locations',
+      'Shopping district shelters',
+      'Residential area stops',
+      'Transport interchange shelters',
+      'Business district locations',
+      'Tourist area coverage'
+    ]
   },
   'tube_ads': {
     name: 'London Underground Ads',
     description: 'Reach commuters throughout the extensive London transport network',
-    strengths: ['Captive audience', 'High frequency', 'Commuter targeting', 'Network coverage']
+    strengths: ['Captive audience', 'High frequency', 'Commuter targeting', 'Network coverage'],
+    platforms: [
+      'Platform advertising (all major lines)',
+      'Escalator panel advertising',
+      'Tube car interior cards',
+      'Station concourse displays',
+      'Digital platform screens',
+      'Ticket hall advertising',
+      'Cross-track advertising',
+      'Tunnel advertising',
+      'Platform end displays',
+      'Moving walkway advertising',
+      'Interactive digital totems'
+    ]
   },
   'taxi_ads': {
     name: 'Taxi Advertising',
     description: 'Mobile advertising reaching diverse audiences across London',
-    strengths: ['Mobile reach', 'Flexible coverage', 'Premium audience', 'GPS tracking']
+    strengths: ['Mobile reach', 'Flexible coverage', 'Premium audience', 'GPS tracking'],
+    platforms: [
+      'Black cab rear window displays',
+      'Taxi roof top advertising',
+      'Interior passenger screens',
+      'Door panel advertising',
+      'Digital tip screens',
+      'Uber/taxi app advertising',
+      'Ride-share vehicle branding'
+    ]
   },
   'local_billboards': {
     name: 'Local Billboards',
     description: 'Smaller format billboards perfect for community and local targeting',
-    strengths: ['Community focus', 'Local presence', 'Cost-effective', 'Neighborhood targeting']
+    strengths: ['Community focus', 'Local presence', 'Cost-effective', 'Neighborhood targeting'],
+    platforms: [
+      'Local high street locations',
+      'Community center displays',
+      'Local transport hubs',
+      'Neighborhood shopping areas',
+      'Residential approach roads'
+    ]
   }
 };
 
@@ -739,6 +792,22 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                       </div>
                     </div>
                     <p className="text-muted-foreground mb-4">{rec.description}</p>
+                    
+                    {/* Show platform details */}
+                    {formatInfo?.platforms && (
+                      <div className="mb-4">
+                        <h4 className="font-medium mb-2">Available platforms ({formatInfo.platforms.length} units):</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-1 text-sm text-muted-foreground">
+                          {formatInfo.platforms.map((platform, i) => (
+                            <div key={i} className="flex items-center">
+                              <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full mr-2" />
+                              {platform}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div>
                       <h4 className="font-medium mb-2">Why this works for you:</h4>
                       <ul className="space-y-1">
