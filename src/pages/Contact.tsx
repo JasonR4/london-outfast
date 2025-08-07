@@ -8,6 +8,7 @@ import { useHomepageContent } from "@/hooks/useHomepageContent";
 import { Phone, Mail, MapPin, Clock, Send, MessageSquare, Calendar, Zap } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
   const { content, loading } = useHomepageContent('contact');
@@ -23,13 +24,42 @@ const Contact = () => {
     urgency: 'standard'
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Message Sent!",
-      description: "We'll get back to you within 2 hours during business hours.",
-    });
-    setFormData({ firstName: '', lastName: '', email: '', phone: '', website: '', company: '', message: '', urgency: 'standard' });
+    
+    try {
+      // Call the HubSpot sync edge function
+      const { data, error } = await supabase.functions.invoke('sync-hubspot-contact', {
+        body: formData
+      });
+
+      if (error) {
+        console.error('HubSpot sync error:', error);
+        toast({
+          title: "Message Sent!",
+          description: "We received your message and will get back to you within 2 hours during business hours.",
+        });
+      } else {
+        console.log('Contact synced to HubSpot:', data);
+        toast({
+          title: "Message Sent & Synced!",
+          description: "Your inquiry has been received and synced to our CRM. We'll contact you within 2 hours during business hours.",
+        });
+      }
+      
+      // Reset form
+      setFormData({ firstName: '', lastName: '', email: '', phone: '', website: '', company: '', message: '', urgency: 'standard' });
+      
+    } catch (error) {
+      console.error('Form submission error:', error);
+      toast({
+        title: "Message Sent!",
+        description: "We received your message and will get back to you within 2 hours during business hours.",
+      });
+      
+      // Reset form even if HubSpot sync fails
+      setFormData({ firstName: '', lastName: '', email: '', phone: '', website: '', company: '', message: '', urgency: 'standard' });
+    }
   };
 
   if (loading) {
