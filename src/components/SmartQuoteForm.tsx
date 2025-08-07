@@ -588,7 +588,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                     />
                   </div>
 
-                   {/* Format Categories - Collapsible */}
+                   {/* Old grouped list disabled */}{false && (/* Format Categories - Collapsible */}
                    <div className="space-y-4">
                      {Object.entries(formatsByCategory).map(([category, formats]) => (
                        <Collapsible
