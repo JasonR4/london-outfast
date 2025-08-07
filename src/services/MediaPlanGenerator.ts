@@ -337,7 +337,7 @@ export class MediaPlanGenerator {
     const areas = selectedAreas.length > 0 ? selectedAreas.slice(0, 3) : ['Central London'];
     
     const baseCost = budget * 0.7;
-    const productionCost = budget * 0.15;
+    const productionCost = 0; // No fallback production cost
     const creativeCost = budget * 0.15;
     const totalCost = baseCost + productionCost + creativeCost;
 
@@ -377,10 +377,10 @@ export class MediaPlanGenerator {
         return Math.min(cost, maxBudget);
       }
 
-      return maxBudget; // Fallback to max budget if no tiers found
+      return 0; // No production cost if no tiers found
     } catch (error) {
       console.error('Error calculating production cost:', error);
-      return maxBudget;
+      return 0; // No production cost on error
     }
   }
 
