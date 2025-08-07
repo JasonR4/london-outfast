@@ -123,18 +123,36 @@ export const MediaPlanModal = ({
                       </div>
                     )}
                     
-                    <div className="flex justify-between font-medium pt-2 border-t border-border/50">
-                      <span>Subtotal (exc VAT):</span>
-                      <span>£{mediaPlan.totalBudget.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">VAT (20%):</span>
-                      <span>£{(mediaPlan.totalBudget * 0.2).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between text-lg font-bold text-primary pt-2 border-t border-border/50">
-                      <span>Total inc VAT:</span>
-                      <span>£{(mediaPlan.totalBudget * 1.2).toLocaleString()}</span>
-                    </div>
+                    {(() => {
+                      // Calculate actual subtotal from the real costs
+                      const actualCosts = mediaPlan.items.reduce((acc, item) => {
+                        acc.mediaCosts += item.baseCost;
+                        acc.productionCosts += item.productionCost;
+                        acc.creativeCosts += item.creativeCost;
+                        return acc;
+                      }, { mediaCosts: 0, productionCosts: 0, creativeCosts: 0 });
+                      
+                      const actualSubtotal = actualCosts.mediaCosts + actualCosts.productionCosts + actualCosts.creativeCosts;
+                      const vatAmount = actualSubtotal * 0.2;
+                      const totalIncVat = actualSubtotal + vatAmount;
+                      
+                      return (
+                        <>
+                          <div className="flex justify-between font-medium pt-2 border-t border-border/50">
+                            <span>Subtotal (exc VAT):</span>
+                            <span>£{actualSubtotal.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">VAT (20%):</span>
+                            <span>£{vatAmount.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-lg font-bold text-primary pt-2 border-t border-border/50">
+                            <span>Total inc VAT:</span>
+                            <span>£{totalIncVat.toLocaleString()}</span>
+                          </div>
+                        </>
+                      );
+                    })()}
                     
                     {/* Show savings message */}
                     {mediaPlan.items.some(item => item.recommendedQuantity >= 5) && (
