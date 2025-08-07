@@ -1018,10 +1018,6 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                       <span>Sale Rate (per unit, per period):</span>
                                       <span>£{rateCards[0]?.sale_price?.toLocaleString() || '800'}</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-green-600">
-                                      <span>Subtotal ({totalQuantity} units × {selectedPeriods.length} periods):</span>
-                                      <span>£{(totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)).toLocaleString()}</span>
-                                    </div>
                                   </>
                                 )}
                                 
