@@ -588,68 +588,47 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                     />
                   </div>
 
-                   {/* Old grouped list disabled */}{false && (/* Format Categories - Collapsible */}
-                   <div className="space-y-4">
-                     {Object.entries(formatsByCategory).map(([category, formats]) => (
-                       <Collapsible
-                         key={category}
-                         open={openCategories[category]}
-                         onOpenChange={() => toggleCategory(category)}
+                   {/* Format List - Flat */}
+                   <div className="space-y-3">
+                     {filteredFormats.length === 0 && (
+                       <Card>
+                         <CardContent className="p-4 text-sm text-muted-foreground">
+                           No formats match your search.
+                         </CardContent>
+                       </Card>
+                     )}
+
+                     {filteredFormats.map((format) => (
+                       <Card
+                         key={format.id}
+                         className={`cursor-pointer transition-all hover:shadow-md ${
+                           selectedFormats.some((f) => f.id === format.id)
+                             ? 'ring-2 ring-primary bg-primary/5'
+                             : ''
+                         }`}
+                         onClick={() => handleFormatToggle(format)}
                        >
-                         <CollapsibleTrigger className="w-full">
-                           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-                             <div className="flex items-center gap-3">
-                               <h3 className="text-lg font-semibold text-foreground">
-                                 {category}
-                               </h3>
-                               <Badge variant="secondary" className="text-xs">
-                                 {formats.length} format{formats.length > 1 ? 's' : ''}
-                               </Badge>
-                               {selectedFormats.some(selected => formats.some(f => f.id === selected.id)) && (
-                                 <Badge variant="default" className="text-xs bg-primary">
-                                   {selectedFormats.filter(selected => formats.some(f => f.id === selected.id)).length} selected
-                                 </Badge>
+                         <CardContent className="p-4">
+                           <div className="flex items-start justify-between">
+                             <div className="space-y-1">
+                               <h4 className="font-medium text-foreground">{format.format_name}</h4>
+                               {format.description && (
+                                 <p className="text-sm text-muted-foreground line-clamp-2">
+                                   {format.description}
+                                 </p>
                                )}
+                               <div className="flex items-center gap-2 text-xs">
+                                 {format.dimensions && (
+                                   <Badge variant="outline">{format.dimensions}</Badge>
+                                 )}
+                               </div>
                              </div>
-                             <ChevronDown 
-                               className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${
-                                 openCategories[category] ? 'rotate-180' : ''
-                               }`} 
-                             />
+                             {selectedFormats.some((f) => f.id === format.id) && (
+                               <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                             )}
                            </div>
-                         </CollapsibleTrigger>
-                         <CollapsibleContent className="pt-3 pb-1">
-                           <div className="grid gap-3 pl-4">
-                             {formats.map((format) => (
-                               <Card
-                                 key={format.id}
-                                 className={`cursor-pointer transition-all hover:shadow-md ${
-                                   selectedFormats.some(f => f.id === format.id) ? 'ring-2 ring-primary bg-primary/5' : ''
-                                 }`}
-                                 onClick={() => handleFormatToggle(format)}
-                               >
-                                 <CardContent className="p-4">
-                                   <div className="flex items-start justify-between">
-                                     <div className="space-y-1">
-                                       <h4 className="font-medium text-foreground">{format.format_name}</h4>
-                                       <p className="text-sm text-muted-foreground line-clamp-2">
-                                         {format.description}
-                                       </p>
-                                       <div className="flex items-center gap-2 text-xs">
-                                         <Badge variant="outline">{format.type}</Badge>
-                                         <Badge variant="secondary">{format.priceRange}</Badge>
-                                       </div>
-                                     </div>
-                                     {selectedFormats.some(f => f.id === format.id) && (
-                                       <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                                     )}
-                                   </div>
-                                 </CardContent>
-                               </Card>
-                             ))}
-                           </div>
-                         </CollapsibleContent>
-                       </Collapsible>
+                         </CardContent>
+                       </Card>
                      ))}
                    </div>
 
