@@ -203,7 +203,8 @@ export function RateCardManager() {
       setInchargePeriods(periodsRes.data || []);
       setRateCardPeriods(rateCardPeriodsRes.data || []);
       
-      console.log('All data loaded successfully');
+      console.log('Rate card periods data:', rateCardPeriodsRes.data);
+      console.log('Sample rate card period:', rateCardPeriodsRes.data?.[0]);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load rate card data');
@@ -1895,6 +1896,9 @@ export function RateCardManager() {
                                   .filter(rcp => rcp.rate_card_id === rate.id && rcp.is_enabled)
                                   .map(rcp => rcp.incharge_periods)
                                   .filter(Boolean);
+                                
+                                console.log('Rate card ID:', rate.id, 'Filtered periods:', ratePeriods);
+                                console.log('All rate card periods:', rateCardPeriods.filter(rcp => rcp.rate_card_id === rate.id));
                                 
                                 if (ratePeriods.length > 0) {
                                   return (
