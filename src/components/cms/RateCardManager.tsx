@@ -1146,7 +1146,7 @@ export function RateCardManager() {
                         className="flex items-center gap-2"
                       >
                         <Upload className="w-4 h-4" />
-                        {isAnalyzing ? 'Analyzing...' : `Analyze ${bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1)} File`}
+                        {isAnalyzing ? 'Analyzing...' : `Analyze ${bulkUploadType.charAt(0).toUpperCase() + bulkUploadType.slice(1).replace('-', ' ')} File`}
                       </Button>
                     )}
                   </div>
