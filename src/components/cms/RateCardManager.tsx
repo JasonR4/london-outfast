@@ -176,7 +176,15 @@ export function RateCardManager() {
         supabase.from('production_cost_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('creative_design_cost_tiers').select('*, media_formats(format_name)').order('min_quantity'),
         supabase.from('incharge_periods').select('*').order('period_number'),
-        supabase.from('rate_card_periods').select('*, incharge_periods(*)')
+        supabase.from('rate_card_periods').select(`
+          *,
+          incharge_periods (
+            id,
+            period_number,
+            start_date,
+            end_date
+          )
+        `).eq('is_enabled', true)
       ]);
 
       if (ratesRes.error) throw ratesRes.error;
