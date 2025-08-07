@@ -18,6 +18,7 @@ import { londonAreas } from '@/data/londonAreas';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import * as XLSX from 'xlsx';
+import { MediaFormatCategoryManager } from './MediaFormatCategoryManager';
 
 interface MediaFormat {
   id: string;
@@ -1093,8 +1094,9 @@ export function RateCardManager() {
           <CardTitle>Rate Card Management</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="rates" className="w-full">
+          <Tabs defaultValue="formats-categories" className="w-full">
             <TabsList>
+              <TabsTrigger value="formats-categories">Media Formats & Categories</TabsTrigger>
               <TabsTrigger value="rates">Rate Cards</TabsTrigger>
               <TabsTrigger value="periods">In-Charge Periods</TabsTrigger>
               <TabsTrigger value="period-associations">Period Associations</TabsTrigger>
@@ -1104,6 +1106,10 @@ export function RateCardManager() {
               <TabsTrigger value="production">Production Costs</TabsTrigger>
               <TabsTrigger value="creative">Creative Design</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="formats-categories" className="space-y-6">
+              <MediaFormatCategoryManager />
+            </TabsContent>
 
             <TabsContent value="bulk-upload" className="space-y-6">
               <Card>
