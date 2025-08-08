@@ -367,7 +367,7 @@ export function RateCardManager() {
           .from('rate_cards')
           .insert(rateData)
           .select()
-          .single();
+          .maybeSingle();
         if (error) throw error;
         rateCardId = data.id;
       }

@@ -189,7 +189,7 @@ export const BlogManager = () => {
           caption: ''
         }])
         .select()
-        .single();
+        .maybeSingle();
 
       if (mediaError) throw mediaError;
 
@@ -265,7 +265,7 @@ export const BlogManager = () => {
           published_at: newPost.status === 'published' ? new Date().toISOString() : null
         }])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -329,7 +329,7 @@ export const BlogManager = () => {
         })
         .eq('id', post.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -401,7 +401,7 @@ export const BlogManager = () => {
         .from('blog_categories')
         .insert([newCategory])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

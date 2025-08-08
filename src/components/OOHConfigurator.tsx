@@ -1183,7 +1183,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                         .from('quote_items')
                         .insert(quoteItemData)
                         .select()
-                        .single();
+                        .maybeSingle();
                         
                       if (insertError) {
                         console.error('Insert error:', insertError);

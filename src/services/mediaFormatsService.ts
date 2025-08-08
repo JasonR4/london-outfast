@@ -227,7 +227,7 @@ class MediaFormatsService {
         .from('media_formats')
         .insert([formatData])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

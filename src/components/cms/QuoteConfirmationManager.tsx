@@ -64,7 +64,7 @@ export function QuoteConfirmationManager() {
         `)
         .eq('id', searchQuoteId.trim())
         .eq('status', 'submitted')
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === 'PGRST116') {

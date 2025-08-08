@@ -93,7 +93,7 @@ export const manualHubSpotSync = async (quoteId: string): Promise<boolean> => {
         quote_items (*)
       `)
       .eq('id', quoteId)
-      .single();
+      .maybeSingle();
 
     if (quoteError || !quote) {
       console.error('Error fetching quote:', quoteError);
