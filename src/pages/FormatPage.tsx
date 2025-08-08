@@ -27,7 +27,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Search, X } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Search, X, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -35,6 +36,22 @@ const FormatPage = () => {
   const { formatSlug } = useParams();
   const { getFormatBySlug, loading: formatsLoading, mediaFormats } = useMediaFormats();
   const navigate = useNavigate();
+
+  // Helper functions for period calculations
+  const arePeriodsConsecutive = (periods: number[]): boolean => {
+    if (periods.length <= 1) return true;
+    const sortedPeriods = [...periods].sort((a, b) => a - b);
+    for (let i = 1; i < sortedPeriods.length; i++) {
+      if (sortedPeriods[i] - sortedPeriods[i - 1] !== 1) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const calculateNonConsecutiveSurcharge = (baseTotal: number): number => {
+    return baseTotal * 0.15; // 15% surcharge
+  };
   const [format, setFormat] = useState<any>(null);
   const [cmsContent, setCmsContent] = useState<any>(null);
   const [seoData, setSeoData] = useState<any>(null);
@@ -381,9 +398,18 @@ const FormatPage = () => {
       return;
     }
 
-    const campaignTotal = priceCalculation.totalPrice * quantity;
+    let campaignTotal = priceCalculation.totalPrice * quantity;
     const originalCampaignTotal = priceCalculation.basePrice * priceCalculation.periodsCount * quantity;
-    const discountAmount = (originalCampaignTotal - campaignTotal);
+    let discountAmount = (originalCampaignTotal - campaignTotal);
+    
+    // Apply non-consecutive surcharge if applicable
+    const isConsecutive = arePeriodsConsecutive(selectedPeriods);
+    let nonConsecutiveSurcharge = 0;
+    if (!isConsecutive && selectedPeriods.length > 1) {
+      nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(campaignTotal);
+      campaignTotal += nonConsecutiveSurcharge;
+    }
+    
     const productionCostCalc = calculateProductionCost(quantity, selectedPeriods.length, format.category);
     const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
     const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
@@ -405,7 +431,9 @@ const FormatPage = () => {
       original_cost: originalCampaignTotal || campaignTotal,
       campaign_start_date: campaignStartDate,
       campaign_end_date: campaignEndDate,
-      creative_needs: needsCreative ? `${creativeAssets} creative asset${creativeAssets > 1 ? 's' : ''} needed` : 'Client has artwork ready'
+      creative_needs: needsCreative ? `${creativeAssets} creative asset${creativeAssets > 1 ? 's' : ''} needed` : 'Client has artwork ready',
+      non_consecutive_surcharge: nonConsecutiveSurcharge,
+      is_consecutive: isConsecutive
     };
 
     const success = await addQuoteItem(quoteItem);
@@ -749,6 +777,35 @@ const FormatPage = () => {
                         <p className="text-sm text-muted-foreground mt-2">
                           Selected {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''}
                         </p>
+
+                        {/* Non-consecutive period warning */}
+                        {selectedPeriods.length > 1 && !arePeriodsConsecutive(selectedPeriods) && (
+                          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                            <div className="flex items-start gap-2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Info className="h-4 w-4 text-amber-600 mt-0.5 cursor-help" />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="max-w-xs">
+                                      Non-consecutive periods require additional planning and coordination, 
+                                      resulting in a 15% surcharge on the base campaign cost.
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              <div className="flex-1">
+                                <h4 className="text-sm font-medium text-amber-800">
+                                  Non-consecutive Period Selection
+                                </h4>
+                                <p className="text-xs text-amber-700 mt-1">
+                                  A 15% surcharge applies to non-consecutive period bookings.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
