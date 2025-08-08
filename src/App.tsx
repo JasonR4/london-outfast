@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { MediaFormatsProvider } from "@/components/providers/MediaFormatsProvider";
+
 import Navigation from "@/components/Navigation";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import Footer from "@/components/Footer";
@@ -140,7 +140,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <MediaFormatsProvider>
+        
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -185,7 +185,7 @@ const App = () => {
             <Footer />
           </div>
         </BrowserRouter>
-        </MediaFormatsProvider>
+        
       </TooltipProvider>
     </QueryClientProvider>
   );
