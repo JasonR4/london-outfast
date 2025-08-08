@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { User, Session } from '@supabase/supabase-js';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ContentEditor } from '@/components/cms/ContentEditor';
 import { MediaLibrary } from '@/components/cms/MediaLibrary';
@@ -18,14 +17,17 @@ import HomepageContentManager from '@/components/cms/HomepageContentManager';
 import { RateCardManager } from '@/components/cms/RateCardManager';
 import { QuoteManager } from '@/components/cms/QuoteManager';
 import { AnalyticsManager } from '@/components/cms/AnalyticsManager';
-import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator, ClipboardList, BarChart3, BookOpen } from 'lucide-react';
+import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator, ClipboardList, BarChart3, BookOpen, Menu } from 'lucide-react';
 import { BlogManager } from '@/components/cms/BlogManager';
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 
 const CMS = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [activeSection, setActiveSection] = useState('quotes');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -169,208 +171,207 @@ const CMS = () => {
     );
   }
 
+  const menuItems = [
+    { id: 'quotes', label: 'Quotes', icon: ClipboardList },
+    { id: 'homepage', label: 'Homepage', icon: Home },
+    { id: 'content', label: 'Content', icon: FileText },
+    { id: 'industries', label: 'Industries', icon: Building },
+    { id: 'legal', label: 'Legal', icon: Scale },
+    { id: 'media', label: 'Media', icon: Image },
+    { id: 'pages', label: 'Pages', icon: Settings },
+    { id: 'rates', label: 'Rates', icon: Calculator },
+    { id: 'blog', label: 'Blog', icon: BookOpen },
+    { id: 'seo', label: 'SEO', icon: Search },
+    { id: 'global', label: 'Global', icon: Globe },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'team', label: 'Team', icon: Users },
+  ];
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'quotes':
+        return <QuoteManager />;
+      case 'homepage':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Homepage Content Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <HomepageContentManager />
+            </CardContent>
+          </Card>
+        );
+      case 'content':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Content Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ContentEditor />
+            </CardContent>
+          </Card>
+        );
+      case 'industries':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Industry Content Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <IndustryContentManager />
+            </CardContent>
+          </Card>
+        );
+      case 'legal':
+        return <LegalPagesEditor />;
+      case 'media':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Media Library</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <MediaLibrary />
+            </CardContent>
+          </Card>
+        );
+      case 'pages':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Page Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PageManager />
+            </CardContent>
+          </Card>
+        );
+      case 'rates':
+        return <RateCardManager />;
+      case 'blog':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Blog Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BlogManager />
+            </CardContent>
+          </Card>
+        );
+      case 'seo':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>SEO Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SEOManager />
+            </CardContent>
+          </Card>
+        );
+      case 'global':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Global Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GlobalSettings />
+            </CardContent>
+          </Card>
+        );
+      case 'analytics':
+        return <AnalyticsManager />;
+      case 'team':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Team Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TeamManager userProfile={userProfile} />
+            </CardContent>
+          </Card>
+        );
+      default:
+        return <QuoteManager />;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/')}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Site
-            </Button>
-            <h1 className="text-2xl font-bold">Media Buying London CMS</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
-              Welcome, {userProfile?.full_name || user.email}
-            </span>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <Sidebar className="border-r">
+          <SidebarContent>
+            <div className="p-4 border-b">
+              <div className="flex items-center gap-2 mb-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/')}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Site
+                </Button>
+              </div>
+              <h1 className="text-lg font-bold text-foreground">MBL CMS</h1>
+            </div>
+            
+            <SidebarGroup>
+              <SidebarGroupLabel>Management</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {menuItems.map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        onClick={() => setActiveSection(item.id)}
+                        className={cn(
+                          "w-full justify-start",
+                          activeSection === item.id && "bg-accent text-accent-foreground"
+                        )}
+                      >
+                        <item.icon className="w-4 h-4 mr-2" />
+                        {item.label}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+
+        <div className="flex-1 flex flex-col">
+          <header className="border-b bg-card">
+            <div className="flex items-center justify-between px-6 py-4">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <h2 className="text-xl font-semibold">
+                  {menuItems.find(item => item.id === activeSection)?.label || 'Dashboard'}
+                </h2>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-muted-foreground">
+                  Welcome, {userProfile?.full_name || user.email}
+                </span>
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 p-6 overflow-auto">
+            {renderContent()}
+          </main>
         </div>
-      </header>
-
-      <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="quotes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-13">
-            <TabsTrigger value="quotes" className="flex items-center gap-2">
-              <ClipboardList className="w-4 h-4" />
-              Quotes
-            </TabsTrigger>
-            <TabsTrigger value="homepage" className="flex items-center gap-2">
-              <Home className="w-4 h-4" />
-              Homepage
-            </TabsTrigger>
-            <TabsTrigger value="content" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Content
-            </TabsTrigger>
-            <TabsTrigger value="industries" className="flex items-center gap-2">
-              <Building className="w-4 h-4" />
-              Industries
-            </TabsTrigger>
-            <TabsTrigger value="legal" className="flex items-center gap-2">
-              <Scale className="w-4 h-4" />
-              Legal
-            </TabsTrigger>
-            <TabsTrigger value="media" className="flex items-center gap-2">
-              <Image className="w-4 h-4" />
-              Media
-            </TabsTrigger>
-            <TabsTrigger value="pages" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              Pages
-            </TabsTrigger>
-            <TabsTrigger value="rates" className="flex items-center gap-2">
-              <Calculator className="w-4 h-4" />
-              Rates
-            </TabsTrigger>
-            <TabsTrigger value="seo" className="flex items-center gap-2">
-              <Search className="w-4 h-4" />
-              SEO
-            </TabsTrigger>
-            <TabsTrigger value="global" className="flex items-center gap-2">
-              <Globe className="w-4 h-4" />
-              Global
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="team" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Team
-            </TabsTrigger>
-            <TabsTrigger value="blog" className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              Blog
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="quotes">
-            <QuoteManager />
-          </TabsContent>
-
-          <TabsContent value="homepage">
-            <Card>
-              <CardHeader>
-                <CardTitle>Homepage Content Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <HomepageContentManager />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="content">
-            <Card>
-              <CardHeader>
-                <CardTitle>Content Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ContentEditor />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="industries">
-            <Card>
-              <CardHeader>
-                <CardTitle>Industry Content Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <IndustryContentManager />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="legal">
-            <LegalPagesEditor />
-          </TabsContent>
-
-          <TabsContent value="media">
-            <Card>
-              <CardHeader>
-                <CardTitle>Media Library</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <MediaLibrary />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="pages">
-            <Card>
-              <CardHeader>
-                <CardTitle>Page Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PageManager />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="rates">
-            <RateCardManager />
-          </TabsContent>
-
-          <TabsContent value="blog">
-            <Card>
-              <CardHeader>
-                <CardTitle>Blog Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <BlogManager />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="seo">
-            <Card>
-              <CardHeader>
-                <CardTitle>SEO Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SEOManager />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="global">
-            <Card>
-              <CardHeader>
-                <CardTitle>Global Settings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <GlobalSettings />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <AnalyticsManager />
-          </TabsContent>
-
-          <TabsContent value="team">
-            <Card>
-              <CardHeader>
-                <CardTitle>Team Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TeamManager userProfile={userProfile} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
