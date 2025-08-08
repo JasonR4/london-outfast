@@ -16,7 +16,7 @@ const syncSarahJonesQuote = async () => {
   return success;
 };
 
-// Auto-execute on import (for immediate sync)
-syncSarahJonesQuote();
+// Auto-execute on import (for immediate sync) - DISABLED to prevent app crashes
+// syncSarahJonesQuote();
 
 export { syncSarahJonesQuote };
