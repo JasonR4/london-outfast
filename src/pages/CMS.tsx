@@ -51,9 +51,9 @@ const CMS = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
 
       if (!session) {
+        setLoading(false);
         navigate('/auth');
       } else {
         fetchUserProfile(session.user.id);
@@ -64,9 +64,6 @@ const CMS = () => {
   }, [navigate]);
 
   const fetchUserProfile = async (userId: string) => {
-    // Prevent duplicate profile fetches
-    if (userProfile) return;
-    
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -81,6 +78,8 @@ const CMS = () => {
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
+    } finally {
+      setLoading(false); // Set loading to false after profile fetch completes
     }
   };
 
