@@ -30,8 +30,11 @@ export const useHomepageContent = (sectionKey: string) => {
           } else {
             throw error;
           }
-        } else {
+        } else if (data) {
           setContent(data.content);
+        } else {
+          // Handle null data case
+          setContent({});
         }
       } catch (err) {
         console.error(`Error fetching ${sectionKey} content:`, err);
