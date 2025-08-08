@@ -57,7 +57,9 @@ const BlogPost: React.FC = () => {
         </header>
 
         <section className="max-w-3xl mx-auto px-4 py-10 prose prose-invert max-w-none">
-          {post.body_html ? (
+          {post.content?.text ? (
+            <div dangerouslySetInnerHTML={{ __html: post.content.text }} />
+          ) : post.body_html ? (
             <div dangerouslySetInnerHTML={{ __html: post.body_html }} />
           ) : (
             <p className="text-muted-foreground">No content available.</p>

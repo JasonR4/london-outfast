@@ -69,7 +69,8 @@ export const BlogManager = () => {
     status: 'draft',
     meta_title: '',
     meta_description: '',
-    cover_image_url: ''
+    cover_image_url: '',
+    categories: [] as Array<{ id: string; name: string }>
   });
   const [newCategory, setNewCategory] = useState({
     name: '',
@@ -257,7 +258,8 @@ export const BlogManager = () => {
         status: 'draft',
         meta_title: '',
         meta_description: '',
-        cover_image_url: ''
+        cover_image_url: '',
+        categories: []
       });
 
       toast({
@@ -537,7 +539,62 @@ export const BlogManager = () => {
                   rows={3}
                 />
               </div>
-
+              
+              <div>
+                <Label htmlFor="categories">Categories</Label>
+                <Select onValueChange={(value) => {
+                  if (!newPost.categories) {
+                    setNewPost({ ...newPost, categories: [{ id: value, name: categories.find(c => c.id === value)?.name || '' }] });
+                  } else {
+                    const exists = newPost.categories.find(c => c.id === value);
+                    if (!exists) {
+                      setNewPost({ 
+                        ...newPost, 
+                        categories: [...newPost.categories, { id: value, name: categories.find(c => c.id === value)?.name || '' }] 
+                      });
+                    }
+                  }
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select categories" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border">
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {newPost.categories && newPost.categories.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {newPost.categories.map((category) => (
+                      <Badge 
+                        key={category.id} 
+                        variant="secondary" 
+                        className="flex items-center gap-1"
+                      >
+                        {category.name}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewPost({
+                              ...newPost,
+                              categories: newPost.categories?.filter(c => c.id !== category.id)
+                            });
+                          }}
+                          className="ml-1 hover:text-destructive"
+                        >
+                          ×
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  Select categories for your blog post
+                </p>
+              </div>
               <div>
                 <Label htmlFor="content">Main Content</Label>
                 <Tabs defaultValue="editor" className="mt-2">
