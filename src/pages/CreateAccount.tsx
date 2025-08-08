@@ -29,34 +29,93 @@ export default function CreateAccount() {
   useEffect(() => {
     document.title = 'Secure Your Quote - Set Your Password - Media Buying London';
     
-    // Check if we have quote data to pre-populate
-    const submittedQuoteData = localStorage.getItem('submitted_quote_data');
-    const submittedQuoteDetails = localStorage.getItem('submitted_quote_details');
-    
-    if (submittedQuoteData) {
-      try {
-        const quoteData = JSON.parse(submittedQuoteData);
-        const nameParts = quoteData.contact_name?.split(' ') || [];
-        
-        setFormData(prev => ({
-          ...prev,
-          email: quoteData.contact_email || '',
-          firstName: nameParts[0] || '',
-          lastName: nameParts.slice(1).join(' ') || '',
-          company: quoteData.contact_company || ''
-        }));
-        setHasQuoteData(true);
+    const fetchQuoteData = async () => {
+      // First check if we have quote data in localStorage
+      const submittedQuoteData = localStorage.getItem('submitted_quote_data');
+      const submittedQuoteDetails = localStorage.getItem('submitted_quote_details');
+      
+      if (submittedQuoteData) {
+        try {
+          const quoteData = JSON.parse(submittedQuoteData);
+          const nameParts = quoteData.contact_name?.split(' ') || [];
+          
+          setFormData(prev => ({
+            ...prev,
+            email: quoteData.contact_email || '',
+            firstName: nameParts[0] || '',
+            lastName: nameParts.slice(1).join(' ') || '',
+            company: quoteData.contact_company || ''
+          }));
+          setHasQuoteData(true);
 
-        // Also load quote details if available
-        if (submittedQuoteDetails) {
-          const details = JSON.parse(submittedQuoteDetails);
-          setQuoteDetails(details);
+          // Also load quote details if available
+          if (submittedQuoteDetails) {
+            const details = JSON.parse(submittedQuoteDetails);
+            setQuoteDetails(details);
+          }
+        } catch (error) {
+          console.error('Error parsing quote data:', error);
         }
-      } catch (error) {
-        console.error('Error parsing quote data:', error);
       }
-    }
-  }, []);
+      
+      // If we have a quoteId parameter, fetch the quote from database
+      if (quoteId) {
+        console.log('🔍 Fetching quote for session ID:', quoteId);
+        try {
+          const { data: quote, error } = await supabase
+            .from('quotes')
+            .select(`
+              *,
+              quote_items (
+                id,
+                format_name,
+                format_slug,
+                quantity,
+                selected_areas,
+                selected_periods,
+                base_cost,
+                production_cost,
+                creative_cost,
+                total_cost,
+                subtotal,
+                vat_amount,
+                total_inc_vat
+              )
+            `)
+            .eq('user_session_id', quoteId)
+            .eq('status', 'submitted')
+            .single();
+
+          if (error) {
+            console.error('Error fetching quote:', error);
+            return;
+          }
+
+          if (quote) {
+            console.log('✅ Found quote:', quote);
+            
+            // Pre-populate form with quote contact details
+            const nameParts = quote.contact_name?.split(' ') || [];
+            setFormData(prev => ({
+              ...prev,
+              email: quote.contact_email || '',
+              firstName: nameParts[0] || '',
+              lastName: nameParts.slice(1).join(' ') || '',
+              company: quote.contact_company || ''
+            }));
+            
+            // Set quote details for display
+            setQuoteDetails(quote);
+            setHasQuoteData(true);
+          }
+        } catch (error) {
+          console.error('Error fetching quote data:', error);
+        }
+      }
+    };
+    
+    fetchQuoteData();
+  }, [quoteId]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
