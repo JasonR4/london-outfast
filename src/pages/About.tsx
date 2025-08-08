@@ -30,11 +30,12 @@ const About = () => {
         .select('*')
         .eq('slug', 'about')
         .eq('status', 'published')
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching about page:', error);
       } else {
+        console.log('About page data fetched:', data);
         setPageData(data);
       }
     } catch (error) {
@@ -112,9 +113,9 @@ const About = () => {
         <div className="max-w-6xl mx-auto space-y-20">
           {content.sections?.map((section: any, index: number) => (
             <div key={section.id || index}>
-              {section.type === 'text_with_media' && (
+              {(section.type === 'text_with_media' || section.type === 'text') && (
                 <div className={`${
-                  section.layout === 'text_only' ? 'text-center max-w-4xl mx-auto' : 
+                  section.layout === 'text_only' || !section.layout ? 'text-center max-w-4xl mx-auto' : 
                   `grid md:grid-cols-2 gap-12 items-center ${
                     section.layout === 'media_left_text_right' ? 'md:grid-cols-2' : ''
                   }`
@@ -143,7 +144,7 @@ const About = () => {
                       </div>
                     )}
                   </div>
-                  {section.layout !== 'text_only' && (
+                  {(section.layout !== 'text_only' && section.layout && section.media_url) && (
                     <div className={section.layout === 'media_left_text_right' ? 'md:order-1' : ''}>
                       <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
                         {section.media_url ? (
