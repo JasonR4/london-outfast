@@ -23,20 +23,20 @@ const BlogPost: React.FC = () => {
     <main>
       <article>
         <header className="border-b border-border">
-          <div className="max-w-3xl mx-auto px-4 py-10">
-            <nav className="text-sm text-muted-foreground mb-4">
+          <div className="max-w-4xl mx-auto px-4 py-8">
+            <nav className="text-sm text-muted-foreground mb-6">
               <Link to="/blog" className="hover:underline">Blog</Link>
               <span className="mx-2">/</span>
               <span className="text-foreground">{post.title}</span>
             </nav>
-            <h1 className="text-3xl md:text-4xl font-bold">{post.title}</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">{post.title}</h1>
             {post.published_at && (
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-sm text-muted-foreground mb-6">
                 Published {new Date(post.published_at).toLocaleDateString()}
               </p>
             )}
             {(post.blog_post_categories?.length > 0 || post.blog_post_media_formats?.length > 0) && (
-              <div className="flex flex-wrap gap-2 mt-4">
+              <div className="flex flex-wrap gap-2 mb-8">
                 {(post.blog_post_categories || []).map((c: any) => (
                   <Badge key={c.category_id} variant="secondary">{c.blog_categories?.name}</Badge>
                 ))}
@@ -50,13 +50,13 @@ const BlogPost: React.FC = () => {
             <img
               src={post.cover_image_url}
               alt={post.meta_title || post.title}
-              className="w-full max-h-[480px] object-cover"
+              className="w-full max-h-[500px] object-cover"
               loading="lazy"
             />
           )}
         </header>
 
-        <section className="max-w-4xl mx-auto px-4 py-10">
+        <section className="max-w-4xl mx-auto px-4 py-12">
           <div className="prose prose-lg prose-invert max-w-none blog-content">
             {post.content?.text ? (
               <div dangerouslySetInnerHTML={{ __html: post.content.text }} />
@@ -70,7 +70,7 @@ const BlogPost: React.FC = () => {
 
         {post.blog_media_assets?.length > 0 && (
           <section className="max-w-5xl mx-auto px-4 pb-16">
-            <h2 className="text-xl font-semibold mb-4">Media Gallery</h2>
+            <h2 className="text-2xl font-semibold mb-6">Media Gallery</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {post.blog_media_assets
                 .sort((a: any, b: any) => a.order_index - b.order_index)
