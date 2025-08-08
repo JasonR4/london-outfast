@@ -56,14 +56,16 @@ const BlogPost: React.FC = () => {
           )}
         </header>
 
-        <section className="max-w-3xl mx-auto px-4 py-10 prose prose-invert max-w-none">
-          {post.content?.text ? (
-            <div dangerouslySetInnerHTML={{ __html: post.content.text }} />
-          ) : post.body_html ? (
-            <div dangerouslySetInnerHTML={{ __html: post.body_html }} />
-          ) : (
-            <p className="text-muted-foreground">No content available.</p>
-          )}
+        <section className="max-w-4xl mx-auto px-4 py-10">
+          <div className="prose prose-lg prose-invert max-w-none blog-content">
+            {post.content?.text ? (
+              <div dangerouslySetInnerHTML={{ __html: post.content.text }} />
+            ) : post.body_html ? (
+              <div dangerouslySetInnerHTML={{ __html: post.body_html }} />
+            ) : (
+              <p className="text-muted-foreground">No content available.</p>
+            )}
+          </div>
         </section>
 
         {post.blog_media_assets?.length > 0 && (
