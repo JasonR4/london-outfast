@@ -133,7 +133,7 @@ class MediaFormatsService {
         // Continue with empty categories instead of failing
       }
 
-      // Combine formats with their categories
+      // Combine formats with their categories - handle empty categories gracefully
       const formatsWithCategories: MediaFormat[] = (formatsData || []).map(format => {
         const formatCategories = categoriesData?.filter(cat => cat.media_format_id === format.id) || [];
         
@@ -154,7 +154,7 @@ class MediaFormatsService {
         };
       });
 
-      console.log('✅ MediaFormatsService: Returning', formatsWithCategories.length, 'formats with categories');
+      console.log('✅ MediaFormatsService: Successfully processed', formatsWithCategories.length, 'formats');
       return formatsWithCategories;
     } catch (error) {
       console.error('❌ MediaFormatsService: Error in fetchFormats:', error);
