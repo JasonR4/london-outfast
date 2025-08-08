@@ -592,7 +592,19 @@ export const BlogManager = () => {
                   {newPost.cover_image_url && (
                     <div className="mt-2">
                       <img 
-                        src={newPost.cover_image_url} 
+                        src={(() => {
+                          if (newPost.cover_image_url.startsWith('http')) {
+                            return newPost.cover_image_url;
+                          }
+                          // Extract bucket and file path from storage_path
+                          const pathParts = newPost.cover_image_url.split('/');
+                          if (pathParts.length >= 2) {
+                            const bucket = pathParts[0];
+                            const filePath = pathParts.slice(1).join('/');
+                            return supabase.storage.from(bucket).getPublicUrl(filePath).data.publicUrl;
+                          }
+                          return newPost.cover_image_url;
+                        })()} 
                         alt="Cover preview" 
                         className="w-32 h-20 object-cover rounded border"
                         onError={(e) => {
@@ -762,10 +774,23 @@ export const BlogManager = () => {
                                       <ImageIcon className="w-4 h-4" />
                                     </Button>
                                   </div>
-                                  {(editingPost?.cover_image_url || post.cover_image_url) && (
+                                   {(editingPost?.cover_image_url || post.cover_image_url) && (
                                     <div className="mt-2">
                                       <img 
-                                        src={editingPost?.cover_image_url || post.cover_image_url} 
+                                        src={(() => {
+                                          const imageUrl = editingPost?.cover_image_url || post.cover_image_url;
+                                          if (imageUrl.startsWith('http')) {
+                                            return imageUrl;
+                                          }
+                                          // Extract bucket and file path from storage_path
+                                          const pathParts = imageUrl.split('/');
+                                          if (pathParts.length >= 2) {
+                                            const bucket = pathParts[0];
+                                            const filePath = pathParts.slice(1).join('/');
+                                            return supabase.storage.from(bucket).getPublicUrl(filePath).data.publicUrl;
+                                          }
+                                          return imageUrl;
+                                        })()} 
                                         alt="Cover preview" 
                                         className="w-32 h-20 object-cover rounded border"
                                         onError={(e) => {
