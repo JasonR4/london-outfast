@@ -154,12 +154,28 @@ const About = () => {
                     {/* Enhanced Content */}
                     <div className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8 space-y-4">
                       {section.content?.split('\n').map((line: string, idx: number) => (
-                        <p 
-                          key={idx} 
-                          className={`${line.trim() === '' ? 'mb-6' : ''} animate-[fade-in_0.6s_ease-out_${idx * 0.1}s_both] hover:text-foreground transition-colors duration-300`}
-                        >
-                          {line}
-                        </p>
+                         <div key={idx}>
+                           <p 
+                             className={`${line.trim() === '' ? 'mb-6' : ''} animate-[fade-in_0.6s_ease-out_${idx * 0.1}s_both] hover:text-foreground transition-colors duration-300`}
+                           >
+                             {line}
+                           </p>
+                           {idx === Math.floor(section.content?.split('\n').length / 2) && (
+                             <div className="my-8 flex justify-center">
+                               <Button
+                                 asChild
+                                 variant="outline"
+                                 size="lg"
+                                 className="group relative overflow-hidden px-8 py-4 text-lg font-semibold border-2 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 hover:scale-105 hover:-translate-y-1"
+                               >
+                                 <Link to="/industries" className="story-link">
+                                   Explore Industries
+                                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                                 </Link>
+                               </Button>
+                             </div>
+                           )}
+                         </div>
                       ))}
                     </div>
                     
