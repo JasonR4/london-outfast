@@ -22,7 +22,7 @@ import { useCreativeCapacity } from "@/hooks/useCreativeCapacity";
 import { useNavigate } from "react-router-dom";
 import { CreativeCapacityIndicator } from "@/components/CreativeCapacityIndicator";
 import { LocationSelector } from "@/components/LocationSelector";
-import { useMediaFormats } from "@/hooks/useMediaFormats";
+import { useCentralizedMediaFormats } from "@/hooks/useCentralizedMediaFormats";
 import { londonAreas } from "@/data/londonAreas";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -146,7 +146,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     createOrGetQuote();
   }, []);
 
-  const { mediaFormats, loading: formatsLoading } = useMediaFormats();
+  const { mediaFormats, loading: formatsLoading } = useCentralizedMediaFormats();
   
   // Filter formats based on search
   const filteredFormats = mediaFormats.filter(format =>
