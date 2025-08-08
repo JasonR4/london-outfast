@@ -22,7 +22,7 @@ import { useCreativeCapacity } from "@/hooks/useCreativeCapacity";
 import { useNavigate } from "react-router-dom";
 import { CreativeCapacityIndicator } from "@/components/CreativeCapacityIndicator";
 import { LocationSelector } from "@/components/LocationSelector";
-import { useCentralizedMediaFormats } from "@/hooks/useCentralizedMediaFormats";
+import { useMediaFormats } from "@/hooks/useMediaFormats";
 import { londonAreas } from "@/data/londonAreas";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -146,7 +146,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     createOrGetQuote();
   }, []);
 
-  const { mediaFormats, loading: formatsLoading } = useCentralizedMediaFormats();
+  const { mediaFormats, loading: formatsLoading } = useMediaFormats();
   
   // Filter formats based on search
   const filteredFormats = mediaFormats.filter(format =>
@@ -226,12 +226,12 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     let totalDiscount = 0;
     let originalMediaCost = 0;
 
-    // Calculate production cost for sites × production runs
+    // Calculate production cost for sites × periods
     if (selectedLocations.length > 0) {
-      const productionPrice = calculateProductionCost(totalQuantity, selectedPeriods);
+      const productionPrice = calculateProductionCost(totalQuantity, selectedPeriods.length);
       if (productionPrice && productionPrice.totalCost !== undefined) {
         totalProductionCost = productionPrice.totalCost;
-        console.log(`🏭 Production cost for ${totalQuantity} sites × ${productionPrice.totalUnits} production runs: ${totalProductionCost}`);
+        console.log(`🏭 Production cost for ${totalQuantity} sites × ${selectedPeriods.length} periods: ${totalProductionCost}`);
       }
     }
 
@@ -340,18 +340,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   };
 
   const handleAddToQuote = async () => {
-    console.log('🎯 handleAddToQuote called');
-    console.log('📊 Current selections:', {
-      selectedFormats: selectedFormats.length,
-      selectedLocations: selectedLocations.length,
-      selectedPeriods: selectedPeriods.length,
-      formatsList: selectedFormats,
-      locationsList: selectedLocations,
-      periodsList: selectedPeriods
-    });
-    
     if (selectedFormats.length === 0 || selectedLocations.length === 0 || selectedPeriods.length === 0) {
-      console.log('❌ Validation failed - missing selections');
       toast({
         title: "Missing Information",
         description: "Please select formats, locations, and campaign periods.",
@@ -415,9 +404,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       user: user?.email,
       currentQuote: currentQuote?.id,
       quoteItemsLength: currentQuote?.quote_items?.length,
-      contactDetails,
-      hasConfiguredItem: selectedFormats.length > 0 && selectedLocations.length > 0 && selectedPeriods.length > 0,
-      currentPricing: pricing
+      contactDetails
     });
 
     // Fetch latest quote and use it for validation
@@ -433,39 +420,18 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     const itemsCount = latest?.quote_items?.length ?? 0;
     const hasItems = itemsCount > 0 || (latest?.total_cost ?? 0) > 0;
     
-    // Check if user has configured an item but not added it to quote
-    const hasConfiguredItem = selectedFormats.length > 0 && selectedLocations.length > 0 && selectedPeriods.length > 0;
-    
     console.log('🔍 Validation check:', {
       itemsCount,
       totalCost: latest?.total_cost ?? 0,
       hasItems,
-      hasConfiguredItem,
-      willBlock: !hasItems && !hasConfiguredItem
+      willBlock: !hasItems
     });
 
-    // If no items in quote but user has configured something, auto-add it
-    if (!hasItems && hasConfiguredItem) {
-      console.log('⚡ Auto-adding configured item to quote before submission');
-      await handleAddToQuote();
-      
-      // Re-fetch quote after adding
-      const updatedQuote = await fetchCurrentQuote?.();
-      if (!updatedQuote?.quote_items?.length) {
-        console.log('❌ Failed to add item to quote');
-        toast({
-          title: "Error Adding Item",
-          description: "Failed to add your configured item to the quote. Please try again.",
-          variant: "destructive"
-        });
-        return;
-      }
-      console.log('✅ Item auto-added successfully');
-    } else if (!hasItems) {
-      console.log('❌ No quote items detected and nothing configured - blocking submit');
+    if (!hasItems) {
+      console.log('❌ No quote items detected - blocking submit');
       toast({
         title: "No Items in Quote",
-        description: "Please configure and add at least one item to your quote before submitting.",
+        description: "Please add at least one item to your quote before submitting.",
         variant: "destructive"
       });
       return;
@@ -488,9 +454,14 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       console.log('✅ Submit result:', success);
       
       if (success) {
-        // Always navigate to quote-submitted page first
-        console.log('🔄 Navigating to quote-submitted');
-        navigate('/quote-submitted');
+        // Navigate based on authentication status
+        if (user) {
+          console.log('🔄 Navigating to client portal');
+          navigate('/client-portal');
+        } else {
+          console.log('🔄 Navigating to create account');
+          navigate('/create-account');
+        }
       } else {
         console.log('❌ Submit returned false');
         toast({
@@ -1108,7 +1079,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
                         {/* Production Cost Details */}
                         {pricing.productionCost > 0 && (() => {
-                          const productionResult = calculateProductionCost(totalQuantity, selectedPeriods);
+                          const productionResult = calculateProductionCost(totalQuantity, selectedPeriods.length);
                           if (!productionResult) return null;
                           
                           return (
@@ -1251,65 +1222,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                            <div><strong>Formats:</strong> {selectedFormats.map(f => f.format_name).join(', ')}</div>
                            <div><strong>Total Quantity:</strong> {totalQuantity}</div>
                            <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
-                           <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
-                           
-                           {/* Production Run Optimization Warning */}
-                           {(() => {
-                             if (selectedPeriods.length <= 1) return null;
-                             
-                             const sortedPeriods = [...selectedPeriods].sort((a, b) => a - b);
-                             console.log('🔍 Production run check:', { 
-                               selectedPeriods, 
-                               sortedPeriods 
-                             });
-                             
-                             const hasGaps = sortedPeriods.some((period, index) => {
-                               if (index === 0) return false;
-                               return period !== sortedPeriods[index - 1] + 1;
-                             });
-                             
-                             console.log('🔍 Has gaps:', hasGaps);
-                             
-                             if (hasGaps) {
-                               const productionRuns = [];
-                               let currentRun = [sortedPeriods[0]];
-                               
-                               for (let i = 1; i < sortedPeriods.length; i++) {
-                                 if (sortedPeriods[i] === sortedPeriods[i-1] + 1) {
-                                   currentRun.push(sortedPeriods[i]);
-                                 } else {
-                                   productionRuns.push(currentRun);
-                                   currentRun = [sortedPeriods[i]];
-                                 }
-                               }
-                               productionRuns.push(currentRun);
-                               
-                               console.log('🔍 Production runs calculated:', productionRuns);
-                               
-                               return (
-                                 <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                                   <div className="flex items-start gap-2">
-                                     <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                                     <div className="text-sm">
-                                       <p className="font-medium text-amber-800 mb-1">
-                                         Production Run Notice
-                                       </p>
-                                       <p className="text-amber-700">
-                                         You've selected non-consecutive periods which requires <strong>{productionRuns.length} separate production runs</strong> instead of 1. This may increase production costs.
-                                       </p>
-                                       <p className="text-xs text-amber-600 mt-1">
-                                         Runs: {productionRuns.map(run => `P${run.join('-')}`).join(', ')}
-                                       </p>
-                                       <p className="text-xs text-amber-600">
-                                         Consider selecting consecutive periods to optimize costs.
-                                       </p>
-                                     </div>
-                                   </div>
-                                 </div>
-                               );
-                             }
-                             return null;
-                           })()}
+                          <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
                         </CardContent>
                       </Card>
 
@@ -1320,7 +1233,6 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           console.log('📋 Selected formats:', selectedFormats);
                           console.log('📍 Selected locations:', selectedLocations);
                           console.log('📅 Selected periods:', selectedPeriods);
-                          console.log('💰 Current pricing:', pricing);
                           handleAddToQuote();
                         }}
                         size="lg"
@@ -1425,80 +1337,133 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Contact form for all users */}
-              <>
-                <div>
-                  <Label htmlFor="contact_name">Full Name *</Label>
-                  <Input
-                    id="contact_name"
-                    value={contactDetails.contact_name}
-                    onChange={(e) => setContactDetails(prev => ({ ...prev, contact_name: e.target.value }))}
-                    placeholder="Your full name"
-                  />
+              {user ? (
+                // Simplified form for authenticated users
+                <div className="space-y-4">
+                  <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                    <div className="flex items-center gap-2 text-sm font-medium text-primary mb-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Logged in as {user.email}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Your quote will be automatically associated with your account and sent to your client portal.
+                    </p>
+                  </div>
+                  
+                  <Button
+                    onClick={(e) => {
+                      console.log('🖱️ Submit button clicked for authenticated user');
+                      e.preventDefault();
+                      handleSubmitQuote();
+                    }}
+                    size="lg"
+                    className="w-full"
+                    disabled={quotesLoading}
+                  >
+                    {quotesLoading ? "Submitting..." : "Submit Quote to Portal"}
+                  </Button>
                 </div>
+              ) : (
+                // Contact form for non-authenticated users
+                <>
+                  {/* Sign in option for existing customers */}
+                  <div className="mb-6 p-4 bg-muted/50 rounded-lg border">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Already an MBL customer? Sign in to submit quotes directly to your portal.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        // Store current session ID before auth to preserve quotes
+                        const currentSessionId = localStorage.getItem('quote_session_id');
+                        if (currentSessionId) {
+                          localStorage.setItem('quote_session_id_pre_auth', currentSessionId);
+                        }
+                        
+                        // Store current URL for return after auth
+                        localStorage.setItem('auth_return_url', window.location.pathname + window.location.search);
+                        window.location.href = '/auth';
+                      }}
+                      className="w-full"
+                    >
+                      Sign In Here
+                    </Button>
+                  </div>
 
-                <div>
-                  <Label htmlFor="contact_email">Email *</Label>
-                  <Input
-                    id="contact_email"
-                    type="email"
-                    value={contactDetails.contact_email}
-                    onChange={(e) => setContactDetails(prev => ({ ...prev, contact_email: e.target.value }))}
-                    placeholder="your@email.com"
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="contact_name">Full Name *</Label>
+                    <Input
+                      id="contact_name"
+                      value={contactDetails.contact_name}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_name: e.target.value }))}
+                      placeholder="Your full name"
+                    />
+                  </div>
 
-                <div>
-                  <Label htmlFor="contact_phone">Phone</Label>
-                  <Input
-                    id="contact_phone"
-                    type="tel"
-                    value={contactDetails.contact_phone}
-                    onChange={(e) => setContactDetails(prev => ({ ...prev, contact_phone: e.target.value }))}
-                    placeholder="+44 20 1234 5678"
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="contact_email">Email *</Label>
+                    <Input
+                      id="contact_email"
+                      type="email"
+                      value={contactDetails.contact_email}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_email: e.target.value }))}
+                      placeholder="your@email.com"
+                    />
+                  </div>
 
-                <div>
-                  <Label htmlFor="contact_company">Company</Label>
-                  <Input
-                    id="contact_company"
-                    value={contactDetails.contact_company}
-                    onChange={(e) => setContactDetails(prev => ({ ...prev, contact_company: e.target.value }))}
-                    placeholder="Your company"
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="contact_phone">Phone</Label>
+                    <Input
+                      id="contact_phone"
+                      type="tel"
+                      value={contactDetails.contact_phone}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_phone: e.target.value }))}
+                      placeholder="+44 20 1234 5678"
+                    />
+                  </div>
 
-                <div>
-                  <Label htmlFor="website">Website</Label>
-                  <Input
-                    id="website"
-                    value={contactDetails.website}
-                    onChange={(e) => setContactDetails(prev => ({ ...prev, website: e.target.value }))}
-                    placeholder="https://yourwebsite.com"
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="contact_company">Company</Label>
+                    <Input
+                      id="contact_company"
+                      value={contactDetails.contact_company}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_company: e.target.value }))}
+                      placeholder="Your company"
+                    />
+                  </div>
 
-                <div>
-                  <Label htmlFor="additional_requirements">Additional Requirements</Label>
-                  <Textarea
-                    id="additional_requirements"
-                    value={contactDetails.additional_requirements}
-                    onChange={(e) => setContactDetails(prev => ({ ...prev, additional_requirements: e.target.value }))}
-                    placeholder="Tell us about your campaign objectives, timeline, or any special requirements..."
-                    rows={3}
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      value={contactDetails.website}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, website: e.target.value }))}
+                      placeholder="https://yourwebsite.com"
+                    />
+                  </div>
 
-                <Button
-                  onClick={handleSubmitQuote}
-                  size="lg"
-                  className="w-full"
-                  disabled={quotesLoading}
-                >
-                  {quotesLoading ? "Submitting..." : "Submit Quote Request"}
-                </Button>
-              </>
+                  <div>
+                    <Label htmlFor="additional_requirements">Additional Requirements</Label>
+                    <Textarea
+                      id="additional_requirements"
+                      value={contactDetails.additional_requirements}
+                      onChange={(e) => setContactDetails(prev => ({ ...prev, additional_requirements: e.target.value }))}
+                      placeholder="Tell us about your campaign objectives, timeline, or any special requirements..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleSubmitQuote}
+                    size="lg"
+                    className="w-full"
+                    disabled={quotesLoading}
+                  >
+                    {quotesLoading ? "Submitting..." : "Submit Quote Request"}
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>

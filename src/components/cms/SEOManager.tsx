@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Globe, Target, BarChart3, Zap, MapPin } from "lucide-react";
-import { useCentralizedMediaFormats } from "@/hooks/useCentralizedMediaFormats";
+import { useMediaFormats } from "@/hooks/useMediaFormats";
 
 interface SEOData {
   id?: string;
@@ -61,7 +61,7 @@ const LONDON_AREAS = [
 
 export const SEOManager = () => {
   const { toast } = useToast();
-  const { mediaFormats } = useCentralizedMediaFormats();
+  const { mediaFormats } = useMediaFormats();
   const [seoPages, setSeoPages] = useState<SEOData[]>([]);
   const [selectedPage, setSelectedPage] = useState<SEOData | null>(null);
   const [isLoading, setIsLoading] = useState(false);

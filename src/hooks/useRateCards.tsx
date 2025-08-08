@@ -212,35 +212,11 @@ export function useRateCards(formatSlug?: string) {
     }
   };
 
-  // Helper function to calculate number of production runs
-  const calculateProductionRuns = (selectedPeriods: number[]): number => {
-    if (selectedPeriods.length <= 1) return 1;
-    
-    const sortedPeriods = [...selectedPeriods].sort((a, b) => a - b);
-    const productionRuns = [];
-    let currentRun = [sortedPeriods[0]];
-    
-    for (let i = 1; i < sortedPeriods.length; i++) {
-      if (sortedPeriods[i] === sortedPeriods[i - 1] + 1) {
-        currentRun.push(sortedPeriods[i]);
-      } else {
-        productionRuns.push(currentRun);
-        currentRun = [sortedPeriods[i]];
-      }
-    }
-    productionRuns.push(currentRun);
-    
-    return productionRuns.length;
-  };
 
-  const calculateProductionCost = (sites: number, selectedPeriods: number[], category?: string) => {
-    // Calculate number of production runs based on consecutive periods
-    const productionRuns = calculateProductionRuns(selectedPeriods);
-    
+  const calculateProductionCost = (sites: number, periods: number, category?: string) => {
     console.log('🔍 Production Cost Debug:', {
       sites,
-      selectedPeriods,
-      productionRuns,
+      periods,
       category,
       availableTiers: productionCostTiers.length,
       allTiers: productionCostTiers.map(t => ({
@@ -253,7 +229,7 @@ export function useRateCards(formatSlug?: string) {
       }))
     });
 
-    const totalUnits = sites * productionRuns;
+    const totalUnits = sites * periods;
     
     const applicableTiers = productionCostTiers.filter(tier => 
       tier.min_quantity <= totalUnits &&

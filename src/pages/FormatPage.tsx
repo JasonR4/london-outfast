@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
-import { useCentralizedMediaFormats } from '@/hooks/useCentralizedMediaFormats';
+import { useMediaFormats } from '@/hooks/useMediaFormats';
 import { updateMetaTags, generateStructuredData, getSEODataForPage } from '@/utils/seo';
 import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone, CalendarIcon } from 'lucide-react';
 import { useRateCards } from '@/hooks/useRateCards';
@@ -33,7 +33,7 @@ import { cn } from '@/lib/utils';
 
 const FormatPage = () => {
   const { formatSlug } = useParams();
-  const { getFormatBySlugSync: getFormatBySlug, loading: formatsLoading, mediaFormats } = useCentralizedMediaFormats();
+  const { getFormatBySlug, loading: formatsLoading, mediaFormats } = useMediaFormats();
   const navigate = useNavigate();
   const [format, setFormat] = useState<any>(null);
   const [cmsContent, setCmsContent] = useState<any>(null);
@@ -384,7 +384,7 @@ const FormatPage = () => {
     const campaignTotal = priceCalculation.totalPrice * quantity;
     const originalCampaignTotal = priceCalculation.basePrice * priceCalculation.periodsCount * quantity;
     const discountAmount = (originalCampaignTotal - campaignTotal);
-    const productionCostCalc = calculateProductionCost(quantity, selectedPeriods, format.category);
+    const productionCostCalc = calculateProductionCost(quantity, selectedPeriods.length, format.category);
     const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
     const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
     const grandTotal = campaignTotal + productionTotal + creativeTotal;
@@ -1108,7 +1108,7 @@ const FormatPage = () => {
                           const campaignTotal = priceCalculation.totalPrice * quantity;
                           
                            // Production costs are always calculated
-                           const productionCostCalc = calculateProductionCost(quantity, selectedPeriods, format.category);
+                           const productionCostCalc = calculateProductionCost(quantity, selectedPeriods.length, format.category);
                            const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
                           
                           const creativeTotal = needsCreative ? creativeAssets * 85 : 0;

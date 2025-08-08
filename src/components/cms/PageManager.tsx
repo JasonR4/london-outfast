@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RefreshCw, Globe } from 'lucide-react';
-import { useCentralizedMediaFormats } from '@/hooks/useCentralizedMediaFormats';
+import { useMediaFormats } from '@/hooks/useMediaFormats';
 
 interface ContentPage {
   id: string;
@@ -24,7 +24,7 @@ interface ContentPage {
 }
 
 export const PageManager = () => {
-  const { mediaFormats } = useCentralizedMediaFormats();
+  const { mediaFormats } = useMediaFormats();
   const [pages, setPages] = useState<ContentPage[]>([]);
   const [filteredPages, setFilteredPages] = useState<ContentPage[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
