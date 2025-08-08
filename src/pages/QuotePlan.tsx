@@ -114,6 +114,25 @@ export default function QuotePlan() {
     }).format(amount);
   };
 
+  // Helper function to check if periods are consecutive
+  const arePeriodsConsecutive = (periods: number[]) => {
+    if (periods.length <= 1) return true;
+    const sortedPeriods = [...periods].sort((a, b) => a - b);
+    for (let i = 1; i < sortedPeriods.length; i++) {
+      if (sortedPeriods[i] - sortedPeriods[i - 1] !== 1) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Calculate non-consecutive period surcharge
+  const calculateNonConsecutiveSurcharge = (periods: number[], basePrice: number) => {
+    if (arePeriodsConsecutive(periods)) return 0;
+    // 15% surcharge for non-consecutive periods
+    return basePrice * 0.15;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -272,41 +291,60 @@ export default function QuotePlan() {
                                 );
                               })()}
                             </div>
-                            <div className="space-y-2">
-                              <div className="text-sm text-muted-foreground">
-                                <div className="flex justify-between">
-                                  <span>Campaign Cost ({item.quantity} × {item.selected_periods.length} period{item.selected_periods.length !== 1 ? 's' : ''}):</span>
-                                  <span className="font-medium text-foreground">{formatCurrency(item.base_cost)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>Production Cost ({item.quantity} unit{item.quantity !== 1 ? 's' : ''}):</span>
-                                  <span className="font-medium text-foreground">{formatCurrency(item.production_cost || 0)}</span>
-                                </div>
-                                {item.creative_cost > 0 && (
-                                  <div className="flex justify-between">
-                                    <span>Creative Assets:</span>
-                                    <span className="font-medium text-foreground">{formatCurrency(item.creative_cost)}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
+                             <div className="space-y-2">
+                               <div className="text-sm text-muted-foreground">
+                                 <div className="flex justify-between">
+                                   <span>Campaign Cost ({item.quantity} × {item.selected_periods.length} period{item.selected_periods.length !== 1 ? 's' : ''}):</span>
+                                   <span className="font-medium text-foreground">{formatCurrency(item.base_cost)}</span>
+                                 </div>
+                                 <div className="flex justify-between">
+                                   <span>Production Cost ({item.quantity} unit{item.quantity !== 1 ? 's' : ''}):</span>
+                                   <span className="font-medium text-foreground">{formatCurrency(item.production_cost || 0)}</span>
+                                 </div>
+                                 {(() => {
+                                   const nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(item.selected_periods, item.base_cost);
+                                   return nonConsecutiveSurcharge > 0 ? (
+                                     <div className="flex justify-between">
+                                       <span className="text-amber-600">Non-consecutive setup surcharge (15%):</span>
+                                       <span className="font-medium text-amber-600">+{formatCurrency(nonConsecutiveSurcharge)}</span>
+                                     </div>
+                                   ) : null;
+                                 })()}
+                                 {item.creative_cost > 0 && (
+                                   <div className="flex justify-between">
+                                     <span>Creative Assets:</span>
+                                     <span className="font-medium text-foreground">{formatCurrency(item.creative_cost)}</span>
+                                   </div>
+                                 )}
+                               </div>
+                             </div>
                           </div>
 
-                          {/* Subtotal and VAT */}
-                          <div className="border-t pt-3 space-y-2">
-                            <div className="flex justify-between font-medium">
-                              <span>Subtotal (exc VAT):</span>
-                              <span>{formatCurrency((item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0)))}</span>
-                            </div>
-                            <div className="flex justify-between text-sm text-muted-foreground">
-                              <span>VAT (20%):</span>
-                              <span>{formatCurrency(((item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0)) * 0.2))}</span>
-                            </div>
-                            <div className="flex justify-between text-lg font-bold text-primary border-t pt-2">
-                              <span>Total inc VAT:</span>
-                              <span>{formatCurrency(item.total_cost)}</span>
-                            </div>
-                          </div>
+                           {/* Subtotal and VAT */}
+                           <div className="border-t pt-3 space-y-2">
+                             {(() => {
+                               const nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(item.selected_periods, item.base_cost);
+                               const subtotalExcVat = (item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0) + nonConsecutiveSurcharge);
+                               const vatAmount = subtotalExcVat * 0.2;
+                               
+                               return (
+                                 <>
+                                   <div className="flex justify-between font-medium">
+                                     <span>Subtotal (exc VAT):</span>
+                                     <span>{formatCurrency(subtotalExcVat)}</span>
+                                   </div>
+                                   <div className="flex justify-between text-sm text-muted-foreground">
+                                     <span>VAT (20%):</span>
+                                     <span>{formatCurrency(vatAmount)}</span>
+                                   </div>
+                                   <div className="flex justify-between text-lg font-bold text-primary border-t pt-2">
+                                     <span>Total inc VAT:</span>
+                                     <span>{formatCurrency(subtotalExcVat + vatAmount)}</span>
+                                   </div>
+                                 </>
+                               );
+                             })()}
+                           </div>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
@@ -450,19 +488,22 @@ export default function QuotePlan() {
                   <div className="space-y-3">
                     <h4 className="font-semibold text-lg">Campaign Cost Breakdown</h4>
                     
-                    {/* Calculate totals */}
-                    {(() => {
-                      const totalBaseCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.base_cost || 0), 0) || 0;
-                      const totalProductionCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.production_cost || 0), 0) || 0;
-                      const totalCreativeCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.creative_cost || 0), 0) || 0;
-                      const totalDiscountAmount = currentQuote.quote_items?.reduce((sum, item) => sum + (item.discount_amount || 0), 0) || 0;
-                      const totalSaleDiscount = currentQuote.quote_items?.reduce((sum, item) => {
-                        const originalCost = item.original_cost || 0;
-                        const baseCost = item.base_cost || 0;
-                        return sum + Math.max(0, originalCost - baseCost);
-                      }, 0) || 0;
-                      
-                      return (
+                     {/* Calculate totals */}
+                     {(() => {
+                       const totalBaseCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.base_cost || 0), 0) || 0;
+                       const totalProductionCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.production_cost || 0), 0) || 0;
+                       const totalCreativeCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.creative_cost || 0), 0) || 0;
+                       const totalDiscountAmount = currentQuote.quote_items?.reduce((sum, item) => sum + (item.discount_amount || 0), 0) || 0;
+                       const totalNonConsecutiveSurcharge = currentQuote.quote_items?.reduce((sum, item) => {
+                         return sum + calculateNonConsecutiveSurcharge(item.selected_periods, item.base_cost);
+                       }, 0) || 0;
+                       const totalSaleDiscount = currentQuote.quote_items?.reduce((sum, item) => {
+                         const originalCost = item.original_cost || 0;
+                         const baseCost = item.base_cost || 0;
+                         return sum + Math.max(0, originalCost - baseCost);
+                       }, 0) || 0;
+                       
+                       return (
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
                             <span>Base Campaign Cost:</span>
@@ -476,15 +517,22 @@ export default function QuotePlan() {
                             </div>
                           )}
                           
-                          <div className="flex justify-between text-sm">
-                            <span>Production Costs:</span>
-                            <span>{formatCurrency(totalProductionCost)}</span>
-                          </div>
-                          
-                          <div className="flex justify-between text-sm">
-                            <span>Creative Costs:</span>
-                            <span>{formatCurrency(totalCreativeCost)}</span>
-                          </div>
+                           <div className="flex justify-between text-sm">
+                             <span>Production Costs:</span>
+                             <span>{formatCurrency(totalProductionCost)}</span>
+                           </div>
+                           
+                           {totalNonConsecutiveSurcharge > 0 && (
+                             <div className="flex justify-between text-sm text-amber-600">
+                               <span>Non-consecutive setup surcharge (15%):</span>
+                               <span>+{formatCurrency(totalNonConsecutiveSurcharge)}</span>
+                             </div>
+                           )}
+                           
+                           <div className="flex justify-between text-sm">
+                             <span>Creative Costs:</span>
+                             <span>{formatCurrency(totalCreativeCost)}</span>
+                           </div>
                           
                           {totalDiscountAmount > 0 && (
                             <div className="flex justify-between text-sm text-green-600">
@@ -495,15 +543,15 @@ export default function QuotePlan() {
                           
                           <Separator />
                           
-                          <div className="flex justify-between text-sm font-medium">
-                            <span>Subtotal (exc VAT):</span>
-                            <span>{formatCurrency((totalBaseCost + totalProductionCost + totalCreativeCost - totalDiscountAmount))}</span>
-                          </div>
-                          
-                          <div className="flex justify-between text-sm">
-                            <span>VAT (20%):</span>
-                            <span>{formatCurrency((totalBaseCost + totalProductionCost + totalCreativeCost - totalDiscountAmount) * 0.2)}</span>
-                          </div>
+                           <div className="flex justify-between text-sm font-medium">
+                             <span>Subtotal (exc VAT):</span>
+                             <span>{formatCurrency((totalBaseCost + totalProductionCost + totalCreativeCost + totalNonConsecutiveSurcharge - totalDiscountAmount))}</span>
+                           </div>
+                           
+                           <div className="flex justify-between text-sm">
+                             <span>VAT (20%):</span>
+                             <span>{formatCurrency((totalBaseCost + totalProductionCost + totalCreativeCost + totalNonConsecutiveSurcharge - totalDiscountAmount) * 0.2)}</span>
+                           </div>
                         </div>
                       );
                     })()}
