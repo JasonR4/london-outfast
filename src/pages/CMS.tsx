@@ -205,60 +205,67 @@ const CMS = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="quotes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-13 gap-1">
-            <TabsTrigger value="quotes" className="flex items-center gap-2">
-              <ClipboardList className="w-4 h-4" />
-              Quotes
-            </TabsTrigger>
-            <TabsTrigger value="homepage" className="flex items-center gap-2">
-              <Home className="w-4 h-4" />
-              Homepage
-            </TabsTrigger>
-            <TabsTrigger value="content" className="flex items-center gap-2">
-              <PenTool className="w-4 h-4" />
-              Content
-            </TabsTrigger>
-            <TabsTrigger value="blog" className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              Blog
-            </TabsTrigger>
-            <TabsTrigger value="industries" className="flex items-center gap-2">
-              <Building className="w-4 h-4" />
-              Industries
-            </TabsTrigger>
-            <TabsTrigger value="legal" className="flex items-center gap-2">
-              <Scale className="w-4 h-4" />
-              Legal
-            </TabsTrigger>
-            <TabsTrigger value="media" className="flex items-center gap-2">
-              <Image className="w-4 h-4" />
-              Media
-            </TabsTrigger>
-            <TabsTrigger value="pages" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Pages
-            </TabsTrigger>
-            <TabsTrigger value="rates" className="flex items-center gap-2">
-              <Calculator className="w-4 h-4" />
-              Rates
-            </TabsTrigger>
-            <TabsTrigger value="seo" className="flex items-center gap-2">
-              <Search className="w-4 h-4" />
-              SEO
-            </TabsTrigger>
-            <TabsTrigger value="global" className="flex items-center gap-2">
-              <Globe className="w-4 h-4" />
-              Global
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="team" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Team
-            </TabsTrigger>
-          </TabsList>
+          <div className="space-y-2">
+            {/* First row of tabs */}
+            <TabsList className="grid w-full grid-cols-6 gap-1">
+              <TabsTrigger value="quotes" className="flex items-center gap-2">
+                <ClipboardList className="w-4 h-4" />
+                Quotes
+              </TabsTrigger>
+              <TabsTrigger value="homepage" className="flex items-center gap-2">
+                <Home className="w-4 h-4" />
+                Homepage
+              </TabsTrigger>
+              <TabsTrigger value="content" className="flex items-center gap-2">
+                <PenTool className="w-4 h-4" />
+                Content
+              </TabsTrigger>
+              <TabsTrigger value="industries" className="flex items-center gap-2">
+                <Building className="w-4 h-4" />
+                Industries
+              </TabsTrigger>
+              <TabsTrigger value="legal" className="flex items-center gap-2">
+                <Scale className="w-4 h-4" />
+                Legal
+              </TabsTrigger>
+              <TabsTrigger value="media" className="flex items-center gap-2">
+                <Image className="w-4 h-4" />
+                Media
+              </TabsTrigger>
+            </TabsList>
+            
+            {/* Second row of tabs */}
+            <TabsList className="grid w-full grid-cols-7 gap-1">
+              <TabsTrigger value="blog" className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4" />
+                Blog
+              </TabsTrigger>
+              <TabsTrigger value="pages" className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Pages
+              </TabsTrigger>
+              <TabsTrigger value="rates" className="flex items-center gap-2">
+                <Calculator className="w-4 h-4" />
+                Rates
+              </TabsTrigger>
+              <TabsTrigger value="seo" className="flex items-center gap-2">
+                <Search className="w-4 h-4" />
+                SEO
+              </TabsTrigger>
+              <TabsTrigger value="global" className="flex items-center gap-2">
+                <Globe className="w-4 h-4" />
+                Global
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Analytics
+              </TabsTrigger>
+              <TabsTrigger value="team" className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Team
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="quotes">
             <Suspense fallback={<div className="flex items-center justify-center py-8">Loading quotes...</div>}>
