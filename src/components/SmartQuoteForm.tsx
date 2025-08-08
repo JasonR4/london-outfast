@@ -340,7 +340,18 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   };
 
   const handleAddToQuote = async () => {
+    console.log('🎯 handleAddToQuote called');
+    console.log('📊 Current selections:', {
+      selectedFormats: selectedFormats.length,
+      selectedLocations: selectedLocations.length,
+      selectedPeriods: selectedPeriods.length,
+      formatsList: selectedFormats,
+      locationsList: selectedLocations,
+      periodsList: selectedPeriods
+    });
+    
     if (selectedFormats.length === 0 || selectedLocations.length === 0 || selectedPeriods.length === 0) {
+      console.log('❌ Validation failed - missing selections');
       toast({
         title: "Missing Information",
         description: "Please select formats, locations, and campaign periods.",
@@ -1233,6 +1244,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           console.log('📋 Selected formats:', selectedFormats);
                           console.log('📍 Selected locations:', selectedLocations);
                           console.log('📅 Selected periods:', selectedPeriods);
+                          console.log('💰 Current pricing:', pricing);
                           handleAddToQuote();
                         }}
                         size="lg"
