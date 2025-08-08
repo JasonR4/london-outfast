@@ -226,12 +226,12 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     let totalDiscount = 0;
     let originalMediaCost = 0;
 
-    // Calculate production cost for sites × periods
+    // Calculate production cost for sites × production runs
     if (selectedLocations.length > 0) {
-      const productionPrice = calculateProductionCost(totalQuantity, selectedPeriods.length);
+      const productionPrice = calculateProductionCost(totalQuantity, selectedPeriods);
       if (productionPrice && productionPrice.totalCost !== undefined) {
         totalProductionCost = productionPrice.totalCost;
-        console.log(`🏭 Production cost for ${totalQuantity} sites × ${selectedPeriods.length} periods: ${totalProductionCost}`);
+        console.log(`🏭 Production cost for ${totalQuantity} sites × ${productionPrice.totalUnits} production runs: ${totalProductionCost}`);
       }
     }
 
@@ -1085,7 +1085,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
                         {/* Production Cost Details */}
                         {pricing.productionCost > 0 && (() => {
-                          const productionResult = calculateProductionCost(totalQuantity, selectedPeriods.length);
+                          const productionResult = calculateProductionCost(totalQuantity, selectedPeriods);
                           if (!productionResult) return null;
                           
                           return (
