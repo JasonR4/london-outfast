@@ -81,7 +81,7 @@ export const useQuotes = () => {
   };
 
   // Fetch current quote for this session
-  const fetchCurrentQuote = async () => {
+  const fetchCurrentQuote = async (): Promise<Quote | null> => {
     try {
       setLoading(true);
       setError(null);
@@ -109,9 +109,12 @@ export const useQuotes = () => {
       if (data?.id && data.quote_items?.length > 0) {
         await updateQuoteTotalCost(data.id);
       }
+
+      return data;
     } catch (err: any) {
       console.error('Error fetching current quote:', err);
       setError(err.message);
+      return null;
     } finally {
       setLoading(false);
     }

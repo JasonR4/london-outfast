@@ -404,12 +404,10 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       contactDetails
     });
 
-    // Ensure we have the latest quote data
-    if (!currentQuote) {
-      await fetchCurrentQuote?.();
-    }
-    const itemsCount = currentQuote?.quote_items?.length ?? 0;
-    const hasItems = itemsCount > 0 || (currentQuote?.total_cost ?? 0) > 0;
+    // Fetch latest quote and use it for validation
+    const latest = (await fetchCurrentQuote?.()) || currentQuote;
+    const itemsCount = latest?.quote_items?.length ?? 0;
+    const hasItems = itemsCount > 0 || (latest?.total_cost ?? 0) > 0;
 
     if (!hasItems) {
       console.log('❌ No quote items detected - blocking submit');
