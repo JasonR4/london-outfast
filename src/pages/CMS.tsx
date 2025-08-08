@@ -109,41 +109,6 @@ const CMS = () => {
     return null;
   }
 
-  // Check domain access first
-  const currentDomain = window.location.hostname;
-  const allowedDomains = ['r4advertising.agency', 'localhost', '127.0.0.1'];
-  const isDomainAllowed = allowedDomains.some(domain => currentDomain.includes(domain)) || 
-                         currentDomain.includes('lovableproject.com'); // Allow Lovable preview domains
-
-  if (!isDomainAllowed) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="max-w-md mx-auto">
-          <CardHeader>
-            <CardTitle className="text-center text-destructive">Domain Access Restricted</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <p className="text-muted-foreground">
-              CMS access is only available from authorized domains.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Current domain: <span className="font-medium">{currentDomain}</span>
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => navigate('/')} className="flex-1">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Go Home
-              </Button>
-              <Button onClick={handleSignOut} variant="destructive" className="flex-1">
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   // Check if user has admin/editor access
   if (userProfile && !['super_admin', 'admin', 'editor'].includes(userProfile.role)) {
