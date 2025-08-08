@@ -51,9 +51,9 @@ const CMS = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      setLoading(false);
 
       if (!session) {
-        setLoading(false);
         navigate('/auth');
       } else {
         fetchUserProfile(session.user.id);
@@ -64,6 +64,9 @@ const CMS = () => {
   }, [navigate]);
 
   const fetchUserProfile = async (userId: string) => {
+    // Prevent duplicate profile fetches
+    if (userProfile) return;
+    
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -78,8 +81,6 @@ const CMS = () => {
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
-    } finally {
-      setLoading(false); // Set loading to false after profile fetch completes
     }
   };
 
@@ -112,8 +113,7 @@ const CMS = () => {
   const currentDomain = window.location.hostname;
   const allowedDomains = ['r4advertising.agency', 'localhost', '127.0.0.1'];
   const isDomainAllowed = allowedDomains.some(domain => currentDomain.includes(domain)) || 
-                         currentDomain.includes('lovableproject.com') ||
-                         currentDomain.includes('lovable.app'); // Allow all Lovable domains
+                         currentDomain.includes('lovableproject.com'); // Allow Lovable preview domains
 
   if (!isDomainAllowed) {
     return (
