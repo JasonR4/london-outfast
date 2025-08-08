@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { useMediaFormats } from '@/hooks/useMediaFormats';
 import { updateMetaTags, generateStructuredData, getSEODataForPage } from '@/utils/seo';
-import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone, CalendarIcon } from 'lucide-react';
+import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone, CalendarIcon, AlertTriangle } from 'lucide-react';
 import { useRateCards } from '@/hooks/useRateCards';
 import { useLocationSelector } from '@/hooks/useLocationSelector';
 import { useQuotes } from '@/hooks/useQuotes';
@@ -60,6 +60,7 @@ const FormatPage = () => {
     getAvailableLocations, 
     getAvailablePeriodsForLocation, 
     inchargePeriods,
+    calculateProductionRuns,
     loading: rateLoading, 
     error: rateError 
   } = useRateCards(formatSlug);
@@ -749,6 +750,67 @@ const FormatPage = () => {
                         <p className="text-sm text-muted-foreground mt-2">
                           Selected {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''}
                         </p>
+
+                        {/* Production Run Optimization Warning */}
+                        {(() => {
+                          if (selectedPeriods.length <= 1) return null;
+                          
+                          const sortedPeriods = [...selectedPeriods].sort((a, b) => a - b);
+                          console.log('🔍 Production run check:', { 
+                            selectedPeriods, 
+                            sortedPeriods 
+                          });
+                          
+                          // Check for gaps (non-consecutive periods)
+                          let hasGaps = false;
+                          for (let i = 1; i < sortedPeriods.length; i++) {
+                            if (sortedPeriods[i] !== sortedPeriods[i - 1] + 1) {
+                              hasGaps = true;
+                              break;
+                            }
+                          }
+                          
+                          if (hasGaps) {
+                            const productionRuns = [];
+                            let currentRun = [sortedPeriods[0]];
+                            
+                            for (let i = 1; i < sortedPeriods.length; i++) {
+                              if (sortedPeriods[i] === sortedPeriods[i - 1] + 1) {
+                                currentRun.push(sortedPeriods[i]);
+                              } else {
+                                productionRuns.push(currentRun);
+                                currentRun = [sortedPeriods[i]];
+                              }
+                            }
+                            productionRuns.push(currentRun);
+                            
+                            console.log('🔍 Production runs calculated:', productionRuns);
+                            
+                            return (
+                              <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                <div className="flex items-start space-x-2">
+                                  <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                                  <div className="text-sm">
+                                    <p className="font-medium text-amber-800 mb-1">
+                                      Production Run Notice
+                                    </p>
+                                    <p className="text-amber-700">
+                                      You've selected non-consecutive periods which requires <strong>{productionRuns.length} separate production runs</strong> instead of 1. This may increase production costs.
+                                    </p>
+                                    <p className="text-xs text-amber-600 mt-1">
+                                      Runs: {productionRuns.map(run => `P${run.join('-')}`).join(', ')}
+                                    </p>
+                                    <p className="text-xs text-amber-600">
+                                      Consider selecting consecutive periods to optimize costs.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
+                          
+                          return null;
+                        })()}
                       </div>
                     )}
 

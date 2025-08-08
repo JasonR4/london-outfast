@@ -463,6 +463,7 @@ export function useRateCards(formatSlug?: string) {
     error,
     calculatePrice,
     calculateProductionCost,
+    calculateProductionRuns,
     calculateCreativeCost,
     getAvailableLocations,
     getAvailablePeriodsForLocation,
