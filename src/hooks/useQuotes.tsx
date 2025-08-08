@@ -103,6 +103,14 @@ export const useQuotes = () => {
 
       if (error) throw error;
       
+      console.log('🔍 fetchCurrentQuote result:', {
+        hasData: !!data,
+        dataId: data?.id,
+        itemsCount: data?.quote_items?.length,
+        totalCost: data?.total_cost,
+        quoteItems: data?.quote_items
+      });
+      
       setCurrentQuote(data);
 
       // If we have a quote with items, recalculate discounts

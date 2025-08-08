@@ -406,8 +406,23 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
     // Fetch latest quote and use it for validation
     const latest = (await fetchCurrentQuote?.()) || currentQuote;
+    console.log('🔍 Latest quote for validation:', {
+      quoteId: latest?.id,
+      itemsArray: latest?.quote_items,
+      itemsLength: latest?.quote_items?.length,
+      totalCost: latest?.total_cost,
+      hasLatest: !!latest
+    });
+    
     const itemsCount = latest?.quote_items?.length ?? 0;
     const hasItems = itemsCount > 0 || (latest?.total_cost ?? 0) > 0;
+    
+    console.log('🔍 Validation check:', {
+      itemsCount,
+      totalCost: latest?.total_cost ?? 0,
+      hasItems,
+      willBlock: !hasItems
+    });
 
     if (!hasItems) {
       console.log('❌ No quote items detected - blocking submit');
