@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -6,19 +6,21 @@ import { useToast } from '@/hooks/use-toast';
 import { User, Session } from '@supabase/supabase-js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ContentEditor } from '@/components/cms/ContentEditor';
-import { MediaLibrary } from '@/components/cms/MediaLibrary';
-import { PageManager } from '@/components/cms/PageManager';
-import { TeamManager } from '@/components/cms/TeamManager';
-import { LegalPagesEditor } from '@/components/cms/LegalPagesEditor';
-import { GlobalSettings } from '@/components/cms/GlobalSettings';
-import { SEOManager } from '@/components/cms/SEOManager';
-import IndustryContentManager from '@/components/cms/IndustryContentManager';
-import HomepageContentManager from '@/components/cms/HomepageContentManager';
-import { RateCardManager } from '@/components/cms/RateCardManager';
-import { QuoteManager } from '@/components/cms/QuoteManager';
-import { AnalyticsManager } from '@/components/cms/AnalyticsManager';
-import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator, ClipboardList, BarChart3 } from 'lucide-react';
+import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator, ClipboardList, BarChart3, BookOpen, PenTool } from 'lucide-react';
+
+// Lazy load CMS components for better performance
+const ContentEditor = lazy(() => import('@/components/cms/ContentEditor').then(m => ({ default: m.ContentEditor })));
+const MediaLibrary = lazy(() => import('@/components/cms/MediaLibrary').then(m => ({ default: m.MediaLibrary })));
+const PageManager = lazy(() => import('@/components/cms/PageManager').then(m => ({ default: m.PageManager })));
+const TeamManager = lazy(() => import('@/components/cms/TeamManager').then(m => ({ default: m.TeamManager })));
+const LegalPagesEditor = lazy(() => import('@/components/cms/LegalPagesEditor').then(m => ({ default: m.LegalPagesEditor })));
+const GlobalSettings = lazy(() => import('@/components/cms/GlobalSettings').then(m => ({ default: m.GlobalSettings })));
+const SEOManager = lazy(() => import('@/components/cms/SEOManager').then(m => ({ default: m.SEOManager })));
+const IndustryContentManager = lazy(() => import('@/components/cms/IndustryContentManager'));
+const HomepageContentManager = lazy(() => import('@/components/cms/HomepageContentManager'));
+const RateCardManager = lazy(() => import('@/components/cms/RateCardManager').then(m => ({ default: m.RateCardManager })));
+const QuoteManager = lazy(() => import('@/components/cms/QuoteManager').then(m => ({ default: m.QuoteManager })));
+const AnalyticsManager = lazy(() => import('@/components/cms/AnalyticsManager').then(m => ({ default: m.AnalyticsManager })));
 
 const CMS = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -39,9 +41,7 @@ const CMS = () => {
           navigate('/auth');
         } else {
           // Fetch user profile
-          setTimeout(() => {
-            fetchUserProfile(session.user.id);
-          }, 0);
+          fetchUserProfile(session.user.id);
         }
       }
     );
@@ -63,16 +63,23 @@ const CMS = () => {
   }, [navigate]);
 
   const fetchUserProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
+    // Prevent duplicate profile fetches
+    if (userProfile) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-    if (error) {
+      if (error) {
+        console.error('Error fetching profile:', error);
+      } else {
+        setUserProfile(data);
+      }
+    } catch (error) {
       console.error('Error fetching profile:', error);
-    } else {
-      setUserProfile(data);
     }
   };
 
@@ -198,7 +205,7 @@ const CMS = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="quotes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-13 gap-1">
+          <TabsList className="grid w-full grid-cols-12 gap-1">
             <TabsTrigger value="quotes" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
               Quotes
@@ -208,12 +215,8 @@ const CMS = () => {
               Homepage
             </TabsTrigger>
             <TabsTrigger value="content" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
+              <PenTool className="w-4 h-4" />
               Content
-            </TabsTrigger>
-            <TabsTrigger value="blog" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Blog
             </TabsTrigger>
             <TabsTrigger value="industries" className="flex items-center gap-2">
               <Building className="w-4 h-4" />
@@ -228,7 +231,7 @@ const CMS = () => {
               Media
             </TabsTrigger>
             <TabsTrigger value="pages" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
+              <FileText className="w-4 h-4" />
               Pages
             </TabsTrigger>
             <TabsTrigger value="rates" className="flex items-center gap-2">
@@ -254,7 +257,9 @@ const CMS = () => {
           </TabsList>
 
           <TabsContent value="quotes">
-            <QuoteManager />
+            <Suspense fallback={<div className="flex items-center justify-center py-8">Loading quotes...</div>}>
+              <QuoteManager />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="homepage">
@@ -263,7 +268,9 @@ const CMS = () => {
                 <CardTitle>Homepage Content Management</CardTitle>
               </CardHeader>
               <CardContent>
-                <HomepageContentManager />
+                <Suspense fallback={<div className="flex items-center justify-center py-8">Loading homepage content...</div>}>
+                  <HomepageContentManager />
+                </Suspense>
               </CardContent>
             </Card>
           </TabsContent>
@@ -274,18 +281,9 @@ const CMS = () => {
                 <CardTitle>Content Management</CardTitle>
               </CardHeader>
               <CardContent>
-                <ContentEditor />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="blog">
-            <Card>
-              <CardHeader>
-                <CardTitle>Blog Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Blog management functionality coming soon...</p>
+                <Suspense fallback={<div className="flex items-center justify-center py-8">Loading content editor...</div>}>
+                  <ContentEditor />
+                </Suspense>
               </CardContent>
             </Card>
           </TabsContent>
@@ -296,13 +294,17 @@ const CMS = () => {
                 <CardTitle>Industry Content Management</CardTitle>
               </CardHeader>
               <CardContent>
-                <IndustryContentManager />
+                <Suspense fallback={<div className="flex items-center justify-center py-8">Loading industries...</div>}>
+                  <IndustryContentManager />
+                </Suspense>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="legal">
-            <LegalPagesEditor />
+            <Suspense fallback={<div className="flex items-center justify-center py-8">Loading legal pages...</div>}>
+              <LegalPagesEditor />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="media">
@@ -311,7 +313,9 @@ const CMS = () => {
                 <CardTitle>Media Library</CardTitle>
               </CardHeader>
               <CardContent>
-                <MediaLibrary />
+                <Suspense fallback={<div className="flex items-center justify-center py-8">Loading media library...</div>}>
+                  <MediaLibrary />
+                </Suspense>
               </CardContent>
             </Card>
           </TabsContent>
@@ -322,13 +326,17 @@ const CMS = () => {
                 <CardTitle>Page Management</CardTitle>
               </CardHeader>
               <CardContent>
-                <PageManager />
+                <Suspense fallback={<div className="flex items-center justify-center py-8">Loading page manager...</div>}>
+                  <PageManager />
+                </Suspense>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="rates">
-            <RateCardManager />
+            <Suspense fallback={<div className="flex items-center justify-center py-8">Loading rate cards...</div>}>
+              <RateCardManager />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="seo">
@@ -337,7 +345,9 @@ const CMS = () => {
                 <CardTitle>SEO Management</CardTitle>
               </CardHeader>
               <CardContent>
-                <SEOManager />
+                <Suspense fallback={<div className="flex items-center justify-center py-8">Loading SEO manager...</div>}>
+                  <SEOManager />
+                </Suspense>
               </CardContent>
             </Card>
           </TabsContent>
@@ -348,13 +358,17 @@ const CMS = () => {
                 <CardTitle>Global Settings</CardTitle>
               </CardHeader>
               <CardContent>
-                <GlobalSettings />
+                <Suspense fallback={<div className="flex items-center justify-center py-8">Loading global settings...</div>}>
+                  <GlobalSettings />
+                </Suspense>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="analytics">
-            <AnalyticsManager />
+            <Suspense fallback={<div className="flex items-center justify-center py-8">Loading analytics...</div>}>
+              <AnalyticsManager />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="team">
@@ -363,7 +377,9 @@ const CMS = () => {
                 <CardTitle>Team Management</CardTitle>
               </CardHeader>
               <CardContent>
-                <TeamManager userProfile={userProfile} />
+                <Suspense fallback={<div className="flex items-center justify-center py-8">Loading team manager...</div>}>
+                  <TeamManager userProfile={userProfile} />
+                </Suspense>
               </CardContent>
             </Card>
           </TabsContent>
