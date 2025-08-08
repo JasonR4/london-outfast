@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { MediaFormatsProvider } from "@/components/providers/MediaFormatsProvider";
+
 import Navigation from "@/components/Navigation";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import Footer from "@/components/Footer";
@@ -34,13 +34,8 @@ import BlogPost from "./pages/BlogPost";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Only apply security restrictions in production, not in development/iframe
+  // Disable right-click, inspect element, and dev tools
   useEffect(() => {
-    // Skip security restrictions in development or iframe context
-    if (process.env.NODE_ENV === 'development' || window.self !== window.top) {
-      return;
-    }
-
     // Disable right-click context menu
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -145,7 +140,6 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <MediaFormatsProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -190,7 +184,6 @@ const App = () => {
             <Footer />
           </div>
         </BrowserRouter>
-        </MediaFormatsProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
