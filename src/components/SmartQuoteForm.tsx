@@ -36,7 +36,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { currentQuote, addQuoteItem, removeQuoteItem, submitQuote, createOrGetQuote, loading: quotesLoading } = useQuotes();
+  const { currentQuote, addQuoteItem, removeQuoteItem, submitQuote, createOrGetQuote, loading: quotesLoading, fetchCurrentQuote } = useQuotes();
   
   console.log('✅ useQuotes hook loaded successfully');
   
@@ -404,9 +404,15 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       contactDetails
     });
 
-    // Check for quote items
-    if (!currentQuote || currentQuote.quote_items?.length === 0) {
-      console.log('❌ No quote items');
+    // Ensure we have the latest quote data
+    if (!currentQuote) {
+      await fetchCurrentQuote?.();
+    }
+    const itemsCount = currentQuote?.quote_items?.length ?? 0;
+    const hasItems = itemsCount > 0 || (currentQuote?.total_cost ?? 0) > 0;
+
+    if (!hasItems) {
+      console.log('❌ No quote items detected - blocking submit');
       toast({
         title: "No Items in Quote",
         description: "Please add at least one item to your quote before submitting.",
