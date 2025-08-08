@@ -1,0 +1,1 @@
+UPDATE content_pages SET page_type = 'about' WHERE slug = 'about';
