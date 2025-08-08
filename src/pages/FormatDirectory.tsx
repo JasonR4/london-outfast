@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCentralizedMediaFormats } from "@/hooks/useCentralizedMediaFormats";
+import { useMediaFormats } from "@/hooks/useMediaFormats";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,7 @@ const FormatDirectory = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const { mediaFormats, loading } = useCentralizedMediaFormats(false);
+  const { mediaFormats, loading } = useMediaFormats();
   
   // Get unique dimensions as categories
   const categories = [...new Set(mediaFormats.map(format => format.dimensions || 'Various Sizes'))];

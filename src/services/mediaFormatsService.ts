@@ -28,25 +28,17 @@ export interface MediaFormatCategory {
 
 class MediaFormatsService {
   private static instance: MediaFormatsService;
-  private static isInitializing: boolean = false;
   private subscribers: Map<string, (formats: MediaFormat[]) => void> = new Map();
   private realtimeChannel: RealtimeChannel | null = null;
   private cachedFormats: MediaFormat[] = [];
 
   private constructor() {
-    console.log('🏗️ MediaFormatsService: Constructor called, window.parent:', window.parent !== window ? 'IFRAME' : 'TOP');
     this.setupRealtimeSubscription();
   }
 
   static getInstance(): MediaFormatsService {
-    const isIframe = window.parent !== window;
-    console.log('📋 MediaFormatsService: getInstance called, iframe:', isIframe, 'existing instance:', !!MediaFormatsService.instance, 'initializing:', MediaFormatsService.isInitializing);
-    
-    if (!MediaFormatsService.instance && !MediaFormatsService.isInitializing) {
-      console.log('🆕 MediaFormatsService: Creating new instance');
-      MediaFormatsService.isInitializing = true;
+    if (!MediaFormatsService.instance) {
       MediaFormatsService.instance = new MediaFormatsService();
-      MediaFormatsService.isInitializing = false;
     }
     return MediaFormatsService.instance;
   }
@@ -110,8 +102,6 @@ class MediaFormatsService {
 
   async fetchFormats(includeInactive = false): Promise<MediaFormat[]> {
     try {
-      console.log('🔍 MediaFormatsService: Starting fetchFormats, includeInactive:', includeInactive);
-      
       // Build the query
       let query = supabase
         .from('media_formats')
@@ -122,29 +112,18 @@ class MediaFormatsService {
       }
 
       const { data: formatsData, error: formatsError } = await query.order('format_name');
-      
-      console.log('📊 MediaFormatsService: Formats fetched:', formatsData?.length || 0, 'formats');
-      
-      if (formatsError) {
-        console.error('❌ MediaFormatsService: Error fetching formats:', formatsError);
-        throw formatsError;
-      }
 
-      // Fetch categories for each format - handle empty table gracefully
-      console.log('🔍 MediaFormatsService: Fetching categories...');
+      if (formatsError) throw formatsError;
+
+      // Fetch categories for each format
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('media_format_categories')
         .select('*')
         .eq('is_active', true);
 
-      if (categoriesError) {
-        console.warn('⚠️ MediaFormatsService: Could not fetch categories:', categoriesError);
-        // Continue with empty categories instead of failing
-      } else {
-        console.log('📊 MediaFormatsService: Categories fetched:', categoriesData?.length || 0, 'categories');
-      }
+      if (categoriesError) throw categoriesError;
 
-      // Combine formats with their categories - handle empty categories gracefully
+      // Combine formats with their categories
       const formatsWithCategories: MediaFormat[] = (formatsData || []).map(format => {
         const formatCategories = categoriesData?.filter(cat => cat.media_format_id === format.id) || [];
         
@@ -165,10 +144,9 @@ class MediaFormatsService {
         };
       });
 
-      console.log('✅ MediaFormatsService: Successfully processed', formatsWithCategories.length, 'formats');
       return formatsWithCategories;
     } catch (error) {
-      console.error('❌ MediaFormatsService: Error in fetchFormats:', error);
+      console.error('Error fetching media formats:', error);
       throw error;
     }
   }
@@ -312,13 +290,11 @@ class MediaFormatsService {
   }
 
   destroy() {
-    console.log('🧹 MediaFormatsService: Destroying instance');
     if (this.realtimeChannel) {
       supabase.removeChannel(this.realtimeChannel);
     }
     this.subscribers.clear();
     this.cachedFormats = [];
-    // Don't reset the static instance to prevent React StrictMode issues
   }
 }
 

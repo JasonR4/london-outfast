@@ -7,8 +7,6 @@ export const useCentralizedMediaFormats = (includeInactive = false) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const isIframe = window.parent !== window;
-    console.log('🚀 useCentralizedMediaFormats: Starting with includeInactive:', includeInactive, 'iframe:', isIframe);
     const service = MediaFormatsService.getInstance();
     const subscriptionKey = `hook-${Date.now()}-${Math.random()}`;
 
@@ -19,17 +17,13 @@ export const useCentralizedMediaFormats = (includeInactive = false) => {
     });
 
     // Initial fetch
-    // Initial fetch
     const fetchData = async () => {
       try {
-        console.log('🔍 useCentralizedMediaFormats: Starting initial fetch...');
         setLoading(true);
         setError(null);
         const formats = await service.fetchFormats(includeInactive);
-        console.log('✅ useCentralizedMediaFormats: Initial fetch completed:', formats.length, 'formats');
         setMediaFormats(formats);
       } catch (err) {
-        console.error('❌ useCentralizedMediaFormats: Initial fetch failed:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch media formats');
       } finally {
         setLoading(false);
