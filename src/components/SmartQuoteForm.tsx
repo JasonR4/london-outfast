@@ -1357,6 +1357,21 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
               ) : (
                 // Contact form for non-authenticated users
                 <>
+                  {/* Sign in option for existing customers */}
+                  <div className="mb-6 p-4 bg-muted/50 rounded-lg border">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Already an MBL customer? Sign in to submit quotes directly to your portal.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open('/auth', '_blank')}
+                      className="w-full"
+                    >
+                      Sign In Here
+                    </Button>
+                  </div>
+
                   <div>
                     <Label htmlFor="contact_name">Full Name *</Label>
                     <Input
