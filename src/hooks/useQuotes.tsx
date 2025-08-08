@@ -204,35 +204,53 @@ export const useQuotes = () => {
   // Add an item to the current quote
   const addQuoteItem = async (item: Omit<QuoteItem, 'id' | 'quote_id'>): Promise<boolean> => {
     try {
+      console.log('🎯 addQuoteItem called with:', item);
+      
       const quoteId = await createOrGetQuote();
-      if (!quoteId) return false;
+      if (!quoteId) {
+        console.error('❌ Failed to get quote ID');
+        return false;
+      }
+      
+      console.log('✅ Got quote ID:', quoteId);
 
       // Calculate VAT for the item
       const vatCalc = calculateVAT(item.total_cost);
       
+      const itemToInsert = {
+        quote_id: quoteId,
+        ...item,
+        subtotal: vatCalc.subtotal,
+        vat_rate: vatCalc.vatRate,
+        vat_amount: vatCalc.vatAmount,
+        total_inc_vat: vatCalc.totalIncVat
+      };
+      
+      console.log('💾 Inserting quote item:', itemToInsert);
+      
       const { data, error } = await supabase
         .from('quote_items')
-        .insert({
-          quote_id: quoteId,
-          ...item,
-          subtotal: vatCalc.subtotal,
-          vat_rate: vatCalc.vatRate,
-          vat_amount: vatCalc.vatAmount,
-          total_inc_vat: vatCalc.totalIncVat
-        })
+        .insert(itemToInsert)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error inserting quote item:', error);
+        throw error;
+      }
+      
+      console.log('✅ Quote item inserted successfully:', data);
 
       // Update current quote with new item
       setCurrentQuote(prev => {
         if (!prev) return null;
-        return {
+        const updatedQuote = {
           ...prev,
           quote_items: [...(prev.quote_items || []), data],
           total_cost: (prev.total_cost || 0) + item.total_cost
         };
+        console.log('🔄 Updated current quote state:', updatedQuote);
+        return updatedQuote;
       });
 
       // Update quote total cost
@@ -241,9 +259,9 @@ export const useQuotes = () => {
       toast.success('Added to your plan!');
       return true;
     } catch (err: any) {
-      console.error('Error adding quote item:', err);
+      console.error('💥 Error adding quote item:', err);
       setError(err.message);
-      toast.error('Failed to add to plan');
+      toast.error('Failed to add to plan: ' + err.message);
       return false;
     }
   };
