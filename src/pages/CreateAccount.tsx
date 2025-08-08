@@ -239,7 +239,6 @@ export default function CreateAccount() {
               {hasQuoteData ? (
                 <>
                   Secure Your Quote{formData.firstName ? `, ${formData.firstName}` : ''}
-                  <span className="bg-gradient-primary bg-clip-text text-transparent"> - Set Your Password</span>
                 </>
               ) : (
                 <>
