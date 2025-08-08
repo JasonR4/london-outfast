@@ -63,7 +63,7 @@ export const BlogManager = () => {
     title: '',
     slug: '',
     excerpt: '',
-    content: { blocks: [] },
+    content: { text: '', blocks: [] },
     status: 'draft',
     meta_title: '',
     meta_description: '',
@@ -245,7 +245,7 @@ export const BlogManager = () => {
         title: '',
         slug: '',
         excerpt: '',
-        content: { blocks: [] },
+        content: { text: '', blocks: [] },
         status: 'draft',
         meta_title: '',
         meta_description: '',
@@ -514,6 +514,24 @@ export const BlogManager = () => {
                 />
               </div>
 
+              <div>
+                <Label htmlFor="content">Main Content</Label>
+                <Textarea
+                  id="content"
+                  value={newPost.content?.text || ''}
+                  onChange={(e) => setNewPost({ 
+                    ...newPost, 
+                    content: { ...newPost.content, text: e.target.value }
+                  })}
+                  placeholder="Write your blog post content here..."
+                  rows={10}
+                  className="min-h-[200px]"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Main body content of your blog post
+                </p>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="status">Status</Label>
@@ -649,6 +667,27 @@ export const BlogManager = () => {
                                   })}
                                   rows={3}
                                 />
+                              </div>
+
+                              <div>
+                                <Label>Main Content</Label>
+                                <Textarea
+                                  value={editingPost?.content?.text || post.content?.text || ''}
+                                  onChange={(e) => setEditingPost({
+                                    ...post,
+                                    ...editingPost,
+                                    content: { 
+                                      ...(editingPost?.content || post.content), 
+                                      text: e.target.value 
+                                    }
+                                  })}
+                                  rows={10}
+                                  className="min-h-[200px]"
+                                  placeholder="Write your blog post content here..."
+                                />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Main body content of your blog post
+                                </p>
                               </div>
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
