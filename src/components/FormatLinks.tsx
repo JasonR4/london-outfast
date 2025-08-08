@@ -2,24 +2,18 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useHomepageContent } from "@/hooks/useHomepageContent";
-import { useCentralizedMediaFormats } from "@/hooks/useCentralizedMediaFormats";
+
 
 const FormatLinks = () => {
   const navigate = useNavigate();
   const { content, loading: contentLoading } = useHomepageContent('format_links');
-  const { mediaFormats, loading: formatsLoading } = useCentralizedMediaFormats(false);
 
-  if (contentLoading || formatsLoading) {
+  if (contentLoading) {
     return <div className="py-16 px-4 text-center">Loading formats...</div>;
   }
 
-  // Use formats from CMS content if available, otherwise use media formats service
-  const popularFormats = content?.formats?.length > 0 
-    ? content.formats 
-    : mediaFormats.slice(0, 6).map(format => ({ 
-        slug: format.format_slug, 
-        name: format.format_name 
-      }));
+  // Use formats from CMS content only
+  const popularFormats = content?.formats || [];
 
   return (
     <section className="py-16 px-4 bg-muted/20">
