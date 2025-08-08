@@ -254,10 +254,13 @@ export const BlogManager = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // Remove categories from the post data before inserting
+      const { categories, ...postData } = newPost;
+
       const { data, error } = await supabase
         .from('blog_posts')
         .insert([{
-          ...newPost,
+          ...postData,
           author_id: user.id,
           published_at: newPost.status === 'published' ? new Date().toISOString() : null
         }])
@@ -267,8 +270,8 @@ export const BlogManager = () => {
       if (error) throw error;
 
       // Save categories if any are selected
-      if (newPost.categories && newPost.categories.length > 0) {
-        const categoryInserts = newPost.categories.map(category => ({
+      if (categories && categories.length > 0) {
+        const categoryInserts = categories.map(category => ({
           post_id: data.id,
           category_id: category.id
         }));
