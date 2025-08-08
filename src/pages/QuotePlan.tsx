@@ -252,9 +252,9 @@ export default function QuotePlan() {
                                 // Check if we have original cost (pre-sale price) vs base cost (sale price)
                                 const hasOriginalCost = item.original_cost && item.original_cost > 0;
                                 const baseRatePerPeriod = hasOriginalCost ? 
-                                  (item.original_cost / item.selected_periods.length / item.quantity) : 
-                                  (item.base_cost / item.selected_periods.length / item.quantity);
-                                const saleRatePerPeriod = item.base_cost / item.selected_periods.length / item.quantity;
+                                  (item.original_cost / item.selected_periods.length) : 
+                                  (item.base_cost / item.selected_periods.length);
+                                const saleRatePerPeriod = item.base_cost / item.selected_periods.length;
                                 const isOnSale = hasOriginalCost && (item.original_cost > item.base_cost);
                                 
                                 return (
@@ -278,8 +278,8 @@ export default function QuotePlan() {
                                     {item.discount_percentage > 0 && (
                                       <>
                                         <div className="flex justify-between text-xs text-muted-foreground">
-                                          <span>Original rate: {formatCurrency(item.original_cost / item.selected_periods.length / item.quantity)}</span>
-                                          <span>Saved: {formatCurrency((item.original_cost - item.base_cost) / item.selected_periods.length / item.quantity)}</span>
+                                          <span>Original rate: {formatCurrency(item.original_cost / item.selected_periods.length)}</span>
+                                          <span>Saved: {formatCurrency((item.original_cost - item.base_cost) / item.selected_periods.length)}</span>
                                         </div>
                                         <div className="flex justify-between text-sm text-green-600">
                                           <span>Total Volume Savings ({item.discount_percentage}%):</span>
