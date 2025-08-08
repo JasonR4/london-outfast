@@ -39,12 +39,12 @@ const Blog: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="text-sm text-muted-foreground">Filter by Format</label>
-            <Select value={formatSlug || ''} onValueChange={(v) => setFormatSlug(v || undefined)}>
+            <Select value={formatSlug || 'all-formats'} onValueChange={(v) => setFormatSlug(v === 'all-formats' ? undefined : v)}>
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="All formats" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All formats</SelectItem>
+                <SelectItem value="all-formats">All formats</SelectItem>
                 {mediaFormats.map((f) => (
                   <SelectItem key={f.id} value={f.format_slug}>{f.format_name}</SelectItem>
                 ))}
@@ -53,12 +53,12 @@ const Blog: React.FC = () => {
           </div>
           <div>
             <label className="text-sm text-muted-foreground">Filter by Category</label>
-            <Select value={categorySlug || ''} onValueChange={(v) => setCategorySlug(v || undefined)}>
+            <Select value={categorySlug || 'all-categories'} onValueChange={(v) => setCategorySlug(v === 'all-categories' ? undefined : v)}>
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="All categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All categories</SelectItem>
+                <SelectItem value="all-categories">All categories</SelectItem>
                 {categories.map((c) => (
                   <SelectItem key={c.id} value={c.slug}>{c.name}</SelectItem>
                 ))}
