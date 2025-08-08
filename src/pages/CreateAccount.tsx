@@ -29,34 +29,93 @@ export default function CreateAccount() {
   useEffect(() => {
     document.title = 'Secure Your Quote - Set Your Password - Media Buying London';
     
-    // Check if we have quote data to pre-populate
-    const submittedQuoteData = localStorage.getItem('submitted_quote_data');
-    const submittedQuoteDetails = localStorage.getItem('submitted_quote_details');
-    
-    if (submittedQuoteData) {
-      try {
-        const quoteData = JSON.parse(submittedQuoteData);
-        const nameParts = quoteData.contact_name?.split(' ') || [];
-        
-        setFormData(prev => ({
-          ...prev,
-          email: quoteData.contact_email || '',
-          firstName: nameParts[0] || '',
-          lastName: nameParts.slice(1).join(' ') || '',
-          company: quoteData.contact_company || ''
-        }));
-        setHasQuoteData(true);
+    const fetchQuoteData = async () => {
+      // First check if we have quote data in localStorage
+      const submittedQuoteData = localStorage.getItem('submitted_quote_data');
+      const submittedQuoteDetails = localStorage.getItem('submitted_quote_details');
+      
+      if (submittedQuoteData) {
+        try {
+          const quoteData = JSON.parse(submittedQuoteData);
+          const nameParts = quoteData.contact_name?.split(' ') || [];
+          
+          setFormData(prev => ({
+            ...prev,
+            email: quoteData.contact_email || '',
+            firstName: nameParts[0] || '',
+            lastName: nameParts.slice(1).join(' ') || '',
+            company: quoteData.contact_company || ''
+          }));
+          setHasQuoteData(true);
 
-        // Also load quote details if available
-        if (submittedQuoteDetails) {
-          const details = JSON.parse(submittedQuoteDetails);
-          setQuoteDetails(details);
+          // Also load quote details if available
+          if (submittedQuoteDetails) {
+            const details = JSON.parse(submittedQuoteDetails);
+            setQuoteDetails(details);
+          }
+        } catch (error) {
+          console.error('Error parsing quote data:', error);
         }
-      } catch (error) {
-        console.error('Error parsing quote data:', error);
       }
-    }
-  }, []);
+      
+      // If we have a quoteId parameter, fetch the quote from database
+      if (quoteId) {
+        console.log('🔍 Fetching quote for session ID:', quoteId);
+        try {
+          const { data: quote, error } = await supabase
+            .from('quotes')
+            .select(`
+              *,
+              quote_items (
+                id,
+                format_name,
+                format_slug,
+                quantity,
+                selected_areas,
+                selected_periods,
+                base_cost,
+                production_cost,
+                creative_cost,
+                total_cost,
+                subtotal,
+                vat_amount,
+                total_inc_vat
+              )
+            `)
+            .eq('user_session_id', quoteId)
+            .eq('status', 'submitted')
+            .single();
+
+          if (error) {
+            console.error('Error fetching quote:', error);
+            return;
+          }
+
+          if (quote) {
+            console.log('✅ Found quote:', quote);
+            
+            // Pre-populate form with quote contact details
+            const nameParts = quote.contact_name?.split(' ') || [];
+            setFormData(prev => ({
+              ...prev,
+              email: quote.contact_email || '',
+              firstName: nameParts[0] || '',
+              lastName: nameParts.slice(1).join(' ') || '',
+              company: quote.contact_company || ''
+            }));
+            
+            // Set quote details for display
+            setQuoteDetails(quote);
+            setHasQuoteData(true);
+          }
+        } catch (error) {
+          console.error('Error fetching quote data:', error);
+        }
+      }
+    };
+    
+    fetchQuoteData();
+  }, [quoteId]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -170,8 +229,8 @@ export default function CreateAccount() {
             <h1 className="text-4xl font-bold mb-4">
               {hasQuoteData ? (
                 <>
-                  Secure Your Quote - 
-                  <span className="bg-gradient-primary bg-clip-text text-transparent"> Set Your Password</span>
+                  Secure Your Quote{formData.firstName && `, ${formData.firstName}`}
+                  <span className="bg-gradient-primary bg-clip-text text-transparent"> - Set Your Password</span>
                 </>
               ) : (
                 <>
@@ -193,41 +252,154 @@ export default function CreateAccount() {
             {/* Quote Summary or Benefits Section */}
             <div className="lg:col-span-2 space-y-6">
               {hasQuoteData && quoteDetails ? (
-                // Show Quote Summary
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-primary" />
-                      Your Quote Summary
-                    </CardTitle>
-                    <CardDescription>
-                      Review your submitted campaign details before securing your account
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center p-4 bg-primary/5 rounded-lg border border-primary/10">
-                        <span className="font-semibold text-lg">Total Campaign Cost</span>
-                        <span className="text-2xl font-bold text-primary">£{quoteDetails.total_cost?.toLocaleString()}</span>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        <h4 className="font-semibold text-foreground">Campaign Components:</h4>
-                        {quoteDetails.quote_items?.map((item: any, index: number) => (
-                          <div key={index} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                            <div>
-                              <p className="font-medium">{item.format_name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {item.quantity} units • {item.selected_areas?.length || 0} areas
-                              </p>
+                // Show Comprehensive Quote Summary
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-primary" />
+                        Your Quote Summary
+                      </CardTitle>
+                      <CardDescription>
+                        Review your submitted campaign details before securing your account
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        {/* Quote Items Details */}
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-foreground">Campaign Components:</h4>
+                          {quoteDetails.quote_items?.map((item: any, index: number) => (
+                            <div key={index} className="border border-border rounded-lg p-4 space-y-3">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h5 className="font-semibold text-lg">{item.format_name}</h5>
+                                  <p className="text-sm text-muted-foreground">{item.format_slug}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-lg font-bold text-primary">£{item.total_inc_vat?.toLocaleString()}</p>
+                                  <p className="text-xs text-muted-foreground">inc VAT</p>
+                                </div>
+                              </div>
+                              
+                              {/* Quantity and Locations */}
+                              <div className="grid md:grid-cols-2 gap-4">
+                                <div>
+                                  <p className="text-sm font-medium text-muted-foreground">Quantity & Coverage</p>
+                                  <p className="font-medium">{item.quantity} units</p>
+                                  <p className="text-sm text-muted-foreground">{item.selected_areas?.length || 0} location areas</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-muted-foreground">Campaign Periods</p>
+                                  <p className="font-medium">{item.selected_periods?.length || 0} periods selected</p>
+                                  {item.selected_periods && item.selected_periods.length > 0 && (
+                                    <p className="text-sm text-muted-foreground">
+                                      P{Math.min(...item.selected_periods)} - P{Math.max(...item.selected_periods)}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Selected Areas */}
+                              {item.selected_areas && item.selected_areas.length > 0 && (
+                                <div>
+                                  <p className="text-sm font-medium text-muted-foreground mb-2">Selected Areas:</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {item.selected_areas.map((area: string, areaIndex: number) => (
+                                      <span
+                                        key={areaIndex}
+                                        className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary"
+                                      >
+                                        {area}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Cost Breakdown */}
+                              <div className="border-t pt-3 space-y-2">
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Media Cost:</span>
+                                  <span className="font-medium">£{item.base_cost?.toLocaleString()}</span>
+                                </div>
+                                {item.production_cost > 0 && (
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Production Cost:</span>
+                                    <span className="font-medium">£{item.production_cost?.toLocaleString()}</span>
+                                  </div>
+                                )}
+                                {item.creative_cost > 0 && (
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Creative Cost:</span>
+                                    <span className="font-medium">£{item.creative_cost?.toLocaleString()}</span>
+                                  </div>
+                                )}
+                                {item.discount_amount > 0 && (
+                                  <div className="flex justify-between text-sm text-green-600">
+                                    <span>Discount ({item.discount_percentage}%):</span>
+                                    <span className="font-medium">-£{item.discount_amount?.toLocaleString()}</span>
+                                  </div>
+                                )}
+                                <div className="flex justify-between text-sm border-t pt-2">
+                                  <span className="text-muted-foreground">Subtotal:</span>
+                                  <span className="font-medium">£{item.subtotal?.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">VAT ({item.vat_rate || 20}%):</span>
+                                  <span className="font-medium">£{item.vat_amount?.toLocaleString()}</span>
+                                </div>
+                              </div>
                             </div>
-                            <span className="font-semibold">£{item.total_cost?.toLocaleString()}</span>
+                          ))}
+                        </div>
+
+                        {/* Campaign Details */}
+                        {(quoteDetails.timeline || quoteDetails.additional_requirements) && (
+                          <div className="border-t pt-4">
+                            <h4 className="font-semibold text-foreground mb-3">Campaign Requirements:</h4>
+                            <div className="space-y-2">
+                              {quoteDetails.timeline && (
+                                <div>
+                                  <span className="text-sm font-medium text-muted-foreground">Timeline: </span>
+                                  <span className="text-sm">{quoteDetails.timeline}</span>
+                                </div>
+                              )}
+                              {quoteDetails.additional_requirements && (
+                                <div>
+                                  <span className="text-sm font-medium text-muted-foreground">Additional Requirements: </span>
+                                  <span className="text-sm">{quoteDetails.additional_requirements}</span>
+                                </div>
+                              )}
+                              {quoteDetails.website && (
+                                <div>
+                                  <span className="text-sm font-medium text-muted-foreground">Website: </span>
+                                  <span className="text-sm">{quoteDetails.website}</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        ))}
+                        )}
+
+                        {/* Total Summary */}
+                        <div className="border-t pt-4 space-y-3">
+                          <div className="flex justify-between items-center text-lg">
+                            <span className="font-semibold">Campaign Subtotal:</span>
+                            <span className="font-bold">£{quoteDetails.subtotal?.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">VAT ({quoteDetails.vat_rate || 20}%):</span>
+                            <span className="font-medium">£{quoteDetails.vat_amount?.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center p-4 bg-primary/5 rounded-lg border border-primary/10">
+                            <span className="font-semibold text-xl">Total Campaign Cost:</span>
+                            <span className="text-2xl font-bold text-primary">£{quoteDetails.total_inc_vat?.toLocaleString()}</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               ) : (
                 // Show Benefits Section
                 <Card>

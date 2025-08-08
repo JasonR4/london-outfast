@@ -384,7 +384,7 @@ const FormatPage = () => {
     const campaignTotal = priceCalculation.totalPrice * quantity;
     const originalCampaignTotal = priceCalculation.basePrice * priceCalculation.periodsCount * quantity;
     const discountAmount = (originalCampaignTotal - campaignTotal);
-    const productionCostCalc = calculateProductionCost(quantity, selectedPeriods.length, format.category);
+    const productionCostCalc = calculateProductionCost(quantity, selectedPeriods, format.category);
     const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
     const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
     const grandTotal = campaignTotal + productionTotal + creativeTotal;
@@ -1108,7 +1108,7 @@ const FormatPage = () => {
                           const campaignTotal = priceCalculation.totalPrice * quantity;
                           
                            // Production costs are always calculated
-                           const productionCostCalc = calculateProductionCost(quantity, selectedPeriods.length, format.category);
+                           const productionCostCalc = calculateProductionCost(quantity, selectedPeriods, format.category);
                            const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
                           
                           const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
