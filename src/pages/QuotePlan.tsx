@@ -126,12 +126,6 @@ export default function QuotePlan() {
     return true;
   };
 
-  // Calculate non-consecutive period surcharge
-  const calculateNonConsecutiveSurcharge = (periods: number[], basePrice: number) => {
-    if (arePeriodsConsecutive(periods)) return 0;
-    // 15% surcharge for non-consecutive periods
-    return basePrice * 0.15;
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -301,15 +295,6 @@ export default function QuotePlan() {
                                    <span>Production Cost ({item.quantity} unit{item.quantity !== 1 ? 's' : ''}):</span>
                                    <span className="font-medium text-foreground">{formatCurrency(item.production_cost || 0)}</span>
                                  </div>
-                                 {(() => {
-                                   const nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(item.selected_periods, item.base_cost);
-                                   return nonConsecutiveSurcharge > 0 ? (
-                                     <div className="flex justify-between">
-                                       <span className="text-amber-600">Non-consecutive setup surcharge (15%):</span>
-                                       <span className="font-medium text-amber-600">+{formatCurrency(nonConsecutiveSurcharge)}</span>
-                                     </div>
-                                   ) : null;
-                                 })()}
                                  {item.creative_cost > 0 && (
                                    <div className="flex justify-between">
                                      <span>Creative Assets:</span>
@@ -322,9 +307,8 @@ export default function QuotePlan() {
 
                            {/* Subtotal and VAT */}
                            <div className="border-t pt-3 space-y-2">
-                             {(() => {
-                               const nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(item.selected_periods, item.base_cost);
-                               const subtotalExcVat = (item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0) + nonConsecutiveSurcharge);
+                              {(() => {
+                                const subtotalExcVat = (item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0));
                                const vatAmount = subtotalExcVat * 0.2;
                                
                                return (
