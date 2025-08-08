@@ -165,7 +165,7 @@ const About = () => {
                     
                     {/* Epic CTA Buttons */}
                     {section.cta_buttons && (
-                      <div className="flex flex-wrap gap-6 justify-center lg:justify-start">
+                      <div className="flex flex-wrap gap-6 justify-center">
                         {section.cta_buttons.map((cta: any, idx: number) => (
                           <Button
                             key={idx}
