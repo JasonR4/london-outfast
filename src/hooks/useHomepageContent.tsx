@@ -16,6 +16,10 @@ export const useHomepageContent = (sectionKey: string) => {
   useEffect(() => {
     const fetchContent = async () => {
       try {
+        console.log(`🔍 Fetching homepage content for: ${sectionKey}`);
+        console.log(`🌐 Current domain: ${window.location.hostname}`);
+        console.log(`📍 In iframe: ${window !== window.top}`);
+        
         const { data, error } = await supabase
           .from('homepage_content')
           .select('content')
@@ -24,17 +28,20 @@ export const useHomepageContent = (sectionKey: string) => {
           .single();
 
         if (error) {
+          console.log(`❌ Homepage content error for ${sectionKey}:`, error);
           if (error.code === 'PGRST116') {
             // No data found, use empty object
+            console.log(`📭 No data found for ${sectionKey}, using fallback`);
             setContent({});
           } else {
             throw error;
           }
         } else {
+          console.log(`✅ Homepage content loaded for ${sectionKey}:`, data.content);
           setContent(data.content);
         }
       } catch (err) {
-        console.error(`Error fetching ${sectionKey} content:`, err);
+        console.error(`❌ Error fetching ${sectionKey} content:`, err);
         setError(`Failed to load ${sectionKey} content`);
         setContent({}); // Fallback to empty object
       } finally {
