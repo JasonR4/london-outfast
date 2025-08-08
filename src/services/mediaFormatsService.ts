@@ -102,6 +102,8 @@ class MediaFormatsService {
 
   async fetchFormats(includeInactive = false): Promise<MediaFormat[]> {
     try {
+      console.log('🔍 MediaFormatsService: Starting fetchFormats, includeInactive:', includeInactive);
+      
       // Build the query
       let query = supabase
         .from('media_formats')
@@ -112,8 +114,13 @@ class MediaFormatsService {
       }
 
       const { data: formatsData, error: formatsError } = await query.order('format_name');
-
-      if (formatsError) throw formatsError;
+      
+      console.log('📊 MediaFormatsService: Formats fetched:', formatsData?.length || 0, 'formats');
+      
+      if (formatsError) {
+        console.error('❌ MediaFormatsService: Error fetching formats:', formatsError);
+        throw formatsError;
+      }
 
       // Fetch categories for each format - handle empty table gracefully
       const { data: categoriesData, error: categoriesError } = await supabase
@@ -147,9 +154,10 @@ class MediaFormatsService {
         };
       });
 
+      console.log('✅ MediaFormatsService: Returning', formatsWithCategories.length, 'formats with categories');
       return formatsWithCategories;
     } catch (error) {
-      console.error('Error fetching media formats:', error);
+      console.error('❌ MediaFormatsService: Error in fetchFormats:', error);
       throw error;
     }
   }
