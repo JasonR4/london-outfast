@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
-import { useMediaFormats } from '@/hooks/useMediaFormats';
+import { useCentralizedMediaFormats } from '@/hooks/useCentralizedMediaFormats';
 import { updateMetaTags, generateStructuredData, getSEODataForPage } from '@/utils/seo';
 import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone, CalendarIcon } from 'lucide-react';
 import { useRateCards } from '@/hooks/useRateCards';
@@ -33,7 +33,7 @@ import { cn } from '@/lib/utils';
 
 const FormatPage = () => {
   const { formatSlug } = useParams();
-  const { getFormatBySlug, loading: formatsLoading, mediaFormats } = useMediaFormats();
+  const { getFormatBySlugSync: getFormatBySlug, loading: formatsLoading, mediaFormats } = useCentralizedMediaFormats();
   const navigate = useNavigate();
   const [format, setFormat] = useState<any>(null);
   const [cmsContent, setCmsContent] = useState<any>(null);
