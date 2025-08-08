@@ -21,7 +21,7 @@ export const useHomepageContent = (sectionKey: string) => {
           .select('content')
           .eq('section_key', sectionKey)
           .eq('is_active', true)
-          .single();
+          .maybeSingle();
 
         if (error) {
           if (error.code === 'PGRST116') {
