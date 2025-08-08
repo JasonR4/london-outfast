@@ -28,7 +28,7 @@ const FAQs = () => {
         .select('*')
         .eq('slug', 'faqs')
         .eq('status', 'published')
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching FAQs page:', error);

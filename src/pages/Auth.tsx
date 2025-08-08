@@ -46,7 +46,7 @@ const Auth = () => {
           .from('profiles')
           .select('role')
           .eq('user_id', session.user.id)
-          .single();
+          .maybeSingle();
         
         // Only allow CMS access from r4advertising.agency domain
         if (isCMSDomain && ['super_admin', 'admin', 'editor'].includes(profile?.role)) {
@@ -196,7 +196,7 @@ const Auth = () => {
       .from('profiles')
       .select('role')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
     
     // Only allow CMS access from r4advertising.agency domain
     if (isCMSDomain && ['super_admin', 'admin', 'editor'].includes(profile?.role)) {

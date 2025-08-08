@@ -186,7 +186,7 @@ export const useQuotes = () => {
           status: 'draft'
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -232,7 +232,7 @@ export const useQuotes = () => {
         .from('quote_items')
         .insert(itemToInsert)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('❌ Error inserting quote item:', error);
