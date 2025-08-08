@@ -7,6 +7,8 @@ export const useCentralizedMediaFormats = (includeInactive = false) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const isIframe = window.parent !== window;
+    console.log('🚀 useCentralizedMediaFormats: Starting with includeInactive:', includeInactive, 'iframe:', isIframe);
     const service = MediaFormatsService.getInstance();
     const subscriptionKey = `hook-${Date.now()}-${Math.random()}`;
 

@@ -33,11 +33,16 @@ class MediaFormatsService {
   private cachedFormats: MediaFormat[] = [];
 
   private constructor() {
+    console.log('🏗️ MediaFormatsService: Constructor called, window.parent:', window.parent !== window ? 'IFRAME' : 'TOP');
     this.setupRealtimeSubscription();
   }
 
   static getInstance(): MediaFormatsService {
+    const isIframe = window.parent !== window;
+    console.log('📋 MediaFormatsService: getInstance called, iframe:', isIframe, 'existing instance:', !!MediaFormatsService.instance);
+    
     if (!MediaFormatsService.instance) {
+      console.log('🆕 MediaFormatsService: Creating new instance');
       MediaFormatsService.instance = new MediaFormatsService();
     }
     return MediaFormatsService.instance;
