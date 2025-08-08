@@ -18,7 +18,8 @@ import HomepageContentManager from '@/components/cms/HomepageContentManager';
 import { RateCardManager } from '@/components/cms/RateCardManager';
 import { QuoteManager } from '@/components/cms/QuoteManager';
 import { AnalyticsManager } from '@/components/cms/AnalyticsManager';
-import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator, ClipboardList, BarChart3 } from 'lucide-react';
+import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator, ClipboardList, BarChart3, BookOpen } from 'lucide-react';
+import { BlogManager } from '@/components/cms/BlogManager';
 
 const CMS = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -198,7 +199,7 @@ const CMS = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="quotes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-12">
+          <TabsList className="grid w-full grid-cols-13">
             <TabsTrigger value="quotes" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
               Quotes
@@ -246,6 +247,10 @@ const CMS = () => {
             <TabsTrigger value="team" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Team
+            </TabsTrigger>
+            <TabsTrigger value="blog" className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              Blog
             </TabsTrigger>
           </TabsList>
 
@@ -314,6 +319,17 @@ const CMS = () => {
 
           <TabsContent value="rates">
             <RateCardManager />
+          </TabsContent>
+
+          <TabsContent value="blog">
+            <Card>
+              <CardHeader>
+                <CardTitle>Blog Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <BlogManager />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="seo">
