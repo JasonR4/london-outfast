@@ -34,8 +34,13 @@ import BlogPost from "./pages/BlogPost";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Disable right-click, inspect element, and dev tools
+  // Only apply security restrictions in production, not in development/iframe
   useEffect(() => {
+    // Skip security restrictions in development or iframe context
+    if (process.env.NODE_ENV === 'development' || window.self !== window.top) {
+      return;
+    }
+
     // Disable right-click context menu
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
