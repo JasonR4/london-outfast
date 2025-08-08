@@ -124,6 +124,12 @@ const Footer = () => {
               {footer.copyright || '© 2024 Media Buying London. All rights reserved.'}
             </div>
             <div className="flex items-center gap-6">
+              <button 
+                onClick={() => navigate('/cms')}
+                className="text-xs text-muted-foreground hover:text-primary transition-colors duration-200 font-medium"
+              >
+                Admin
+              </button>
               <div className="text-xs text-muted-foreground">
                 Built with ❤️ in London
               </div>
