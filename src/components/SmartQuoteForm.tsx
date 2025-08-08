@@ -1235,10 +1235,17 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                              if (selectedPeriods.length <= 1) return null;
                              
                              const sortedPeriods = [...selectedPeriods].sort((a, b) => a - b);
+                             console.log('🔍 Production run check:', { 
+                               selectedPeriods, 
+                               sortedPeriods 
+                             });
+                             
                              const hasGaps = sortedPeriods.some((period, index) => {
                                if (index === 0) return false;
                                return period !== sortedPeriods[index - 1] + 1;
                              });
+                             
+                             console.log('🔍 Has gaps:', hasGaps);
                              
                              if (hasGaps) {
                                const productionRuns = [];
@@ -1254,6 +1261,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                }
                                productionRuns.push(currentRun);
                                
+                               console.log('🔍 Production runs calculated:', productionRuns);
+                               
                                return (
                                  <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                                    <div className="flex items-start gap-2">
@@ -1266,6 +1275,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                          You've selected non-consecutive periods which requires <strong>{productionRuns.length} separate production runs</strong> instead of 1. This may increase production costs.
                                        </p>
                                        <p className="text-xs text-amber-600 mt-1">
+                                         Runs: {productionRuns.map(run => `P${run.join('-')}`).join(', ')}
+                                       </p>
+                                       <p className="text-xs text-amber-600">
                                          Consider selecting consecutive periods to optimize costs.
                                        </p>
                                      </div>
