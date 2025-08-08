@@ -382,6 +382,7 @@ export const PageManager = () => {
                           const url = page.page_type === 'ooh_format' ? `/outdoor-media/${page.slug}` : 
                                      page.page_type === 'industry' ? `/industries/${page.slug.replace('industries/', '')}` :
                                      page.slug === 'home' ? '/' :
+                                     page.page_type === 'about' || page.slug === 'about' ? '/about' :
                                      `/${page.slug}`;
                           window.open(url, '_blank');
                         }}
