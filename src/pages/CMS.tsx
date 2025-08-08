@@ -205,7 +205,7 @@ const CMS = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="quotes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-13 gap-1">
+          <TabsList className="grid w-full grid-cols-12 gap-1">
             <TabsTrigger value="quotes" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
               Quotes
@@ -216,11 +216,7 @@ const CMS = () => {
             </TabsTrigger>
             <TabsTrigger value="content" className="flex items-center gap-2">
               <PenTool className="w-4 h-4" />
-              Content
-            </TabsTrigger>
-            <TabsTrigger value="blog" className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              Blog
+              Content & Blog
             </TabsTrigger>
             <TabsTrigger value="industries" className="flex items-center gap-2">
               <Building className="w-4 h-4" />
@@ -279,26 +275,28 @@ const CMS = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="blog">
-            <Card>
-              <CardHeader>
-                <CardTitle>Blog Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Blog management functionality coming soon...</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
           <TabsContent value="content">
             <Card>
               <CardHeader>
-                <CardTitle>Content Management</CardTitle>
+                <CardTitle>Content & Blog Management</CardTitle>
               </CardHeader>
-              <CardContent>
-                <Suspense fallback={<div className="flex items-center justify-center py-8">Loading content editor...</div>}>
-                  <ContentEditor />
-                </Suspense>
+              <CardContent className="space-y-6">
+                <div className="border rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <PenTool className="w-5 h-5" />
+                    General Content
+                  </h3>
+                  <Suspense fallback={<div className="flex items-center justify-center py-8">Loading content editor...</div>}>
+                    <ContentEditor />
+                  </Suspense>
+                </div>
+                <div className="border rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <BookOpen className="w-5 h-5" />
+                    Blog Management
+                  </h3>
+                  <p className="text-muted-foreground">Blog management functionality coming soon...</p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
