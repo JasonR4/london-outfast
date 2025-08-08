@@ -43,22 +43,37 @@ export default function QuoteSubmitted() {
                     1
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold mb-3 text-foreground">Create Your Account</h3>
+                    <h3 className="text-2xl font-bold mb-3 text-foreground">Access Your Account</h3>
                     <p className="text-muted-foreground mb-6 text-lg leading-relaxed">
-                      Unlock premium access to manage your campaigns, track delivery, and access exclusive features designed for professional media buyers.
+                      Create an account or log in to manage your campaigns, track delivery, and access exclusive features designed for professional media buyers.
                     </p>
-                    <Button 
-                      size="lg" 
-                      className="bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all duration-300 hover:scale-105"
-                      onClick={() => {
-                        // Get the most recent submitted quote data from session storage
-                        const sessionId = localStorage.getItem('quote_session_id_submitted') || localStorage.getItem('quote_session_id');
-                        navigate(`/create-account${sessionId ? `?quote=${sessionId}` : ''}`);
-                      }}
-                    >
-                      Create Account Now
-                      <ArrowRight className="h-5 w-5 ml-2" />
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <Button 
+                        size="lg" 
+                        className="bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all duration-300 hover:scale-105"
+                        onClick={() => {
+                          // Get the most recent submitted quote data from session storage
+                          const sessionId = localStorage.getItem('quote_session_id_submitted') || localStorage.getItem('quote_session_id');
+                          navigate(`/create-account${sessionId ? `?quote=${sessionId}` : ''}`);
+                        }}
+                      >
+                        Create Account Now
+                        <ArrowRight className="h-5 w-5 ml-2" />
+                      </Button>
+                      
+                      <Button 
+                        variant="outline"
+                        size="lg" 
+                        className="border-2 border-primary/30 hover:bg-primary/5 transition-all duration-300 hover:scale-105"
+                        onClick={() => {
+                          // Get the most recent submitted quote data from session storage
+                          const sessionId = localStorage.getItem('quote_session_id_submitted') || localStorage.getItem('quote_session_id');
+                          navigate(`/auth${sessionId ? `?quote=${sessionId}` : ''}`);
+                        }}
+                      >
+                        Login to Existing Account
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -171,8 +186,21 @@ export default function QuoteSubmitted() {
                 navigate(`/create-account${sessionId ? `?quote=${sessionId}` : ''}`);
               }}
             >
-              Create Account for Premium Access
+              Create New Account
               <ArrowRight className="h-5 w-5 ml-2" />
+            </Button>
+            
+            <Button 
+              variant="outline"
+              size="lg" 
+              className="border-2 border-primary/30 hover:bg-primary/5 transition-all duration-300 hover:scale-105"
+              onClick={() => {
+                // Get the most recent submitted quote data from session storage
+                const sessionId = localStorage.getItem('quote_session_id_submitted') || localStorage.getItem('quote_session_id');
+                navigate(`/auth${sessionId ? `?quote=${sessionId}` : ''}`);
+              }}
+            >
+              Login to Existing Account
             </Button>
             
             <Button asChild variant="outline" size="lg" className="border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105">
