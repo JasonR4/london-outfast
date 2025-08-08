@@ -425,8 +425,18 @@ export const useQuotes = () => {
 
   // Listen for auth state changes to refresh quotes
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔐 Auth state changed:', event, !!session);
+      if (event === 'SIGNED_IN') {
+        console.log('👤 User signed in, linking session quotes...');
+        // Link session quotes to the newly authenticated user
+        await linkSessionQuotesToUser();
+        // Small delay to ensure auth state is fully updated, then refresh
+        setTimeout(() => {
+          fetchCurrentQuote();
+        }, 100);
+      } else if (event === 'SIGNED_OUT') {
+        console.log('👋 User signed out, refreshing quotes...');
         // Small delay to ensure auth state is fully updated
         setTimeout(() => {
           fetchCurrentQuote();

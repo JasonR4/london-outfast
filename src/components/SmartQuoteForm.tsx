@@ -360,9 +360,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     }
 
     try {
+      console.log('🔄 Starting to add quote items...');
       // Add each selected format as a separate quote item
       for (const format of selectedFormats) {
-        await addQuoteItem({
+        console.log(`➕ Adding item for format: ${format.format_name}`);
+        const success = await addQuoteItem({
           format_slug: format.format_slug,
           format_name: format.format_name,
           quantity: formatQuantities[format.format_slug] || 1,
@@ -373,6 +375,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
           base_cost: pricing.mediaPrice / selectedFormats.length,
           total_cost: pricing.totalCost / selectedFormats.length
         });
+        console.log(`✅ Item added successfully: ${success}`);
       }
 
       toast({
@@ -1225,7 +1228,13 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
                       {/* Add to Quote Button */}
                       <Button
-                        onClick={handleAddToQuote}
+                        onClick={() => {
+                          console.log('🖱️ Add More Media Options clicked');
+                          console.log('📋 Selected formats:', selectedFormats);
+                          console.log('📍 Selected locations:', selectedLocations);
+                          console.log('📅 Selected periods:', selectedPeriods);
+                          handleAddToQuote();
+                        }}
                         size="lg"
                         className="w-full"
                         disabled={quotesLoading}
@@ -1365,7 +1374,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open('/auth', '_blank')}
+                      onClick={() => {
+                        // Store current URL for return after auth
+                        localStorage.setItem('auth_return_url', window.location.pathname + window.location.search);
+                        window.location.href = '/auth';
+                      }}
                       className="w-full"
                     >
                       Sign In Here

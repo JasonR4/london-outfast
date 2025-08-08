@@ -27,6 +27,14 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        // Check for return URL first
+        const returnUrl = localStorage.getItem('auth_return_url');
+        if (returnUrl) {
+          localStorage.removeItem('auth_return_url');
+          navigate(returnUrl);
+          return;
+        }
+        
         // Check current domain
         const currentDomain = window.location.hostname;
         const allowedDomains = ['r4advertising.agency', 'localhost', '127.0.0.1'];
@@ -169,6 +177,14 @@ const Auth = () => {
   };
 
   const redirectUser = async (userId: string) => {
+    // Check for return URL first
+    const returnUrl = localStorage.getItem('auth_return_url');
+    if (returnUrl) {
+      localStorage.removeItem('auth_return_url');
+      navigate(returnUrl);
+      return;
+    }
+    
     // Check current domain
     const currentDomain = window.location.hostname;
     const allowedDomains = ['r4advertising.agency', 'localhost', '127.0.0.1'];
