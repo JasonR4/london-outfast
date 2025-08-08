@@ -16,22 +16,26 @@ export const useHomepageContent = (sectionKey: string) => {
   useEffect(() => {
     const fetchContent = async () => {
       try {
+        setLoading(true);
+        console.log(`Fetching homepage content for section: ${sectionKey}`);
+        
         const { data, error } = await supabase
           .from('homepage_content')
           .select('content')
           .eq('section_key', sectionKey)
           .eq('is_active', true)
-          .single();
+          .maybeSingle(); // Use maybeSingle instead of single
 
         if (error) {
-          if (error.code === 'PGRST116') {
-            // No data found, use empty object
-            setContent({});
-          } else {
-            throw error;
-          }
-        } else {
+          console.error(`Error fetching ${sectionKey} content:`, error);
+          setError(`Failed to load ${sectionKey} content`);
+          setContent({}); // Fallback to empty object
+        } else if (data) {
+          console.log(`Successfully fetched ${sectionKey} content:`, data);
           setContent(data.content);
+        } else {
+          console.log(`No content found for ${sectionKey}, using fallback`);
+          setContent({}); // No data found, use empty object
         }
       } catch (err) {
         console.error(`Error fetching ${sectionKey} content:`, err);
