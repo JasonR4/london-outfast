@@ -29,6 +29,7 @@ interface BlogPost {
   meta_description: string;
   cover_image_url: string;
   reading_time: number;
+  categories?: Array<{ id: string; name: string }>;
 }
 
 interface BlogCategory {
@@ -90,11 +91,27 @@ export const BlogManager = () => {
     try {
       const { data, error } = await supabase
         .from('blog_posts')
-        .select('*')
+        .select(`
+          *,
+          blog_post_categories(
+            category_id,
+            blog_categories(id, name, slug)
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPosts(data || []);
+      
+      // Map the data to include categories in the expected format
+      const postsWithCategories = (data || []).map(post => ({
+        ...post,
+        categories: post.blog_post_categories?.map((bpc: any) => ({
+          id: bpc.blog_categories.id,
+          name: bpc.blog_categories.name
+        })) || []
+      }));
+      
+      setPosts(postsWithCategories);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast({
@@ -249,6 +266,22 @@ export const BlogManager = () => {
 
       if (error) throw error;
 
+      // Save categories if any are selected
+      if (newPost.categories && newPost.categories.length > 0) {
+        const categoryInserts = newPost.categories.map(category => ({
+          post_id: data.id,
+          category_id: category.id
+        }));
+
+        const { error: categoryError } = await supabase
+          .from('blog_post_categories')
+          .insert(categoryInserts);
+
+        if (categoryError) {
+          console.error('Error saving categories:', categoryError);
+        }
+      }
+
       setPosts([data, ...posts]);
       setNewPost({
         title: '',
@@ -296,6 +329,27 @@ export const BlogManager = () => {
         .single();
 
       if (error) throw error;
+
+      // Update categories - delete existing and insert new ones
+      await supabase
+        .from('blog_post_categories')
+        .delete()
+        .eq('post_id', post.id);
+
+      if (post.categories && post.categories.length > 0) {
+        const categoryInserts = post.categories.map(category => ({
+          post_id: post.id,
+          category_id: category.id
+        }));
+
+        const { error: categoryError } = await supabase
+          .from('blog_post_categories')
+          .insert(categoryInserts);
+
+        if (categoryError) {
+          console.error('Error updating categories:', categoryError);
+        }
+      }
 
       setPosts(posts.map(p => p.id === post.id ? data : p));
       setEditingPost(null);
@@ -792,6 +846,62 @@ export const BlogManager = () => {
                                   })}
                                   rows={3}
                                 />
+                              </div>
+
+                              <div>
+                                <Label>Categories</Label>
+                                <Select onValueChange={(value) => {
+                                  const currentCategories = editingPost?.categories || post.categories || [];
+                                  const exists = currentCategories.find(c => c.id === value);
+                                  if (!exists) {
+                                    setEditingPost({ 
+                                      ...post,
+                                      ...editingPost,
+                                      categories: [...currentCategories, { id: value, name: categories.find(c => c.id === value)?.name || '' }] 
+                                    });
+                                  }
+                                }}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select categories" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-background border">
+                                    {categories.map((category) => (
+                                      <SelectItem key={category.id} value={category.id}>
+                                        {category.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                {((editingPost?.categories || post.categories) && (editingPost?.categories || post.categories || []).length > 0) && (
+                                  <div className="flex flex-wrap gap-2 mt-2">
+                                    {(editingPost?.categories || post.categories || []).map((category) => (
+                                      <Badge 
+                                        key={category.id} 
+                                        variant="secondary" 
+                                        className="flex items-center gap-1"
+                                      >
+                                        {category.name}
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const currentCategories = editingPost?.categories || post.categories || [];
+                                            setEditingPost({
+                                              ...post,
+                                              ...editingPost,
+                                              categories: currentCategories.filter(c => c.id !== category.id)
+                                            });
+                                          }}
+                                          className="ml-1 hover:text-destructive"
+                                        >
+                                          ×
+                                        </button>
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Select categories for your blog post
+                                </p>
                               </div>
 
                               <div>
