@@ -595,6 +595,12 @@ export const BlogManager = () => {
                         src={newPost.cover_image_url} 
                         alt="Cover preview" 
                         className="w-32 h-20 object-cover rounded border"
+                        onError={(e) => {
+                          console.error('Cover image failed to load (new post):', newPost.cover_image_url);
+                        }}
+                        onLoad={() => {
+                          console.log('Cover image loaded successfully (new post):', newPost.cover_image_url);
+                        }}
                       />
                     </div>
                   )}
@@ -762,6 +768,12 @@ export const BlogManager = () => {
                                         src={editingPost?.cover_image_url || post.cover_image_url} 
                                         alt="Cover preview" 
                                         className="w-32 h-20 object-cover rounded border"
+                                        onError={(e) => {
+                                          console.error('Cover image failed to load (edit post):', editingPost?.cover_image_url || post.cover_image_url);
+                                        }}
+                                        onLoad={() => {
+                                          console.log('Cover image loaded successfully (edit post):', editingPost?.cover_image_url || post.cover_image_url);
+                                        }}
                                       />
                                     </div>
                                   )}
