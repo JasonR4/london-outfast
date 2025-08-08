@@ -205,7 +205,7 @@ const CMS = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="quotes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-12 gap-1">
+          <TabsList className="grid w-full grid-cols-13 gap-1">
             <TabsTrigger value="quotes" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
               Quotes
@@ -217,6 +217,10 @@ const CMS = () => {
             <TabsTrigger value="content" className="flex items-center gap-2">
               <PenTool className="w-4 h-4" />
               Content
+            </TabsTrigger>
+            <TabsTrigger value="blog" className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              Blog
             </TabsTrigger>
             <TabsTrigger value="industries" className="flex items-center gap-2">
               <Building className="w-4 h-4" />
@@ -271,6 +275,17 @@ const CMS = () => {
                 <Suspense fallback={<div className="flex items-center justify-center py-8">Loading homepage content...</div>}>
                   <HomepageContentManager />
                 </Suspense>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="blog">
+            <Card>
+              <CardHeader>
+                <CardTitle>Blog Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Blog management functionality coming soon...</p>
               </CardContent>
             </Card>
           </TabsContent>
