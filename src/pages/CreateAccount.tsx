@@ -93,14 +93,23 @@ export default function CreateAccount() {
 
           if (quote) {
             console.log('✅ Found quote:', quote);
+            console.log('📝 Contact name from quote:', quote.contact_name);
             
             // Pre-populate form with quote contact details
             const nameParts = quote.contact_name?.split(' ') || [];
+            console.log('📝 Name parts:', nameParts);
+            
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+            
+            console.log('📝 Parsed firstName:', firstName);
+            console.log('📝 Parsed lastName:', lastName);
+            
             setFormData(prev => ({
               ...prev,
               email: quote.contact_email || '',
-              firstName: nameParts[0] || '',
-              lastName: nameParts.slice(1).join(' ') || '',
+              firstName: firstName,
+              lastName: lastName,
               company: quote.contact_company || ''
             }));
             
@@ -229,8 +238,8 @@ export default function CreateAccount() {
             <h1 className="text-4xl font-bold mb-4">
               {hasQuoteData ? (
                 <>
-                  Secure Your Quote, 
-                  <span className="bg-gradient-primary bg-clip-text text-transparent">{formData.firstName || "there"}</span>
+                  Secure Your Quote{formData.firstName ? `, ${formData.firstName}` : ''}
+                  <span className="bg-gradient-primary bg-clip-text text-transparent"> - Set Your Password</span>
                 </>
               ) : (
                 <>
