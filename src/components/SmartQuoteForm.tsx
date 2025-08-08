@@ -1375,6 +1375,12 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                       variant="outline"
                       size="sm"
                       onClick={() => {
+                        // Store current session ID before auth to preserve quotes
+                        const currentSessionId = localStorage.getItem('quote_session_id');
+                        if (currentSessionId) {
+                          localStorage.setItem('quote_session_id_pre_auth', currentSessionId);
+                        }
+                        
                         // Store current URL for return after auth
                         localStorage.setItem('auth_return_url', window.location.pathname + window.location.search);
                         window.location.href = '/auth';

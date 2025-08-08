@@ -64,16 +64,46 @@ export const useQuotes = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Update existing session-based quotes to include the user_id
-        const { error } = await supabase
-          .from('quotes')
-          .update({ user_id: user.id })
-          .eq('user_session_id', sessionId)
-          .is('user_id', null);
-
-        if (error) {
-          console.error('Error linking session quotes to user:', error);
+        console.log('🔗 Linking session quotes to user:', user.id);
+        console.log('📝 Current session ID:', sessionId);
+        
+        // Also check for quotes from previous sessions that might have been created before login
+        const storedSessionIds = [sessionId];
+        
+        // Check if there's a stored session ID from before authentication
+        const preAuthSessionId = localStorage.getItem('quote_session_id_pre_auth');
+        if (preAuthSessionId && preAuthSessionId !== sessionId) {
+          storedSessionIds.push(preAuthSessionId);
         }
+        
+        for (const sid of storedSessionIds) {
+          console.log('🔍 Checking session ID:', sid);
+          
+          // First check what quotes exist for this session
+          const { data: existingQuotes } = await supabase
+            .from('quotes')
+            .select('id, total_cost, quote_items(id)')
+            .eq('user_session_id', sid)
+            .is('user_id', null);
+            
+          console.log('📊 Found quotes for session:', existingQuotes);
+          
+          // Update existing session-based quotes to include the user_id
+          const { error } = await supabase
+            .from('quotes')
+            .update({ user_id: user.id })
+            .eq('user_session_id', sid)
+            .is('user_id', null);
+
+          if (error) {
+            console.error('Error linking session quotes to user:', error);
+          } else {
+            console.log('✅ Successfully linked quotes from session:', sid);
+          }
+        }
+        
+        // Clean up the pre-auth session ID
+        localStorage.removeItem('quote_session_id_pre_auth');
       }
     } catch (err) {
       console.error('Error linking quotes:', err);
@@ -88,18 +118,29 @@ export const useQuotes = () => {
 
       // First, try to link any session quotes to the authenticated user
       await linkSessionQuotesToUser();
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('👤 Current user when fetching quote:', user?.email || 'anonymous');
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('quotes')
         .select(`
           *,
           quote_items (*)
         `)
-        .eq('user_session_id', sessionId)
         .eq('status', 'draft')
         .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
+
+      // If user is authenticated, look for their quotes (including recently linked ones)
+      if (user) {
+        query = query.eq('user_id', user.id);
+      } else {
+        // If not authenticated, look for session-based quotes
+        query = query.eq('user_session_id', sessionId);
+      }
+
+      const { data, error } = await query.maybeSingle();
 
       if (error) throw error;
       
@@ -108,7 +149,9 @@ export const useQuotes = () => {
         dataId: data?.id,
         itemsCount: data?.quote_items?.length,
         totalCost: data?.total_cost,
-        quoteItems: data?.quote_items
+        isAuthenticated: !!user,
+        sessionId: sessionId,
+        userId: user?.id
       });
       
       setCurrentQuote(data);
