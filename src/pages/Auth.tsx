@@ -29,7 +29,9 @@ const Auth = () => {
       if (session) {
         // Check current domain
         const currentDomain = window.location.hostname;
-        const isCMSDomain = currentDomain === 'r4advertising.agency';
+        const allowedDomains = ['r4advertising.agency', 'localhost', '127.0.0.1'];
+        const isCMSDomain = allowedDomains.some(domain => currentDomain.includes(domain)) || 
+                           currentDomain.includes('lovableproject.com'); // Allow Lovable preview domains
         
         // Check user role and redirect accordingly
         const { data: profile } = await supabase
@@ -169,7 +171,9 @@ const Auth = () => {
   const redirectUser = async (userId: string) => {
     // Check current domain
     const currentDomain = window.location.hostname;
-    const isCMSDomain = currentDomain === 'r4advertising.agency';
+    const allowedDomains = ['r4advertising.agency', 'localhost', '127.0.0.1'];
+    const isCMSDomain = allowedDomains.some(domain => currentDomain.includes(domain)) || 
+                       currentDomain.includes('lovableproject.com'); // Allow Lovable preview domains
     
     // Check user role and redirect accordingly
     const { data: profile } = await supabase
