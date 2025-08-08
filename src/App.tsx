@@ -34,6 +34,109 @@ import BlogPost from "./pages/BlogPost";
 const queryClient = new QueryClient();
 
 const App = () => {
+  // Disable right-click, inspect element, and dev tools
+  useEffect(() => {
+    // Disable right-click context menu
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      return false;
+    };
+
+    // Disable key combinations for dev tools
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Disable F12 (Dev Tools)
+      if (e.key === 'F12') {
+        e.preventDefault();
+        return false;
+      }
+      
+      // Disable Ctrl+Shift+I (Dev Tools)
+      if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+        e.preventDefault();
+        return false;
+      }
+      
+      // Disable Ctrl+Shift+J (Console)
+      if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+        e.preventDefault();
+        return false;
+      }
+      
+      // Disable Ctrl+U (View Source)
+      if (e.ctrlKey && e.key === 'u') {
+        e.preventDefault();
+        return false;
+      }
+      
+      // Disable Ctrl+Shift+C (Element Selector)
+      if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+        e.preventDefault();
+        return false;
+      }
+      
+      // Disable Ctrl+S (Save Page)
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        return false;
+      }
+
+      // Disable Ctrl+A (Select All)
+      if (e.ctrlKey && e.key === 'a') {
+        e.preventDefault();
+        return false;
+      }
+    };
+
+    // Disable drag and drop
+    const handleDragStart = (e: DragEvent) => {
+      e.preventDefault();
+      return false;
+    };
+
+    // Add event listeners
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('dragstart', handleDragStart);
+
+    // Add CSS to disable text selection and dragging
+    const style = document.createElement('style');
+    style.textContent = `
+      * {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      input, textarea, [contenteditable], .input-allowed {
+        -webkit-user-select: text !important;
+        -moz-user-select: text !important;
+        -ms-user-select: text !important;
+        user-select: text !important;
+      }
+      
+      img {
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+        -moz-user-drag: none;
+        -o-user-drag: none;
+        user-drag: none;
+        pointer-events: none;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Cleanup event listeners
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('dragstart', handleDragStart);
+      document.head.removeChild(style);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
