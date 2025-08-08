@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Eye, Trash2, Save, X, Upload, Image as ImageIcon, FileText, Video } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface BlogPost {
   id: string;
@@ -538,17 +540,43 @@ export const BlogManager = () => {
 
               <div>
                 <Label htmlFor="content">Main Content</Label>
-                <Textarea
-                  id="content"
-                  value={newPost.content?.text || ''}
-                  onChange={(e) => setNewPost({ 
-                    ...newPost, 
-                    content: { ...newPost.content, text: e.target.value }
-                  })}
-                  placeholder="Write your blog post content here..."
-                  rows={10}
-                  className="min-h-[200px]"
-                />
+                <Tabs defaultValue="editor" className="mt-2">
+                  <TabsList>
+                    <TabsTrigger value="editor">Editor</TabsTrigger>
+                    <TabsTrigger value="preview">Preview</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="editor" className="mt-4">
+                    <ReactQuill
+                      theme="snow"
+                      value={newPost.content?.text || ''}
+                      onChange={(value) => setNewPost({ 
+                        ...newPost, 
+                        content: { ...newPost.content, text: value }
+                      })}
+                      style={{ minHeight: '200px' }}
+                      modules={{
+                        toolbar: [
+                          [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                          ['bold', 'italic', 'underline', 'strike'],
+                          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                          [{ 'script': 'sub'}, { 'script': 'super' }],
+                          [{ 'indent': '-1'}, { 'indent': '+1' }],
+                          [{ 'color': [] }, { 'background': [] }],
+                          [{ 'align': [] }],
+                          ['blockquote', 'code-block'],
+                          ['link', 'image'],
+                          ['clean']
+                        ],
+                      }}
+                    />
+                  </TabsContent>
+                  <TabsContent value="preview" className="mt-4">
+                    <div 
+                      className="min-h-[200px] p-4 border rounded-md prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: newPost.content?.text || '<p class="text-muted-foreground">No content to preview yet. Write something in the editor to see the preview.</p>' }}
+                    />
+                  </TabsContent>
+                </Tabs>
                 <p className="text-xs text-muted-foreground mt-1">
                   Main body content of your blog post
                 </p>
@@ -711,20 +739,47 @@ export const BlogManager = () => {
 
                               <div>
                                 <Label>Main Content</Label>
-                                <Textarea
-                                  value={editingPost?.content?.text || post.content?.text || ''}
-                                  onChange={(e) => setEditingPost({
-                                    ...post,
-                                    ...editingPost,
-                                    content: { 
-                                      ...(editingPost?.content || post.content), 
-                                      text: e.target.value 
-                                    }
-                                  })}
-                                  rows={10}
-                                  className="min-h-[200px]"
-                                  placeholder="Write your blog post content here..."
-                                />
+                                <Tabs defaultValue="editor" className="mt-2">
+                                  <TabsList>
+                                    <TabsTrigger value="editor">Editor</TabsTrigger>
+                                    <TabsTrigger value="preview">Preview</TabsTrigger>
+                                  </TabsList>
+                                  <TabsContent value="editor" className="mt-4">
+                                    <ReactQuill
+                                      theme="snow"
+                                      value={editingPost?.content?.text || post.content?.text || ''}
+                                      onChange={(value) => setEditingPost({
+                                        ...post,
+                                        ...editingPost,
+                                        content: { 
+                                          ...(editingPost?.content || post.content), 
+                                          text: value 
+                                        }
+                                      })}
+                                      style={{ minHeight: '200px' }}
+                                      modules={{
+                                        toolbar: [
+                                          [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                          ['bold', 'italic', 'underline', 'strike'],
+                                          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                          [{ 'script': 'sub'}, { 'script': 'super' }],
+                                          [{ 'indent': '-1'}, { 'indent': '+1' }],
+                                          [{ 'color': [] }, { 'background': [] }],
+                                          [{ 'align': [] }],
+                                          ['blockquote', 'code-block'],
+                                          ['link', 'image'],
+                                          ['clean']
+                                        ],
+                                      }}
+                                    />
+                                  </TabsContent>
+                                  <TabsContent value="preview" className="mt-4">
+                                    <div 
+                                      className="min-h-[200px] p-4 border rounded-md prose prose-sm max-w-none"
+                                      dangerouslySetInnerHTML={{ __html: editingPost?.content?.text || post.content?.text || '<p class="text-muted-foreground">No content to preview yet. Write something in the editor to see the preview.</p>' }}
+                                    />
+                                  </TabsContent>
+                                </Tabs>
                                 <p className="text-xs text-muted-foreground mt-1">
                                   Main body content of your blog post
                                 </p>
