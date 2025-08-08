@@ -198,7 +198,7 @@ const CMS = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="quotes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-13">
+          <TabsList className="grid w-full grid-cols-13 gap-1">
             <TabsTrigger value="quotes" className="flex items-center gap-2">
               <ClipboardList className="w-4 h-4" />
               Quotes
