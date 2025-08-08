@@ -65,12 +65,6 @@ const FormatPage = () => {
     return true;
   };
 
-  // Calculate non-consecutive period surcharge
-  const calculateNonConsecutiveSurcharge = (periods: number[], basePrice: number) => {
-    if (arePeriodsConsecutive(periods)) return 0;
-    // 15% surcharge for non-consecutive periods
-    return basePrice * 0.15;
-  };
   
   // Use rate cards hook
   const { 
@@ -409,10 +403,7 @@ const FormatPage = () => {
     const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
     const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
     
-    // Calculate non-consecutive surcharge
-    const nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(selectedPeriods, campaignTotal);
-    const finalCampaignTotal = campaignTotal + nonConsecutiveSurcharge;
-    const grandTotal = finalCampaignTotal + productionTotal + creativeTotal;
+    const grandTotal = campaignTotal + productionTotal + creativeTotal;
 
     // Create quote item
     const quoteItem = {
@@ -423,7 +414,7 @@ const FormatPage = () => {
       selected_areas: selectedAreas,
       production_cost: productionTotal,
       creative_cost: creativeTotal,
-      base_cost: finalCampaignTotal,
+      base_cost: campaignTotal,
       total_cost: grandTotal,
       discount_percentage: priceCalculation.discount || 0,
       discount_amount: discountAmount || 0,
@@ -1152,9 +1143,6 @@ const FormatPage = () => {
                          if (priceCalculation) {
                            let campaignTotal = priceCalculation.totalPrice * quantity;
                            
-                           // Apply non-consecutive surcharge if applicable
-                           const nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(selectedPeriods, campaignTotal);
-                           campaignTotal += nonConsecutiveSurcharge;
                            
                             // Production costs are always calculated
                             const productionCostCalc = calculateProductionCost(quantity, selectedPeriods.length, format.category);
@@ -1235,16 +1223,6 @@ const FormatPage = () => {
                                   </div>
                                    )}
                                    
-                                   {/* Non-consecutive surcharge display */}
-                                   {(() => {
-                                     const surcharge = calculateNonConsecutiveSurcharge(selectedPeriods, priceCalculation.totalPrice * quantity);
-                                     return surcharge > 0 ? (
-                                       <div className="flex justify-between text-sm text-amber-600">
-                                         <span>Non-consecutive setup surcharge (15%):</span>
-                                         <span>+£{surcharge.toFixed(2)}</span>
-                                       </div>
-                                     ) : null;
-                                   })()}
                                 <div className="flex justify-between font-bold text-lg border-t pt-3 bg-muted/30 -mx-2 px-2 py-2 rounded">
                                   <span>Subtotal (exc VAT):</span>
                                   <span>£{grandTotal.toFixed(2)}</span>
