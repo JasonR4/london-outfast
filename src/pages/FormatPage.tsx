@@ -10,9 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useMediaFormats } from '@/hooks/useMediaFormats';
 import { updateMetaTags, generateStructuredData, getSEODataForPage } from '@/utils/seo';
-import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone, CalendarIcon } from 'lucide-react';
+import { CheckCircle, MapPin, Users, Clock, Target, ArrowRight, Phone, CalendarIcon, AlertTriangle, Info } from 'lucide-react';
 import { useRateCards } from '@/hooks/useRateCards';
 import { useLocationSelector } from '@/hooks/useLocationSelector';
 import { useQuotes } from '@/hooks/useQuotes';
@@ -51,6 +52,25 @@ const FormatPage = () => {
   const [showUpsellModal, setShowUpsellModal] = useState(false);
   const [upsellContext, setUpsellContext] = useState<{ zoneName?: string; requiredCapacity: number } | null>(null);
   const [showCreativeUpsellModal, setShowCreativeUpsellModal] = useState(false);
+  
+  // Helper function to check if periods are consecutive
+  const arePeriodsConsecutive = (periods: number[]) => {
+    if (periods.length <= 1) return true;
+    const sortedPeriods = [...periods].sort((a, b) => a - b);
+    for (let i = 1; i < sortedPeriods.length; i++) {
+      if (sortedPeriods[i] - sortedPeriods[i - 1] !== 1) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Calculate non-consecutive period surcharge
+  const calculateNonConsecutiveSurcharge = (periods: number[], basePrice: number) => {
+    if (arePeriodsConsecutive(periods)) return 0;
+    // 15% surcharge for non-consecutive periods
+    return basePrice * 0.15;
+  };
   
   // Use rate cards hook
   const { 
@@ -381,13 +401,18 @@ const FormatPage = () => {
       return;
     }
 
+    
     const campaignTotal = priceCalculation.totalPrice * quantity;
     const originalCampaignTotal = priceCalculation.basePrice * priceCalculation.periodsCount * quantity;
     const discountAmount = (originalCampaignTotal - campaignTotal);
     const productionCostCalc = calculateProductionCost(quantity, selectedPeriods.length, format.category);
     const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
     const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
-    const grandTotal = campaignTotal + productionTotal + creativeTotal;
+    
+    // Calculate non-consecutive surcharge
+    const nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(selectedPeriods, campaignTotal);
+    const finalCampaignTotal = campaignTotal + nonConsecutiveSurcharge;
+    const grandTotal = finalCampaignTotal + productionTotal + creativeTotal;
 
     // Create quote item
     const quoteItem = {
@@ -398,14 +423,16 @@ const FormatPage = () => {
       selected_areas: selectedAreas,
       production_cost: productionTotal,
       creative_cost: creativeTotal,
-      base_cost: campaignTotal,
+      base_cost: finalCampaignTotal,
       total_cost: grandTotal,
       discount_percentage: priceCalculation.discount || 0,
       discount_amount: discountAmount || 0,
       original_cost: originalCampaignTotal || campaignTotal,
       campaign_start_date: campaignStartDate,
       campaign_end_date: campaignEndDate,
-      creative_needs: needsCreative ? `${creativeAssets} creative asset${creativeAssets > 1 ? 's' : ''} needed` : 'Client has artwork ready'
+      creative_needs: needsCreative ? `${creativeAssets} creative asset${creativeAssets > 1 ? 's' : ''} needed` : 'Client has artwork ready',
+      non_consecutive_surcharge: nonConsecutiveSurcharge,
+      is_consecutive_periods: arePeriodsConsecutive(selectedPeriods)
     };
 
     const success = await addQuoteItem(quoteItem);
@@ -717,38 +744,58 @@ const FormatPage = () => {
                      {/* Incharge Periods Selection - for period-specific formats */}
                       {isDateSpecific && (
                       <div>
-                        <Label>Select Campaign Periods</Label>
-                        
-                        {Array.isArray(inchargePeriods) && inchargePeriods.length > 0 ? (
-                          <div className="space-y-2 max-h-60 overflow-y-auto">
-                            {inchargePeriods.map((period, index) => (
-                              <div key={period.id || period.period_number || index} className="flex items-center space-x-2">
-                                <Checkbox
-                                  id={`period-${period.period_number}`}
-                                  checked={selectedPeriods.includes(period.period_number)}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setSelectedPeriods(prev => [...prev, period.period_number]);
-                                    } else {
-                                      setSelectedPeriods(prev => prev.filter(p => p !== period.period_number));
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor={`period-${period.period_number}`} className="text-sm">
-                                  Period {period.period_number}: {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
-                                </Label>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-sm text-muted-foreground p-4 bg-muted/50 rounded">
-                            {rateLoading ? 'Loading periods...' : 'No periods available for this format'}
-                          </div>
-                        )}
-                        
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Selected {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''}
-                        </p>
+                         <div className="flex items-center gap-2">
+                           <Label>Select Campaign Periods</Label>
+                           {selectedPeriods.length > 1 && !arePeriodsConsecutive(selectedPeriods) && (
+                             <TooltipProvider>
+                               <Tooltip>
+                                 <TooltipTrigger>
+                                   <AlertTriangle className="h-4 w-4 text-amber-500" />
+                                 </TooltipTrigger>
+                                 <TooltipContent>
+                                   <p>Non-consecutive periods selected.</p>
+                                   <p>Additional production setup may apply.</p>
+                                 </TooltipContent>
+                               </Tooltip>
+                             </TooltipProvider>
+                           )}
+                         </div>
+                         
+                         {Array.isArray(inchargePeriods) && inchargePeriods.length > 0 ? (
+                           <div className="space-y-2 max-h-60 overflow-y-auto">
+                             {inchargePeriods.map((period, index) => (
+                               <div key={period.id || period.period_number || index} className="flex items-center space-x-2">
+                                 <Checkbox
+                                   id={`period-${period.period_number}`}
+                                   checked={selectedPeriods.includes(period.period_number)}
+                                   onCheckedChange={(checked) => {
+                                     if (checked) {
+                                       setSelectedPeriods(prev => [...prev, period.period_number]);
+                                     } else {
+                                       setSelectedPeriods(prev => prev.filter(p => p !== period.period_number));
+                                     }
+                                   }}
+                                 />
+                                 <Label htmlFor={`period-${period.period_number}`} className="text-sm">
+                                   Period {period.period_number}: {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
+                                 </Label>
+                               </div>
+                             ))}
+                           </div>
+                         ) : (
+                           <div className="text-sm text-muted-foreground p-4 bg-muted/50 rounded">
+                             {rateLoading ? 'Loading periods...' : 'No periods available for this format'}
+                           </div>
+                         )}
+                         
+                         <div className="text-sm text-muted-foreground mt-2">
+                           <span>Selected {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''}</span>
+                           {selectedPeriods.length > 1 && !arePeriodsConsecutive(selectedPeriods) && (
+                             <span className="text-amber-600 block mt-1">
+                               ⚠️ Non-consecutive periods may incur additional setup costs
+                             </span>
+                           )}
+                         </div>
                       </div>
                     )}
 
@@ -1104,15 +1151,19 @@ const FormatPage = () => {
                           priceCalculation = calculatePrice(locationForPricing, pseudoPeriods);
                         }
                         
-                        if (priceCalculation) {
-                          const campaignTotal = priceCalculation.totalPrice * quantity;
-                          
-                           // Production costs are always calculated
-                           const productionCostCalc = calculateProductionCost(quantity, selectedPeriods.length, format.category);
-                           const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
-                          
-                          const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
-                          const grandTotal = campaignTotal + productionTotal + creativeTotal;
+                         if (priceCalculation) {
+                           let campaignTotal = priceCalculation.totalPrice * quantity;
+                           
+                           // Apply non-consecutive surcharge if applicable
+                           const nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(selectedPeriods, campaignTotal);
+                           campaignTotal += nonConsecutiveSurcharge;
+                           
+                            // Production costs are always calculated
+                            const productionCostCalc = calculateProductionCost(quantity, selectedPeriods.length, format.category);
+                            const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
+                           
+                           const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
+                           const grandTotal = campaignTotal + productionTotal + creativeTotal;
                           
                           return (
                             <div className="space-y-3">
@@ -1184,7 +1235,18 @@ const FormatPage = () => {
                                     <span>Creative Assets ({creativeAssets}):</span>
                                     <span>£{creativeTotal.toFixed(2)}</span>
                                   </div>
-                                )}
+                                   )}
+                                   
+                                   {/* Non-consecutive surcharge display */}
+                                   {(() => {
+                                     const surcharge = calculateNonConsecutiveSurcharge(selectedPeriods, priceCalculation.totalPrice * quantity);
+                                     return surcharge > 0 ? (
+                                       <div className="flex justify-between text-sm text-amber-600">
+                                         <span>Non-consecutive setup surcharge (15%):</span>
+                                         <span>+£{surcharge.toFixed(2)}</span>
+                                       </div>
+                                     ) : null;
+                                   })()}
                                 <div className="flex justify-between font-bold text-lg border-t pt-3 bg-muted/30 -mx-2 px-2 py-2 rounded">
                                   <span>Subtotal (exc VAT):</span>
                                   <span>£{grandTotal.toFixed(2)}</span>
