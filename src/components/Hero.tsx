@@ -40,20 +40,19 @@ const Hero = () => {
       {/* Content */}
       <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
         <Badge variant="secondary" className="mb-6 text-lg px-6 py-2">
-          Buy smarter. Plan faster.
+          {content?.badge_text || "Buy smarter. Plan faster."}
         </Badge>
         
         <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent leading-tight">
-          MEDIA BUYING LONDON
+          {content?.main_title || "MEDIA BUYING LONDON"}
         </h1>
         
         <p className="text-2xl md:text-3xl font-semibold mb-4 text-foreground">
-          London's Fastest, Leanest OOH Media Buying Specialists
+          {content?.subtitle || "London's Fastest, Leanest OOH Media Buying Specialists"}
         </p>
         
         <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed">
-          We don't build brands — we get them seen. From 6-sheets to Digital 48s, 
-          we buy media that gets noticed. Fast turnarounds, insider rates, zero delay.
+          {content?.description || "We don't build brands — we get them seen. From 6-sheets to Digital 48s, we buy media that gets noticed. Fast turnarounds, insider rates, zero delay."}
         </p>
         
         
@@ -64,15 +63,15 @@ const Hero = () => {
               className="text-lg px-8 py-6 shadow-glow"
               onClick={() => navigate('/quote')}
             >
-              I Know What I Want
+              {content?.primary_button_text || "GET MY MEDIA QUOTE"}
             </Button>
             <Button 
               variant="outline" 
               size="lg" 
               className="text-lg px-8 py-6"
-              onClick={() => navigate('/configurator')}
+              onClick={() => navigate('/contact')}
             >
-              I Need Guidance
+              {content?.secondary_button_text || "REQUEST CALLBACK"}
             </Button>
             <Button 
               variant="ghost" 
@@ -80,7 +79,7 @@ const Hero = () => {
               className="text-lg px-8 py-6 text-accent hover:text-accent-foreground"
               onClick={() => navigate('/outdoor-media')}
             >
-              I'm Just Exploring
+              {content?.browse_button_text || "Browse All OOH Formats →"}
             </Button>
           </div>
           
