@@ -28,6 +28,8 @@ import CreateAccount from "./pages/CreateAccount";
 import AccountCreated from "./pages/AccountCreated";
 import ClientPortal from "./pages/ClientPortal";
 import Contact from "./pages/Contact";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 const queryClient = new QueryClient();
 
@@ -160,11 +162,13 @@ const App = () => {
               <Route path="/outdoor-media/industries/:industrySlug" element={<IndustryPage />} />
               <Route path="/industries" element={<Industries />} />
               <Route path="/industries/:industrySlug" element={<IndustryPage />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/faqs" element={<FAQs />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/cms" element={<CMS />} />
+<Route path="/about" element={<About />} />
+<Route path="/faqs" element={<FAQs />} />
+<Route path="/contact" element={<Contact />} />
+<Route path="/blog" element={<Blog />} />
+<Route path="/blog/:slug" element={<BlogPost />} />
+<Route path="/auth" element={<Auth />} />
+<Route path="/cms" element={<CMS />} />
               {/* Legal Pages */}
               <Route path="/privacy-policy" element={<LegalPage />} />
               <Route path="/terms-of-service" element={<LegalPage />} />

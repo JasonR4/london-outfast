@@ -143,6 +143,16 @@ const Navigation = () => {
                 </button>
               );
             })}
+            {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
+              <button
+                onClick={() => handleNavigation('/blog')}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive('/blog') ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                Blog
+              </button>
+            )}
             
             {/* Your Plan Button - Show if user is client or has active quote */}
             {(userProfile?.role === 'client' || (currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0)) && (
@@ -220,6 +230,16 @@ const Navigation = () => {
                     </button>
                   );
                 })}
+                {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
+                  <button
+                    onClick={() => handleNavigation('/blog')}
+                    className={`text-left text-lg font-medium transition-colors hover:text-primary ${
+                      isActive('/blog') ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Blog
+                  </button>
+                )}
                 
                 {/* Mobile Your Plan Button - Show if user is client or has active quote */}
                 {(userProfile?.role === 'client' || (currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0)) && (
