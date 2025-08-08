@@ -113,8 +113,7 @@ const CMS = () => {
   const currentDomain = window.location.hostname;
   const allowedDomains = ['r4advertising.agency', 'localhost', '127.0.0.1'];
   const isDomainAllowed = allowedDomains.some(domain => currentDomain.includes(domain)) || 
-                         currentDomain.includes('lovableproject.com') || 
-                         currentDomain.includes('lovable.app'); // Allow all Lovable domains
+                         currentDomain.includes('lovableproject.com'); // Allow Lovable preview domains
 
   if (!isDomainAllowed) {
     return (
