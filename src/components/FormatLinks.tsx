@@ -10,8 +10,11 @@ const FormatLinks = () => {
   const { mediaFormats, loading: formatsLoading } = useCentralizedMediaFormats(false);
 
   if (contentLoading || formatsLoading) {
+    console.log('🔄 FormatLinks: Loading states - content:', contentLoading, 'formats:', formatsLoading);
     return <div className="py-16 px-4 text-center">Loading formats...</div>;
   }
+
+  console.log('✅ FormatLinks: Data loaded - formats:', mediaFormats.length);
 
   // Use formats from centralized service if content doesn't have them, otherwise use content formats
   const popularFormats = content?.formats?.length > 0 

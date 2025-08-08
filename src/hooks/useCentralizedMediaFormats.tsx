@@ -17,13 +17,17 @@ export const useCentralizedMediaFormats = (includeInactive = false) => {
     });
 
     // Initial fetch
+    // Initial fetch
     const fetchData = async () => {
       try {
+        console.log('🔍 useCentralizedMediaFormats: Starting initial fetch...');
         setLoading(true);
         setError(null);
         const formats = await service.fetchFormats(includeInactive);
+        console.log('✅ useCentralizedMediaFormats: Initial fetch completed:', formats.length, 'formats');
         setMediaFormats(formats);
       } catch (err) {
+        console.error('❌ useCentralizedMediaFormats: Initial fetch failed:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch media formats');
       } finally {
         setLoading(false);

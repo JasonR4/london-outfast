@@ -123,14 +123,17 @@ class MediaFormatsService {
       }
 
       // Fetch categories for each format - handle empty table gracefully
+      console.log('🔍 MediaFormatsService: Fetching categories...');
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('media_format_categories')
         .select('*')
         .eq('is_active', true);
 
       if (categoriesError) {
-        console.warn('Could not fetch categories:', categoriesError);
+        console.warn('⚠️ MediaFormatsService: Could not fetch categories:', categoriesError);
         // Continue with empty categories instead of failing
+      } else {
+        console.log('📊 MediaFormatsService: Categories fetched:', categoriesData?.length || 0, 'categories');
       }
 
       // Combine formats with their categories - handle empty categories gracefully
