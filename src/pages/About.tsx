@@ -190,6 +190,23 @@ const About = () => {
                         ))}
                       </div>
                     )}
+
+                    {/* Add Industries CTA Button after "Who We Work With" section */}
+                    {section.title === "Who We Work With" && (
+                      <div className="mt-12 flex justify-center">
+                        <Button
+                          asChild
+                          variant="outline"
+                          size="lg"
+                          className="group relative overflow-hidden px-12 py-6 text-xl font-semibold border-2 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 hover:scale-105 hover:-translate-y-1 animate-[scale-in_0.8s_ease-out_1s_both]"
+                        >
+                          <Link to="/industries" className="story-link">
+                            Explore All Industries
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Epic Media Container */}
@@ -268,21 +285,6 @@ const About = () => {
                       </AccordionItem>
                     ))}
                   </Accordion>
-                  
-                  {/* Industries CTA Button */}
-                  <div className="mt-16 flex justify-center">
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="lg"
-                      className="group relative overflow-hidden px-12 py-6 text-xl font-semibold border-2 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 hover:scale-105 hover:-translate-y-1 animate-[scale-in_0.8s_ease-out_1s_both]"
-                    >
-                      <Link to="/industries" className="story-link">
-                        Explore All Industries
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                      </Link>
-                    </Button>
-                  </div>
                 </div>
               )}
 
