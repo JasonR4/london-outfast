@@ -102,8 +102,6 @@ class MediaFormatsService {
 
   async fetchFormats(includeInactive = false): Promise<MediaFormat[]> {
     try {
-      console.log('📊 MediaFormatsService: Fetching formats, includeInactive:', includeInactive);
-      
       // Build the query
       let query = supabase
         .from('media_formats')
@@ -115,32 +113,17 @@ class MediaFormatsService {
 
       const { data: formatsData, error: formatsError } = await query.order('format_name');
 
-      if (formatsError) {
-        console.error('❌ Error fetching formats:', formatsError);
-        throw formatsError;
-      }
+      if (formatsError) throw formatsError;
 
-      console.log('✅ Successfully fetched formats:', formatsData?.length || 0);
+      // Fetch categories for each format
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('media_format_categories')
+        .select('*')
+        .eq('is_active', true);
 
-      // Try to fetch categories, but don't fail if it doesn't work
-      let categoriesData: any[] = [];
-      try {
-        const { data, error: categoriesError } = await supabase
-          .from('media_format_categories')
-          .select('*')
-          .eq('is_active', true);
+      if (categoriesError) throw categoriesError;
 
-        if (categoriesError) {
-          console.warn('⚠️ Warning: Could not fetch categories:', categoriesError);
-        } else {
-          categoriesData = data || [];
-          console.log('📦 Fetched categories:', categoriesData.length);
-        }
-      } catch (categoriesErr) {
-        console.warn('⚠️ Categories fetch failed, continuing without categories:', categoriesErr);
-      }
-
-      // Combine formats with their categories (or empty categories if fetch failed)
+      // Combine formats with their categories
       const formatsWithCategories: MediaFormat[] = (formatsData || []).map(format => {
         const formatCategories = categoriesData?.filter(cat => cat.media_format_id === format.id) || [];
         
@@ -161,15 +144,9 @@ class MediaFormatsService {
         };
       });
 
-      console.log('🎯 Final formats with categories:', formatsWithCategories.length);
-      
-      // Update cache and notify subscribers
-      this.cachedFormats = formatsWithCategories;
-      this.notifySubscribers();
-
       return formatsWithCategories;
     } catch (error) {
-      console.error('❌ Error fetching media formats:', error);
+      console.error('Error fetching media formats:', error);
       throw error;
     }
   }
