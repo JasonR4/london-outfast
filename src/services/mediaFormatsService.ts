@@ -28,6 +28,7 @@ export interface MediaFormatCategory {
 
 class MediaFormatsService {
   private static instance: MediaFormatsService;
+  private static isInitializing: boolean = false;
   private subscribers: Map<string, (formats: MediaFormat[]) => void> = new Map();
   private realtimeChannel: RealtimeChannel | null = null;
   private cachedFormats: MediaFormat[] = [];
@@ -39,11 +40,13 @@ class MediaFormatsService {
 
   static getInstance(): MediaFormatsService {
     const isIframe = window.parent !== window;
-    console.log('📋 MediaFormatsService: getInstance called, iframe:', isIframe, 'existing instance:', !!MediaFormatsService.instance);
+    console.log('📋 MediaFormatsService: getInstance called, iframe:', isIframe, 'existing instance:', !!MediaFormatsService.instance, 'initializing:', MediaFormatsService.isInitializing);
     
-    if (!MediaFormatsService.instance) {
+    if (!MediaFormatsService.instance && !MediaFormatsService.isInitializing) {
       console.log('🆕 MediaFormatsService: Creating new instance');
+      MediaFormatsService.isInitializing = true;
       MediaFormatsService.instance = new MediaFormatsService();
+      MediaFormatsService.isInitializing = false;
     }
     return MediaFormatsService.instance;
   }
@@ -309,11 +312,13 @@ class MediaFormatsService {
   }
 
   destroy() {
+    console.log('🧹 MediaFormatsService: Destroying instance');
     if (this.realtimeChannel) {
       supabase.removeChannel(this.realtimeChannel);
     }
     this.subscribers.clear();
     this.cachedFormats = [];
+    // Don't reset the static instance to prevent React StrictMode issues
   }
 }
 
