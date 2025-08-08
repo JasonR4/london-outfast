@@ -430,9 +430,7 @@ const FormatPage = () => {
       original_cost: originalCampaignTotal || campaignTotal,
       campaign_start_date: campaignStartDate,
       campaign_end_date: campaignEndDate,
-      creative_needs: needsCreative ? `${creativeAssets} creative asset${creativeAssets > 1 ? 's' : ''} needed` : 'Client has artwork ready',
-      non_consecutive_surcharge: nonConsecutiveSurcharge,
-      is_consecutive_periods: arePeriodsConsecutive(selectedPeriods)
+      creative_needs: needsCreative ? `${creativeAssets} creative asset${creativeAssets > 1 ? 's' : ''} needed` : 'Client has artwork ready'
     };
 
     const success = await addQuoteItem(quoteItem);
