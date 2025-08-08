@@ -13,7 +13,7 @@ const FormatLinks = () => {
     return <div className="py-16 px-4 text-center">Loading formats...</div>;
   }
 
-  // Use formats from centralized service if content doesn't have them, otherwise use content formats
+  // Use formats from CMS content if available, otherwise use media formats service
   const popularFormats = content?.formats?.length > 0 
     ? content.formats 
     : mediaFormats.slice(0, 6).map(format => ({ 
