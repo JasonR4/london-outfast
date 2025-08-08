@@ -465,14 +465,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       console.log('✅ Submit result:', success);
       
       if (success) {
-        // Navigate based on authentication status
-        if (user) {
-          console.log('🔄 Navigating to client portal');
-          navigate('/client-portal');
-        } else {
-          console.log('🔄 Navigating to create account');
-          navigate('/create-account');
-        }
+        // Always navigate to quote-submitted page first
+        console.log('🔄 Navigating to quote-submitted');
+        navigate('/quote-submitted');
       } else {
         console.log('❌ Submit returned false');
         toast({
@@ -1349,133 +1344,80 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
-              {user ? (
-                // Simplified form for authenticated users
-                <div className="space-y-4">
-                  <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
-                    <div className="flex items-center gap-2 text-sm font-medium text-primary mb-2">
-                      <CheckCircle2 className="w-4 h-4" />
-                      Logged in as {user.email}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Your quote will be automatically associated with your account and sent to your client portal.
-                    </p>
-                  </div>
-                  
-                  <Button
-                    onClick={(e) => {
-                      console.log('🖱️ Submit button clicked for authenticated user');
-                      e.preventDefault();
-                      handleSubmitQuote();
-                    }}
-                    size="lg"
-                    className="w-full"
-                    disabled={quotesLoading}
-                  >
-                    {quotesLoading ? "Submitting..." : "Submit Quote to Portal"}
-                  </Button>
+              {/* Contact form for all users */}
+              <>
+                <div>
+                  <Label htmlFor="contact_name">Full Name *</Label>
+                  <Input
+                    id="contact_name"
+                    value={contactDetails.contact_name}
+                    onChange={(e) => setContactDetails(prev => ({ ...prev, contact_name: e.target.value }))}
+                    placeholder="Your full name"
+                  />
                 </div>
-              ) : (
-                // Contact form for non-authenticated users
-                <>
-                  {/* Sign in option for existing customers */}
-                  <div className="mb-6 p-4 bg-muted/50 rounded-lg border">
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Already an MBL customer? Sign in to submit quotes directly to your portal.
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        // Store current session ID before auth to preserve quotes
-                        const currentSessionId = localStorage.getItem('quote_session_id');
-                        if (currentSessionId) {
-                          localStorage.setItem('quote_session_id_pre_auth', currentSessionId);
-                        }
-                        
-                        // Store current URL for return after auth
-                        localStorage.setItem('auth_return_url', window.location.pathname + window.location.search);
-                        window.location.href = '/auth';
-                      }}
-                      className="w-full"
-                    >
-                      Sign In Here
-                    </Button>
-                  </div>
 
-                  <div>
-                    <Label htmlFor="contact_name">Full Name *</Label>
-                    <Input
-                      id="contact_name"
-                      value={contactDetails.contact_name}
-                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_name: e.target.value }))}
-                      placeholder="Your full name"
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="contact_email">Email *</Label>
+                  <Input
+                    id="contact_email"
+                    type="email"
+                    value={contactDetails.contact_email}
+                    onChange={(e) => setContactDetails(prev => ({ ...prev, contact_email: e.target.value }))}
+                    placeholder="your@email.com"
+                  />
+                </div>
 
-                  <div>
-                    <Label htmlFor="contact_email">Email *</Label>
-                    <Input
-                      id="contact_email"
-                      type="email"
-                      value={contactDetails.contact_email}
-                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_email: e.target.value }))}
-                      placeholder="your@email.com"
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="contact_phone">Phone</Label>
+                  <Input
+                    id="contact_phone"
+                    type="tel"
+                    value={contactDetails.contact_phone}
+                    onChange={(e) => setContactDetails(prev => ({ ...prev, contact_phone: e.target.value }))}
+                    placeholder="+44 20 1234 5678"
+                  />
+                </div>
 
-                  <div>
-                    <Label htmlFor="contact_phone">Phone</Label>
-                    <Input
-                      id="contact_phone"
-                      type="tel"
-                      value={contactDetails.contact_phone}
-                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_phone: e.target.value }))}
-                      placeholder="+44 20 1234 5678"
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="contact_company">Company</Label>
+                  <Input
+                    id="contact_company"
+                    value={contactDetails.contact_company}
+                    onChange={(e) => setContactDetails(prev => ({ ...prev, contact_company: e.target.value }))}
+                    placeholder="Your company"
+                  />
+                </div>
 
-                  <div>
-                    <Label htmlFor="contact_company">Company</Label>
-                    <Input
-                      id="contact_company"
-                      value={contactDetails.contact_company}
-                      onChange={(e) => setContactDetails(prev => ({ ...prev, contact_company: e.target.value }))}
-                      placeholder="Your company"
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="website">Website</Label>
+                  <Input
+                    id="website"
+                    value={contactDetails.website}
+                    onChange={(e) => setContactDetails(prev => ({ ...prev, website: e.target.value }))}
+                    placeholder="https://yourwebsite.com"
+                  />
+                </div>
 
-                  <div>
-                    <Label htmlFor="website">Website</Label>
-                    <Input
-                      id="website"
-                      value={contactDetails.website}
-                      onChange={(e) => setContactDetails(prev => ({ ...prev, website: e.target.value }))}
-                      placeholder="https://yourwebsite.com"
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="additional_requirements">Additional Requirements</Label>
+                  <Textarea
+                    id="additional_requirements"
+                    value={contactDetails.additional_requirements}
+                    onChange={(e) => setContactDetails(prev => ({ ...prev, additional_requirements: e.target.value }))}
+                    placeholder="Tell us about your campaign objectives, timeline, or any special requirements..."
+                    rows={3}
+                  />
+                </div>
 
-                  <div>
-                    <Label htmlFor="additional_requirements">Additional Requirements</Label>
-                    <Textarea
-                      id="additional_requirements"
-                      value={contactDetails.additional_requirements}
-                      onChange={(e) => setContactDetails(prev => ({ ...prev, additional_requirements: e.target.value }))}
-                      placeholder="Tell us about your campaign objectives, timeline, or any special requirements..."
-                      rows={3}
-                    />
-                  </div>
-
-                  <Button
-                    onClick={handleSubmitQuote}
-                    size="lg"
-                    className="w-full"
-                    disabled={quotesLoading}
-                  >
-                    {quotesLoading ? "Submitting..." : "Submit Quote Request"}
-                  </Button>
-                </>
-              )}
+                <Button
+                  onClick={handleSubmitQuote}
+                  size="lg"
+                  className="w-full"
+                  disabled={quotesLoading}
+                >
+                  {quotesLoading ? "Submitting..." : "Submit Quote Request"}
+                </Button>
+              </>
             </CardContent>
           </Card>
         </div>
