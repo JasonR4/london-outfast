@@ -248,10 +248,12 @@ export default function QuotePlan() {
                           {/* Base Rate and Sale Price */}
                           <div className="grid grid-cols-2 gap-4 mb-4">
                             <div className="space-y-2">
-                              {(() => {
-                                const baseRatePerPeriod = item.original_cost ? (item.original_cost / item.selected_periods.length / item.quantity) : (item.base_cost / item.selected_periods.length / item.quantity);
-                                const saleRatePerPeriod = item.base_cost / item.selected_periods.length / item.quantity;
-                                const isOnSale = baseRatePerPeriod !== saleRatePerPeriod;
+                          {(() => {
+                                // Check if we have original cost (pre-sale price) vs base cost (sale price)
+                                const hasOriginalCost = item.original_cost && item.original_cost > 0;
+                                const baseRatePerPeriod = hasOriginalCost ? (item.original_cost / item.selected_periods.length) : (item.base_cost / item.selected_periods.length);
+                                const saleRatePerPeriod = item.base_cost / item.selected_periods.length;
+                                const isOnSale = hasOriginalCost && (item.original_cost > item.base_cost);
                                 
                                 return (
                                   <>
