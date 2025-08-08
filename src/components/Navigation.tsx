@@ -115,17 +115,27 @@ const Navigation = () => {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="bg-background border border-border shadow-lg z-50">
-                      {item.submenu.map((subItem: any, subIndex: number) => (
-                        <DropdownMenuItem 
-                          key={subIndex}
-                          onClick={() => handleNavigation(subItem.url)}
-                          className={`cursor-pointer hover:bg-muted ${
-                            isActive(subItem.url) ? 'bg-muted text-primary' : ''
-                          }`}
-                        >
-                          {subItem.label}
-                        </DropdownMenuItem>
-                      ))}
+                      {(() => {
+                        const isAbout = (item.label?.toLowerCase?.() === 'about') || item.url === '/about'
+                        const enrichedSubmenu = isAbout
+                          ? (() => {
+                              const hasFAQs = item.submenu?.some((s: any) => s?.url === '/faqs' || s?.label?.toLowerCase?.().includes('faq'))
+                              return hasFAQs ? item.submenu : [...item.submenu, { label: 'FAQs', url: '/faqs' }]
+                            })()
+                          : item.submenu
+
+                        return enrichedSubmenu.map((subItem: any, subIndex: number) => (
+                          <DropdownMenuItem 
+                            key={subIndex}
+                            onClick={() => handleNavigation(subItem.url)}
+                            className={`cursor-pointer hover:bg-muted ${
+                              isActive(subItem.url) ? 'bg-muted text-primary' : ''
+                            }`}
+                          >
+                            {subItem.label}
+                          </DropdownMenuItem>
+                        ))
+                      })()}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 );
@@ -202,17 +212,27 @@ const Navigation = () => {
                           </button>
                         </CollapsibleTrigger>
                         <CollapsibleContent className="pl-4 space-y-2 mt-2">
-                          {item.submenu.map((subItem: any, subIndex: number) => (
-                            <button
-                              key={subIndex}
-                              onClick={() => handleNavigation(subItem.url)}
-                              className={`block w-full text-left text-base font-medium transition-colors hover:text-primary ${
-                                isActive(subItem.url) ? 'text-primary' : 'text-muted-foreground'
-                              }`}
-                            >
-                              {subItem.label}
-                            </button>
-                          ))}
+                          {(() => {
+                            const isAbout = (item.label?.toLowerCase?.() === 'about') || item.url === '/about'
+                            const enrichedSubmenu = isAbout
+                              ? (() => {
+                                  const hasFAQs = item.submenu?.some((s: any) => s?.url === '/faqs' || s?.label?.toLowerCase?.().includes('faq'))
+                                  return hasFAQs ? item.submenu : [...item.submenu, { label: 'FAQs', url: '/faqs' }]
+                                })()
+                              : item.submenu
+
+                            return enrichedSubmenu.map((subItem: any, subIndex: number) => (
+                              <button
+                                key={subIndex}
+                                onClick={() => handleNavigation(subItem.url)}
+                                className={`block w-full text-left text-base font-medium transition-colors hover:text-primary ${
+                                  isActive(subItem.url) ? 'text-primary' : 'text-muted-foreground'
+                                }`}
+                              >
+                                {subItem.label}
+                              </button>
+                            ))
+                          })()}
                         </CollapsibleContent>
                       </Collapsible>
                     );
