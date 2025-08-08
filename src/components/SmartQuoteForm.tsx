@@ -415,7 +415,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       user: user?.email,
       currentQuote: currentQuote?.id,
       quoteItemsLength: currentQuote?.quote_items?.length,
-      contactDetails
+      contactDetails,
+      hasConfiguredItem: selectedFormats.length > 0 && selectedLocations.length > 0 && selectedPeriods.length > 0,
+      currentPricing: pricing
     });
 
     // Fetch latest quote and use it for validation
@@ -431,18 +433,39 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     const itemsCount = latest?.quote_items?.length ?? 0;
     const hasItems = itemsCount > 0 || (latest?.total_cost ?? 0) > 0;
     
+    // Check if user has configured an item but not added it to quote
+    const hasConfiguredItem = selectedFormats.length > 0 && selectedLocations.length > 0 && selectedPeriods.length > 0;
+    
     console.log('🔍 Validation check:', {
       itemsCount,
       totalCost: latest?.total_cost ?? 0,
       hasItems,
-      willBlock: !hasItems
+      hasConfiguredItem,
+      willBlock: !hasItems && !hasConfiguredItem
     });
 
-    if (!hasItems) {
-      console.log('❌ No quote items detected - blocking submit');
+    // If no items in quote but user has configured something, auto-add it
+    if (!hasItems && hasConfiguredItem) {
+      console.log('⚡ Auto-adding configured item to quote before submission');
+      await handleAddToQuote();
+      
+      // Re-fetch quote after adding
+      const updatedQuote = await fetchCurrentQuote?.();
+      if (!updatedQuote?.quote_items?.length) {
+        console.log('❌ Failed to add item to quote');
+        toast({
+          title: "Error Adding Item",
+          description: "Failed to add your configured item to the quote. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+      console.log('✅ Item auto-added successfully');
+    } else if (!hasItems) {
+      console.log('❌ No quote items detected and nothing configured - blocking submit');
       toast({
         title: "No Items in Quote",
-        description: "Please add at least one item to your quote before submitting.",
+        description: "Please configure and add at least one item to your quote before submitting.",
         variant: "destructive"
       });
       return;
