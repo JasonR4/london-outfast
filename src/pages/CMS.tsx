@@ -20,6 +20,7 @@ const IndustryContentManager = lazy(() => import('@/components/cms/IndustryConte
 const HomepageContentManager = lazy(() => import('@/components/cms/HomepageContentManager'));
 const RateCardManager = lazy(() => import('@/components/cms/RateCardManager').then(m => ({ default: m.RateCardManager })));
 const QuoteManager = lazy(() => import('@/components/cms/QuoteManager').then(m => ({ default: m.QuoteManager })));
+const BlogManager = lazy(() => import('@/components/cms/BlogManager').then(m => ({ default: m.BlogManager })));
 const AnalyticsManager = lazy(() => import('@/components/cms/AnalyticsManager').then(m => ({ default: m.AnalyticsManager })));
 
 const CMS = () => {
@@ -305,7 +306,9 @@ const CMS = () => {
                 <CardTitle>Blog Management</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Blog management functionality coming soon...</p>
+                <Suspense fallback={<div className="flex items-center justify-center py-8">Loading blog manager...</div>}>
+                  <BlogManager />
+                </Suspense>
               </CardContent>
             </Card>
           </TabsContent>
