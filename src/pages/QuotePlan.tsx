@@ -248,25 +248,23 @@ export default function QuotePlan() {
                           {/* Base Rate and Sale Price */}
                           <div className="grid grid-cols-2 gap-4 mb-4">
                             <div className="space-y-2">
-                          {(() => {
+                              {(() => {
                                 // Check if we have original cost (pre-sale price) vs base cost (sale price)
                                 const hasOriginalCost = item.original_cost && item.original_cost > 0;
-                                const baseRatePerPeriod = hasOriginalCost ? (item.original_cost / item.selected_periods.length) : (item.base_cost / item.selected_periods.length);
-                                const saleRatePerPeriod = item.base_cost / item.selected_periods.length;
+                                const baseRatePerPeriod = hasOriginalCost ? 
+                                  (item.original_cost / item.selected_periods.length / item.quantity) : 
+                                  (item.base_cost / item.selected_periods.length / item.quantity);
+                                const saleRatePerPeriod = item.base_cost / item.selected_periods.length / item.quantity;
                                 const isOnSale = hasOriginalCost && (item.original_cost > item.base_cost);
                                 
                                 return (
                                   <>
                                     <div className="flex justify-between text-sm">
-                                      <span>Base Rate per Incharge:</span>
-                                      <span className={isOnSale ? "line-through text-muted-foreground" : "font-medium"}>{formatCurrency(baseRatePerPeriod)}</span>
+                                      <span>Base Rate per Incharge{item.discount_percentage > 0 ? ` (${item.discount_percentage}% discount applied)` : ''}:</span>
+                                      <span>{formatCurrency(baseRatePerPeriod)}</span>
                                     </div>
                                     {isOnSale && (
                                       <>
-                                        <div className="flex justify-between text-sm text-green-600 font-medium">
-                                          <span>⚡ Special Offer:</span>
-                                          <span className="bg-green-100 px-2 py-1 rounded text-xs">Sale Price Applied</span>
-                                        </div>
                                         <div className="flex justify-between text-sm text-green-600 font-medium">
                                           <span>Sale Price per Incharge:</span>
                                           <span>{formatCurrency(saleRatePerPeriod)}</span>
@@ -278,59 +276,79 @@ export default function QuotePlan() {
                                       </>
                                     )}
                                     {item.discount_percentage > 0 && (
-                                      <div className="flex justify-between text-xs text-green-600">
-                                        <span>Volume Discount ({item.discount_percentage}%):</span>
-                                        <span>Additional -{formatCurrency((item.discount_amount || 0) / item.selected_periods.length / item.quantity)} per period</span>
+                                      <>
+                                        <div className="flex justify-between text-xs text-muted-foreground">
+                                          <span>Original rate: {formatCurrency(item.original_cost / item.selected_periods.length / item.quantity)}</span>
+                                          <span>Saved: {formatCurrency((item.original_cost - item.base_cost) / item.selected_periods.length / item.quantity)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm text-green-600">
+                                          <span>Total Volume Savings ({item.discount_percentage}%):</span>
+                                          <span>-{formatCurrency(item.discount_amount || 0)}</span>
+                                        </div>
+                                      </>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </div>
+                            <div className="space-y-2">
+                              {(() => {
+                                const hasOriginalCost = item.original_cost && item.original_cost > 0;
+                                const isOnSale = hasOriginalCost && (item.original_cost > item.base_cost);
+                                
+                                return (
+                                  <>
+                                    {isOnSale && (
+                                      <div className="flex justify-between text-sm text-green-600">
+                                        <span>⚡ Special Offer:</span>
+                                        <span>Sale Price Applied</span>
                                       </div>
                                     )}
                                   </>
                                 );
                               })()}
                             </div>
-                             <div className="space-y-2">
-                               <div className="text-sm text-muted-foreground">
-                                 <div className="flex justify-between">
-                                   <span>Campaign Cost ({item.quantity} × {item.selected_periods.length} period{item.selected_periods.length !== 1 ? 's' : ''}):</span>
-                                   <span className="font-medium text-foreground">{formatCurrency(item.base_cost)}</span>
-                                 </div>
-                                 <div className="flex justify-between">
-                                   <span>Production Cost ({item.quantity} unit{item.quantity !== 1 ? 's' : ''}):</span>
-                                   <span className="font-medium text-foreground">{formatCurrency(item.production_cost || 0)}</span>
-                                 </div>
-                                 {item.creative_cost > 0 && (
-                                   <div className="flex justify-between">
-                                     <span>Creative Assets:</span>
-                                     <span className="font-medium text-foreground">{formatCurrency(item.creative_cost)}</span>
-                                   </div>
-                                 )}
-                               </div>
-                             </div>
                           </div>
-
-                           {/* Subtotal and VAT */}
-                           <div className="border-t pt-3 space-y-2">
-                              {(() => {
-                                const subtotalExcVat = (item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0));
-                               const vatAmount = subtotalExcVat * 0.2;
-                               
-                               return (
-                                 <>
-                                   <div className="flex justify-between font-medium">
-                                     <span>Subtotal (exc VAT):</span>
-                                     <span>{formatCurrency(subtotalExcVat)}</span>
-                                   </div>
-                                   <div className="flex justify-between text-sm text-muted-foreground">
-                                     <span>VAT (20%):</span>
-                                     <span>{formatCurrency(vatAmount)}</span>
-                                   </div>
-                                   <div className="flex justify-between text-lg font-bold text-primary border-t pt-2">
-                                     <span>Total inc VAT:</span>
-                                     <span>{formatCurrency(subtotalExcVat + vatAmount)}</span>
-                                   </div>
-                                 </>
-                               );
-                             })()}
-                           </div>
+                          
+                          <div className="border-t pt-3 space-y-2">
+                            <div className="flex justify-between text-base">
+                              <span>Campaign Cost ({item.quantity} × {item.selected_periods.length} periods):</span>
+                              <span>{formatCurrency(item.base_cost)}</span>
+                            </div>
+                            <div className="flex justify-between text-base">
+                              <span>Production Cost ({item.quantity} units):</span>
+                              <span>{formatCurrency(item.production_cost || 0)}</span>
+                            </div>
+                            {item.creative_cost > 0 && (
+                              <div className="flex justify-between text-base">
+                                <span>Creative Assets ({item.quantity}):</span>
+                                <span>{formatCurrency(item.creative_cost)}</span>
+                              </div>
+                            )}
+                            
+                            {/* Subtotal and VAT */}
+                            {(() => {
+                              const subtotalExcVat = (item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0));
+                              const vatAmount = subtotalExcVat * 0.2;
+                              
+                              return (
+                                <>
+                                  <div className="flex justify-between font-bold text-lg border-t pt-3 bg-muted/30 -mx-2 px-2 py-2 rounded">
+                                    <span>Subtotal (exc VAT):</span>
+                                    <span>{formatCurrency(subtotalExcVat)}</span>
+                                  </div>
+                                  <div className="flex justify-between text-base text-muted-foreground">
+                                    <span>VAT (20%):</span>
+                                    <span>{formatCurrency(vatAmount)}</span>
+                                  </div>
+                                  <div className="flex justify-between font-bold text-xl border-t pt-2 bg-primary/10 -mx-2 px-2 py-2 rounded text-primary">
+                                    <span>Total inc VAT:</span>
+                                    <span>{formatCurrency(subtotalExcVat + vatAmount)}</span>
+                                  </div>
+                                </>
+                              );
+                            })()}
+                          </div>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
