@@ -211,9 +211,15 @@ export const BlogManager = () => {
   };
 
   const selectMediaFile = (file: MediaFile) => {
-    const { data: { publicUrl } } = supabase.storage
-      .from('cms-images')
-      .getPublicUrl(file.storage_path);
+    // Use the same URL generation approach as MediaLibrary
+    const [bucket, ...pathParts] = file.storage_path.split('/');
+    const filePath = pathParts.join('/');
+    
+    const { data } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(filePath);
+
+    const publicUrl = data.publicUrl;
 
     if (selectedCoverField === 'new') {
       setNewPost({ ...newPost, cover_image_url: publicUrl });
@@ -420,20 +426,19 @@ export const BlogManager = () => {
                   <CardContent>
                     <div className="grid grid-cols-4 gap-4">
                       {mediaFiles.map((file) => {
-                        // Generate public URL with error handling
-                        const getImageUrl = () => {
-                          try {
-                            const { data } = supabase.storage
-                              .from('cms-images')
-                              .getPublicUrl(file.storage_path);
-                            return data.publicUrl;
-                          } catch (error) {
-                            console.error('Error generating public URL:', error);
-                            return '';
-                          }
+                        // Use the same approach as MediaLibrary component
+                        const getFileUrl = (file: MediaFile) => {
+                          const [bucket, ...pathParts] = file.storage_path.split('/');
+                          const filePath = pathParts.join('/');
+                          
+                          const { data } = supabase.storage
+                            .from(bucket)
+                            .getPublicUrl(filePath);
+
+                          return data.publicUrl;
                         };
 
-                        const imageUrl = getImageUrl();
+                        const imageUrl = getFileUrl(file);
 
                         return (
                           <div
@@ -442,30 +447,17 @@ export const BlogManager = () => {
                             onClick={() => selectMediaFile(file)}
                           >
                             {file.file_type.startsWith('image/') ? (
-                              <div className="relative">
-                                <img
-                                  src={imageUrl}
-                                  alt={file.alt_text || file.original_name}
-                                  className="w-full h-24 object-cover rounded mb-2"
-                                  onError={(e) => {
-                                    console.error('Failed to load image:', imageUrl);
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
-                                    const fallback = target.nextElementSibling as HTMLElement;
-                                    if (fallback) fallback.style.display = 'flex';
-                                  }}
-                                  onLoad={() => {
-                                    console.log('Image loaded successfully:', imageUrl);
-                                  }}
-                                />
-                                <div 
-                                  className="w-full h-24 bg-muted rounded mb-2 flex flex-col items-center justify-center text-xs text-muted-foreground"
-                                  style={{ display: 'none' }}
-                                >
-                                  <ImageIcon className="w-6 h-6 mb-1" />
-                                  <span className="text-center">Image failed to load</span>
-                                </div>
-                              </div>
+                              <img
+                                src={imageUrl}
+                                alt={file.alt_text || file.original_name}
+                                className="w-full h-24 object-cover rounded mb-2"
+                                onError={(e) => {
+                                  console.error('Failed to load image:', imageUrl);
+                                }}
+                                onLoad={() => {
+                                  console.log('Image loaded successfully:', imageUrl);
+                                }}
+                              />
                             ) : file.file_type.startsWith('video/') ? (
                               <div className="w-full h-24 bg-muted rounded mb-2 flex items-center justify-center">
                                 <Video className="w-8 h-8 text-muted-foreground" />
@@ -480,9 +472,6 @@ export const BlogManager = () => {
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {(file.file_size / 1024).toFixed(1)} KB
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1 break-all" title={imageUrl}>
-                              URL: {imageUrl ? imageUrl.substring(imageUrl.lastIndexOf('/') + 1, imageUrl.lastIndexOf('/') + 15) + '...' : 'No URL'}
                             </p>
                           </div>
                         );
