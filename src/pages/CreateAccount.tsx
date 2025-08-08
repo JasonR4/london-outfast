@@ -229,8 +229,8 @@ export default function CreateAccount() {
             <h1 className="text-4xl font-bold mb-4">
               {hasQuoteData ? (
                 <>
-                  Secure Your Quote{formData.firstName && `, ${formData.firstName}`}
-                  <span className="bg-gradient-primary bg-clip-text text-transparent"> - Set Your Password</span>
+                  Secure Your Quote, 
+                  <span className="bg-gradient-primary bg-clip-text text-transparent">{formData.firstName || "there"}</span>
                 </>
               ) : (
                 <>
