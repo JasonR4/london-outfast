@@ -1228,7 +1228,53 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                            <div><strong>Formats:</strong> {selectedFormats.map(f => f.format_name).join(', ')}</div>
                            <div><strong>Total Quantity:</strong> {totalQuantity}</div>
                            <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
-                          <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
+                           <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
+                           
+                           {/* Production Run Optimization Warning */}
+                           {(() => {
+                             if (selectedPeriods.length <= 1) return null;
+                             
+                             const sortedPeriods = [...selectedPeriods].sort((a, b) => a - b);
+                             const hasGaps = sortedPeriods.some((period, index) => {
+                               if (index === 0) return false;
+                               return period !== sortedPeriods[index - 1] + 1;
+                             });
+                             
+                             if (hasGaps) {
+                               const productionRuns = [];
+                               let currentRun = [sortedPeriods[0]];
+                               
+                               for (let i = 1; i < sortedPeriods.length; i++) {
+                                 if (sortedPeriods[i] === sortedPeriods[i-1] + 1) {
+                                   currentRun.push(sortedPeriods[i]);
+                                 } else {
+                                   productionRuns.push(currentRun);
+                                   currentRun = [sortedPeriods[i]];
+                                 }
+                               }
+                               productionRuns.push(currentRun);
+                               
+                               return (
+                                 <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                   <div className="flex items-start gap-2">
+                                     <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                                     <div className="text-sm">
+                                       <p className="font-medium text-amber-800 mb-1">
+                                         Production Run Notice
+                                       </p>
+                                       <p className="text-amber-700">
+                                         You've selected non-consecutive periods which requires <strong>{productionRuns.length} separate production runs</strong> instead of 1. This may increase production costs.
+                                       </p>
+                                       <p className="text-xs text-amber-600 mt-1">
+                                         Consider selecting consecutive periods to optimize costs.
+                                       </p>
+                                     </div>
+                                   </div>
+                                 </div>
+                               );
+                             }
+                             return null;
+                           })()}
                         </CardContent>
                       </Card>
 
