@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Eye, Trash2, Save, X } from 'lucide-react';
+import { Plus, Edit, Eye, Trash2, Save, X, Upload, Image as ImageIcon, FileText, Video } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface BlogPost {
@@ -37,11 +37,28 @@ interface BlogCategory {
   is_active: boolean;
 }
 
+interface MediaFile {
+  id: string;
+  filename: string;
+  original_name: string;
+  storage_path: string;
+  file_type: string;
+  file_size: number;
+  alt_text: string;
+  caption: string;
+  created_at: string;
+}
+
 export const BlogManager = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [categories, setCategories] = useState<BlogCategory[]>([]);
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [showMediaDialog, setShowMediaDialog] = useState(false);
+  const [selectedCoverField, setSelectedCoverField] = useState<'new' | 'edit'>('new');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [newPost, setNewPost] = useState({
     title: '',
     slug: '',
@@ -63,6 +80,7 @@ export const BlogManager = () => {
   useEffect(() => {
     fetchPosts();
     fetchCategories();
+    fetchMediaFiles();
   }, []);
 
   const fetchPosts = async () => {
@@ -98,6 +116,111 @@ export const BlogManager = () => {
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
+  };
+
+  const fetchMediaFiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('media_library')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setMediaFiles(data || []);
+    } catch (error) {
+      console.error('Error fetching media files:', error);
+    }
+  };
+
+  const uploadFile = async (file: File) => {
+    try {
+      setUploading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `blog/${fileName}`;
+
+      // Upload file to storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('cms-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('cms-images')
+        .getPublicUrl(filePath);
+
+      // Save to media library
+      const { data: mediaData, error: mediaError } = await supabase
+        .from('media_library')
+        .insert([{
+          filename: fileName,
+          original_name: file.name,
+          storage_path: filePath,
+          file_type: file.type,
+          file_size: file.size,
+          uploaded_by: user.id,
+          alt_text: '',
+          caption: ''
+        }])
+        .select()
+        .single();
+
+      if (mediaError) throw mediaError;
+
+      // Update media files list
+      setMediaFiles([mediaData, ...mediaFiles]);
+
+      toast({
+        title: "Success",
+        description: "File uploaded successfully"
+      });
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload file",
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const publicUrl = await uploadFile(file);
+    if (publicUrl) {
+      if (selectedCoverField === 'new') {
+        setNewPost({ ...newPost, cover_image_url: publicUrl });
+      } else if (editingPost) {
+        setEditingPost({ ...editingPost, cover_image_url: publicUrl });
+      }
+      setShowMediaDialog(false);
+    }
+  };
+
+  const selectMediaFile = (file: MediaFile) => {
+    const { data: { publicUrl } } = supabase.storage
+      .from('cms-images')
+      .getPublicUrl(file.storage_path);
+
+    if (selectedCoverField === 'new') {
+      setNewPost({ ...newPost, cover_image_url: publicUrl });
+    } else if (editingPost) {
+      setEditingPost({ ...editingPost, cover_image_url: publicUrl });
+    }
+    setShowMediaDialog(false);
   };
 
   const createPost = async () => {
@@ -253,6 +376,95 @@ export const BlogManager = () => {
         </TabsList>
 
         <TabsContent value="posts" className="space-y-4">
+          {/* Media Upload Dialog */}
+          <Dialog open={showMediaDialog} onOpenChange={setShowMediaDialog}>
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Select or Upload Media</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                {/* Upload Section */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Upload New File</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-4">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*,video/*,.pdf,.doc,.docx"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="flex items-center gap-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        {uploading ? 'Uploading...' : 'Upload File'}
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        Supports images, videos, and documents
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Media Gallery */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Media Library ({mediaFiles.length} files)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-4 gap-4">
+                      {mediaFiles.map((file) => {
+                        const { data: { publicUrl } } = supabase.storage
+                          .from('cms-images')
+                          .getPublicUrl(file.storage_path);
+
+                        return (
+                          <div
+                            key={file.id}
+                            className="border rounded-lg p-2 cursor-pointer hover:bg-muted transition-colors"
+                            onClick={() => selectMediaFile(file)}
+                          >
+                            {file.file_type.startsWith('image/') ? (
+                              <img
+                                src={publicUrl}
+                                alt={file.alt_text || file.original_name}
+                                className="w-full h-24 object-cover rounded mb-2"
+                              />
+                            ) : file.file_type.startsWith('video/') ? (
+                              <div className="w-full h-24 bg-muted rounded mb-2 flex items-center justify-center">
+                                <Video className="w-8 h-8 text-muted-foreground" />
+                              </div>
+                            ) : (
+                              <div className="w-full h-24 bg-muted rounded mb-2 flex items-center justify-center">
+                                <FileText className="w-8 h-8 text-muted-foreground" />
+                              </div>
+                            )}
+                            <p className="text-xs truncate" title={file.original_name}>
+                              {file.original_name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {(file.file_size / 1024).toFixed(1)} KB
+                            </p>
+                          </div>
+                        );
+                      })}
+                      {mediaFiles.length === 0 && (
+                        <div className="col-span-4 text-center py-8 text-muted-foreground">
+                          No media files yet. Upload your first file above!
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </DialogContent>
+          </Dialog>
           {/* Create New Post */}
           <Card>
             <CardHeader>
@@ -317,13 +529,35 @@ export const BlogManager = () => {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="cover_image">Cover Image URL</Label>
-                  <Input
-                    id="cover_image"
-                    value={newPost.cover_image_url}
-                    onChange={(e) => setNewPost({ ...newPost, cover_image_url: e.target.value })}
-                    placeholder="https://..."
-                  />
+                  <Label htmlFor="cover_image">Cover Image</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="cover_image"
+                      value={newPost.cover_image_url}
+                      onChange={(e) => setNewPost({ ...newPost, cover_image_url: e.target.value })}
+                      placeholder="https://... or select from media"
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedCoverField('new');
+                        setShowMediaDialog(true);
+                      }}
+                    >
+                      <ImageIcon className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {newPost.cover_image_url && (
+                    <div className="mt-2">
+                      <img 
+                        src={newPost.cover_image_url} 
+                        alt="Cover preview" 
+                        className="w-32 h-20 object-cover rounded border"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -438,15 +672,38 @@ export const BlogManager = () => {
                                   </Select>
                                 </div>
                                 <div>
-                                  <Label>Cover Image URL</Label>
-                                  <Input
-                                    value={editingPost?.cover_image_url || post.cover_image_url || ''}
-                                    onChange={(e) => setEditingPost({
-                                      ...post,
-                                      ...editingPost,
-                                      cover_image_url: e.target.value
-                                    })}
-                                  />
+                                  <Label>Cover Image</Label>
+                                  <div className="flex gap-2">
+                                    <Input
+                                      value={editingPost?.cover_image_url || post.cover_image_url || ''}
+                                      onChange={(e) => setEditingPost({
+                                        ...post,
+                                        ...editingPost,
+                                        cover_image_url: e.target.value
+                                      })}
+                                      placeholder="https://... or select from media"
+                                      className="flex-1"
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setSelectedCoverField('edit');
+                                        setShowMediaDialog(true);
+                                      }}
+                                    >
+                                      <ImageIcon className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                  {(editingPost?.cover_image_url || post.cover_image_url) && (
+                                    <div className="mt-2">
+                                      <img 
+                                        src={editingPost?.cover_image_url || post.cover_image_url} 
+                                        alt="Cover preview" 
+                                        className="w-32 h-20 object-cover rounded border"
+                                      />
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                               <div className="flex gap-2">
