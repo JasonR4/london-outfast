@@ -137,12 +137,19 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       // Clear any session/local storage keys that could leak old plans
       const kill = [
         "mbl-plan", "mbl-plan-v1", "mbl-plan-v2",
-        "plan-store", "zustand", "quote-draft"
+        "plan-store", "zustand", "quote-draft",
+        "planDraft", "plan-draft"
       ];
       kill.forEach((k) => {
         try { sessionStorage.removeItem(k); } catch {}
         try { localStorage.removeItem(k); } catch {}
       });
+    } catch {}
+
+    // Clear the plan store completely
+    try {
+      const { clearAll } = require("@/state/plan");
+      clearAll?.();
     } catch {}
 
     // Reset all known Configure state (guard each setter so this is safe on older code too)
@@ -155,14 +162,31 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     try { setSearchQuery(""); } catch {}
     try { clearAllLocations(); } catch {}
 
+    // Also clear contact details
+    try {
+      setContactDetails({
+        contact_name: "",
+        contact_email: "",
+        contact_phone: "",
+        contact_company: "",
+        additional_requirements: "",
+        website: ""
+      });
+    } catch {}
+
     // Return to Search
     setActiveTab("search");
+    
+    // Force a page refresh to ensure complete reset
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   }, [
     setActiveTab,
     setSelectedFormats, setFormatQuantities,
     setSelectedPeriods, setOpenCategories, 
     setNeedsCreative, setCreativeQuantity, setSearchQuery,
-    clearAllLocations
+    clearAllLocations, setContactDetails
   ]);
 
   // Check authentication status
