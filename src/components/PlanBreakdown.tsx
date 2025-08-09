@@ -94,7 +94,7 @@ export default function PlanBreakdown({
 
   const totalSites = enriched.reduce((s, i) => s + i.sites, 0);
   const totalUniquePeriods = new Set(enriched.flatMap(i => i.selectedPeriods.map(String))).size;
-  const totalIncharges = enriched.reduce((s, i) => s + i.incharges, 0);
+  const totalIncharges = enriched.reduce((s, i) => s + i.uniquePeriods, 0);
   const subtotal = enriched.reduce((s, i) => s + i.subtotal, 0);
   const vat = subtotal * 0.20;
   const total = subtotal + vat;

@@ -76,7 +76,7 @@ const FormatBreakdown = ({ format }: { format: CampaignFormat }) => {
         <div className="text-xs text-muted-foreground">≈ {sharePct.toFixed(1)}% of campaign</div>
       </div>
       <div className="text-xs text-muted-foreground">
-        {sites} sites • {periods} periods • {inCharges} in-charges
+        {sites} sites • {periods} periods • {inCharges} site-periods
       </div>
       {capacity > 0 && (
         <div className="text-xs">
@@ -93,7 +93,7 @@ const FormatBreakdown = ({ format }: { format: CampaignFormat }) => {
         💰 Volume discount (over 3 campaign periods): {formatCurrency(-volumeDiscount)}
       </div>
       <div className="text-xs text-muted-foreground">
-        That's {formatCurrency(-volumeDiscount / inCharges)} per unit per period ({inCharges} in-charges).
+        That's {formatCurrency(-volumeDiscount / inCharges)} per site per period ({inCharges} site-periods).
       </div>
       <div className="text-sm">Media (after discount): {formatCurrency(mediaAfterDiscount)}</div>
       <div className="text-sm">Production: {formatCurrency(productionCost)}</div>
