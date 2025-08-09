@@ -3,35 +3,73 @@ export type DraftItem = {
   id: string;                 // `${formatId}-${Date.now()}`
   formatId: string;
   formatName: string;
-  saleRate: number;           // per in-charge
   quantity: number;           // sites
-  selectedPeriods: number[];
+  creativeQuantity: number;   // creative assets count
   locations: string[];        // area slugs/ids if applicable
-  creativeAssets: number;     // count the user set
-  productionCost: number;     // computed via tiers × print runs
-  creativeCost: number;       // computed via tiers
+  inCharges: string[];        // selected in-charge period IDs
+  rates: {
+    saleRatePerInCharge: number;
+    productionRatePerUnit: number;
+    creativeCost: number;
+  };
+  // Computed costs
+  mediaCost: number;
+  productionCost: number;
+  creativeCost: number;
+  totalCost: number;
+  discountAmount: number;
+  qualifiesVolume: boolean;
 };
 
 type PlanDraftState = {
   items: DraftItem[];
-  upsert(item: DraftItem): void;
-  remove(id: string): void;
+  getItem(formatId: string): DraftItem | undefined;
+  upsertItem(formatId: string, updates: Partial<Omit<DraftItem, 'id' | 'formatId'>>): void;
+  removeItem(formatId: string): void;
   clear(): void;
 };
 
 import { create } from "zustand";
 
-export const usePlanDraft = create<PlanDraftState>((set) => ({
+export const usePlanDraft = create<PlanDraftState>((set, get) => ({
   items: [],
-  upsert: (item) => set(s => {
-    const i = s.items.findIndex(x => x.id === item.id);
-    if (i >= 0) { 
-      const next = [...s.items]; 
-      next[i] = item; 
-      return { items: next }; 
+  getItem: (formatId) => get().items.find(item => item.formatId === formatId),
+  upsertItem: (formatId, updates) => set(state => {
+    const existingIndex = state.items.findIndex(item => item.formatId === formatId);
+    const existing = existingIndex >= 0 ? state.items[existingIndex] : null;
+    
+    const updatedItem: DraftItem = {
+      id: formatId,
+      formatId,
+      formatName: updates.formatName || existing?.formatName || '',
+      quantity: updates.quantity ?? existing?.quantity ?? 1,
+      creativeQuantity: updates.creativeQuantity ?? existing?.creativeQuantity ?? 0,
+      locations: updates.locations ?? existing?.locations ?? [],
+      inCharges: updates.inCharges ?? existing?.inCharges ?? [],
+      rates: updates.rates ?? existing?.rates ?? {
+        saleRatePerInCharge: 0,
+        productionRatePerUnit: 0,
+        creativeCost: 0
+      },
+      mediaCost: updates.mediaCost ?? existing?.mediaCost ?? 0,
+      productionCost: updates.productionCost ?? existing?.productionCost ?? 0,
+      creativeCost: updates.creativeCost ?? existing?.creativeCost ?? 0,
+      totalCost: updates.totalCost ?? existing?.totalCost ?? 0,
+      discountAmount: updates.discountAmount ?? existing?.discountAmount ?? 0,
+      qualifiesVolume: updates.qualifiesVolume ?? existing?.qualifiesVolume ?? false,
+    };
+
+    const newItems = [...state.items];
+    if (existingIndex >= 0) {
+      newItems[existingIndex] = updatedItem;
+    } else {
+      newItems.push(updatedItem);
     }
-    return { items: [...s.items, item] };
+    
+    return { items: newItems };
   }),
-  remove: (id) => set(s => ({ items: s.items.filter(x => x.id !== id) })),
+  removeItem: (formatId) => set(state => ({
+    items: state.items.filter(item => item.formatId !== formatId)
+  })),
   clear: () => set({ items: [] }),
 }));

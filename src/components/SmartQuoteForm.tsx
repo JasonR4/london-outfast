@@ -684,8 +684,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           {selectedFormats.map((format) => (
                             <MiniConfigurator
                               key={format.format_slug}
-                              format={{ id: format.format_slug, name: format.format_name }}
-                              defaultSaleRate={rateCards[0]?.sale_price || 800}
+                              format={{ 
+                                id: format.format_slug, 
+                                name: format.format_name,
+                                format_slug: format.format_slug
+                              }}
                             />
                           ))}
                         </div>
@@ -698,7 +701,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                   <div className="mb-6">
                     <h3 className="text-xl font-semibold mb-4">Your Current Plan</h3>
                      {(() => {
-                       const { items: draftItems } = usePlanDraft();
+                        const draftItems = usePlanDraft(state => state.items);
                       const savedItems = (currentQuote?.quote_items || []).map((item: any) => ({
                         formatName: item.format_name,
                         sites: item.quantity,
@@ -714,8 +717,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                       const draftItemsFormatted = draftItems.map(item => ({
                         formatName: item.formatName,
                         sites: item.quantity,
-                        selectedPeriods: item.selectedPeriods,
-                        saleRate: item.saleRate,
+                        selectedPeriods: item.inCharges.map(id => parseInt(id) || 0).filter(n => n > 0),
+                        saleRate: item.rates.saleRatePerInCharge,
                         productionCost: item.productionCost,
                         creativeCost: item.creativeCost,
                       }));
