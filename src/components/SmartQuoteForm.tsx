@@ -32,6 +32,7 @@ import PlanBreakdown from '@/components/PlanBreakdown';
 import { usePlanDraft } from '@/state/plan';
 import MiniConfigurator from '@/components/MiniConfigurator';
 import QuickSummary from '@/components/QuickSummary';
+import { trackQuoteSubmission, trackQuoteItemAdded, trackQuoteStarted } from '@/utils/analytics';
 
 interface SmartQuoteFormProps {
   onQuoteSubmitted?: () => void;
@@ -239,7 +240,15 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
   // Initialize quote on component mount
   useEffect(() => {
-    createOrGetQuote();
+    const initializeQuote = async () => {
+      await createOrGetQuote();
+      // Track quote started event (only once per session)
+      if (!sessionStorage.getItem('quote_started_tracked')) {
+        trackQuoteStarted();
+        sessionStorage.setItem('quote_started_tracked', 'true');
+      }
+    };
+    initializeQuote();
   }, []);
 
   const { mediaFormats, loading: formatsLoading } = useMediaFormats();
@@ -462,6 +471,13 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
           total_cost: pricing.totalCost / selectedFormats.length
         });
         console.log(`✅ Item added successfully: ${success}`);
+        
+        // Track item addition in analytics
+        trackQuoteItemAdded({
+          formatName: format.format_name,
+          quantity: formatQuantities[format.format_slug] || 1,
+          value: pricing.totalCost / selectedFormats.length
+        });
       }
 
       toast({
@@ -540,6 +556,24 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       console.log('✅ Submit result:', success);
       
       if (success) {
+        // Track conversion in Google Analytics
+        const totalValue = Number(latest?.total_cost || 0);
+        const itemCount = latest?.quote_items?.length || 0;
+        
+        trackQuoteSubmission({
+          quoteId: latest?.id || 'unknown',
+          totalValue: totalValue,
+          itemCount: itemCount,
+          contactEmail: contactDetails.contact_email,
+          contactCompany: contactDetails.contact_company
+        });
+
+        // Show success message
+        toast({
+          title: "Quote Submitted Successfully!",
+          description: "We'll review your request and get back to you within 24 hours.",
+        });
+
         // Navigate based on authentication status
         if (user) {
           console.log('🔄 Navigating to client portal');
