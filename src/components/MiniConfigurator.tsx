@@ -165,6 +165,35 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
   const hasCreativeAssets = creativeAssets > 0;
   const printRuns = countPrintRuns(selectedPeriods);
   const needsMultiplePrintRuns = printRuns > 1;
+
+  // ---- Helper module constants (tweak if needed) ----
+  // Creative guideline: 1 creative per 5 sites
+  const CREATIVE_PER_SITES = 5;
+
+  // ---- Derived helpers for meters ----
+  const capacity = quantity * (selectedPeriods?.length || 0);
+  const usage = selectedLocations?.length || 0;
+  const capacityPct = capacity > 0 ? Math.min(100, Math.round((usage / capacity) * 100)) : 0;
+  const capacityStatus =
+    capacity === 0
+      ? "Select sites and periods to unlock capacity."
+      : usage === capacity
+        ? "Perfect: locations match capacity."
+        : usage < capacity
+          ? `You can add ${capacity - usage} more location${capacity - usage === 1 ? "" : "s"}.`
+          : `Over by ${usage - capacity}. Increase sites or remove locations.`;
+
+  const recommendedCreatives = Math.max(1, Math.ceil(quantity / CREATIVE_PER_SITES));
+  const creativePct = Math.min(100, Math.round((creativeAssets / recommendedCreatives) * 100));
+  const creativeStatus =
+    creativeAssets === recommendedCreatives
+      ? "Optimal creative rotation."
+      : creativeAssets < recommendedCreatives
+        ? `Add ${recommendedCreatives - creativeAssets} creative${recommendedCreatives - creativeAssets === 1 ? "" : "s"} for better rotation.`
+        : `You're ${creativeAssets - recommendedCreatives} over recommended.`;
+
+  const setRecommendedCreatives = () => setCreativeAssets(recommendedCreatives);
+
   const uiSaleRate = rateCardData?.saleRatePerInCharge ?? existingItem?.saleRatePerInCharge ?? 0;
   const uiProductionRate = rateCardData?.productionRatePerUnit ?? existingItem?.productionRatePerUnit ?? 0;
   const uiCreativeRate = rateCardData?.creativeUnit ?? existingItem?.creativeUnit ?? 85;
@@ -420,6 +449,75 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
               </div>
             </div>
           )}
+
+          {/* Helper Meters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Location Capacity */}
+            <div className="p-3 border rounded-lg bg-background">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-sm font-medium">Location Capacity</div>
+                <div className="text-xs text-muted-foreground">{usage}/{capacity || 0} used</div>
+              </div>
+              <div className="h-2 w-full bg-muted rounded overflow-hidden">
+                <div
+                  className={`h-full ${usage > capacity && capacity > 0 ? 'bg-red-500' : 'bg-primary'}`}
+                  style={{ width: `${capacity > 0 ? capacityPct : 0}%` }}
+                />
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">{capacityStatus}</div>
+              <div className="mt-2 flex gap-2">
+                {capacity > 0 && usage < capacity && (
+                  <Button variant="outline" size="sm" onClick={() => { /* focus locations list */ }}>
+                    Add locations
+                  </Button>
+                )}
+                {capacity > 0 && usage > capacity && (
+                  <>
+                    <Button variant="outline" size="sm" onClick={() => { /* open quantity dropdown */ }}>
+                      Increase sites
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => { /* focus locations list */ }}>
+                      Review locations
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Creative Coverage */}
+            <div className="p-3 border rounded-lg bg-background">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-sm font-medium">Creative Coverage</div>
+                <div className="text-xs text-muted-foreground">
+                  {creativeAssets}/{recommendedCreatives} recommended
+                </div>
+              </div>
+              <div className="h-2 w-full bg-muted rounded overflow-hidden">
+                <div
+                  className={`h-full ${
+                    creativeAssets < recommendedCreatives ? 'bg-yellow-500' :
+                    creativeAssets === recommendedCreatives ? 'bg-primary' : 'bg-blue-500'
+                  }`}
+                  style={{ width: `${creativePct}%` }}
+                />
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                {creativeStatus} <span className="opacity-70">(~1 creative per {CREATIVE_PER_SITES} sites)</span>
+              </div>
+              <div className="mt-2 flex gap-2">
+                {creativeAssets !== recommendedCreatives && (
+                  <Button variant="outline" size="sm" onClick={setRecommendedCreatives}>
+                    Set to {recommendedCreatives}
+                  </Button>
+                )}
+              </div>
+              {needsMultiplePrintRuns && (
+                <div className="mt-2 text-[11px] text-muted-foreground">
+                  Non-consecutive periods don't change media rate; creative count is unchanged.
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Capacity Warning (concise) */}
           {capacityWarning && (
