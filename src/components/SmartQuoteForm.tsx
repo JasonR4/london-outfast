@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Search, MapPin, Zap, Calculator, CheckCircle2, AlertTriangle, Info, Palette, ChevronDown } from "lucide-react";
+import { Search, MapPin, Zap, Calculator, CheckCircle2, AlertTriangle, Info, Palette, ChevronDown, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuotes } from "@/hooks/useQuotes";
 import { useRateCards } from "@/hooks/useRateCards";
@@ -692,34 +692,52 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           </div>
                           
                           <div className="space-y-3">
-                            {selectedFormats.map((format) => (
-                              <div key={format.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border">
-                                <div className="flex-1">
-                                  <div className="font-medium text-sm">{format.format_name}</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {format.format_name.includes('Digital') ? 'Sites' : 'Units'} per Incharge Period
-                                  </div>
-                                </div>
-                                <div className="w-24">
-                                  <Select 
-                                    value={(formatQuantities[format.format_slug] || 1).toString()} 
-                                    onValueChange={(value) => setFormatQuantities(prev => ({
-                                      ...prev,
-                                      [format.format_slug]: parseInt(value)
-                                    }))}
-                                  >
-                                    <SelectTrigger className="h-8">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {[1, 2, 3, 4, 5, 10, 15, 20, 25, 50].map(num => (
-                                        <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                            ))}
+                             {selectedFormats.map((format) => (
+                               <div key={format.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border">
+                                 <div className="flex-1">
+                                   <div className="font-medium text-sm">{format.format_name}</div>
+                                   <div className="text-xs text-muted-foreground">
+                                     {format.format_name.includes('Digital') ? 'Sites' : 'Units'} per Incharge Period
+                                   </div>
+                                 </div>
+                                 <div className="flex items-center gap-2">
+                                   <div className="w-24">
+                                     <Select 
+                                       value={(formatQuantities[format.format_slug] || 1).toString()} 
+                                       onValueChange={(value) => setFormatQuantities(prev => ({
+                                         ...prev,
+                                         [format.format_slug]: parseInt(value)
+                                       }))}
+                                     >
+                                       <SelectTrigger className="h-8">
+                                         <SelectValue />
+                                       </SelectTrigger>
+                                       <SelectContent>
+                                         {[1, 2, 3, 4, 5, 10, 15, 20, 25, 50].map(num => (
+                                           <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                                         ))}
+                                       </SelectContent>
+                                     </Select>
+                                   </div>
+                                   <Button
+                                     variant="ghost"
+                                     size="icon"
+                                     className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                     onClick={() => {
+                                       setSelectedFormats(prev => prev.filter(f => f.format_slug !== format.format_slug));
+                                       setFormatQuantities(prev => {
+                                         const newQuantities = { ...prev };
+                                         delete newQuantities[format.format_slug];
+                                         return newQuantities;
+                                       });
+                                     }}
+                                     title="Remove from selection"
+                                   >
+                                     <X className="h-4 w-4" />
+                                   </Button>
+                                 </div>
+                               </div>
+                             ))}
                           </div>
                         </div>
 
