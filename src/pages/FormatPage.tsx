@@ -66,10 +66,6 @@ const FormatPage = () => {
     return true;
   };
 
-  // Surcharge disabled: production-only impact for non-consecutive periods
-  const calculateNonConsecutiveSurcharge = (_periods: number[], _basePrice: number) => {
-    return 0;
-  };
   
   // Use rate cards hook
   const { 
@@ -419,7 +415,7 @@ const FormatPage = () => {
       selected_areas: selectedAreas,
       production_cost: productionTotal,
       creative_cost: creativeTotal,
-      base_cost: finalCampaignTotal,
+      base_cost: campaignTotal,
       total_cost: grandTotal,
       discount_percentage: priceCalculation.discount || 0,
       discount_amount: discountAmount || 0,
