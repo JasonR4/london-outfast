@@ -165,7 +165,6 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
   const hasCreativeAssets = creativeAssets > 0;
   const printRuns = countPrintRuns(selectedPeriods);
   const needsMultiplePrintRuns = printRuns > 1;
-  // UI rates used in preview (fallbacks if store not ready)
   const uiSaleRate = rateCardData?.saleRatePerInCharge ?? existingItem?.saleRatePerInCharge ?? 0;
   const uiProductionRate = rateCardData?.productionRatePerUnit ?? existingItem?.productionRatePerUnit ?? 0;
   const uiCreativeRate = rateCardData?.creativeUnit ?? existingItem?.creativeUnit ?? 85;
@@ -371,30 +370,24 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
             )}
           </div>
 
-          {/* Cost Preview / Rate Summary */}
-          {isConfigured ? (
+          {isConfigured && (
             <div className="p-3 bg-muted/50 rounded-lg space-y-2">
               <div className="text-sm font-medium">Cost Preview</div>
               <div className="space-y-1 text-xs">
-                {/* Unit rate helper */}
                 <div className="flex justify-between opacity-70">
                   <span>Unit rate (per in-charge):</span>
                   <span>{formatCurrency(uiSaleRate)}</span>
                 </div>
-
-                {/* Media at sale rate with breakdown */}
                 <div className="flex justify-between">
                   <span>
                     Media cost at sale rate: {formatCurrency(uiSaleRate)} × {quantity} {quantity === 1 ? 'site' : 'sites'} × {uniquePeriodCount} {uniquePeriodCount === 1 ? 'period' : 'periods'} =
                   </span>
-                  <span>{formatCurrency((uiSaleRate || 0) * quantity * uniquePeriodCount)}</span>
+                  <span>{formatCurrency(uiSaleRate * quantity * uniquePeriodCount)}</span>
                 </div>
-
-                {/* Discount + after-discount (only if discount > 0) */}
                 {Boolean(existingItem?.discountAmount && existingItem.discountAmount > 0) && (
                   <>
                     <div className="flex justify-between text-green-600">
-                      <span>💰 Volume discount (10% for 3+ in-charge periods):</span>
+                      <span>Volume discount:</span>
                       <span>-{formatCurrency(existingItem!.discountAmount)}</span>
                     </div>
                     <div className="flex justify-between">
@@ -403,9 +396,7 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
                     </div>
                   </>
                 )}
-
-                {/* Production row only if > 0 */}
-                {existingItem?.productionCost && existingItem.productionCost > 0 && (
+                {existingItem?.productionCost > 0 && (
                   <div className="flex justify-between">
                     <span>
                       Production cost: {formatCurrency(uiProductionRate)} × {needsMultiplePrintRuns ? printRuns : 1} print run{(needsMultiplePrintRuns ? printRuns : 1) === 1 ? '' : 's'} × {quantity} {quantity === 1 ? 'site' : 'sites'} =
@@ -413,43 +404,19 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
                     <span>{formatCurrency(existingItem.productionCost)}</span>
                   </div>
                 )}
-
-                {/* Creative row only if > 0 */}
-                {existingItem?.creativeCost && existingItem.creativeCost > 0 && (
+                {existingItem?.creativeCost > 0 && (
                   <div className="flex justify-between">
                     <span>
-                      Creative cost: {formatCurrency(uiCreativeRate)} × {(existingItem as any).creativeAssets ?? 0} {(existingItem as any).creativeAssets === 1 ? 'asset' : 'assets'} =
+                      Creative cost: {formatCurrency(uiCreativeRate)} × {(existingItem as any).creativeAssets ?? 0} asset{((existingItem as any).creativeAssets ?? 0) === 1 ? '' : 's'} =
                     </span>
                     <span>{formatCurrency(existingItem.creativeCost)}</span>
                   </div>
                 )}
-
                 <hr className="my-2" />
                 <div className="flex justify-between font-medium">
                   <span>Total:</span>
                   <span>{formatCurrency(currentCost)}</span>
                 </div>
-              </div>
-            </div>
-          ) : (
-            <div className="p-3 bg-muted/30 rounded-lg space-y-2">
-              <div className="text-sm font-medium">Rate summary</div>
-              <div className="grid grid-cols-1 gap-1 text-xs">
-                <div className="flex justify-between">
-                  <span>Sale rate (per in-charge):</span>
-                  <span>{formatCurrency(rateCardData?.saleRatePerInCharge || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Production (per unit, per print run):</span>
-                  <span>{formatCurrency(rateCardData?.productionRatePerUnit || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Creative (per asset):</span>
-                  <span>{formatCurrency(rateCardData?.creativeUnit || 85)}</span>
-                </div>
-              </div>
-              <div className="text-[11px] opacity-70">
-                To calculate totals, select: <strong>quantity</strong>, <strong>locations</strong>, and <strong>periods</strong>.
               </div>
             </div>
           )}
@@ -470,7 +437,7 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
             <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-blue-800">
-                Non-consecutive periods = {printRuns} print run{printRuns === 1 ? "" : "s"} (production only).
+                Non-consecutive periods = {printRuns} print run{printRuns === 1 ? '' : 's'} (production only).
               </p>
             </div>
           )}
