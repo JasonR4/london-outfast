@@ -46,7 +46,16 @@ export const usePlanStore = create<StoreState>()(
     {
       name: "mbl-plan-v1",
       storage: createJSONStorage(() => sessionStorage),
-      version: 1
+      version: 2,
+      // Only persist the items array
+      partialize: (s) => ({ items: s.items }),
+      // Guard against legacy payloads or corrupted storage
+      migrate: (persisted, fromVersion) => {
+        const p = (persisted ?? {}) as any;
+        if (!Array.isArray(p.items)) return { items: [] };
+        // v1 -> v2 keeps items; anything else resets
+        return p;
+      }
     }
   )
 );

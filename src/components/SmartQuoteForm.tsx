@@ -647,7 +647,33 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                 <TabsContent value="pricing" className="space-y-6">
                   {/* Current Plan Breakdown - combines draft and saved items */}
                   <div className="mb-6">
-                    <h3 className="text-xl font-semibold mb-4">Your Current Plan</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-semibold">Your Current Plan</h3>
+                      {/* Start new quote: clears persisted plan */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // Clear the plan store
+                          import("@/state/planStore").then(m => {
+                            m.usePlanStore.getState().clear();
+                            // Also clear the persisted session key to be 100% sure
+                            try { 
+                              sessionStorage.removeItem("mbl-plan-v1"); 
+                            } catch {}
+                          });
+                          // Reset local state
+                          setSelectedFormats([]);
+                          setFormatQuantities({});
+                          setSelectedPeriods([]);
+                          // Navigate back to search
+                          setActiveTab("search");
+                        }}
+                        className="text-xs"
+                      >
+                        Start new quote
+                      </Button>
+                    </div>
                      {(() => {
                         const draftItems = usePlanDraft(state => state.items);
                       const savedItems = (currentQuote?.quote_items || []).map((item: any) => ({
