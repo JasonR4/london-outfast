@@ -1,195 +1,67 @@
 import React from "react";
-import { formatCurrency } from "@/utils/money";
-import { countPrintRuns } from "@/utils/periods";
-import FormatBreakdown from "@/components/Pricing/FormatBreakdown";
+import FormatBreakdown from "./Pricing/FormatBreakdown";
 
-export type PlanItemInput = {
-  formatName: string;
-  sites: number;
-  selectedPeriods: number[] | string[];
-  saleRate: number;           // per in-charge
-  productionCost: number;
-  creativeCost: number;
-  // Location-related fields that might be present
-  locations?: any[];
-  selectedLocations?: any[];
-  selectedAreas?: any[];
-  areaIds?: any[];
-  locationIds?: any[];
-  areas?: any[];
-  locationCount?: number;
-  locationsSelected?: number;
-};
-
-type Enriched = PlanItemInput & {
-  incharges: number;
-  mediaCost: number;
-  qualifiesVolume: boolean;
-  volumeDiscount: number;
-  mediaAfterDiscount: number;
-  subtotal: number;
-  uniquePeriods: number;
-};
-
-function enrich(item: PlanItemInput): Enriched {
-  const uniq = Array.from(new Set(item.selectedPeriods.map(String)));
-  const incharges = item.sites * uniq.length;
-  const mediaCost = item.saleRate * incharges;
-  const qualifiesVolume = uniq.length >= 3;
-  const volumeDiscount = qualifiesVolume ? mediaCost * 0.10 : 0;
-  const mediaAfterDiscount = mediaCost - volumeDiscount;
-  const subtotal = mediaAfterDiscount + item.productionCost + item.creativeCost;
-  return {
-    ...item,
-    incharges,
-    mediaCost,
-    qualifiesVolume,
-    volumeDiscount,
-    mediaAfterDiscount,
-    subtotal,
-    uniquePeriods: uniq.length,
-  };
-}
-
-function groupByFormat(items: Enriched[]) {
-  const grand = items.reduce((a, b) => a + b.subtotal, 0) || 0;
-  const map = new Map<string, any>();
-  for (const it of items) {
-    const key = it.formatName;
-    if (!map.has(key)) {
-      map.set(key, {
-        formatName: key,
-        sites: 0,
-        uniquePeriodsSet: new Set<string>(),
-        incharges: 0,
-        saleRate: it.saleRate,
-        mediaCost: 0,
-        volumeDiscount: 0,
-        mediaAfterDiscount: 0,
-        productionCost: 0,
-        creativeCost: 0,
-        subtotal: 0,
-        // Initialize location fields
-        locations: it.locations || [],
-        selectedLocations: it.selectedLocations || [],
-        selectedAreas: it.selectedAreas || [],
-        areaIds: it.areaIds || [],
-        locationIds: it.locationIds || [],
-        areas: it.areas || [],
-        locationCount: it.locationCount || 0,
-        locationsSelected: it.locationsSelected || 0,
-      });
-    }
-    const g = map.get(key);
-    g.sites += it.sites;
-    it.selectedPeriods.map(String).forEach((p: string) => g.uniquePeriodsSet.add(p));
-    g.incharges += it.incharges;
-    g.mediaCost += it.mediaCost;
-    g.volumeDiscount += it.volumeDiscount;
-    g.mediaAfterDiscount += it.mediaAfterDiscount;
-    g.productionCost += it.productionCost;
-    g.creativeCost += it.creativeCost;
-    g.subtotal += it.subtotal;
-    // Aggregate location data (take from the latest item or combine arrays)
-    if (it.locations && it.locations.length > 0) g.locations = it.locations;
-    if (it.selectedLocations && it.selectedLocations.length > 0) g.selectedLocations = it.selectedLocations;
-    if (it.selectedAreas && it.selectedAreas.length > 0) g.selectedAreas = it.selectedAreas;
-    if (it.areaIds && it.areaIds.length > 0) g.areaIds = it.areaIds;
-    if (it.locationIds && it.locationIds.length > 0) g.locationIds = it.locationIds;
-    if (it.areas && it.areas.length > 0) g.areas = it.areas;
-    if (typeof it.locationCount === 'number' && it.locationCount > 0) g.locationCount = it.locationCount;
-    if (typeof it.locationsSelected === 'number' && it.locationsSelected > 0) g.locationsSelected = it.locationsSelected;
-  }
-  return Array.from(map.values())
-    .map((g) => ({
-      ...g,
-      uniquePeriods: g.uniquePeriodsSet.size,
-      share: grand ? (g.subtotal / grand) * 100 : 0,
-    }))
-    .sort((a, b) => b.subtotal - a.subtotal);
-}
-
-export default function PlanBreakdown({
-  items,
-  showKpis = true,
-}: {
-  items: PlanItemInput[];
+type Props = {
+  items: any[];
   showKpis?: boolean;
-}) {
-  const enriched = items.map(enrich);
-  const groups = groupByFormat(enriched);
+};
 
-  const totalSites = enriched.reduce((s, i) => s + i.sites, 0);
-  const totalUniquePeriods = new Set(enriched.flatMap(i => i.selectedPeriods.map(String))).size;
-  const totalIncharges = enriched.reduce((s, i) => s + i.uniquePeriods, 0);
-  const subtotal = enriched.reduce((s, i) => s + i.subtotal, 0);
-  const vat = subtotal * 0.20;
-  const total = subtotal + vat;
+const PlanBreakdown: React.FC<Props> = ({ items, showKpis = true }) => {
+  const totalSites = items.reduce((sum, it) => sum + (it?.quantity ?? 0), 0);
+  // Campaign periods = union of all selected periods across items
+  const allPeriods: number[] = Array.from(
+    new Set(
+      items.flatMap((it) => (Array.isArray(it?.selectedPeriods) ? it.selectedPeriods : []))
+    )
+  );
+  const campaignPeriods = allPeriods.length;
+  // In-charges = campaign period count (NOT sites × periods)
+  const totalInCharges = campaignPeriods;
 
-  if (!enriched.length) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        <p>No items in your current plan yet.</p>
-        <p className="text-sm">Add formats above to see your breakdown here.</p>
-      </div>
-    );
-  }
+  const exVat = items.reduce((sum, it) => sum + ((it?.mediaCost ?? 0) + (it?.productionCost ?? 0) + (it?.creativeCost ?? 0)), 0);
+  const vat = exVat * 0.20;
+  const incVat = exVat + vat;
 
   return (
-    <div>
+    <div className="space-y-6">
       {showKpis && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-muted/20 rounded-lg">
-          <div>
-            <div className="text-xs text-muted-foreground mb-1">Formats selected</div>
-            <div className="font-bold text-lg">{new Set(enriched.map(i=>i.formatName)).size}</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="rounded-xl border p-3">
+            <div className="text-xs text-muted-foreground">Formats selected</div>
+            <div className="text-lg font-semibold">{items.length}</div>
           </div>
-          <div>
-            <div className="text-xs text-muted-foreground mb-1">Sites</div>
-            <div className="font-bold text-lg">{totalSites}</div>
+          <div className="rounded-xl border p-3">
+            <div className="text-xs text-muted-foreground">Sites (total)</div>
+            <div className="text-lg font-semibold">{totalSites}</div>
           </div>
-          <div>
-            <div className="text-xs text-muted-foreground mb-1">Campaign periods</div>
-            <div className="font-bold text-lg">{totalUniquePeriods}</div>
+          <div className="rounded-xl border p-3">
+            <div className="text-xs text-muted-foreground">Campaign periods</div>
+            <div className="text-lg font-semibold">{campaignPeriods}</div>
           </div>
-          <div>
-            <div className="text-xs text-muted-foreground mb-1">Total in-charges</div>
-            <div className="font-bold text-lg">{totalIncharges}</div>
+          <div className="rounded-xl border p-3">
+            <div className="text-xs text-muted-foreground">Total in-charges</div>
+            <div className="text-lg font-semibold">{totalInCharges}</div>
           </div>
         </div>
       )}
 
-      <h3 className="text-xl font-semibold mb-4">Format Breakdown</h3>
-      {groups.map((g:any) => (
-        <FormatBreakdown key={g.formatName} format={{
-          name: g.formatName,
-          sites: g.sites,
-          periods: g.uniquePeriods,
-          inCharges: g.incharges,
-          saleRate: g.saleRate,
-          mediaBeforeDiscount: g.mediaCost,
-          volumeDiscount: g.volumeDiscount,
-          mediaAfterDiscount: g.mediaAfterDiscount,
-          productionCost: g.productionCost,
-          creativeCost: g.creativeCost,
-          subTotalExVat: g.subtotal,
-          sharePct: g.share,
-          // Pass through all possible location fields from the original items
-          locationsSelected: g.locationsSelected ?? g.locationCount ?? 0,
-          locationCount: g.locationCount,
-          locations: g.locations,
-          selectedLocations: g.selectedLocations,
-          selectedAreas: g.selectedAreas,
-          areaIds: g.areaIds,
-          locationIds: g.locationIds,
-          areas: g.areas,
-        }} />
-      ))}
+      <div className="space-y-4">
+        {items.map((it, idx) => {
+          const totalMedia = (it?.mediaCost ?? 0) + (it?.productionCost ?? 0) + (it?.creativeCost ?? 0);
+          const share = totalMedia > 0 ? totalMedia : 0;
+          return (
+            <FormatBreakdown key={idx} item={it} shareOfCampaign={share} />
+          );
+        })}
+      </div>
 
-      <div className="grand-total">
-        <div className="font-bold text-lg">Campaign total (ex VAT): {formatCurrency(subtotal)}</div>
-        <div className="text-sm text-muted-foreground">VAT (20%): {formatCurrency(vat)}</div>
-        <div className="font-bold text-xl mt-1">Campaign total (inc VAT): {formatCurrency(total)}</div>
+      <div className="rounded-xl border p-4">
+        <div className="text-sm">Campaign total (ex VAT): <strong>{exVat.toLocaleString("en-GB", { style: "currency", currency: "GBP" })}</strong></div>
+        <div className="text-sm">VAT (20%): <strong>{vat.toLocaleString("en-GB", { style: "currency", currency: "GBP" })}</strong></div>
+        <div className="text-sm">Campaign total (inc VAT): <strong>{incVat.toLocaleString("en-GB", { style: "currency", currency: "GBP" })}</strong></div>
       </div>
     </div>
   );
-}
+};
+
+export default PlanBreakdown;
