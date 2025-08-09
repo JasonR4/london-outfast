@@ -3,15 +3,14 @@ export type DraftItem = {
   id: string;                 // `${formatId}-${Date.now()}`
   formatId: string;
   formatName: string;
-  quantity: number;           // sites
-  creativeQuantity: number;   // creative assets count
-  locations: string[];        // area slugs/ids if applicable
-  inCharges: string[];        // selected in-charge period IDs
-  rates: {
-    saleRatePerInCharge: number;
-    productionRatePerUnit: number;
-    creativeCost: number;
-  };
+  saleRatePerInCharge: number;          // from Rate Card Manager
+  productionRatePerUnit: number;        // from Rate Card Manager
+  creativeUnit: number;                 // from Rate Card Manager (fallback 85)
+  quantity: number;                     // sites
+  selectedPeriods: number[];            // period numbers
+  locations: string[];                  // ids/slugs
+  creativeAssets: number;
+  validation?: { capacityWarning?: string };
   // Computed costs
   mediaCost: number;
   productionCost: number;
@@ -42,15 +41,14 @@ export const usePlanDraft = create<PlanDraftState>((set, get) => ({
       id: formatId,
       formatId,
       formatName: updates.formatName || existing?.formatName || '',
+      saleRatePerInCharge: updates.saleRatePerInCharge ?? existing?.saleRatePerInCharge ?? 0,
+      productionRatePerUnit: updates.productionRatePerUnit ?? existing?.productionRatePerUnit ?? 0,
+      creativeUnit: updates.creativeUnit ?? existing?.creativeUnit ?? 85,
       quantity: updates.quantity ?? existing?.quantity ?? 1,
-      creativeQuantity: updates.creativeQuantity ?? existing?.creativeQuantity ?? 0,
+      selectedPeriods: updates.selectedPeriods ?? existing?.selectedPeriods ?? [],
       locations: updates.locations ?? existing?.locations ?? [],
-      inCharges: updates.inCharges ?? existing?.inCharges ?? [],
-      rates: updates.rates ?? existing?.rates ?? {
-        saleRatePerInCharge: 0,
-        productionRatePerUnit: 0,
-        creativeCost: 0
-      },
+      creativeAssets: updates.creativeAssets ?? existing?.creativeAssets ?? 0,
+      validation: updates.validation ?? existing?.validation,
       mediaCost: updates.mediaCost ?? existing?.mediaCost ?? 0,
       productionCost: updates.productionCost ?? existing?.productionCost ?? 0,
       creativeCost: updates.creativeCost ?? existing?.creativeCost ?? 0,

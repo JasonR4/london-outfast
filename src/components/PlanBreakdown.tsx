@@ -137,7 +137,7 @@ export default function PlanBreakdown({
             <div>
               <strong>{g.formatName}</strong>
               <div className="text-sm text-muted-foreground">
-                {g.sites} site{g.sites!==1?"s":""} • {g.uniquePeriods} period{g.uniquePeriods!==1?"s":""} • {g.incharges} in-charges
+                {g.sites} sites • {g.uniquePeriods} periods • {g.incharges} in-charges
               </div>
             </div>
             <div className="text-right">

@@ -717,8 +717,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                       const draftItemsFormatted = draftItems.map(item => ({
                         formatName: item.formatName,
                         sites: item.quantity,
-                        selectedPeriods: item.inCharges.map(id => parseInt(id) || 0).filter(n => n > 0),
-                        saleRate: item.rates.saleRatePerInCharge,
+                        selectedPeriods: item.selectedPeriods,
+                        saleRate: item.saleRatePerInCharge,
                         productionCost: item.productionCost,
                         creativeCost: item.creativeCost,
                       }));
