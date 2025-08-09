@@ -12,6 +12,7 @@ import { inchargePeriods } from '@/data/inchargePeriods';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { formatCurrency } from '@/utils/currency';
+import { countPrintRuns } from '@/utils/periods';
 
 export default function QuotePlan() {
   const { currentQuote, loading, removeQuoteItem, fetchCurrentQuote, recalculateDiscounts } = useQuotes();
@@ -340,6 +341,11 @@ export default function QuotePlan() {
                               );
                             })}
                           </div>
+                          {item.selected_periods.length > 1 && countPrintRuns(item.selected_periods) > 1 && (
+                            <p className="text-xs text-amber-600 mt-2">
+                              Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.
+                            </p>
+                          )}
                         </div>
 
                         {(item.campaign_start_date || item.campaign_end_date) && (
