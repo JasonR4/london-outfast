@@ -1906,16 +1906,6 @@ export function RateCardManager() {
                              required
                            />
                          </div>
-                         <div>
-                           <Label htmlFor="location_markup_percentage">Location Markup (%)</Label>
-                           <Input
-                             name="location_markup_percentage"
-                             type="number"
-                             step="0.01"
-                             defaultValue={editingRate?.location_markup_percentage || 0}
-                             placeholder="0"
-                           />
-                          </div>
                           <div>
                             <Label htmlFor="quantity_per_medium">Quantity per Medium</Label>
                             <Input
@@ -2203,7 +2193,7 @@ export function RateCardManager() {
                       <TableHead>Dates</TableHead>
                       <TableHead>Base Rate</TableHead>
                       <TableHead>Quantity</TableHead>
-                      <TableHead>Location Markup</TableHead>
+                      
                       <TableHead>Sale Price</TableHead>
                       <TableHead>Reduced Price</TableHead>
                      <TableHead>Status</TableHead>
