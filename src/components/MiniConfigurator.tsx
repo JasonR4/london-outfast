@@ -241,7 +241,7 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Design & artwork production costs.</p>
+                <p>Design & artwork creation costs.</p>
               </TooltipContent>
             </Tooltip>
             <Select value={creativeAssets.toString()} onValueChange={(value) => setCreativeAssets(parseInt(value))}>
