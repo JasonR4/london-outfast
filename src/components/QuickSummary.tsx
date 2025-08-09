@@ -12,6 +12,7 @@ export default function QuickSummary() {
 
   const {
     formatNames,
+    fullFormatList,
     formatCount,
     sites,
     locationsCount,
@@ -60,6 +61,7 @@ export default function QuickSummary() {
 
     return {
       formatNames: display,
+      fullFormatList: uniqueNames.join(", "),
       formatCount: uniqueNames.length,
       sites,
       locationsCount: new Set(allLocations).size,
@@ -88,7 +90,21 @@ export default function QuickSummary() {
           <div className="space-y-1">
             <div className="text-muted-foreground">Formats:</div>
             <div className="font-medium">{formatCount} {formatCount === 1 ? "format" : "formats"}</div>
-            {formatNames && <div className="text-xs text-muted-foreground truncate">{formatNames}</div>}
+            {formatNames && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className="line-clamp-2 max-h-10 overflow-hidden text-ellipsis whitespace-normal cursor-help text-xs text-muted-foreground"
+                    title={fullFormatList}
+                  >
+                    {formatNames}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>{fullFormatList}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-y-1">
