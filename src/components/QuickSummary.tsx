@@ -9,9 +9,7 @@ import { usePlanDraft } from "@/state/plan";
 export default function QuickSummary() {
   const { items } = usePlanDraft() as any;
   const all = useMemo(() => {
-    console.log("🔍 QuickSummary raw items from usePlanDraft:", items);
     const vals = Object.values(items || {});
-    console.log("🔍 QuickSummary processed items:", vals);
     return vals;
   }, [items]);
 
