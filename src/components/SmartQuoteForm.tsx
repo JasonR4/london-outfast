@@ -26,6 +26,7 @@ import { useMediaFormats } from "@/hooks/useMediaFormats";
 import { londonAreas } from "@/data/londonAreas";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { formatCurrency } from '@/utils/money';
 
 interface SmartQuoteFormProps {
   onQuoteSubmitted?: () => void;
@@ -923,30 +924,30 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                       <CardContent className="space-y-4">
                         <div className="flex justify-between items-center">
                           <span>Media Costs:</span>
-                          <span className="font-medium">£{quoteTotals.mediaPrice.toLocaleString()}</span>
+                          <span className="font-medium">{formatCurrency(quoteTotals.mediaPrice)}</span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span>Production Costs:</span>
-                          <span className="font-medium">£{quoteTotals.productionCost.toLocaleString()}</span>
+                          <span className="font-medium">{formatCurrency(quoteTotals.productionCost)}</span>
                         </div>
                         {quoteTotals.creativeCost > 0 && (
                           <div className="flex justify-between items-center">
                             <span>Creative Development ({currentQuote.quote_items.reduce((sum, item) => sum + (item.creative_cost || 0), 0) / 85} assets):</span>
-                            <span className="font-medium">£{quoteTotals.creativeCost.toLocaleString()}</span>
+                            <span className="font-medium">{formatCurrency(quoteTotals.creativeCost)}</span>
                           </div>
                         )}
                         <div className="border-t border-border pt-4 space-y-2">
                           <div className="flex justify-between items-center">
                             <span>Subtotal (exc VAT):</span>
-                            <span className="font-medium">£{quoteTotals.totalCost.toLocaleString()}</span>
+                            <span className="font-medium">{formatCurrency(quoteTotals.totalCost)}</span>
                           </div>
                           <div className="flex justify-between items-center text-sm text-muted-foreground">
                             <span>VAT (20%):</span>
-                            <span>£{(quoteTotals.totalCost * 0.20).toLocaleString()}</span>
+                            <span>{formatCurrency(quoteTotals.totalCost * 0.20)}</span>
                           </div>
                           <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
                             <span>Total inc VAT:</span>
-                            <span className="text-primary">£{(quoteTotals.totalCost * 1.20).toLocaleString()}</span>
+                            <span className="text-primary">{formatCurrency(quoteTotals.totalCost * 1.20)} inc VAT</span>
                           </div>
                         </div>
                       </CardContent>
@@ -1001,18 +1002,18 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between items-center">
                                   <span className="text-muted-foreground">Base Rate (per unit, per period):</span>
-                                  <span>£{firstLocationPrice.basePrice.toLocaleString()}</span>
+                                  <span>{formatCurrency(firstLocationPrice.basePrice)}</span>
                                 </div>
                                 
                                 {firstLocationPrice.isOnSale && (
                                   <>
                                     <div className="flex justify-between items-center text-green-600 text-xs">
                                       <span>Savings per unit:</span>
-                                      <span>-£{(firstLocationPrice.basePrice - (rateCards[0]?.sale_price || 800)).toFixed(2)}</span>
+                                      <span>-{formatCurrency(firstLocationPrice.basePrice - (rateCards[0]?.sale_price || 800))}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-green-600">
                                       <span>Sale Rate (per unit, per period):</span>
-                                      <span>£{rateCards[0]?.sale_price?.toLocaleString() || '800'}</span>
+                                      <span>{rateCards[0]?.sale_price ? formatCurrency(rateCards[0].sale_price) : formatCurrency(800)}</span>
                                     </div>
                                   </>
                                 )}
@@ -1022,7 +1023,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                     
                                     <div className="flex justify-between items-center">
                                       <span className="text-muted-foreground">Subtotal ({totalQuantity} units × {selectedPeriods.length} periods):</span>
-                                      <span>£{(firstLocationPrice.adjustedRate * selectedPeriods.length * totalQuantity).toLocaleString()}</span>
+                                      <span>{formatCurrency(firstLocationPrice.adjustedRate * selectedPeriods.length * totalQuantity)}</span>
                                     </div>
                                   </>
                                 )}
@@ -1032,15 +1033,15 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                   <>
                                     <div className="flex justify-between items-center text-blue-600 font-medium">
                                       <span>🔽 Reduced Price Applied:</span>
-                                      <span>£{(pricing.mediaPrice / (1 - firstLocationPrice.discount / 100)).toLocaleString()}</span>
+                                      <span>{formatCurrency(pricing.mediaPrice / (1 - firstLocationPrice.discount / 100))}</span>
                                     </div>
                                      <div className="flex justify-between items-center text-blue-600 text-xs">
                                        <span>Reduction Savings:</span>
-                                       <span>-£{((firstLocationPrice.adjustedRate * selectedPeriods.length * totalQuantity) - pricing.mediaPrice).toLocaleString()}</span>
+                                       <span>-{formatCurrency((firstLocationPrice.adjustedRate * selectedPeriods.length * totalQuantity) - pricing.mediaPrice)}</span>
                                      </div>
                                      <div className="flex justify-between items-center text-blue-600 text-xs">
                                        <span>Savings per unit:</span>
-                                       <span>-£{((firstLocationPrice.adjustedRate - (pricing.mediaPrice / (totalQuantity * selectedPeriods.length)))).toFixed(2)}</span>
+                                       <span>-{formatCurrency(firstLocationPrice.adjustedRate - (pricing.mediaPrice / (totalQuantity * selectedPeriods.length)))}</span>
                                      </div>
                                   </>
                                 )}
@@ -1057,12 +1058,12 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 <div className="border-t border-border/50 pt-2 mt-2">
                                   <div className="flex justify-between items-center font-medium text-base">
                                     <span>Total Media Cost ({totalQuantity} units × {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''}):</span>
-                                    <span className="text-primary">£{(totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)).toLocaleString()}</span>
+                                    <span className="text-primary">{formatCurrency(totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800))}</span>
                                   </div>
                                   {firstLocationPrice.isOnSale && (
                                     <div className="flex justify-between items-center text-green-600 text-xs mt-1">
                                       <span>Sale Savings:</span>
-                                      <span>-£{((firstLocationPrice.basePrice - (rateCards[0]?.sale_price || 800)) * totalQuantity * selectedPeriods.length).toLocaleString()}</span>
+                                      <span>-{formatCurrency((firstLocationPrice.basePrice - (rateCards[0]?.sale_price || 800)) * totalQuantity * selectedPeriods.length)}</span>
                                     </div>
                                   )}
                                 </div>
@@ -1076,56 +1077,56 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           const productionResult = calculateProductionCost(totalQuantity, selectedPeriods);
                           if (!productionResult) return null;
                           
-                          return (
-                            <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                              <h4 className="font-medium text-sm mb-3">
-                                Production Costs - {totalQuantity} Units
-                              </h4>
-                              
-                              <div className="space-y-2 text-sm">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Cost per Unit:</span>
-                                  <span>£{productionResult.costPerUnit.toLocaleString()}</span>
-                                </div>
-                                
-                                <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Production Units:</span>
-                                  <span>{productionResult.productionUnits} units</span>
-                                </div>
-                                
-                                <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Periods:</span>
-                                  <span>{selectedPeriods.length}</span>
-                                </div>
-                                
-                                
-                                
-                                <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Applicable Tier:</span>
-                                  <span className="text-xs">
-                                    {productionResult.tier.min_quantity}{productionResult.tier.max_quantity ? `-${productionResult.tier.max_quantity}` : '+'} units
-                                  </span>
-                                </div>
-                                
-                                {productionResult.tier.location_area && (
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">Location-Specific Rate:</span>
-                                    <span className="text-xs">{productionResult.tier.location_area} area</span>
+                              return (
+                                <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                                  <h4 className="font-medium text-sm mb-3">
+                                    Production Costs - {totalQuantity} Units
+                                  </h4>
+                                  
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-muted-foreground">Cost per Unit:</span>
+                                      <span>{formatCurrency(productionResult.costPerUnit)}</span>
+                                    </div>
+                                    
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-muted-foreground">Production Units:</span>
+                                      <span>{productionResult.productionUnits} units</span>
+                                    </div>
+                                    
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-muted-foreground">Periods:</span>
+                                      <span>{selectedPeriods.length}</span>
+                                    </div>
+                                    
+                                    
+                                    
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-muted-foreground">Applicable Tier:</span>
+                                      <span className="text-xs">
+                                        {productionResult.tier.min_quantity}{productionResult.tier.max_quantity ? `-${productionResult.tier.max_quantity}` : '+'} units
+                                      </span>
+                                    </div>
+                                    
+                                    {productionResult.tier.location_area && (
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-muted-foreground">Location-Specific Rate:</span>
+                                        <span className="text-xs">{productionResult.tier.location_area} area</span>
+                                      </div>
+                                    )}
+                                    
+                                    <div className="border-t border-border/50 pt-2 mt-2">
+                                      <div className="flex justify-between items-center font-medium text-base">
+                                        <span>Total Production Cost:</span>
+                                        <span className="text-primary">{formatCurrency(pricing.productionCost)}</span>
+                                      </div>
+                                      <div className="text-xs text-muted-foreground mt-1">
+                                        {totalQuantity} sites × {selectedPeriods.length} periods × {formatCurrency(productionResult.costPerUnit)}
+                                      </div>
+                                    </div>
                                   </div>
-                                )}
-                                
-                                <div className="border-t border-border/50 pt-2 mt-2">
-                                  <div className="flex justify-between items-center font-medium text-base">
-                                    <span>Total Production Cost:</span>
-                                    <span className="text-primary">£{pricing.productionCost.toLocaleString()}</span>
-                                  </div>
-                                  <div className="text-xs text-muted-foreground mt-1">
-                                    {totalQuantity} sites × {selectedPeriods.length} periods × £{productionResult.costPerUnit}
-                                  </div>
                                 </div>
-                              </div>
-                            </div>
-                          );
+                              );
                         })()}
 
                         {/* Creative Cost Details */}
@@ -1138,7 +1139,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                             <div className="space-y-2 text-sm">
                               <div className="flex justify-between items-center">
                                 <span className="text-muted-foreground">Cost per Asset:</span>
-                                <span>£{creativeResult?.costPerUnit?.toLocaleString() || 'Calculating...'}</span>
+                                <span>{creativeResult?.costPerUnit ? formatCurrency(creativeResult.costPerUnit) : 'Calculating...'}</span>
                               </div>
                               
                               <div className="flex justify-between items-center">
@@ -1149,7 +1150,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 <div className="border-t border-border/50 pt-2 mt-2">
                                   <div className="flex justify-between items-center font-medium text-base">
                                     <span>Total Creative Cost:</span>
-                                    <span className="text-primary">£{pricing.creativeCost > 0 ? pricing.creativeCost.toLocaleString() : 'Calculating...'}</span>
+                                    <span className="text-primary">{pricing.creativeCost > 0 ? formatCurrency(pricing.creativeCost) : 'Calculating...'}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1164,7 +1165,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 💰 Total Volume Discount Applied
                               </div>
                               <div className="text-xs text-green-600 dark:text-green-300">
-                                You saved £{pricing.totalDiscount.toLocaleString()} across all locations
+                                You saved {formatCurrency(pricing.totalDiscount)} across all locations
                               </div>
                             </div>
                           )}
@@ -1172,16 +1173,16 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
                               <span>Total Media Costs:</span>
-                              <span className="font-medium">£{(totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)).toLocaleString()}</span>
+                              <span className="font-medium">{formatCurrency(totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800))}</span>
                             </div>
                             <div className="flex justify-between items-center">
                               <span>Production Costs:</span>
-                              <span className="font-medium">£{pricing.productionCost.toLocaleString()}</span>
+                              <span className="font-medium">{formatCurrency(pricing.productionCost)}</span>
                             </div>
                             {needsCreative && pricing.creativeCost > 0 && (
                               <div className="flex justify-between items-center">
                                 <span>Creative Development ({creativeQuantity} assets):</span>
-                                <span className="font-medium">£{pricing.creativeCost.toLocaleString()}</span>
+                                <span className="font-medium">{formatCurrency(pricing.creativeCost)}</span>
                               </div>
                             )}
                           </div>
@@ -1189,15 +1190,15 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           <div className="border-t border-border pt-4 mt-4 space-y-2">
                             <div className="flex justify-between items-center">
                               <span>Subtotal (exc VAT):</span>
-                              <span className="font-medium">£{((totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)) + pricing.productionCost + pricing.creativeCost).toLocaleString()}</span>
+                              <span className="font-medium">{formatCurrency((totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)) + pricing.productionCost + pricing.creativeCost)}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm text-muted-foreground">
                               <span>VAT (20%):</span>
-                              <span>£{(((totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)) + pricing.productionCost + pricing.creativeCost) * 0.20).toLocaleString()}</span>
+                              <span>{formatCurrency((((totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)) + pricing.productionCost + pricing.creativeCost) * 0.20))}</span>
                             </div>
                             <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
                               <span>Total inc VAT:</span>
-                              <span className="text-primary">£{(((totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)) + pricing.productionCost + pricing.creativeCost) * 1.20).toLocaleString()}</span>
+                              <span className="text-primary">{formatCurrency((((totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)) + pricing.productionCost + pricing.creativeCost) * 1.20))} inc VAT</span>
                             </div>
                           </div>
                         </div>

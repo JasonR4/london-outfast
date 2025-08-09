@@ -13,6 +13,7 @@ import { useQuotes } from '@/hooks/useQuotes';
 import { MediaPlanModal } from './MediaPlanModal';
 import { MediaPlanGenerator, GeneratedMediaPlan } from '@/services/MediaPlanGenerator';
 import { useToast } from '@/hooks/use-toast';
+import { formatCurrency } from '@/utils/money';
 
 export interface Answer {
   questionId: string;
@@ -1032,43 +1033,43 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Media Costs:</span>
-                            <span>£{(rec.budgetAllocation * 0.7).toLocaleString()}</span>
+                            <span>{formatCurrency(rec.budgetAllocation * 0.7)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Production Costs:</span>
-                            <span>£{(rec.budgetAllocation * 0.15).toLocaleString()}</span>
+                            <span>{formatCurrency(rec.budgetAllocation * 0.15)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Creative Development:</span>
-                            <span>£{(rec.budgetAllocation * 0.15).toLocaleString()}</span>
+                            <span>{formatCurrency(rec.budgetAllocation * 0.15)}</span>
                           </div>
                           
                           {/* Show potential discount based on quantity */}
                           {rec.calculatedQuantity && rec.calculatedQuantity >= 5 && (
                             <div className="flex justify-between text-green-600">
                               <span>💰 Volume Discount (10%):</span>
-                              <span>-£{(rec.budgetAllocation * 0.1).toLocaleString()}</span>
+                              <span>{formatCurrency(-(rec.budgetAllocation * 0.1))}</span>
                             </div>
                           )}
                           
                           <div className="flex justify-between font-medium pt-2 border-t border-border/50">
                             <span>Subtotal (exc VAT):</span>
-                            <span>£{rec.budgetAllocation.toLocaleString()}</span>
+                            <span>{formatCurrency(rec.budgetAllocation)}</span>
                           </div>
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">VAT (20%):</span>
-                            <span>£{(rec.budgetAllocation * 0.2).toLocaleString()}</span>
+                            <span>{formatCurrency(rec.budgetAllocation * 0.2)}</span>
                           </div>
                           <div className="flex justify-between font-bold text-primary pt-2 border-t border-border/50">
                             <span>Total inc VAT:</span>
-                            <span>£{(rec.budgetAllocation * 1.2).toLocaleString()}</span>
+                            <span>{formatCurrency(rec.budgetAllocation * 1.2)} inc VAT</span>
                           </div>
                           
                           {/* Show savings message for volume discounts */}
                           {rec.calculatedQuantity && rec.calculatedQuantity >= 5 && (
                             <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
                               <div className="text-xs text-green-700 dark:text-green-300 font-medium">
-                                🎉 Volume discount applied! You save £{((rec.budgetAllocation * 0.1) * 1.2).toLocaleString()} inc VAT
+                                🎉 Volume discount applied! You save {formatCurrency((rec.budgetAllocation * 0.1) * 1.2)} inc VAT
                               </div>
                             </div>
                           )}
@@ -1077,7 +1078,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                       
                       {rec.costPerUnit && (
                         <div className="mt-3 pt-2 border-t border-border/50 text-xs text-muted-foreground">
-                          Cost per unit: £{rec.costPerUnit.toLocaleString()} × {rec.calculatedQuantity} units
+                          Cost per unit: {formatCurrency(rec.costPerUnit)} × {rec.calculatedQuantity} units
                         </div>
                       )}
                     </div>

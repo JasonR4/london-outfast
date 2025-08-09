@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Palette, TrendingUp, Target, ArrowRight, Lightbulb, MapPin, PaintBucket } from 'lucide-react';
+import { formatCurrency } from '@/utils/money';
 
 interface CreativeUpsellOption {
   title: string;
@@ -143,7 +144,7 @@ export const CreativeUpsellModal: React.FC<CreativeUpsellModalProps> = ({
                     </div>
                     <div className="text-right">
                       <div className={`text-lg font-bold ${option.costIncrease < 0 ? 'text-green-600' : ''}`}>
-                        {option.costIncrease < 0 ? '-' : '+'}£{Math.abs(option.costIncrease).toLocaleString()}
+                        {option.costIncrease < 0 ? '-' : '+'}{formatCurrency(Math.abs(option.costIncrease))}
                       </div>
                       <Button size="sm" className="mt-2">
                         {option.costIncrease < 0 ? 'Optimize' : 'Upgrade'}
