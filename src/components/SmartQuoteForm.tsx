@@ -908,19 +908,19 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 </Card>
                               );
                             })}
-                          </div>
-                           {selectedPeriods.length > 0 && (
-                              <div className="text-sm text-muted-foreground">
-                                {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''} selected
-                                <br />
-                                <span className="text-xs">Now you can select up to {totalQuantity * selectedPeriods.length} locations</span>
-                                {countPrintRuns(selectedPeriods) > 1 && (
-                                  <div className="mt-1 text-xs opacity-70" role="note" aria-live="polite">
-                                    Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.
-                                  </div>
-                                )}
-                             </div>
-                           )}
+                           </div>
+                            {selectedPeriods.length > 0 && (
+                               <div className="text-sm text-muted-foreground">
+                                 {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''} selected
+                                 <br />
+                                 <span className="text-xs">Now you can select up to {totalQuantity * selectedPeriods.length} locations</span>
+                                 {countPrintRuns(selectedPeriods) > 1 && (
+                                   <div className="mt-1 text-xs opacity-70" role="note" aria-live="polite">
+                                     Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.
+                                   </div>
+                                 )}
+                              </div>
+                            )}
                         </div>
                       )}
                     </>
@@ -1060,17 +1060,17 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                   </>
                                 )}
                                 
-                                {pricing.qualifiesVolume && (
-                                  <div className="border-t border-border/50 pt-2 mt-2">
-                                    <div className="flex justify-between items-center text-green-600 font-medium">
-                                      <span>💰 Volume discount (10% for 3+ in-charge periods):</span>
-                                      <span>−{formatCurrency(pricing.mediaDiscount)}</span>
-                                    </div>
-                                    <div className="text-xs text-green-700 mt-1">
-                                      That's −{formatCurrency(pricing.mediaDiscount / (totalQuantity * selectedPeriods.length))} per unit per period ({totalQuantity * selectedPeriods.length} in-charges).
-                                    </div>
-                                  </div>
-                                )}
+                                 {pricing.qualifiesVolume && (
+                                   <div className="border-t border-border/50 pt-2 mt-2">
+                                     <div className="flex justify-between items-center text-green-600 font-medium">
+                                       <span>💰 Volume discount (10% for 3+ in-charge periods):</span>
+                                       <span>−{formatCurrency(pricing.mediaDiscount)}</span>
+                                     </div>
+                                     <div className="text-xs opacity-70 mt-1">
+                                       That's −{formatCurrency(pricing.mediaDiscount / (totalQuantity * selectedPeriods.length))} per unit per period ({totalQuantity * selectedPeriods.length} in-charges).
+                                     </div>
+                                   </div>
+                                 )}
                                 
                                 <div className="border-t border-border/50 pt-2 mt-2">
                                   <div className="flex justify-between items-center font-medium text-base">
@@ -1183,17 +1183,17 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                               <span>{formatCurrency(pricing.mediaPrice)}</span>
                             </div>
 
-                            {pricing.qualifiesVolume && (
-                              <>
-                                <div className="flex justify-between text-green-600">
-                                  <span>💰 Volume discount (10% for 3+ in-charge periods)</span>
-                                  <span>−{formatCurrency(pricing.mediaDiscount)}</span>
-                                </div>
-                                <div className="text-xs opacity-70">
-                                  That's −{formatCurrency(pricing.mediaDiscount / (totalQuantity * selectedPeriods.length))} per unit per period ({totalQuantity * selectedPeriods.length} in-charges).
-                                </div>
-                              </>
-                            )}
+                             {pricing.qualifiesVolume && (
+                               <>
+                                 <div className="flex justify-between text-green-600">
+                                   <span>💰 Volume discount (10% for 3+ in-charge periods)</span>
+                                   <span>−{formatCurrency(pricing.mediaDiscount)}</span>
+                                 </div>
+                                 <div className="text-xs opacity-70">
+                                   That's −{formatCurrency(pricing.mediaDiscount / (totalQuantity * selectedPeriods.length))} per unit per period ({totalQuantity * selectedPeriods.length} in-charges).
+                                 </div>
+                               </>
+                             )}
 
                             <div className="flex justify-between font-medium">
                               <span>Media cost after discount</span>
