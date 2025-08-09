@@ -1019,12 +1019,6 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 
                                 {!firstLocationPrice.isOnSale && (
                                   <>
-                                    {firstLocationPrice.locationMarkup > 0 && (
-                                      <div className="flex justify-between items-center">
-                                        <span className="text-muted-foreground">Location Markup (+{firstLocationPrice.locationMarkup}%):</span>
-                                        <span>£{(firstLocationPrice.adjustedRate - firstLocationPrice.basePrice).toLocaleString()}</span>
-                                      </div>
-                                    )}
                                     
                                     <div className="flex justify-between items-center">
                                       <span className="text-muted-foreground">Subtotal ({totalQuantity} units × {selectedPeriods.length} periods):</span>
