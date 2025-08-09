@@ -375,7 +375,7 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
               <div className="text-sm font-medium">Cost Preview</div>
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between opacity-70">
-                  <span>Unit rate (per in-charge):</span>
+                  <span>Media rate (per in-charge):</span>
                   <span>{formatCurrency(uiSaleRate)}</span>
                 </div>
                 <div className="flex justify-between">
