@@ -31,6 +31,7 @@ import { countPrintRuns } from '@/utils/periods';
 import PlanBreakdown from '@/components/PlanBreakdown';
 import { usePlanDraft } from '@/state/plan';
 import MiniConfigurator from '@/components/MiniConfigurator';
+import QuickSummary from '@/components/QuickSummary';
 
 interface SmartQuoteFormProps {
   onQuoteSubmitted?: () => void;
@@ -504,18 +505,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
             {/* Quick Summary */}
             {selectedFormats.length > 0 && (
-              <Card className="bg-muted/20">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Quick Summary</CardTitle>
-                </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <div><strong>Formats:</strong> {selectedFormats.map(f => f.format_name).join(', ')}</div>
-                    <div><strong>Total Quantity:</strong> {totalQuantity}</div>
-                    <div><strong>Locations:</strong> {selectedLocations.length} areas</div>
-                   <div><strong>Periods:</strong> {selectedPeriods.length} campaign periods</div>
-                   {needsCreative && <div><strong>Creative Assets:</strong> {creativeQuantity}</div>}
-                 </CardContent>
-              </Card>
+              <QuickSummary />
             )}
           </div>
         </div>
