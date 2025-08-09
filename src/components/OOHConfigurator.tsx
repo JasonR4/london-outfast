@@ -14,6 +14,7 @@ import { MediaPlanModal } from './MediaPlanModal';
 import { MediaPlanGenerator, GeneratedMediaPlan } from '@/services/MediaPlanGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/utils/money';
+import { trackQuoteItemAdded } from '@/utils/analytics';
 
 export interface Answer {
   questionId: string;
@@ -938,6 +939,13 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
           creative_cost: item.creativeCost,
           total_cost: item.totalCost,
           creative_needs: `${generatedPlan.campaignObjective} campaign targeting ${generatedPlan.targetAudience}`
+        });
+        
+        // Track each item addition in analytics
+        trackQuoteItemAdded({
+          formatName: item.formatName,
+          quantity: item.recommendedQuantity,
+          value: item.totalCost
         });
       }
       

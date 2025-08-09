@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useQuotes, Quote } from '@/hooks/useQuotes';
 import { CheckCircle, User, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { trackQuoteSubmission } from '@/utils/analytics';
 
 interface QuoteSubmissionFormProps {
   quote: Quote;
@@ -72,6 +73,15 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
     const success = await submitQuote(submissionData);
     
     if (success) {
+      // Track conversion in Google Analytics
+      trackQuoteSubmission({
+        quoteId: quote.id || 'unknown',
+        totalValue: Number(quote.total_cost || 0),
+        itemCount: quote.quote_items?.length || 0,
+        contactEmail: submissionData.contact_email,
+        contactCompany: submissionData.contact_company
+      });
+
       // Sync to HubSpot
       await syncQuoteToHubSpot('format_quote', submissionData, quote);
       
@@ -101,6 +111,15 @@ export function QuoteSubmissionForm({ quote }: QuoteSubmissionFormProps) {
     const success = await submitQuote(submissionData);
     
     if (success) {
+      // Track conversion in Google Analytics
+      trackQuoteSubmission({
+        quoteId: quote.id || 'unknown',
+        totalValue: Number(quote.total_cost || 0),
+        itemCount: quote.quote_items?.length || 0,
+        contactEmail: submissionData.contact_email,
+        contactCompany: submissionData.contact_company
+      });
+
       // Sync to HubSpot
       await syncQuoteToHubSpot('format_quote', submissionData, quote);
       

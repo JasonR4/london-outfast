@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, AlertTriangle, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { trackQuoteSubmission } from '@/utils/analytics';
 
 interface QuoteFormSectionProps {
   prefilledFormats: string[];
@@ -33,6 +34,21 @@ const QuoteFormSection = ({
 }: QuoteFormSectionProps) => {
   const { toast } = useToast();
   const [inchargePeriods, setInchargePeriods] = useState<any[]>([]);
+  
+  // Helper function to estimate quote value based on budget range and format count
+  const getEstimatedQuoteValue = (budgetRange: string, formatCount: number): number => {
+    const budgetMap: { [key: string]: number } = {
+      '£5,000 - £10,000': 7500,
+      '£10,000 - £25,000': 17500,
+      '£25,000 - £50,000': 37500,
+      '£50,000 - £100,000': 75000,
+      '£100,000+': 125000
+    };
+    
+    const baseBudget = budgetMap[budgetRange] || 10000;
+    // Adjust based on format count (more formats = higher value)
+    return Math.round(baseBudget * Math.max(1, formatCount * 0.5));
+  };
   
   const [formData, setFormData] = useState({
     firstName: "",
@@ -128,6 +144,18 @@ const QuoteFormSection = ({
         });
       } else {
         console.log('Successfully synced configurator quote to HubSpot');
+        
+        // Track conversion in Google Analytics
+        // Estimate quote value based on format count and budget range
+        const estimatedValue = getEstimatedQuoteValue(budgetRange, prefilledFormats.length);
+        trackQuoteSubmission({
+          quoteId: `configurator-${Date.now()}`,
+          totalValue: estimatedValue,
+          itemCount: prefilledFormats.length,
+          contactEmail: formData.email,
+          contactCompany: formData.company
+        });
+        
         toast({
           title: "Quote Request Submitted!",
           description: "We'll get back to you with a custom quote within hours. Check your email!"
