@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { formatCurrency } from '@/utils/money';
 import { countPrintRuns } from '@/utils/periods';
+import { enrichQuoteItem, groupByFormat, type QuoteItem } from '@/utils/quote';
 
 export default function QuotePlan() {
   const { currentQuote, loading, removeQuoteItem, fetchCurrentQuote, recalculateDiscounts } = useQuotes();
@@ -185,6 +186,125 @@ export default function QuotePlan() {
             </Card>
           )}
         </div>
+
+        {/* Campaign KPIs */}
+        {(() => {
+          const planItems: QuoteItem[] = currentQuote.quote_items?.map(item => ({
+            formatName: item.format_name,
+            sites: item.quantity,
+            selectedPeriods: item.selected_periods,
+            saleRate: item.base_cost / item.selected_periods.length / item.quantity,
+            productionCost: item.production_cost || 0,
+            creativeCost: item.creative_cost || 0,
+          })) || [];
+
+          const enrichedItems = planItems.map(enrichQuoteItem);
+          const totalSites = enrichedItems.reduce((acc, it) => acc + it.sites, 0);
+          const totalUniquePeriods = new Set(enrichedItems.flatMap(it => it.selectedPeriods)).size;
+          const totalIncharges = enrichedItems.reduce((acc, it) => acc + it.incharges, 0);
+
+          return (
+            <div className="bg-gradient-to-r from-primary/5 to-blue-50 p-6 rounded-lg border mb-8">
+              <h2 className="text-xl font-semibold mb-4 text-primary">Campaign Summary</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">{new Set(enrichedItems.map(it => it.formatName)).size}</div>
+                  <div className="text-sm text-muted-foreground">Format{new Set(enrichedItems.map(it => it.formatName)).size !== 1 ? 's' : ''} Selected</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">{totalSites}</div>
+                  <div className="text-sm text-muted-foreground">Total Sites</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">{totalUniquePeriods}</div>
+                  <div className="text-sm text-muted-foreground">Campaign Period{totalUniquePeriods !== 1 ? 's' : ''}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">{totalIncharges}</div>
+                  <div className="text-sm text-muted-foreground">Total In-charges</div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Format Breakdown Cards */}
+        {(() => {
+          const planItems: QuoteItem[] = currentQuote.quote_items?.map(item => ({
+            formatName: item.format_name,
+            sites: item.quantity,
+            selectedPeriods: item.selected_periods,
+            saleRate: item.base_cost / item.selected_periods.length / item.quantity,
+            productionCost: item.production_cost || 0,
+            creativeCost: item.creative_cost || 0,
+          })) || [];
+
+          const formatGroups = groupByFormat(planItems.map(enrichQuoteItem));
+
+          return (
+            <div className="space-y-4 mb-8">
+              <h2 className="text-xl font-semibold">Format Breakdown</h2>
+              {formatGroups.map(group => (
+                <Card key={group.formatName} className="border-l-4 border-l-primary">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{group.formatName}</CardTitle>
+                        <CardDescription>
+                          {group.sites} sites • {group.uniquePeriods} periods • {group.incharges} in-charges
+                        </CardDescription>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">Sale rate (per in-charge): {formatCurrency(group.saleRate)}</div>
+                        <div className="text-sm text-muted-foreground">≈ {group.share.toFixed(0)}% of campaign</div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between">
+                      <span>Media cost at sale rate:</span>
+                      <span className="font-medium">{formatCurrency(group.mediaCost)}</span>
+                    </div>
+
+                    {group.volumeDiscount > 0 && (
+                      <div className="bg-green-50 p-3 rounded-lg space-y-1">
+                        <div className="flex justify-between text-green-700">
+                          <span>💰 Volume discount (10% for 3+ in-charge periods):</span>
+                          <span className="font-medium">−{formatCurrency(group.volumeDiscount)}</span>
+                        </div>
+                        <div className="text-xs text-green-600">
+                          That's −{formatCurrency(group.volumeDiscount / group.incharges)} per unit per period ({group.incharges} in-charges).
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between">
+                      <span>Media cost after discount:</span>
+                      <span className="font-medium">{formatCurrency(group.mediaAfterDiscount)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span>Total Production Cost:</span>
+                      <span className="font-medium">{formatCurrency(group.productionCost)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span>Total Creative Cost:</span>
+                      <span className="font-medium">{formatCurrency(group.creativeCost)}</span>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex justify-between text-lg font-bold text-primary">
+                      <span>Format subtotal (exc VAT):</span>
+                      <span>{formatCurrency(group.subtotal)}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          );
+        })()}
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Plan Items */}
