@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+# Husky pre-commit hook
+
+# 1) Run unit tests
+npx vitest --run
+if [ $? -ne 0 ]; then
+  echo "❌ Tests failed. Aborting commit."
+  exit 1
+fi
+
+# 2) Lint (no warnings allowed)
+npx eslint . --ext .ts,.tsx --max-warnings=0
+if [ $? -ne 0 ]; then
+  echo "❌ Lint errors. Aborting commit."
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed."
