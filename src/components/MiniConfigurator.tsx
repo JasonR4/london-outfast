@@ -296,19 +296,51 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
               </TooltipContent>
             </Tooltip>
             <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-2 border rounded">
-              {rateCardData?.inCharges.map((period) => (
-                <button
-                  key={period.period_number}
-                  onClick={() => togglePeriod(period.period_number)}
-                  className={`text-xs p-2 rounded text-left transition-colors ${
-                    selectedPeriods.includes(period.period_number)
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted hover:bg-muted/80'
-                  }`}
-                >
-                  {formatPeriodLabel(period)}
-                </button>
-              ))}
+              {rateCardData?.inCharges && rateCardData.inCharges.length > 0 ? (
+                rateCardData.inCharges.map((period) => (
+                  <button
+                    key={period.period_number}
+                    onClick={() => togglePeriod(period.period_number)}
+                    className={`text-xs p-2 rounded text-left transition-colors ${
+                      selectedPeriods.includes(period.period_number)
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted hover:bg-muted/80'
+                    }`}
+                  >
+                    {formatPeriodLabel(period)}
+                  </button>
+                ))
+              ) : (
+                // Fallback periods when rate card doesn't have periods
+                Array.from({ length: 11 }, (_, i) => {
+                  const periodNumber = i + 16; // Periods 16-26
+                  const startDate = new Date(2025, 6, 29 + (i * 14)); // Starting July 29, 2025, 14-day periods
+                  const endDate = new Date(startDate);
+                  endDate.setDate(startDate.getDate() + 13);
+                  
+                  return (
+                    <button
+                      key={periodNumber}
+                      onClick={() => togglePeriod(periodNumber)}
+                      className={`text-xs p-2 rounded text-left transition-colors ${
+                        selectedPeriods.includes(periodNumber)
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted hover:bg-muted/80'
+                      }`}
+                    >
+                      Period {periodNumber} ({startDate.toLocaleDateString('en-GB', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric' 
+                      })} - {endDate.toLocaleDateString('en-GB', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric' 
+                      })})
+                    </button>
+                  );
+                })
+              )}
             </div>
             {selectedPeriods.length > 0 && (
               <div className="text-xs text-muted-foreground">
