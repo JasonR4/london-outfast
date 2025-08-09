@@ -70,36 +70,57 @@ const FormatBreakdown = ({ format }: { format: CampaignFormat }) => {
   })();
 
   return (
-    <div className="space-y-2 rounded-lg border p-4">
+    <div className="
+      rounded-2xl
+      border border-zinc-800
+      bg-zinc-950/90
+      shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_8px_30px_rgba(0,0,0,0.35)]
+      p-4 md:p-5
+    ">
       <div className="flex items-center justify-between">
-        <div className="font-medium">{name}</div>
-        <div className="text-xs text-muted-foreground">≈ {sharePct.toFixed(1)}% of campaign</div>
+        <div className="font-medium text-zinc-100">{name}</div>
+        <div className="text-xs text-zinc-400">≈ {sharePct.toFixed(1)}% of campaign</div>
       </div>
-      <div className="text-xs text-muted-foreground">
+      <div className="text-sm text-zinc-400">
         {sites} sites • {periods} periods • {inCharges} site-periods
       </div>
       {capacity > 0 && (
-        <div className="text-xs">
-          <span className="text-muted-foreground">Locations:</span>{" "}
-          <span className="font-medium">{selectedLocations.toLocaleString()}</span>
-          <span className="text-muted-foreground"> / </span>
-          <span className="font-medium">{capacity.toLocaleString()}</span>
+        <div className="mt-3 text-xs">
+          <span className="font-medium text-zinc-200">Locations:</span>{" "}
+          <span className="text-zinc-300">{selectedLocations.toLocaleString()} / {capacity.toLocaleString()}</span>
           {capBadge}
         </div>
       )}
       
-      <div className="text-sm">Media (before discount): {formatCurrency(mediaBeforeDiscount)}</div>
-      <div className="text-sm text-emerald-500">
-        💰 Volume discount (over 3 campaign periods): {formatCurrency(-volumeDiscount)}
-      </div>
-      <div className="text-xs text-muted-foreground">
-        That's {formatCurrency(-volumeDiscount / inCharges)} per site per period ({inCharges} site-periods).
-      </div>
-      <div className="text-sm">Media (after discount): {formatCurrency(mediaAfterDiscount)}</div>
-      <div className="text-sm">Production: {formatCurrency(productionCost)}</div>
-      <div className="text-sm">Creative: {formatCurrency(creativeCost)}</div>
-      <div className="text-sm font-medium border-t pt-2 mt-2">
-        Subtotal (ex VAT): {formatCurrency(subTotalExVat)}
+      <div className="mt-4 space-y-1.5">
+        <div className="text-sm text-zinc-200">
+          <span className="font-medium">Media (before discount):</span>{" "}
+          {formatCurrency(mediaBeforeDiscount)}
+        </div>
+        {volumeDiscount > 0 && (
+          <div className="text-xs">
+            <span className="mr-1">💰</span>
+            <span className="text-zinc-300">Volume discount (over 3 campaign periods):</span>{" "}
+            <span className="text-emerald-400">{formatCurrency(-volumeDiscount)}</span>
+            <div className="text-zinc-400">
+              That's {formatCurrency(-volumeDiscount / inCharges)} per site per period ({inCharges} site-periods).
+            </div>
+          </div>
+        )}
+        <div className="text-sm text-zinc-200">
+          <span className="font-medium">Media (after discount):</span>{" "}
+          {formatCurrency(mediaAfterDiscount)}
+        </div>
+        <div className="text-sm text-zinc-200">
+          <span className="font-medium">Production:</span> {formatCurrency(productionCost)}
+        </div>
+        <div className="text-sm text-zinc-200">
+          <span className="font-medium">Creative:</span> {formatCurrency(creativeCost)}
+        </div>
+        <div className="pt-2 mt-2 border-t border-zinc-800 text-sm">
+          <span className="font-semibold text-zinc-100">Subtotal (ex VAT):</span>{" "}
+          <span className="text-zinc-100">{formatCurrency(subTotalExVat)}</span>
+        </div>
       </div>
     </div>
   );
