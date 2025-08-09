@@ -148,39 +148,49 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Initialize quote on component mount
+  // Initialize quote on component mount and clear stale plan store data
   useEffect(() => {
     createOrGetQuote();
+    // Clear plan store on fresh component mount to prevent showing stale data
+    const { clear } = usePlanStore.getState();
+    clear();
   }, []);
+
+  // Clear plan store when starting fresh search (no selections)
+  useEffect(() => {
+    if (selectedFormats.length === 0 && selectedPeriods.length === 0 && selectedLocations.length === 0) {
+      const { clear } = usePlanStore.getState();
+      clear();
+    }
+  }, [selectedFormats.length, selectedPeriods.length, selectedLocations.length]);
 
   // Sync plan store with current configuration to keep pricing tab updated
   useEffect(() => {
-    const { setItems } = usePlanStore.getState();
-    
-    // Build plan items from current selection state
-    const planItems = selectedFormats.map(format => {
-      const quantity = formatQuantities[format.format_slug] || 1;
-      const rateCard = rateCards.find(rc => rc.media_format_id === format.id);
-      const saleRate = rateCard?.sale_price || 800; // fallback rate
+    // Only sync if we have actual selections to avoid clearing valid data
+    if (selectedFormats.length > 0) {
+      const { setItems } = usePlanStore.getState();
       
-      return {
-        id: format.format_slug,
-        formatId: format.format_slug,
-        formatName: format.format_name,
-        saleRate,
-        sites: quantity,
-        periods: selectedPeriods.map(String), // convert to string array
-        locations: selectedLocations,
-        productionRate: 25, // default production rate
-        printRuns: countPrintRuns(selectedPeriods),
-        creativeAssets: needsCreative ? creativeQuantity : 0,
-        creativeRate: needsCreative ? 350 : 0 // default creative rate
-      };
-    });
-    
-    // Only update if there are changes to avoid infinite loops
-    const currentItems = usePlanStore.getState().items;
-    if (JSON.stringify(currentItems) !== JSON.stringify(planItems)) {
+      // Build plan items from current selection state
+      const planItems = selectedFormats.map(format => {
+        const quantity = formatQuantities[format.format_slug] || 1;
+        const rateCard = rateCards.find(rc => rc.media_format_id === format.id);
+        const saleRate = rateCard?.sale_price || 800; // fallback rate
+        
+        return {
+          id: format.format_slug,
+          formatId: format.format_slug,
+          formatName: format.format_name,
+          saleRate,
+          sites: quantity,
+          periods: selectedPeriods.map(String), // convert to string array
+          locations: selectedLocations,
+          productionRate: 25, // default production rate
+          printRuns: countPrintRuns(selectedPeriods),
+          creativeAssets: needsCreative ? creativeQuantity : 0,
+          creativeRate: needsCreative ? 350 : 0 // default creative rate
+        };
+      });
+      
       setItems(planItems);
     }
   }, [selectedFormats, formatQuantities, selectedPeriods, selectedLocations, needsCreative, creativeQuantity, rateCards]);
@@ -716,38 +726,32 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                       </Button>
                     </div>
                      {(() => {
-                        const draftItems = usePlanDraft(state => state.items);
-                      const savedItems = (currentQuote?.quote_items || []).map((item: any) => ({
-                        formatName: item.format_name,
-                        sites: item.quantity,
-                        selectedPeriods: item.selected_periods || [],
-                        saleRate: item.sale_rate_per_incharge ?? (item.base_cost && item.selected_periods?.length && item.quantity
-                          ? (item.base_cost / (item.selected_periods.length * item.quantity))
-                          : 0),
-                        productionCost: item.production_cost || 0,
-                        creativeCost: item.creative_cost || 0,
-                      }));
-                      
-                      // Convert draft items to PlanBreakdown format
-                      const draftItemsFormatted = draftItems.map(item => ({
-                        formatName: item.formatName,
-                        sites: item.quantity,
-                        selectedPeriods: item.selectedPeriods,
-                        saleRate: item.saleRatePerInCharge,
-                        productionCost: item.productionCost,
-                        creativeCost: item.creativeCost,
-                        // Pass through all location-related fields
-                        locations: item.locations,
-                        locationsSelected: item.locations?.length ?? 0,
-                        locationCount: item.locations?.length ?? 0,
-                      }));
+                        // Get current plan items from the unified store
+                        const planStoreItems = usePlanStore(state => state.items);
+                        
+                        // If no items in plan store, show saved quote items for reference
+                        const savedItems = planStoreItems.length === 0 ? (currentQuote?.quote_items || []).map((item: any) => ({
+                          id: item.id || item.format_name,
+                          formatId: item.format_slug || item.format_name,
+                          formatName: item.format_name,
+                          sites: item.quantity,
+                          periods: (item.selected_periods || []).map(String),
+                          saleRate: item.sale_rate_per_incharge ?? (item.base_cost && item.selected_periods?.length && item.quantity
+                            ? (item.base_cost / (item.selected_periods.length * item.quantity))
+                            : 0),
+                          productionRate: (item.production_cost || 0) / Math.max(item.quantity || 1, 1),
+                          productionCost: item.production_cost || 0,
+                          creativeAssets: item.creative_cost > 0 ? 1 : 0,
+                          creativeRate: item.creative_cost || 0,
+                          locations: []
+                        })) : [];
 
-                      // Show draft items if any, otherwise show saved items
-                      const planItems = draftItemsFormatted.length > 0 ? draftItemsFormatted : savedItems;
-                      
-                      return planItems.length > 0 
-                        ? <PlanBreakdown items={planItems} showKpis={true} />
-                        : <div className="text-center py-8 text-muted-foreground">
+                        // Use plan store items for current configuration, saved items as fallback
+                        const planItems = planStoreItems.length > 0 ? planStoreItems : savedItems;
+                        
+                        return planItems.length > 0 
+                          ? <PlanBreakdown items={planItems} showKpis={true} />
+                          : <div className="text-center py-8 text-muted-foreground">
                             <p>No items configured yet.</p>
                             <p className="text-sm">Configure formats above to see pricing breakdown.</p>
                           </div>;
