@@ -45,20 +45,9 @@ export const usePlanStore = create<StoreState>()(
       clear: () => set({ items: [] })
     }),
     {
-      name: "mbl-plan-v2",
+      name: "mbl-plan-v2-simple",
       storage: createJSONStorage(() => sessionStorage),
-      version: 2,
-      migrate: (state: any, version) => {
-        console.log('🔄 Plan store migration:', { state, version });
-        // If we detect an unexpected shape from a previous session, drop it.
-        if (!state || !Array.isArray(state.items)) {
-          console.log('⚠️ Invalid state detected, clearing items');
-          return { items: [] };
-        }
-        const items = (state.items as any[]).filter(isValidPlanItem);
-        console.log('✅ Migration completed with', items.length, 'valid items');
-        return { items };
-      },
+      version: 1, // Reset version to avoid migration issues
       partialize: (state) => ({ items: state.items }) // store only items
     }
   )

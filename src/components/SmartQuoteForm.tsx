@@ -166,53 +166,39 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     }
   }, [selectedFormats.length, selectedPeriods.length]); // Only depend on lengths to prevent object reference issues
 
-  // Sync plan store with current configuration to keep pricing tab updated
-  useEffect(() => {
-    // Only sync if we have actual selections to avoid clearing valid data
+  // DISABLED: Automatic sync was causing infinite loops
+  // Instead, we'll sync manually when user actions occur
+  
+  // Manual sync function to update plan store
+  const syncPlanStore = () => {
     if (selectedFormats.length > 0) {
+      console.log('🔄 Manual sync to plan store');
       const { setItems } = usePlanStore.getState();
       
-      // Build plan items from current selection state
       const planItems = selectedFormats.map(format => {
         const quantity = formatQuantities[format.format_slug] || 1;
-        // Use a stable fallback rate to avoid dependency on rateCards
-        const saleRate = 800; // Use consistent fallback rate
-        
         return {
           id: format.format_slug,
           formatId: format.format_slug,
           formatName: format.format_name,
-          saleRate,
+          saleRate: 800, // stable fallback
           sites: quantity,
-          periods: selectedPeriods.map(String), // convert to string array
+          periods: selectedPeriods.map(String),
           locations: selectedLocations,
-          productionRate: 25, // default production rate
+          productionRate: 25,
           printRuns: countPrintRuns(selectedPeriods),
           creativeAssets: needsCreative ? creativeQuantity : 0,
-          creativeRate: needsCreative ? 350 : 0 // default creative rate
+          creativeRate: needsCreative ? 350 : 0
         };
       });
       
-      // Only update if there are actual changes to prevent loops
-      const currentItems = usePlanStore.getState().items;
-      const hasChanges = JSON.stringify(currentItems.map(i => ({
-        id: i.id,
-        sites: i.sites,
-        periods: i.periods,
-        creativeAssets: i.creativeAssets
-      }))) !== JSON.stringify(planItems.map(i => ({
-        id: i.id,
-        sites: i.sites,
-        periods: i.periods,
-        creativeAssets: i.creativeAssets
-      })));
-      
-      if (hasChanges) {
-        console.log('🔄 Updating plan store with new items:', planItems);
-        setItems(planItems);
-      }
+      setItems(planItems);
+    } else {
+      // Clear store if no formats selected
+      const { clear } = usePlanStore.getState();
+      clear();
     }
-  }, [selectedFormats, formatQuantities, selectedPeriods, selectedLocations, needsCreative, creativeQuantity]); // Removed rateCards dependency
+  };
 
   const { mediaFormats, loading: formatsLoading } = useMediaFormats();
   
@@ -378,6 +364,10 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
           ...prevQuantities,
           [format.format_slug]: 1
         }));
+        
+        // Manually sync to plan store after state update
+        setTimeout(() => syncPlanStore(), 0);
+        
         return [...prev, format];
       }
     });
