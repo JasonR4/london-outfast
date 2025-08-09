@@ -1,82 +1,76 @@
 import React from "react";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { displayInCharges, type PlanItem } from "@/state/planStore";
 
-type FormatBreakdownProps = {
-  item: PlanItem | any; // Support both new PlanItem and legacy format
-  shareOfCampaign?: number; // 0..1 (kept for compatibility)
-  className?: string;
+// Shared helpers – keep the math identical everywhere
+const gbp = (v: number) =>
+  v.toLocaleString("en-GB", { style: "currency", currency: "GBP" });
+
+const periodsCount = (item: any) =>
+  item?.periods?.length ?? item?.selectedPeriods?.length ?? 0;
+
+const sitesCount = (item: any) => item?.sites ?? item?.quantity ?? 0;
+
+const saleRate = (item: any) => item?.saleRate ?? item?.saleRatePerInCharge ?? 0;
+const productionRate = (item: any) =>
+  item?.productionRate ?? item?.productionCost ?? 0;
+const creativeRate = (item: any) => item?.creativeRate ?? 0;
+const creativeAssets = (item: any) =>
+  item?.creativeAssets ?? item?.creativeCount ?? 0;
+const printRuns = (item: any) => item?.printRuns ?? 1;
+
+const mediaBefore = (item: any) =>
+  saleRate(item) * sitesCount(item) * periodsCount(item);
+
+const volumeDiscount = (item: any) =>
+  periodsCount(item) >= 3 ? -0.1 * mediaBefore(item) : 0;
+
+const mediaAfter = (item: any) => mediaBefore(item) + volumeDiscount(item);
+
+const productionCost = (item: any) =>
+  productionRate(item) * sitesCount(item) * printRuns(item);
+
+const creativeCost = (item: any) => creativeRate(item) * creativeAssets(item);
+
+const subtotalExVat = (item: any) =>
+  mediaAfter(item) + productionCost(item) + creativeCost(item);
+
+type Props = {
+  item: any;
+  shareOfCampaign?: number; // 0..1
 };
 
-const FormatBreakdown: React.FC<FormatBreakdownProps> = ({ item, shareOfCampaign }) => {
-  // Support both new PlanItem structure and legacy format
-  const sites = item?.sites ?? item?.quantity ?? 0;
-  const periods = item?.periods?.length ?? item?.selectedPeriods?.length ?? 0;
-  const inChargesCount = displayInCharges(item) || periods;
-  const saleRate = item?.saleRate ?? item?.saleRatePerInCharge ?? 0;
+const FormatBreakdown: React.FC<Props> = ({ item, shareOfCampaign }) => {
+  const sites = sitesCount(item);
+  const periods = periodsCount(item);
+  const inChargesCount = periods; // display only (not sites×periods)
 
-  // Locations: use whichever field exists
-  const rawLocs = item?.locations ?? item?.selectedLocations ?? item?.selectedAreas ?? [];
-  const locations = Array.isArray(rawLocs) ? rawLocs.length : 0;
-
-  // Media maths (per site per in-charge × sites × periods) remains correct,
-  // we just don't *display* sites×periods as "site-periods".
-  const computedMediaBefore = saleRate * sites * periods;
-  const mediaBefore = (item?.mediaBeforeDiscount ?? computedMediaBefore);
-  const discount = item?.discountAmount ?? 0;
-  const mediaAfter = item?.mediaCost ?? (mediaBefore - discount);
-  const production = item?.productionCost ?? 0;
-  const creative = item?.creativeCost ?? 0;
-  const subtotal = (mediaAfter + production + creative);
-
-  const pct = (typeof item?.percentageOfCampaign === "number" ? item.percentageOfCampaign : shareOfCampaign) ?? 0;
-  const pctText = `≈ ${(pct * 100).toFixed(1)}% of campaign`;
-
-  const overLocations = locations > sites ? (locations - sites) : 0;
-  const locStatus: "ok" | "warn" = overLocations > 0 ? "warn" : "ok";
-
-  const gbp = (n: number) =>
-    n.toLocaleString("en-GB", { style: "currency", currency: "GBP", minimumFractionDigits: 2 });
+  const pctText =
+    typeof shareOfCampaign === "number"
+      ? `≈ ${(shareOfCampaign * 100).toFixed(1)}% of campaign`
+      : undefined;
 
   return (
-    <div className={cn("rounded-xl border bg-card text-card-foreground p-4 space-y-2")}>
-      <div className="flex items-center justify-between">
-        <div className="font-medium">{item?.formatName ?? item?.name ?? "Format"}</div>
-        <div className="text-xs text-muted-foreground">{pctText}</div>
+    <div className="rounded-lg border p-4 bg-slate-800/60">
+      <div className="flex items-center justify-between mb-1">
+        <div className="font-semibold">{item?.formatName ?? item?.name ?? "Format"}</div>
+        {pctText && <div className="text-xs opacity-70">{pctText}</div>}
+      </div>
+      <div className="text-xs opacity-70 mb-2">
+        {sites} sites • {inChargesCount} in-charges
       </div>
 
-      {/* Top line: sites are TOTAL across campaign, in-charges = period count */}
-      <div className="text-sm mt-1">
-        {sites} site{sites === 1 ? "" : "s"} total • {inChargesCount} in-charge{inChargesCount === 1 ? "" : "s"}
-      </div>
-
-      {/* Locations status — recommendation is ≤ sites */}
-      <div className="text-xs flex items-center gap-2">
-        <span>Locations selected: <strong>{locations}</strong></span>
-        <Badge variant={locStatus === "ok" ? "secondary" : "destructive"} className="text-[10px]">
-          {locStatus === "ok"
-            ? `≤ ${sites} recommended`
-            : `over by ${overLocations} (recommend ≤ ${sites})`}
-        </Badge>
-      </div>
-
-      <div className="text-sm mt-2">Sale rate (per in-charge): {gbp(saleRate)}</div>
-      <div className="text-sm">Media (before discount): {gbp(mediaBefore)}</div>
-      {discount > 0 && (
-        <>
-          <div className="text-sm">
-            💰 Volume discount (over 3 campaign periods): -{gbp(discount)}
+      <div className="space-y-1 text-sm">
+        <div>Sale rate (per in-charge): {gbp(saleRate(item))}</div>
+        <div>Media (before discount): {gbp(mediaBefore(item))}</div>
+        {volumeDiscount(item) !== 0 && (
+          <div className="text-emerald-400">
+            💰 Volume discount (over 3 campaign periods): {gbp(volumeDiscount(item))}
           </div>
-          <div className="text-xs text-muted-foreground">
-            That&apos;s -{gbp((saleRate * 0.10))} per site per in-charge ({(sites * periods).toLocaleString()} site-in-charges).
-          </div>
-        </>
-      )}
-      <div className="text-sm">Media (after discount): {gbp(mediaAfter)}</div>
-      <div className="text-sm">Production: {gbp(production)}</div>
-      <div className="text-sm">Creative: {gbp(creative)}</div>
-      <div className="font-medium pt-1">Subtotal (ex VAT): {gbp(subtotal)}</div>
+        )}
+        <div>Media (after discount): {gbp(mediaAfter(item))}</div>
+        <div>Production: {gbp(productionCost(item))}</div>
+        <div>Creative: {gbp(creativeCost(item))}</div>
+        <div className="mt-2 font-semibold">Subtotal (ex VAT): {gbp(subtotalExVat(item))}</div>
+      </div>
     </div>
   );
 };

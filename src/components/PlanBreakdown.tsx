@@ -1,76 +1,56 @@
 import React from "react";
-import type { FC } from "react";
 import FormatBreakdown from "./Pricing/FormatBreakdown";
-import type { PlanItem } from "@/state/planStore";
-import {
-  displayInCharges,
-  mediaCostBeforeDiscount,
-  mediaCostAfterDiscount,
-  volumeDiscount,
-  productionCost,
-  creativeCost,
-  uniqueCampaignPeriods,
-  campaignTotals
-} from "@/state/planStore";
 
-type Props = { 
-  items: (PlanItem | any)[];
+// Same helpers as the card to guarantee identical math
+const gbp = (v: number) =>
+  v.toLocaleString("en-GB", { style: "currency", currency: "GBP" });
+const periodsCount = (i: any) => i?.periods?.length ?? i?.selectedPeriods?.length ?? 0;
+const sitesCount = (i: any) => i?.sites ?? i?.quantity ?? 0;
+const saleRate = (i: any) => i?.saleRate ?? i?.saleRatePerInCharge ?? 0;
+const productionRate = (i: any) => i?.productionRate ?? i?.productionCost ?? 0;
+const creativeRate = (i: any) => i?.creativeRate ?? 0;
+const creativeAssets = (i: any) => i?.creativeAssets ?? i?.creativeCount ?? 0;
+const printRuns = (i: any) => i?.printRuns ?? 1;
+
+const mediaBefore = (i: any) => saleRate(i) * sitesCount(i) * periodsCount(i);
+const volumeDiscount = (i: any) => (periodsCount(i) >= 3 ? -0.1 * mediaBefore(i) : 0);
+const mediaAfter = (i: any) => mediaBefore(i) + volumeDiscount(i);
+const productionCost = (i: any) => productionRate(i) * sitesCount(i) * printRuns(i);
+const creativeCost = (i: any) => creativeRate(i) * creativeAssets(i);
+const subtotalExVat = (i: any) => mediaAfter(i) + productionCost(i) + creativeCost(i);
+
+type Props = {
+  items: any[];
   showKpis?: boolean;
 };
 
-const currency = (v:number) =>
-  v.toLocaleString("en-GB",{ style:"currency", currency:"GBP" });
+const PlanBreakdown: React.FC<Props> = ({ items, showKpis = true }) => {
+  // Share-of-campaign uses media BEFORE discount so it's stable
+  const totalMediaBefore = items.reduce((a, it) => a + mediaBefore(it), 0) || 1;
 
-const pct = (num:number, den:number) => den > 0 ? ((num/den)*100) : 0;
-
-const PlanBreakdown: FC<Props> = ({ items, showKpis = true }) => {
-  const campaignPeriods = uniqueCampaignPeriods(items);
-  const totalSites = items.reduce((sum, it) => sum + (it?.sites ?? it?.quantity ?? 0), 0);
-  const totalInCharges = campaignPeriods.length;
-
-  const totals = campaignTotals(items);
-  const exVat = totals.exVat;
-  const vat = exVat * 0.20;
-  const incVat = exVat + vat;
+  const mediaBeforeTotal = items.reduce((a, it) => a + mediaBefore(it), 0);
+  const volDiscTotal = items.reduce((a, it) => a + volumeDiscount(it), 0);
+  const mediaAfterTotal = mediaBeforeTotal + volDiscTotal;
+  const productionTotal = items.reduce((a, it) => a + productionCost(it), 0);
+  const creativeTotal = items.reduce((a, it) => a + creativeCost(it), 0);
+  const exVat = mediaAfterTotal + productionTotal + creativeTotal;
+  const vat = exVat * 0.2;
+  const inc = exVat + vat;
 
   return (
-    <div className="space-y-6">
-      {showKpis && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="rounded-xl border p-3">
-            <div className="text-xs text-muted-foreground">Formats selected</div>
-            <div className="text-lg font-semibold">{items.length}</div>
-          </div>
-          <div className="rounded-xl border p-3">
-            <div className="text-xs text-muted-foreground">Sites (total)</div>
-            <div className="text-lg font-semibold">{totalSites}</div>
-          </div>
-          <div className="rounded-xl border p-3">
-            <div className="text-xs text-muted-foreground">Campaign periods</div>
-            <div className="text-lg font-semibold">{campaignPeriods.length}</div>
-          </div>
-          <div className="rounded-xl border p-3">
-            <div className="text-xs text-muted-foreground">Total in-charges</div>
-            <div className="text-lg font-semibold">{totalInCharges}</div>
-          </div>
-        </div>
-      )}
+    <div>
+      {items.map((it, idx) => (
+        <FormatBreakdown
+          key={idx}
+          item={it}
+          shareOfCampaign={mediaBefore(it) / totalMediaBefore}
+        />
+      ))}
 
-      <div className="space-y-4">
-        {items.map((it, idx) => {
-          const mediaBefore = mediaCostBeforeDiscount(it);
-          const totalMediaBefore = items.reduce((a,i)=>a+mediaCostBeforeDiscount(i),0);
-          const share = pct(mediaBefore, totalMediaBefore) / 100;
-          return (
-            <FormatBreakdown key={it.id || idx} item={it} shareOfCampaign={share} />
-          );
-        })}
-      </div>
-
-      <div className="rounded-xl border p-4">
-        <div className="text-sm">Campaign total (ex VAT): <strong>{exVat.toLocaleString("en-GB", { style: "currency", currency: "GBP" })}</strong></div>
-        <div className="text-sm">VAT (20%): <strong>{vat.toLocaleString("en-GB", { style: "currency", currency: "GBP" })}</strong></div>
-        <div className="text-sm">Campaign total (inc VAT): <strong>{incVat.toLocaleString("en-GB", { style: "currency", currency: "GBP" })}</strong></div>
+      <div className="rounded-lg border mt-4 p-4 bg-slate-900/60 text-sm">
+        <div>Campaign total (ex VAT): <strong>{gbp(exVat)}</strong></div>
+        <div>VAT (20%): <strong>{gbp(vat)}</strong></div>
+        <div>Campaign total (inc VAT): <strong>{gbp(inc)}</strong></div>
       </div>
     </div>
   );

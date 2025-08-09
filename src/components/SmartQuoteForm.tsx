@@ -543,7 +543,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
             {/* Quick Summary */}
             {selectedFormats.length > 0 && (
-              <QuickSummary />
+              <QuickSummary items={[]} />
             )}
           </div>
         </div>
