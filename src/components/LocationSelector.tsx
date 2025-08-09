@@ -66,40 +66,6 @@ export const LocationSelector = ({
           {title}
         </CardTitle>
         <p className="text-sm text-muted-foreground">{description}</p>
-        
-        {showSelectedSummary && selectedLocations.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">
-                {selectedLocations.length} area{selectedLocations.length !== 1 ? 's' : ''} selected
-              </span>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={clearAllLocations}
-                className="h-6 px-2 text-xs"
-              >
-                <X className="h-3 w-3 mr-1" />
-                Clear all
-              </Button>
-            </div>
-            
-            <div className="space-y-1">
-              {Object.entries(selectedByZone).map(([zone, areas]) => (
-                <div key={zone} className="text-xs">
-                  <span className="font-medium text-muted-foreground">{zone}:</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {areas.map(area => (
-                      <Badge key={area} variant="secondary" className="text-xs">
-                        {area}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -113,6 +79,40 @@ export const LocationSelector = ({
               className="pl-9"
             />
           </div>
+          
+          {showSelectedSummary && selectedLocations.length > 0 && (
+            <div className="space-y-2 p-3 bg-muted/30 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">
+                  {selectedLocations.length} area{selectedLocations.length !== 1 ? 's' : ''} selected
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearAllLocations}
+                  className="h-6 px-2 text-xs"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Clear all
+                </Button>
+              </div>
+              
+              <div className="space-y-1">
+                {Object.entries(selectedByZone).map(([zone, areas]) => (
+                  <div key={zone} className="text-xs">
+                    <span className="font-medium text-muted-foreground">{zone}:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {areas.map(area => (
+                        <Badge key={area} variant="secondary" className="text-xs">
+                          {area}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           
            <div className="flex justify-between gap-2">
              <Button 
