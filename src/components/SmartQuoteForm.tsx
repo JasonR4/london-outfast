@@ -28,11 +28,11 @@ import { londonAreas } from "@/data/londonAreas";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { formatCurrency } from '@/utils/money';
+import { countPrintRuns } from '@/utils/periods';
 import PlanBreakdown from '@/components/PlanBreakdown';
 import MiniConfigurator from '@/components/MiniConfigurator';
 import QuickSummary from '@/components/QuickSummary';
 import { usePlanStore } from '@/state/planStore';
-import { countPrintRuns } from '@/utils/periods';
 
 interface SmartQuoteFormProps {
   onQuoteSubmitted?: () => void;
