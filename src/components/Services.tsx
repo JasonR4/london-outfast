@@ -66,7 +66,7 @@ const Services = () => {
           </p>
           <Button 
             variant="ghost"
-            onClick={() => navigate('/configurator')}
+            onClick={() => navigate('/quote-plan?review=1')}
             className="text-accent hover:text-accent-foreground"
           >
             Try Our Format Finder →

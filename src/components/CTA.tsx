@@ -39,7 +39,7 @@ const CTA = () => {
               variant="outline" 
               size="lg" 
               className="text-lg px-8 py-6"
-              onClick={() => navigate('/configurator')}
+              onClick={() => navigate('/quote-plan?review=1')}
             >
               I Need Guidance
             </Button>

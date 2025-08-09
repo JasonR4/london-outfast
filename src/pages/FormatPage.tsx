@@ -433,7 +433,7 @@ const FormatPage = () => {
     const success = await addQuoteItem(quoteItem);
     
     if (success) {
-      navigate('/configurator?review=1');
+      navigate('/quote-plan?review=1');
     }
   };
 
