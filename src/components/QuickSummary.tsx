@@ -85,10 +85,10 @@ export default function QuickSummary() {
           <CardTitle className="text-sm">Quick Summary</CardTitle>
         </CardHeader>
         <CardContent className="text-xs space-y-2">
-          <div>
+          <div className="space-y-1">
             <div className="text-muted-foreground">Formats:</div>
             <div className="font-medium">{formatCount} {formatCount === 1 ? "format" : "formats"}</div>
-            {formatNames && <div className="truncate">{formatNames}</div>}
+            {formatNames && <div className="text-xs text-muted-foreground truncate">{formatNames}</div>}
           </div>
 
           <div className="grid grid-cols-2 gap-y-1">
