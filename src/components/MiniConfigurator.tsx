@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LocationSelector } from "@/components/LocationSelector";
+import { londonAreas } from "@/data/londonAreas";
 import { Info } from "lucide-react";
 
 interface MiniConfiguratorProps {
@@ -41,9 +41,10 @@ export default function MiniConfigurator({ format }: MiniConfiguratorProps) {
   const [selectedLocations, setSelectedLocations] = useState<string[]>(existingItem?.locations || []);
   const [selectedInCharges, setSelectedInCharges] = useState<string[]>(existingItem?.inCharges || []);
 
-  // Available options from rate cards
+  // Available options from rate cards and london areas
   const availablePeriods = getAllAvailablePeriods();
   const availableLocations = getAvailableLocations();
+  const allLondonAreas = londonAreas.flatMap(zone => zone.areas);
   const maxUnits = 250; // Default max, could come from rate card in future
 
   // Generate quantity options
@@ -247,7 +248,7 @@ export default function MiniConfigurator({ format }: MiniConfiguratorProps) {
                 </SelectTrigger>
                 <SelectContent>
                   <div className="max-h-48 overflow-y-auto">
-                    {availableLocations.map((location) => (
+                    {allLondonAreas.map((location) => (
                       <SelectItem key={location} value={location}>
                         {location}
                       </SelectItem>
