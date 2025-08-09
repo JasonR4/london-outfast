@@ -4,11 +4,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Info } from "lucide-react";
 import { formatCurrency } from "@/utils/money";
 import { countPrintRuns } from "@/utils/periods";
-import { usePlanDraft } from "@/state/plan";
+import { usePlanStore, mediaCostBeforeDiscount, volumeDiscount, mediaCostAfterDiscount, productionCost, creativeCost } from "@/state/planStore";
 
 export default function QuickSummary() {
-  const { items } = usePlanDraft() as any;
-  const all = useMemo(() => Object.values(items || {}), [items]);
+  const items = usePlanStore(state => state.items);
+  
+  console.log('🔍 QuickSummary items from plan store:', items);
 
   const {
     formatNames,
@@ -20,33 +21,37 @@ export default function QuickSummary() {
     creatives,
     printRuns,
     mediaAfterDiscount,
-    volumeDiscount,
+    volumeDiscountAmount,
     production,
     creative,
     estimate,
   } = useMemo(() => {
+    console.log('🔍 Processing QuickSummary with items:', items);
+    
     const names: string[] = [];
     let sites = 0;
     const allLocations: string[] = [];
-    const periodSet = new Set<number>();
+    const periodSet = new Set<string>();
     let creatives = 0;
     let printRuns = 0;
     let mediaAfterDiscount = 0;
-    let volumeDiscount = 0;
+    let volumeDiscountAmount = 0;
     let production = 0;
     let creative = 0;
 
-    for (const it of all) {
-      if ((it as any)?.formatName) names.push((it as any).formatName);
-      sites += Number((it as any)?.quantity || 0);
-      ((it as any)?.locations || []).forEach((l: string) => allLocations.push(l));
-      ((it as any)?.selectedPeriods || []).forEach((p: number) => periodSet.add(p));
-      creatives += Number((it as any)?.creativeAssets || 0);
-      printRuns += countPrintRuns((it as any)?.selectedPeriods || []);
-      mediaAfterDiscount += Number((it as any)?.mediaCost || 0);
-      volumeDiscount += Number((it as any)?.discountAmount || 0);
-      production += Number((it as any)?.productionCost || 0);
-      creative += Number((it as any)?.creativeCost || 0);
+    for (const item of items) {
+      if (item?.formatName) names.push(item.formatName);
+      sites += Number(item?.sites || 0);
+      (item?.locations || []).forEach((l: string) => allLocations.push(l));
+      (item?.periods || []).forEach((p: string) => periodSet.add(p));
+      creatives += Number(item?.creativeAssets || 0);
+      
+      // Use the plan store calculation functions for consistency
+      mediaAfterDiscount += mediaCostAfterDiscount(item);
+      volumeDiscountAmount += Math.abs(volumeDiscount(item)); // Make positive for display
+      production += productionCost(item);
+      creative += creativeCost(item);
+      printRuns += item?.printRuns || 1;
     }
 
     // Show up to 2 names, then "+N more"
@@ -56,7 +61,6 @@ export default function QuickSummary() {
         ? uniqueNames.join(", ")
         : `${uniqueNames.slice(0, 2).join(", ")} +${uniqueNames.length - 2} more`;
 
-    const mediaBeforeDiscount = mediaAfterDiscount + volumeDiscount;
     const estimate = mediaAfterDiscount + production + creative;
 
     return {
@@ -65,20 +69,19 @@ export default function QuickSummary() {
       formatCount: uniqueNames.length,
       sites,
       locationsCount: new Set(allLocations).size,
-      uniquePeriods: Array.from(periodSet).sort((a, b) => a - b),
+      uniquePeriods: Array.from(periodSet).sort((a, b) => Number(a) - Number(b)),
       creatives,
       printRuns,
       mediaAfterDiscount,
-      mediaBeforeDiscount,
-      volumeDiscount,
+      volumeDiscountAmount,
       production,
       creative,
       estimate,
     };
-  }, [all]);
+  }, [items]);
 
   // Derive mediaBefore from after + discount so we can show both
-  const mediaBeforeDiscount = mediaAfterDiscount + volumeDiscount;
+  const mediaBeforeDiscount = mediaAfterDiscount + volumeDiscountAmount;
 
   return (
     <TooltipProvider>
@@ -145,7 +148,7 @@ export default function QuickSummary() {
               :
             </span>
             <span className="text-right font-medium text-green-600">
-              - {formatCurrency(volumeDiscount)}
+              - {formatCurrency(volumeDiscountAmount)}
             </span>
 
             <span className="text-muted-foreground">Media (after discount):</span>
