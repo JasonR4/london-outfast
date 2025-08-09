@@ -1220,43 +1220,64 @@ const FormatPage = () => {
                               </div>
                               
                               <div className="border-t pt-3 space-y-2">
-                                <div className="flex justify-between text-base">
-                                  <span>Campaign Cost ({quantity} × {selectedPeriods.length} periods):</span>
-                                  <span>£{campaignTotal.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between text-base">
-                                  <span>Production Cost ({quantity} units):</span>
-                                  <span>£{productionTotal.toFixed(2)}</span>
-                                </div>
-                                {needsCreative && (
-                                  <div className="flex justify-between text-base">
-                                    <span>Creative Assets ({creativeAssets}):</span>
-                                    <span>£{creativeTotal.toFixed(2)}</span>
-                                  </div>
-                                   )}
-                                   
-                                   {/* Non-consecutive surcharge display */}
-                                   {(() => {
-                                     const surcharge = calculateNonConsecutiveSurcharge(selectedPeriods, priceCalculation.totalPrice * quantity);
-                                     return surcharge > 0 ? (
-                                       <div className="flex justify-between text-sm text-amber-600">
-                                         <span>Non-consecutive setup surcharge (15%):</span>
-                                         <span>+£{surcharge.toFixed(2)}</span>
-                                       </div>
-                                     ) : null;
-                                   })()}
-                                <div className="flex justify-between font-bold text-lg border-t pt-3 bg-muted/30 -mx-2 px-2 py-2 rounded">
-                                  <span>Subtotal (exc VAT):</span>
-                                  <span>£{grandTotal.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between text-base text-muted-foreground">
-                                  <span>VAT (20%):</span>
-                                  <span>£{(grandTotal * 0.20).toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between font-bold text-xl border-t pt-2 bg-primary/10 -mx-2 px-2 py-2 rounded text-primary">
-                                  <span>Total inc VAT:</span>
-                                  <span>£{(grandTotal * 1.20).toFixed(2)}</span>
-                                </div>
+                                {(() => {
+                                  // Remove any surcharge references from the breakdown data before rendering
+                                  const campaignCost = priceCalculation.totalPrice * quantity;
+                                  const productionCost = productionCostCalc ? productionCostCalc.totalCost : 0;
+                                  const creativeCost = needsCreative ? creativeAssets * 85 : 0;
+                                  const subtotal = campaignCost + productionCost + creativeCost;
+                                  const vat = subtotal * 0.20;
+                                  const totalIncVat = subtotal + vat;
+
+                                  const breakdownItems = [
+                                    {
+                                      label: "Campaign Cost",
+                                      description: "Sites × periods at sale price, after any applicable media discounts",
+                                      value: `£${campaignCost.toFixed(2)}`
+                                    },
+                                    {
+                                      label: "Production Cost",
+                                      description: "Printing & posting based on print runs. Split (non-consecutive) periods require extra print runs. Media rate unchanged.",
+                                      value: `£${productionCost.toFixed(2)}`
+                                    },
+                                    {
+                                      label: "Creative Assets",
+                                      description: "Number of distinct artworks supplied for your campaign",
+                                      value: `£${creativeCost.toFixed(2)}`
+                                    },
+                                    {
+                                      label: "Subtotal (ex VAT)",
+                                      value: `£${subtotal.toFixed(2)}`
+                                    },
+                                    {
+                                      label: "VAT (20%)",
+                                      value: `£${vat.toFixed(2)}`
+                                    },
+                                    {
+                                      label: "Total inc VAT",
+                                      value: `£${totalIncVat.toFixed(2)}`
+                                    }
+                                  ];
+
+                                  // Render the breakdown
+                                  return (
+                                    <div className="quote-breakdown space-y-2">
+                                      {breakdownItems.map((item, index) => (
+                                        <div key={index} className="breakdown-row flex justify-between items-start">
+                                          <div className="label flex-1">
+                                            <span className={index >= 3 ? "font-semibold" : ""}>{item.label}</span>
+                                            {item.description && (
+                                              <div className="description text-sm text-muted-foreground mt-1">{item.description}</div>
+                                            )}
+                                          </div>
+                                          <div className={`value ml-4 ${index >= 3 ? "font-semibold" : ""} ${index === 5 ? "text-xl text-primary" : ""}`}>
+                                            {item.value}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  );
+                                })()}
                               </div>
 
                               <Button onClick={handleBuildPlan} size="lg" className="w-full mt-4 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg font-semibold text-lg">
