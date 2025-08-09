@@ -242,65 +242,46 @@ export default function QuotePlan() {
           const formatGroups = groupByFormat(planItems.map(enrichQuoteItem));
 
           return (
-            <div className="space-y-4 mb-8">
-              <h2 className="text-xl font-semibold">Format Breakdown</h2>
+            <div>
+              <h3>Format Breakdown</h3>
               {formatGroups.map(group => (
-                <Card key={group.formatName} className="border-l-4 border-l-primary">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{group.formatName}</CardTitle>
-                        <CardDescription>
-                          {group.sites} sites • {group.uniquePeriods} periods • {group.incharges} in-charges
-                        </CardDescription>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold">Sale rate (per in-charge): {formatCurrency(group.saleRate)}</div>
-                        <div className="text-sm text-muted-foreground">≈ {group.share.toFixed(0)}% of campaign</div>
+                <div key={group.formatName} className="format-breakdown">
+                  <div className="format-breakdown-header">
+                    <div>
+                      <strong>{group.formatName}</strong>
+                      <div style={{ fontSize: '0.85rem', color: '#555' }}>
+                        {group.sites} site{group.sites !== 1 ? 's' : ''} • {group.uniquePeriods} period{group.uniquePeriods !== 1 ? 's' : ''} • {group.incharges} in-charges
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Media cost at sale rate:</span>
-                      <span className="font-medium">{formatCurrency(group.mediaCost)}</span>
+                    <div>
+                      Sale rate (per in-charge): {formatCurrency(group.saleRate)}
+                      <div style={{ fontSize: '0.8rem', color: '#777' }}>
+                        ≈ {group.share.toFixed(0)}% of campaign
+                      </div>
                     </div>
+                  </div>
+
+                  <div className="format-breakdown-body">
+                    <div>Media cost at sale rate: {formatCurrency(group.mediaCost)}</div>
 
                     {group.volumeDiscount > 0 && (
-                      <div className="bg-green-50 p-3 rounded-lg space-y-1">
-                        <div className="flex justify-between text-green-700">
-                          <span>💰 Volume discount (10% for 3+ in-charge periods):</span>
-                          <span className="font-medium">−{formatCurrency(group.volumeDiscount)}</span>
-                        </div>
-                        <div className="text-xs text-green-600">
+                      <>
+                        <div>💰 Volume discount (10% for 3+ in-charge periods): −{formatCurrency(group.volumeDiscount)}</div>
+                        <small>
                           That's −{formatCurrency(group.volumeDiscount / group.incharges)} per unit per period ({group.incharges} in-charges).
-                        </div>
-                      </div>
+                        </small>
+                      </>
                     )}
 
-                    <div className="flex justify-between">
-                      <span>Media cost after discount:</span>
-                      <span className="font-medium">{formatCurrency(group.mediaAfterDiscount)}</span>
+                    <div>Media cost after discount: {formatCurrency(group.mediaAfterDiscount)}</div>
+                    <div>Total Production Cost: {formatCurrency(group.productionCost)}</div>
+                    <div>Total Creative Cost: {formatCurrency(group.creativeCost)}</div>
+                    <hr style={{ margin: '0.75rem 0' }} />
+                    <div>
+                      <strong>Format subtotal (ex VAT): {formatCurrency(group.subtotal)}</strong>
                     </div>
-                    
-                    <div className="flex justify-between">
-                      <span>Total Production Cost:</span>
-                      <span className="font-medium">{formatCurrency(group.productionCost)}</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span>Total Creative Cost:</span>
-                      <span className="font-medium">{formatCurrency(group.creativeCost)}</span>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex justify-between text-lg font-bold text-primary">
-                      <span>Format subtotal (exc VAT):</span>
-                      <span>{formatCurrency(group.subtotal)}</span>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           );
