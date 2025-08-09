@@ -1,0 +1,2 @@
+-- Remove duplicate Google Analytics codes that conflict with the hardcoded one in index.html
+DELETE FROM analytics_codes WHERE tracking_code LIKE '%G-FNYQ5VFL2F%' OR tracking_code LIKE '%googletagmanager.com/gtag/js%';
