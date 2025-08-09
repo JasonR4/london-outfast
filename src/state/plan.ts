@@ -83,7 +83,9 @@ export const usePlanDraft = create<PlanDraftState>((set, get) => ({
     
     return { items: newItems };
   }),
-  clear: () => set(() => {
+  clear: () => {
+    console.log("🧹 Plan store clear() called");
+    
     // Clear sessionStorage
     try {
       sessionStorage.removeItem(STORAGE_KEY);
@@ -91,8 +93,18 @@ export const usePlanDraft = create<PlanDraftState>((set, get) => ({
     } catch {}
     
     console.log("🧹 Plan store cleared - setting items to empty array");
-    return { items: [] };
-  }),
+    
+    // Force the state to be completely empty
+    const result = { items: [] };
+    console.log("🧹 Setting state to:", result);
+    
+    set(() => result);
+    
+    // Verify the state was set correctly
+    setTimeout(() => {
+      console.log("🧹 State after clear:", usePlanDraft.getState());
+    }, 0);
+  },
 }));
 
 // Restore once on mount if empty
