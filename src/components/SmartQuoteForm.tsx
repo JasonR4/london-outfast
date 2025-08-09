@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import isEqual from 'fast-deep-equal';
 import { calculateVAT, formatCurrencyWithVAT } from '@/utils/vat';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -27,12 +28,11 @@ import { londonAreas } from "@/data/londonAreas";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { formatCurrency } from '@/utils/money';
-import { countPrintRuns } from '@/utils/periods';
 import PlanBreakdown from '@/components/PlanBreakdown';
-import { usePlanDraft } from '@/state/plan';
 import MiniConfigurator from '@/components/MiniConfigurator';
 import QuickSummary from '@/components/QuickSummary';
-import { syncPlanStore, usePlanStore } from '@/state/planStore';
+import { usePlanStore } from '@/state/planStore';
+import { countPrintRuns } from '@/utils/periods';
 
 interface SmartQuoteFormProps {
   onQuoteSubmitted?: () => void;
@@ -148,39 +148,73 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Initialize on component mount - clear any stale data
-  useEffect(() => {
-    console.log('🚀 SmartQuoteForm: Initializing');
-    createOrGetQuote();
+  // Build clean items from Configure state (no side-effects)
+  const planItems = useMemo(() => {
+    console.log('🏗️ Building plan items from Configure state');
     
-    // Clear stale data if no formats selected
     if (!selectedFormats || selectedFormats.length === 0) {
-      console.log('🧹 Clearing stale data for fresh session');
-      syncPlanStore(); // Clear with no config
+      return [];
     }
-  }, []); // Empty dependency array to run only once
 
-  // Sync to plan store whenever configuration changes
+    const items = selectedFormats.map((fmt) => {
+      const formatKey = fmt.format_slug || fmt.id;
+      const sites = formatQuantities[formatKey] ?? 0;
+      const periods = selectedPeriods.map(String); // array of strings
+      const rateInfo = rateCards?.find((r) => r.media_format_id === fmt.id);
+      const saleRate = rateInfo?.sale_price ?? 800;
+      const productionRate = 25; // Default production rate
+      const printRuns = countPrintRuns(selectedPeriods);
+      const creativeAssets = needsCreative ? creativeQuantity : 0;
+      const creativeRate = needsCreative ? 350 : 0;
+
+      return {
+        id: formatKey,
+        formatSlug: formatKey,
+        name: fmt.format_name || fmt.name || formatKey,
+        sites,
+        periods,
+        saleRate,
+        productionRate,
+        printRuns,
+        creativeAssets,
+        creativeRate,
+        locations: selectedLocations.slice(0, sites * Math.max(periods.length, 1)),
+      };
+    }).filter(i => i.sites > 0 && i.periods.length > 0 && i.saleRate > 0);
+
+    console.log('📦 Built items:', items.length, 'valid items');
+    return items;
+  }, [selectedFormats, formatQuantities, selectedPeriods, selectedLocations, rateCards, needsCreative, creativeQuantity]);
+
+  // Guarded syncing: only write if changed
+  const storeItems = usePlanStore(s => s.items);
+  const setItems = usePlanStore(s => s.setItems);
+  const lastHashRef = useRef<string>('');
+
+  const planHash = useMemo(() => {
+    // stable string for comparison (faster than deep-equal on every render chain)
+    return JSON.stringify(planItems);
+  }, [planItems]);
+
   useEffect(() => {
-    console.log('🔄 Configuration changed, syncing to plan store');
-    syncPlanStore({
-      selectedFormats,
-      formatQuantities,
-      selectedPeriods,
-      selectedLocations,
-      needsCreative,
-      creativeQuantity,
-      rateCards
-    });
-  }, [
-    selectedFormats,
-    formatQuantities,
-    selectedPeriods,
-    selectedLocations,
-    needsCreative,
-    creativeQuantity,
-    rateCards
-  ]);
+    if (planHash === lastHashRef.current) return;
+    // also avoid writing when content is actually equal (covers order changes)
+    if (isEqual(storeItems, planItems)) {
+      lastHashRef.current = planHash;
+      return;
+    }
+    // write once
+    console.log('🔄 Writing to store - hash changed');
+    setItems(planItems);
+    lastHashRef.current = planHash;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planHash, setItems]); // DO NOT include storeItems here (prevents loops)
+
+  // Initialize quote on component mount
+  useEffect(() => {
+    console.log('🚀 SmartQuoteForm: Initializing quote');
+    createOrGetQuote();
+  }, []);
 
   const { mediaFormats, loading: formatsLoading } = useMediaFormats();
   
@@ -688,7 +722,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         size="sm"
                         onClick={() => {
                           // Bullet-proof "Start new quote" reset
-                          syncPlanStore(); // Clear with no config
+                          usePlanStore.getState().clear();
                           sessionStorage.removeItem("mbl-plan-v1");
                           sessionStorage.removeItem("mbl-plan-v2");
                           sessionStorage.removeItem("mbl-plan-v2-simple");
@@ -708,8 +742,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                       </Button>
                     </div>
                      {(() => {
-                        // Get current plan items from the unified store
-                        const planStoreItems = usePlanStore(state => state.items);
+                        // Get current plan items from the unified store (stable subscription)
+                        const planStoreItems = usePlanStore(s => s.items);
                         
                         // If no items in plan store, show saved quote items for reference
                         const savedItems = planStoreItems.length === 0 ? (currentQuote?.quote_items || []).map((item: any) => ({

@@ -4,16 +4,16 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Info } from "lucide-react";
 import { formatCurrency } from "@/utils/money";
 import { countPrintRuns } from "@/utils/periods";
-import { usePlanStore, selectValidItems, selectHasActivePlan, uniqueCampaignPeriods, mediaCostBeforeDiscount, volumeDiscount, productionCost, creativeCost } from "@/state/planStore";
+import { usePlanStore, uniqueCampaignPeriods, mediaCostBeforeDiscount, volumeDiscount, productionCost, creativeCost } from "@/state/planStore";
 
 export default function QuickSummary() {
-  const hasActive = usePlanStore(selectHasActivePlan);
-  const items = usePlanStore(selectValidItems);
+  // Stable subscription - no new objects created each render
+  const items = usePlanStore(s => s.items);
   
-  console.log('🔍 QuickSummary hasActive:', hasActive, 'items:', items);
+  console.log('🔍 QuickSummary items:', items.length);
 
-  // Bullet-proof: show nothing if there is no valid, active plan
-  if (!hasActive) return null;
+  // Show nothing if no valid items
+  if (!items || items.length === 0) return null;
 
   const {
     formatNames,
@@ -32,7 +32,7 @@ export default function QuickSummary() {
   } = useMemo(() => {
     console.log('🔍 Processing QuickSummary with valid items:', items);
     
-    const formatsList = items.map(i => i.formatName ?? i.name).filter(Boolean);
+    const formatsList = items.map(i => i.name).filter(Boolean);
     const sites = items.reduce((a,i)=>a + (i.sites ?? 0), 0);
     const periods = uniqueCampaignPeriods(items);
     const allLocations: string[] = [];
