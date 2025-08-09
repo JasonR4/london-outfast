@@ -278,7 +278,7 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
               title="Select Areas"
               description="Choose where your ads will run"
               maxHeight="200px"
-              showSelectedSummary={false}
+              showSelectedSummary={true}
             />
           </div>
 
