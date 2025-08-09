@@ -422,10 +422,17 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
                 </div>
                 {Boolean(existingItem?.discountAmount && existingItem.discountAmount > 0) && (
                   <>
-                    <div className="flex justify-between text-green-600">
-                      <span>Volume discount:</span>
-                      <span>-{formatCurrency(existingItem!.discountAmount)}</span>
-                    </div>
+                     <div className="flex justify-between text-green-600">
+                       <Tooltip>
+                         <TooltipTrigger asChild>
+                           <span className="cursor-help underline decoration-dotted">Volume discount (over 3 campaign periods):</span>
+                         </TooltipTrigger>
+                         <TooltipContent>
+                           <p>Discount applied for booking more than 3 campaign periods. Additional periods = bigger savings.</p>
+                         </TooltipContent>
+                       </Tooltip>
+                       <span>-{formatCurrency(existingItem!.discountAmount)}</span>
+                     </div>
                     <div className="flex justify-between">
                       <span>Media cost after discount:</span>
                       <span>{formatCurrency(existingItem?.mediaCost || 0)}</span>
