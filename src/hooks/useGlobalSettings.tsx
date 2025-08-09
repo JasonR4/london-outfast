@@ -16,6 +16,7 @@ export const useGlobalSettings = () => {
 
   const fetchSettings = async () => {
     try {
+      console.log('🔍 Fetching global settings...');
       const { data, error } = await supabase
         .from('global_settings')
         .select('*')
@@ -23,26 +24,39 @@ export const useGlobalSettings = () => {
         .in('setting_key', ['main_navigation', 'main_footer']);
 
       if (error) {
-        console.error('Error fetching global settings:', error);
+        console.error('❌ Error fetching global settings:', error);
         return;
       }
 
+      console.log('📊 Global settings data:', data);
+
       data?.forEach((setting: GlobalSetting) => {
         if (setting.setting_key === 'main_navigation') {
+          console.log('✅ Setting navigation:', setting.setting_value);
           setNavigation(setting.setting_value);
         } else if (setting.setting_key === 'main_footer') {
+          console.log('✅ Setting footer:', setting.setting_value);
           setFooter(setting.setting_value);
         }
       });
     } catch (error) {
-      console.error('Error fetching global settings:', error);
+      console.error('❌ Error fetching global settings:', error);
     } finally {
+      console.log('✅ Global settings loading complete');
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchSettings();
+    // Add timeout for global settings too
+    const timeoutId = setTimeout(() => {
+      console.warn('⏰ Global settings timeout, using fallbacks');
+      setLoading(false);
+    }, 1000);
+
+    fetchSettings().finally(() => {
+      clearTimeout(timeoutId);
+    });
 
     // Subscribe to real-time changes
     const channel = supabase
@@ -55,12 +69,14 @@ export const useGlobalSettings = () => {
           table: 'global_settings'
         },
         () => {
+          console.log('🔄 Global settings changed, refetching...');
           fetchSettings();
         }
       )
       .subscribe();
 
     return () => {
+      clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
   }, []);

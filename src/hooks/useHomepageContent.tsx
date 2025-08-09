@@ -16,7 +16,7 @@ export const useHomepageContent = (sectionKey: string) => {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        console.log(`Fetching ${sectionKey} content...`);
+        console.log(`🔍 Fetching ${sectionKey} content...`);
         const { data, error } = await supabase
           .from('homepage_content')
           .select('content')
@@ -25,37 +25,36 @@ export const useHomepageContent = (sectionKey: string) => {
           .maybeSingle();
 
         if (error) {
+          console.error(`❌ Error fetching ${sectionKey}:`, error);
           if (error.code === 'PGRST116') {
-            // No data found, use empty object
-            console.log(`No content found for ${sectionKey}, using fallback`);
+            console.log(`⚠️ No content found for ${sectionKey}, using fallback`);
             setContent({});
           } else {
             throw error;
           }
         } else if (data) {
-          console.log(`Content loaded for ${sectionKey}:`, data.content);
+          console.log(`✅ Content loaded for ${sectionKey}:`, data.content);
           setContent(data.content);
         } else {
-          // Handle null data case
-          console.log(`Null data for ${sectionKey}, using fallback`);
+          console.log(`⚠️ Null data for ${sectionKey}, using fallback`);
           setContent({});
         }
       } catch (err) {
-        console.error(`Error fetching ${sectionKey} content:`, err);
+        console.error(`❌ Error fetching ${sectionKey} content:`, err);
         setError(`Failed to load ${sectionKey} content`);
         setContent({}); // Fallback to empty object
       } finally {
-        console.log(`Loading complete for ${sectionKey}`);
+        console.log(`✅ Loading complete for ${sectionKey}`);
         setLoading(false);
       }
     };
 
-    // Add immediate timeout to prevent infinite loading
+    // Set loading to false immediately if data doesn't come through
     const timeoutId = setTimeout(() => {
-      console.warn(`Content loading timeout for ${sectionKey}, using fallback`);
+      console.warn(`⏰ Timeout for ${sectionKey}, using fallback`);
       setContent({});
       setLoading(false);
-    }, 2000); // 2 second timeout
+    }, 1000); // Reduce to 1 second
 
     fetchContent().finally(() => {
       clearTimeout(timeoutId);
