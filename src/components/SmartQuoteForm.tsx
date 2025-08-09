@@ -34,6 +34,70 @@ import MiniConfigurator from '@/components/MiniConfigurator';
 import QuickSummary from '@/components/QuickSummary';
 import { usePlanStore } from '@/state/planStore';
 
+// ---------- helpers ----------
+const currency = (n:number)=> n.toLocaleString("en-GB",{ style:"currency", currency:"GBP" });
+
+type DraftFormat = { id: string; name?: string; code?: string; format_slug?: string; format_name?: string };
+const rateFor = (rc: any, f: DraftFormat) => {
+  const byId  = rc?.[f.id];
+  const byCode= f.code ? rc?.[f.code] : undefined;
+  const bySlug = f.format_slug ? rc?.[f.format_slug] : undefined;
+  return byId ?? byCode ?? bySlug ?? {};
+};
+
+const asArray = (v:any): string[] =>
+  Array.isArray(v) ? v.filter(Boolean) : [];
+
+// Build clean, store-ready items from Configure state
+const buildPlanItems = ({
+  selectedFormats, formatQuantities, periodsByFormat, selectedPeriods,
+  areasByFormat, selectedAreas, creativeAssetsByFormat, printRunsByFormat, rateCards,
+  selectedLocations, needsCreative, creativeQuantity
+}: any) => {
+  const items = (selectedFormats ?? []).map((fmt: DraftFormat) => {
+    const formatKey = fmt.format_slug || fmt.id;
+    const sites = Number(formatQuantities?.[formatKey] ?? 0);
+    const periods = asArray(
+      periodsByFormat?.[formatKey] ?? selectedPeriods?.[formatKey] ?? selectedPeriods ?? []
+    );
+    const areas = asArray(
+      areasByFormat?.[formatKey] ?? selectedAreas?.[formatKey] ?? selectedLocations ?? []
+    );
+    const creativeAssets = needsCreative ? Number(creativeQuantity ?? 0) : 0;
+    const printRuns = Number(printRunsByFormat?.[formatKey] ?? 1);
+    const rates = rateFor(rateCards, fmt);
+    const saleRate = Number(rates?.sale_price ?? rates?.saleRate ?? rates?.saleRatePerInCharge ?? 800);
+    const productionRate = Number(rates?.productionRate ?? 25);
+    const creativeRate = needsCreative ? Number(rates?.creativeRate ?? 350) : 0;
+    
+    return {
+      // stable key per format id; add suffix to avoid collisions with legacy
+      id: `fmt_${formatKey}`,
+      formatId: formatKey,
+      formatName: fmt.format_name || fmt.name || fmt.id,
+      name: fmt.format_name || fmt.name || fmt.id,
+      sites,
+      periods: periods.map(String),              // DISPLAY in-charges = periods.length
+      saleRate,             // per-period media rate
+      productionRate,       // per site per print run
+      creativeRate,         // per creative asset
+      creativeAssets,
+      printRuns,
+      // optional meta we don't price on but useful to show:
+      locations: areas
+    };
+  });
+  
+  console.log('🏗️ buildPlanItems result:', items.map(i => ({
+    formatName: i.formatName,
+    sites: i.sites, 
+    periods: i.periods?.length,
+    saleRate: i.saleRate
+  })));
+  
+  return items;
+};
+
 interface SmartQuoteFormProps {
   onQuoteSubmitted?: () => void;
 }
@@ -148,57 +212,55 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Initialize quote on component mount and clear stale plan store data
+  // ---------- unify Configure -> Pricing via store sync ----------
+  const { setItems, clear } = usePlanStore((s)=>({ setItems: s.setItems, clear: s.clear }));
+
+  // On first mount of SmartQuoteForm, if this is a truly new session (no formats selected),
+  // clear any persisted ghost data to avoid leaking a previous quote.
   useEffect(() => {
-    console.log('🚀 SmartQuoteForm: Initializing quote and clearing stale data');
+    const noSelection =
+      !selectedFormats || (Array.isArray(selectedFormats) && selectedFormats.length === 0);
+    if (noSelection) {
+      console.log('🧹 Clearing ghost data for new session');
+      clear();
+      sessionStorage.removeItem("mbl-plan-v1");
+      sessionStorage.removeItem("mbl-plan-v2");
+      sessionStorage.removeItem("mbl-plan-v2-simple");
+    }
     createOrGetQuote();
-    // Clear plan store on fresh component mount to prevent showing stale data
-    const { clear } = usePlanStore.getState();
-    clear();
   }, []); // Empty dependency array to run only once
 
-  // Clear plan store when starting fresh search (no selections) - simplified to prevent loops
+  // Keep the store in lockstep with Configure state.
+  // Any time user changes formats/sites/periods/areas/creative/printRuns/rates, we rebuild items and set them.
   useEffect(() => {
-    if (selectedFormats.length === 0 && selectedPeriods.length === 0) {
-      console.log('🧹 Clearing plan store for fresh search');
-      const { clear } = usePlanStore.getState();
-      clear();
-    }
-  }, [selectedFormats.length, selectedPeriods.length]); // Only depend on lengths to prevent object reference issues
-
-  // DISABLED: Automatic sync was causing infinite loops
-  // Instead, we'll sync manually when user actions occur
-  
-  // Manual sync function to update plan store
-  const syncPlanStore = () => {
-    if (selectedFormats.length > 0) {
-      console.log('🔄 Manual sync to plan store');
-      const { setItems } = usePlanStore.getState();
-      
-      const planItems = selectedFormats.map(format => {
-        const quantity = formatQuantities[format.format_slug] || 1;
-        return {
-          id: format.format_slug,
-          formatId: format.format_slug,
-          formatName: format.format_name,
-          saleRate: 800, // stable fallback
-          sites: quantity,
-          periods: selectedPeriods.map(String),
-          locations: selectedLocations,
-          productionRate: 25,
-          printRuns: countPrintRuns(selectedPeriods),
-          creativeAssets: needsCreative ? creativeQuantity : 0,
-          creativeRate: needsCreative ? 350 : 0
-        };
-      });
-      
-      setItems(planItems);
-    } else {
-      // Clear store if no formats selected
-      const { clear } = usePlanStore.getState();
-      clear();
-    }
-  };
+    console.log('🔄 Syncing configure state to plan store');
+    const items = buildPlanItems({
+      selectedFormats,
+      formatQuantities,
+      selectedPeriods,
+      selectedLocations,
+      needsCreative,
+      creativeQuantity,
+      rateCards
+    }).filter((it:any) =>
+      // validity guard: show only real selections
+      Number(it.sites) > 0 &&
+      Array.isArray(it.periods) && it.periods.length > 0 &&
+      Number(it.saleRate) > 0
+    );
+    
+    console.log('📦 Built plan items:', items.length, 'valid items');
+    setItems(items);
+  }, [
+    selectedFormats,
+    formatQuantities,
+    selectedPeriods,
+    selectedLocations,
+    needsCreative,
+    creativeQuantity,
+    rateCards,
+    setItems
+  ]);
 
   const { mediaFormats, loading: formatsLoading } = useMediaFormats();
   
@@ -352,10 +414,6 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
           return newQuantities;
         });
         
-        // Remove from plan store to sync pricing tab
-        const { removeItem } = usePlanStore.getState();
-        removeItem(format.format_slug);
-        
         return prev.filter(f => f.format_slug !== format.format_slug);
       } else {
         console.log('✅ Adding format:', format.format_name);
@@ -365,12 +423,10 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
           [format.format_slug]: 1
         }));
         
-        // Manually sync to plan store after state update
-        setTimeout(() => syncPlanStore(), 0);
-        
         return [...prev, format];
       }
     });
+    // The useEffect above will handle syncing to store automatically
   };
 
   const handleContinueToConfig = () => {
@@ -711,14 +767,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          // Clear the plan store
-                          import("@/state/planStore").then(m => {
-                            m.usePlanStore.getState().clear();
-                            // Also clear the persisted session key to be 100% sure
-                            try { 
-                              sessionStorage.removeItem("mbl-plan-v1"); 
-                            } catch {}
-                          });
+                          // Bullet-proof "Start new quote" reset
+                          clear();
+                          sessionStorage.removeItem("mbl-plan-v1");
+                          sessionStorage.removeItem("mbl-plan-v2");
+                          sessionStorage.removeItem("mbl-plan-v2-simple");
                           // Reset local state completely
                           setSelectedFormats([]);
                           setFormatQuantities({});
