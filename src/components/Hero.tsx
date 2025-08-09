@@ -44,16 +44,15 @@ const Hero = () => {
         </Badge>
         
         <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent leading-tight">
-          MEDIA BUYING LONDON
+          {content?.title || "MEDIA BUYING LONDON"}
         </h1>
         
         <p className="text-2xl md:text-3xl font-semibold mb-4 text-foreground">
-          London's Fastest, Leanest OOH Media Buying Specialists
+          {content?.subtitle || "London's Fastest, Leanest OOH Media Buying Specialists"}
         </p>
         
         <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed">
-          We don't build brands — we get them seen. From 6-sheets to Digital 48s, 
-          we buy media that gets noticed. Fast turnarounds, insider rates, zero delay.
+          {content?.description || "We don't build brands — we get them seen. From 6-sheets to Digital 48s, we buy media that gets noticed. Fast turnarounds, insider rates, zero delay."}
         </p>
         
         
