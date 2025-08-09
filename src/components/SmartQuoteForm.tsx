@@ -32,6 +32,7 @@ import PlanBreakdown from '@/components/PlanBreakdown';
 import { usePlanDraft } from '@/state/plan';
 import MiniConfigurator from '@/components/MiniConfigurator';
 import QuickSummary from '@/components/QuickSummary';
+import { usePlanStore } from '@/state/planStore';
 
 interface SmartQuoteFormProps {
   onQuoteSubmitted?: () => void;
@@ -151,6 +152,38 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
   useEffect(() => {
     createOrGetQuote();
   }, []);
+
+  // Sync plan store with current configuration to keep pricing tab updated
+  useEffect(() => {
+    const { setItems } = usePlanStore.getState();
+    
+    // Build plan items from current selection state
+    const planItems = selectedFormats.map(format => {
+      const quantity = formatQuantities[format.format_slug] || 1;
+      const rateCard = rateCards.find(rc => rc.media_format_id === format.id);
+      const saleRate = rateCard?.sale_price || 800; // fallback rate
+      
+      return {
+        id: format.format_slug,
+        formatId: format.format_slug,
+        formatName: format.format_name,
+        saleRate,
+        sites: quantity,
+        periods: selectedPeriods.map(String), // convert to string array
+        locations: selectedLocations,
+        productionRate: 25, // default production rate
+        printRuns: countPrintRuns(selectedPeriods),
+        creativeAssets: needsCreative ? creativeQuantity : 0,
+        creativeRate: needsCreative ? 350 : 0 // default creative rate
+      };
+    });
+    
+    // Only update if there are changes to avoid infinite loops
+    const currentItems = usePlanStore.getState().items;
+    if (JSON.stringify(currentItems) !== JSON.stringify(planItems)) {
+      setItems(planItems);
+    }
+  }, [selectedFormats, formatQuantities, selectedPeriods, selectedLocations, needsCreative, creativeQuantity, rateCards]);
 
   const { mediaFormats, loading: formatsLoading } = useMediaFormats();
   
@@ -303,6 +336,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
           delete newQuantities[format.format_slug];
           return newQuantities;
         });
+        
+        // Remove from plan store to sync pricing tab
+        const { removeItem } = usePlanStore.getState();
+        removeItem(format.format_slug);
+        
         return prev.filter(f => f.format_slug !== format.format_slug);
       } else {
         console.log('✅ Adding format:', format.format_name);
@@ -662,10 +700,13 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                               sessionStorage.removeItem("mbl-plan-v1"); 
                             } catch {}
                           });
-                          // Reset local state
+                          // Reset local state completely
                           setSelectedFormats([]);
                           setFormatQuantities({});
                           setSelectedPeriods([]);
+                          clearAllLocations();
+                          setNeedsCreative(false);
+                          setCreativeQuantity(1);
                           // Navigate back to search
                           setActiveTab("search");
                         }}
