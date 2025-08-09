@@ -114,23 +114,6 @@ export default function QuotePlan() {
     }).format(amount);
   };
 
-  // Helper function to check if periods are consecutive
-  const arePeriodsConsecutive = (periods: number[]) => {
-    if (periods.length <= 1) return true;
-    const sortedPeriods = [...periods].sort((a, b) => a - b);
-    for (let i = 1; i < sortedPeriods.length; i++) {
-      if (sortedPeriods[i] - sortedPeriods[i - 1] !== 1) {
-        return false;
-      }
-    }
-    return true;
-  };
-
-  // Surcharge disabled: production-only impact for non-consecutive periods
-  const calculateNonConsecutiveSurcharge = (_periods: number[], _basePrice: number) => {
-    return 0;
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
