@@ -16,6 +16,7 @@ export const useHomepageContent = (sectionKey: string) => {
   useEffect(() => {
     const fetchContent = async () => {
       try {
+        console.log(`Fetching ${sectionKey} content...`);
         const { data, error } = await supabase
           .from('homepage_content')
           .select('content')
@@ -26,14 +27,17 @@ export const useHomepageContent = (sectionKey: string) => {
         if (error) {
           if (error.code === 'PGRST116') {
             // No data found, use empty object
+            console.log(`No content found for ${sectionKey}, using fallback`);
             setContent({});
           } else {
             throw error;
           }
         } else if (data) {
+          console.log(`Content loaded for ${sectionKey}:`, data.content);
           setContent(data.content);
         } else {
           // Handle null data case
+          console.log(`Null data for ${sectionKey}, using fallback`);
           setContent({});
         }
       } catch (err) {
@@ -41,11 +45,23 @@ export const useHomepageContent = (sectionKey: string) => {
         setError(`Failed to load ${sectionKey} content`);
         setContent({}); // Fallback to empty object
       } finally {
+        console.log(`Loading complete for ${sectionKey}`);
         setLoading(false);
       }
     };
 
-    fetchContent();
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.warn(`Content loading timeout for ${sectionKey}, using fallback`);
+      setContent({});
+      setLoading(false);
+    }, 5000); // 5 second timeout
+
+    fetchContent().finally(() => {
+      clearTimeout(timeoutId);
+    });
+
+    return () => clearTimeout(timeoutId);
   }, [sectionKey]);
 
   return { content, loading, error };
