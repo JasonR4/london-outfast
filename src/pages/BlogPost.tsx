@@ -50,7 +50,7 @@ const BlogPost: React.FC = () => {
             <img
               src={post.cover_image_url}
               alt={post.meta_title || post.title}
-              className="w-full max-h-[300px] object-cover"
+              className="w-3/4 max-h-[500px] object-cover mx-auto"
               loading="lazy"
             />
           )}
