@@ -126,11 +126,9 @@ export default function QuotePlan() {
     return true;
   };
 
-  // Calculate non-consecutive period surcharge
-  const calculateNonConsecutiveSurcharge = (periods: number[], basePrice: number) => {
-    if (arePeriodsConsecutive(periods)) return 0;
-    // 15% surcharge for non-consecutive periods
-    return basePrice * 0.15;
+  // Surcharge disabled: production-only impact for non-consecutive periods
+  const calculateNonConsecutiveSurcharge = (_periods: number[], _basePrice: number) => {
+    return 0;
   };
 
   return (

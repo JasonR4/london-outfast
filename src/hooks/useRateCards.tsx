@@ -411,19 +411,13 @@ export function useRateCards(formatSlug?: string) {
       return null;
     }
 
-    // Apply location markup to base rate
+    // Use base rate without any location markup
     const baseRate = rateCard.base_rate_per_incharge;
-    const markupMultiplier = 1 + (rateCard.location_markup_percentage / 100);
-    const adjustedRate = baseRate * markupMultiplier;
-
-    // Check for sale or reduced price first
-    const finalRate = rateCard.sale_price || rateCard.reduced_price || adjustedRate;
+    const finalRate = rateCard.sale_price ?? rateCard.reduced_price ?? baseRate;
     let totalPrice = finalRate * selectedPeriods.length;
 
     console.log('💰 Pricing calculation:', {
       baseRate,
-      markupMultiplier,
-      adjustedRate,
       finalRate,
       periodsCount: selectedPeriods.length,
       totalPrice
@@ -441,10 +435,10 @@ export function useRateCards(formatSlug?: string) {
 
     const result = {
       basePrice: baseRate,
-      adjustedRate,
+      adjustedRate: baseRate,
       totalPrice,
       discount: applicableDiscount?.discount_percentage || 0,
-      locationMarkup: rateCard.location_markup_percentage,
+      locationMarkup: 0,
       isOnSale: !!rateCard.sale_price,
       isReduced: !!rateCard.reduced_price && !rateCard.sale_price,
       periodsCount: selectedPeriods.length,
