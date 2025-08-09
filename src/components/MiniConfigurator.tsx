@@ -165,6 +165,13 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
   const hasCreativeAssets = creativeAssets > 0;
   const printRuns = countPrintRuns(selectedPeriods);
   const needsMultiplePrintRuns = printRuns > 1;
+  // Always-on header total (falls back to an estimate if not yet configured)
+  const uniquePeriodsForEstimate = [...new Set(selectedPeriods)];
+  const headerEstimate =
+    (rateCardData?.saleRatePerInCharge || 0) * (quantity * uniquePeriodsForEstimate.length) +
+    (rateCardData?.productionRatePerUnit || 0) * quantity * countPrintRuns(selectedPeriods) +
+    (rateCardData?.creativeUnit ?? 85) * (creativeAssets || 0);
+  const headerTotal = existingItem?.totalCost ?? (headerEstimate > 0 ? headerEstimate : 0);
 
   if (loading) {
     return (
@@ -194,11 +201,9 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
               {isConfigured && <CheckCircle2 className="h-5 w-5 text-green-500" />}
             </div>
             <div className="flex items-center gap-2">
-              {isConfigured && (
-                <Badge variant="secondary" className="text-xs">
-                  {formatCurrency(currentCost)}
-                </Badge>
-              )}
+              <Badge variant="secondary" className="text-xs">
+                {headerTotal > 0 ? formatCurrency(headerTotal) : '—'}
+              </Badge>
             </div>
           </CardTitle>
         </CardHeader>
@@ -217,6 +222,9 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
                 <p>Number of sites/units booked for this format.</p>
               </TooltipContent>
             </Tooltip>
+            <p className="text-xs text-muted-foreground">
+              Number of sites you want to book for this format.
+            </p>
             <Select value={quantity.toString()} onValueChange={(value) => setQuantity(parseInt(value))}>
               <SelectTrigger>
                 <SelectValue placeholder="Select quantity" />
@@ -244,6 +252,9 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
                 <p>Design & artwork creation costs.</p>
               </TooltipContent>
             </Tooltip>
+            <p className="text-xs text-muted-foreground">
+              Add design & artwork if you'd like us to create the ads. Leave at 0 if you have final artwork.
+            </p>
             <Select value={creativeAssets.toString()} onValueChange={(value) => setCreativeAssets(parseInt(value))}>
               <SelectTrigger>
                 <SelectValue placeholder="Select creative assets" />
@@ -272,6 +283,9 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
                 <p>Where your media will run — pick multiple.</p>
               </TooltipContent>
             </Tooltip>
+            <p className="text-xs text-muted-foreground">
+              Choose the areas/zones your ads will appear. You can select multiple.
+            </p>
             <LocationSelector
               selectedLocations={selectedLocations}
               onSelectionChange={setSelectedLocations}
@@ -295,6 +309,9 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
                 <p>The campaign periods your media will run.</p>
               </TooltipContent>
             </Tooltip>
+            <p className="text-xs text-muted-foreground">
+              Pick your campaign dates. Non-consecutive periods need extra print runs (affects production only).
+            </p>
             <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-2 border rounded">
               {rateCardData?.inCharges && rateCardData.inCharges.length > 0 ? (
                 rateCardData.inCharges.map((period) => (
