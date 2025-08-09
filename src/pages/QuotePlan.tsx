@@ -241,7 +241,7 @@ export default function QuotePlan() {
             productionCost: item.production_cost || 0,
             creativeCost: item.creative_cost || 0,
           }));
-          return <PlanBreakdown items={items} showKpis={false} />;
+          return <PlanBreakdown />;
         })()}
 
         <div className="grid lg:grid-cols-3 gap-8">

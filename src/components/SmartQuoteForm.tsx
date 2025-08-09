@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import isEqual from 'fast-deep-equal';
-import { usePlanStore, type PlanItem } from "@/state/planStore";
+import { usePlanStore, PlanItem } from "@/state/planStore";
 import { calculateVAT, formatCurrencyWithVAT } from '@/utils/vat';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -33,52 +32,6 @@ import { countPrintRuns } from '@/utils/periods';
 import PlanBreakdown from '@/components/PlanBreakdown';
 import MiniConfigurator from '@/components/MiniConfigurator';
 import QuickSummary from '@/components/QuickSummary';
-import { usePlanStore as usePlanStoreImport } from '@/state/planStore';
-
-// Small stable hash (no extra deps)
-const stableHash = (obj: unknown) =>
-  JSON.stringify(obj, (k, v) => {
-    if (v && typeof v === "object" && !Array.isArray(v)) {
-      return Object.keys(v as Record<string, unknown>)
-        .sort()
-        .reduce((acc, key) => {
-          (acc as any)[key] = (v as any)[key];
-          return acc;
-        }, {} as Record<string, unknown>);
-    }
-    return v;
-  });
-
-/** Safely read a sale rate from whatever the rate-card calls it */
-const getSaleRate = (rateCard: any, slug: string): number => {
-  const rc = rateCard?.find?.((r: any) => r.media_format_id === slug || r.format_slug === slug);
-  return (
-    rc?.sale_price ??
-    rc?.saleRate ??
-    rc?.saleRatePerInCharge ??
-    rc?.unitRate ??
-    rc?.mediaRate ??
-    800 // fallback
-  );
-};
-
-/** Safely read a production rate (per site per print run) */
-const getProductionRate = (rateCard: any, slug: string): number => {
-  const rc = rateCard?.find?.((r: any) => r.media_format_id === slug || r.format_slug === slug);
-  return rc?.productionRate ?? rc?.productionUnit ?? rc?.production ?? 25;
-};
-
-const getCreativeRate = (rateCard: any, slug: string): number => {
-  const rc = rateCard?.find?.((r: any) => r.media_format_id === slug || r.format_slug === slug);
-  return rc?.creativeRate ?? rc?.creativeUnit ?? 350; // sensible default
-};
-
-function computePrintRuns(periods: string[] = []) {
-  // Non-consecutive = number of blocks. Use existing countPrintRuns if available
-  if (!periods.length) return 1;
-  // Fallback: treat any gap as extra run
-  return countPrintRuns ? countPrintRuns(periods.map(Number)) : 1;
-};
 
 interface SmartQuoteFormProps {
   onQuoteSubmitted?: () => void;
@@ -196,7 +149,49 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
   // Build clean items from Configure state (memoized)
   const storeItems = usePlanStore((s) => s.items);
-  const setItems = usePlanStore((s) => s.setItems);
+  const replace = usePlanStore((s) => s.replace);
+
+  // 1) Hard-kill any previous persisted memory on boot (safety)
+  useEffect(() => {
+    try {
+      // clean any experimental keys we may have tried
+      const keys = [
+        "mbl-plan",
+        "mbl-plan-v1",
+        "mbl-plan-v2",
+        "plan-store",
+        "zustand",
+      ];
+      keys.forEach((k) => sessionStorage.removeItem(k));
+    } catch {}
+    // also clear the store
+    usePlanStore.getState().clear();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ---- helper to calc print runs from non-consecutive period groups ----
+  const calcPrintRuns = (periods: string[]) => {
+    if (!periods?.length) return 0;
+    const nums = periods.map((p) => Number(p)).sort((a, b) => a - b);
+    let runs = 1;
+    for (let i = 1; i < nums.length; i++) {
+      if (nums[i] !== nums[i - 1] + 1) runs++;
+    }
+    return runs;
+  };
+
+  // ---- adapt these accessors to your real rate card structure ----
+  const getSaleRate = (slug: string) =>
+    rateCards?.find?.(r => r.media_format_id === slug)?.sale_price ??
+    rateCards?.[slug]?.saleRate ??
+    rateCards?.[slug]?.saleRatePerInCharge ??
+    0;
+
+  const getProductionRate = (slug: string) =>
+    35; // fallback production rate
+
+  const getCreativeRate = (slug: string) =>
+    rateCards?.[slug]?.creativeRate ?? 85; // your default per-asset rate
 
   const planItems: PlanItem[] = useMemo(() => {
     console.log('🏗️ Building plan items from Configure state');
@@ -205,30 +200,32 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       .map((fmt: any) => {
         const formatKey = fmt.format_slug || fmt.id;
         const sites = Number(formatQuantities?.[formatKey] ?? 0);
-        const saleRate = getSaleRate(rateCards, fmt.id);
-        const productionRate = getProductionRate(rateCards, fmt.id);
+        const saleRate = getSaleRate(fmt.id);
+        const productionRate = getProductionRate(fmt.id);
         const creativeAssets = needsCreative ? Number(creativeQuantity ?? 0) : 0;
-        const creativeRate = needsCreative ? getCreativeRate(rateCards, fmt.id) : 0;
-        const printRuns = computePrintRuns(periodsArr);
+        const creativeRate = needsCreative ? getCreativeRate(fmt.id) : 0;
+        const printRuns = calcPrintRuns(periodsArr);
 
         const locs = selectedLocations ?? [];
 
+        // VALIDATION GUARD: only store valid configured items
+        if (sites <= 0 || periodsArr.length === 0 || saleRate <= 0) return null;
+
         return {
           id: String(formatKey),
-          formatSlug: String(formatKey),
-          name: String(fmt.format_name ?? fmt.name ?? fmt.title ?? formatKey),
-          sites,
-          periods: periodsArr,
+          formatName: String(fmt.format_name ?? fmt.name ?? fmt.title ?? formatKey),
           saleRate,
           productionRate,
+          creativeRate,
+          sites,
+          periods: periodsArr,
+          locationsCount: locs.length,
           printRuns,
           creativeAssets,
-          creativeRate,
-          locations: locs.slice(0, Math.max(sites * Math.max(periodsArr.length, 1), 0)),
         } as PlanItem;
       })
       // keep only truly configured items
-      .filter((i) => i.sites > 0 && i.periods.length > 0 && i.saleRate > 0);
+      .filter(Boolean) as PlanItem[];
   }, [
     selectedFormats,
     formatQuantities,
@@ -241,21 +238,15 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
   // Guarded auto-sync: write only when payload actually changes
   const lastHashRef = useRef<string>("");
-  const nextHash = useMemo(() => stableHash(planItems), [planItems]);
 
   useEffect(() => {
-    if (nextHash === lastHashRef.current) return;
-    // Avoid writing during render loops: only write if different from store snapshot
-    const storeHash = stableHash(storeItems);
-    if (storeHash === nextHash) {
-      lastHashRef.current = nextHash;
-      return;
+    const hash = JSON.stringify(planItems);
+    if (hash !== lastHashRef.current) {
+      lastHashRef.current = hash;
+      console.log('🔄 Writing to store - hash changed:', planItems.length, 'items');
+      replace(planItems); // write once per change
     }
-    console.log('🔄 Writing to store - hash changed:', planItems.length, 'items');
-    setItems(planItems);
-    lastHashRef.current = nextHash;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nextHash, setItems]); // intentionally NOT depending on storeItems
+  }, [planItems, replace]);
 
   // Initialize quote on component mount
   useEffect(() => {
@@ -608,11 +599,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
             )}
 
             {/* Quick Summary - always visible with empty state support */}
-            <QuickSummary 
-              draftSelectedFormats={selectedFormats}
-              draftFormatQuantities={formatQuantities}
-              draftSelectedPeriods={selectedPeriods.map(String)}
-            />
+            <QuickSummary />
           </div>
         </div>
 
@@ -774,33 +761,33 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                 <TabsContent value="pricing" className="space-y-6">
                   {/* Current Plan Breakdown - combines draft and saved items */}
                   <div className="mb-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-semibold">Your Current Plan</h3>
-                      {/* Start new quote: clears persisted plan */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          // Bullet-proof "Start new quote" reset
-                          usePlanStore.getState().clear();
-                          sessionStorage.removeItem("mbl-plan-v1");
-                          sessionStorage.removeItem("mbl-plan-v2");
-                          sessionStorage.removeItem("mbl-plan-v2-simple");
-                          // Reset local state completely
-                          setSelectedFormats([]);
-                          setFormatQuantities({});
-                          setSelectedPeriods([]);
-                          clearAllLocations();
-                          setNeedsCreative(false);
-                          setCreativeQuantity(1);
-                          // Navigate back to search
-                          setActiveTab("search");
-                        }}
-                        className="text-xs"
-                      >
-                        Start new quote
-                      </Button>
-                    </div>
+                     <div className="flex items-center justify-between mb-4">
+                       <h3 className="text-xl font-semibold">Your Current Plan</h3>
+                       {/* Start new quote: clears persisted plan */}
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => {
+                           // Bullet-proof "Start new quote" reset
+                           usePlanStore.getState().clear();
+                           sessionStorage.removeItem("mbl-plan-v1");
+                           sessionStorage.removeItem("mbl-plan-v2");
+                           sessionStorage.removeItem("mbl-plan-v2-simple");
+                           // Reset local state completely
+                           setSelectedFormats([]);
+                           setFormatQuantities({});
+                           setSelectedPeriods([]);
+                           clearAllLocations();
+                           setNeedsCreative(false);
+                           setCreativeQuantity(1);
+                           // Navigate back to search
+                           setActiveTab("search");
+                         }}
+                         className="text-xs"
+                       >
+                         Start new quote
+                       </Button>
+                     </div>
                      {(() => {
                         // Get current plan items from the unified store (stable subscription)
                         const planStoreItems = usePlanStore(s => s.items);
@@ -825,12 +812,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         // Use plan store items for current configuration, saved items as fallback
                         const planItems = planStoreItems.length > 0 ? planStoreItems : savedItems;
                         
-                        return planItems.length > 0 
-                          ? <PlanBreakdown items={planItems} showKpis={true} />
-                          : <div className="text-center py-8 text-muted-foreground">
-                            <p>No items configured yet.</p>
-                            <p className="text-sm">Configure formats above to see pricing breakdown.</p>
-                          </div>;
+                         return <PlanBreakdown />
                     })()}
                   </div>
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { displayInCharges, type PlanItem } from "@/state/planStore";
+import { type PlanItem } from "@/state/planStore";
 
 type FormatBreakdownProps = {
   item: PlanItem | any; // Support both new PlanItem and legacy format
@@ -13,7 +13,7 @@ const FormatBreakdown: React.FC<FormatBreakdownProps> = ({ item, shareOfCampaign
   // Support both new PlanItem structure and legacy format
   const sites = item?.sites ?? item?.quantity ?? 0;
   const periods = item?.periods?.length ?? item?.selectedPeriods?.length ?? 0;
-  const inChargesCount = displayInCharges(item) || periods;
+  const inChargesCount = periods;
   const saleRate = item?.saleRate ?? item?.saleRatePerInCharge ?? 0;
 
   // Locations: use whichever field exists

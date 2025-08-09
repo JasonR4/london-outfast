@@ -1,178 +1,105 @@
 import React, { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
-import { usePlanStore } from "@/state/planStore";
-
-// Optional: pass draft props from SmartQuoteForm if you want a draft preview
-type Props = {
-  draftSelectedFormats?: any[];
-  draftFormatQuantities?: Record<string, number>;
-  draftSelectedPeriods?: string[];
-};
+import { usePlanStore, campaignTotals } from "@/state/planStore";
 
 const currency = (v: number) =>
   v.toLocaleString("en-GB", { style: "currency", currency: "GBP" });
 
-export default function QuickSummary(props: Props) {
+const QuickSummary: React.FC = () => {
   const items = usePlanStore((s) => s.items);
 
-  const hasConfigured = items.length > 0;
+  const data = useMemo(() => {
+    const formatsCount = items.length;
+    const sites = items.reduce((a, i) => a + (i.sites ?? 0), 0);
+    const allPeriods = Array.from(
+      new Set(items.flatMap((i) => i.periods ?? []))
+    ).sort();
+    const creatives = items.reduce((a, i) => a + (i.creativeAssets ?? 0), 0);
+    const printRuns = items.reduce((a, i) => a + (i.printRuns ?? 0), 0);
+    const totals = campaignTotals(items);
+    return { formatsCount, sites, allPeriods, creatives, printRuns, totals };
+  }, [items]);
 
-  const draftInfo = useMemo(() => {
-    const f = props.draftSelectedFormats ?? [];
-    const q = props.draftFormatQuantities ?? {};
-    const p = props.draftSelectedPeriods ?? [];
-    const sites = f.reduce((sum, fmt) => {
-      const formatKey = fmt.format_slug || fmt.id;
-      return sum + (q[formatKey] ?? 0);
-    }, 0);
-    return {
-      formatsCount: f.length,
-      formatsList:
-        f.length > 0
-          ? f
-              .slice(0, 2)
-              .map((x) => x.format_name ?? x.name ?? x.title ?? x.format_slug ?? x.id)
-              .join(", ") + (f.length > 2 ? ` +${f.length - 2} more` : "")
-          : "—",
-      sites,
-      periods: p,
-    };
-  }, [props.draftSelectedFormats, props.draftFormatQuantities, props.draftSelectedPeriods]);
-
-  if (!hasConfigured) {
-    // Empty state + draft glance
+  if (items.length === 0) {
     return (
-      <TooltipProvider>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Quick Summary</CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs space-y-2">
-            <div className="text-muted-foreground">
-              No configured items yet. Configure a format to see pricing here.
-            </div>
-            {draftInfo.formatsCount > 0 && (
-              <div className="mt-2 space-y-1">
-                <div className="text-muted-foreground">Draft selections:</div>
-                <div className="grid grid-cols-2 gap-y-1">
-                  <span className="text-muted-foreground">Formats:</span>
-                  <span className="text-right">{draftInfo.formatsCount}</span>
-                  
-                  <span className="text-muted-foreground">Sites:</span>
-                  <span className="text-right">{draftInfo.sites}</span>
-                  
-                  <span className="text-muted-foreground">Periods:</span>
-                  <span className="text-right">
-                    {draftInfo.periods?.length ? draftInfo.periods.join(", ") : "—"}
-                  </span>
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {draftInfo.formatsList}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </TooltipProvider>
+      <div className="rounded-xl border p-4 bg-white">
+        <h3 className="font-semibold mb-2">Quick Summary</h3>
+        <p>No configured items yet. Select a format, set sites & periods.</p>
+      </div>
     );
   }
 
-  // Configured summary
-  const formats = items.length;
-  const sites = items.reduce((a, i) => a + (i.sites ?? 0), 0);
-  const periods = Array.from(
-    new Set(items.flatMap((i) => i.periods ?? []))
-  );
-  const creatives = items.reduce((a, i) => a + (i.creativeAssets ?? 0), 0);
-
-  // Media math
-  const mediaBefore = items.reduce(
-    (a, i) => a + (i.saleRate ?? 0) * (i.sites ?? 0) * (i.periods?.length ?? 0),
-    0
-  );
-  const volDisc = items.reduce((a, i) => {
-    const qualifies = (i.periods?.length ?? 0) >= 3;
-    const gross = (i.saleRate ?? 0) * (i.sites ?? 0) * (i.periods?.length ?? 0);
-    return a + (qualifies ? -0.1 * gross : 0);
-  }, 0);
-  const mediaAfter = mediaBefore + volDisc;
-  const production = items.reduce(
-    (a, i) => a + (i.productionRate ?? 0) * (i.sites ?? 0) * (i.printRuns ?? 1),
-    0
-  );
-  const creative = items.reduce(
-    (a, i) => a + (i.creativeRate ?? 0) * (i.creativeAssets ?? 0),
-    0
-  );
-  const exVat = mediaAfter + production + creative;
+  const firstTwo = items.slice(0, 2).map((i) => i.formatName).join(", ");
+  const more = items.length > 2 ? ` +${items.length - 2} more` : "";
 
   return (
-    <TooltipProvider>
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Quick Summary</CardTitle>
-        </CardHeader>
-        <CardContent className="text-xs space-y-2">
-          <div className="space-y-1">
-            <div className="text-muted-foreground">Formats:</div>
-            <div className="font-medium">{formats} {formats === 1 ? "format" : "formats"}</div>
-          </div>
+    <div className="rounded-xl border p-4 bg-white">
+      <h3 className="font-semibold mb-3">Quick Summary</h3>
 
-          <div className="grid grid-cols-2 gap-y-1">
-            <span className="text-muted-foreground">Sites:</span>
-            <span className="text-right font-medium">{sites}</span>
-
-            <span className="text-muted-foreground">Campaign periods:</span>
-            <span className="text-right font-medium truncate">
-              {periods.length ? periods.join(", ") : "—"}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+        <div>
+          <div className="text-slate-500">Formats</div>
+          <div className="font-medium">
+            {items.length}{" "}
+            <span className="text-slate-500 block">
+              {firstTwo}
+              {more}
             </span>
-
-            <span className="text-muted-foreground">Creatives:</span>
-            <span className="text-right font-medium">{creatives}</span>
           </div>
+        </div>
 
-          <hr className="my-2" />
+        <div>
+          <div className="text-slate-500">Sites</div>
+          <div className="font-medium">{data.sites}</div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-y-1">
-            <span className="text-muted-foreground">Media (before discount):</span>
-            <span className="text-right font-medium">{currency(mediaBefore)}</span>
+        <div className="md:col-span-2">
+          <div className="text-slate-500">Campaign periods</div>
+          <div className="font-medium">{data.allPeriods.join(", ") || "—"}</div>
+        </div>
 
-            <span className="text-muted-foreground flex items-center gap-1">
-              Volume discount
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-3 w-3 text-muted-foreground" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Applied when booking over 3 campaign periods. More periods = bigger savings.</p>
-                </TooltipContent>
-              </Tooltip>
-              :
-            </span>
-            <span className="text-right font-medium text-green-600">
-              {currency(volDisc)}
-            </span>
+        <div>
+          <div className="text-slate-500">Creatives</div>
+          <div className="font-medium">{data.creatives}</div>
+        </div>
+        <div>
+          <div className="text-slate-500">Print runs</div>
+          <div className="font-medium">{data.printRuns}</div>
+        </div>
+      </div>
 
-            <span className="text-muted-foreground">Media (after discount):</span>
-            <span className="text-right font-medium">{currency(mediaAfter)}</span>
+      <hr className="my-3" />
 
-            <span className="text-muted-foreground">Production:</span>
-            <span className="text-right font-medium">{currency(production)}</span>
-
-            <span className="text-muted-foreground">Creative:</span>
-            <span className="text-right font-medium">{currency(creative)}</span>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+        <div>
+          <div className="text-slate-500">Media (before discount)</div>
+          <div className="font-medium">{currency(data.totals.mediaBefore)}</div>
+        </div>
+        <div>
+          <div className="text-slate-500">Volume discount</div>
+          <div className="font-medium">
+            {data.totals.volDisc === 0 ? "—" : `- ${currency(-data.totals.volDisc)}`}
           </div>
+        </div>
+        <div>
+          <div className="text-slate-500">Media (after discount)</div>
+          <div className="font-medium">{currency(data.totals.mediaAfter)}</div>
+        </div>
+        <div>
+          <div className="text-slate-500">Production</div>
+          <div className="font-medium">{currency(data.totals.prod)}</div>
+        </div>
+        <div>
+          <div className="text-slate-500">Creative</div>
+          <div className="font-medium">{currency(data.totals.creative)}</div>
+        </div>
+      </div>
 
-          <hr className="my-2" />
-
-          <div className="flex justify-between text-sm font-semibold">
-            <span>Estimate total:</span>
-            <span>{currency(exVat)}</span>
-          </div>
-        </CardContent>
-      </Card>
-    </TooltipProvider>
+      <div className="mt-3 text-sm">
+        <div className="text-slate-500">Estimate total</div>
+        <div className="font-semibold text-lg">{currency(data.totals.exVat)}</div>
+      </div>
+    </div>
   );
-}
+};
+
+export default QuickSummary;
