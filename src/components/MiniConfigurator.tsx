@@ -18,9 +18,13 @@ interface MiniConfiguratorProps {
     name: string;
     format_slug: string;
   };
+  onPeriodsChange?: (periods: number[]) => void;
+  onLocationsChange?: (locations: string[]) => void;
+  onQuantityChange?: (quantity: number) => void;
+  onCreativeChange?: (creative: number) => void;
 }
 
-export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
+export const MiniConfigurator = ({ format, onPeriodsChange, onLocationsChange, onQuantityChange, onCreativeChange }: MiniConfiguratorProps) => {
   const { getItem, upsertItem, removeItem } = usePlanDraft();
   
   // Rate card data and loading state
@@ -152,11 +156,12 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
   };
 
   const togglePeriod = (periodNumber: number) => {
-    setSelectedPeriods(prev => 
-      prev.includes(periodNumber)
-        ? prev.filter(p => p !== periodNumber)
-        : [...prev, periodNumber].sort((a, b) => a - b)
-    );
+    const newPeriods = selectedPeriods.includes(periodNumber)
+      ? selectedPeriods.filter(p => p !== periodNumber)
+      : [...selectedPeriods, periodNumber].sort((a, b) => a - b);
+    
+    setSelectedPeriods(newPeriods);
+    onPeriodsChange?.(newPeriods);
   };
 
   const isConfigured = quantity > 0 && selectedLocations.length > 0 && selectedPeriods.length > 0;
@@ -265,7 +270,11 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
             <p className="text-xs text-muted-foreground">
               Number of sites you want to book for this format.
             </p>
-            <Select value={quantity.toString()} onValueChange={(value) => setQuantity(parseInt(value))}>
+            <Select value={quantity.toString()} onValueChange={(value) => {
+              const newQuantity = parseInt(value);
+              setQuantity(newQuantity);
+              onQuantityChange?.(newQuantity);
+            }}>
               <SelectTrigger>
                 <SelectValue placeholder="Select quantity" />
               </SelectTrigger>
@@ -295,7 +304,11 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
             <p className="text-xs text-muted-foreground">
               Add design & artwork if you'd like us to create the ads. Leave at 0 if you have final artwork.
             </p>
-            <Select value={creativeAssets.toString()} onValueChange={(value) => setCreativeAssets(parseInt(value))}>
+            <Select value={creativeAssets.toString()} onValueChange={(value) => {
+              const newCreative = parseInt(value);
+              setCreativeAssets(newCreative);
+              onCreativeChange?.(newCreative);
+            }}>
               <SelectTrigger>
                 <SelectValue placeholder="Select creative assets" />
               </SelectTrigger>
@@ -328,7 +341,10 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
             </p>
             <LocationSelector
               selectedLocations={selectedLocations}
-              onSelectionChange={setSelectedLocations}
+              onSelectionChange={(locations) => {
+                setSelectedLocations(locations);
+                onLocationsChange?.(locations);
+              }}
               title="Select Areas"
               description="Choose where your ads will run"
               maxHeight="200px"

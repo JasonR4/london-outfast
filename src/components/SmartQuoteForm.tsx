@@ -735,16 +735,37 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         </p>
                         
                         <div className="space-y-4">
-                          {selectedFormats.map((format) => (
-                            <MiniConfigurator
-                              key={format.format_slug}
-                              format={{ 
-                                id: format.format_slug, 
-                                name: format.format_name,
-                                format_slug: format.format_slug
-                              }}
-                            />
-                          ))}
+                           {selectedFormats.map((format) => (
+                             <MiniConfigurator
+                               key={format.format_slug}
+                               format={{ 
+                                 id: format.format_slug, 
+                                 name: format.format_name,
+                                 format_slug: format.format_slug
+                               }}
+                               // Sync with SmartQuoteForm state
+                               onPeriodsChange={(periods) => {
+                                 // Update the parent state when periods change in MiniConfigurator
+                                 setSelectedPeriods(periods);
+                               }}
+                               onLocationsChange={(locations) => {
+                                 // Update the parent location state using the hook
+                                 locations.forEach(loc => handleLocationToggle(loc));
+                               }}
+                               onQuantityChange={(qty) => {
+                                 // Update quantity in parent
+                                 setFormatQuantities(prev => ({
+                                   ...prev,
+                                   [format.format_slug]: qty
+                                 }));
+                               }}
+                               onCreativeChange={(creative) => {
+                                 // Update creative state
+                                 setCreativeQuantity(creative);
+                                 setNeedsCreative(creative > 0);
+                               }}
+                             />
+                           ))}
                         </div>
                       </div>
                     )}
