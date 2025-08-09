@@ -194,6 +194,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     
     console.log("🧹 START NEW QUOTE - After clearing everything");
     console.log("📊 Plan draft items final:", usePlanDraft.getState().items);
+    console.log("📊 selectedFormats after clear:", selectedFormats);
+    console.log("📊 formatQuantities after clear:", formatQuantities);
+    console.log("📊 selectedPeriods after clear:", selectedPeriods);
   }, [
     setActiveTab,
     setSelectedFormats, setFormatQuantities,
