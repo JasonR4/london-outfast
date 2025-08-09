@@ -11,6 +11,7 @@ import { QuoteSubmissionForm } from '@/components/QuoteSubmissionForm';
 import { inchargePeriods } from '@/data/inchargePeriods';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { formatCurrency } from '@/utils/currency';
 
 export default function QuotePlan() {
   const { currentQuote, loading, removeQuoteItem, fetchCurrentQuote, recalculateDiscounts } = useQuotes();
@@ -107,12 +108,6 @@ export default function QuotePlan() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-    }).format(amount);
-  };
 
   return (
     <div className="min-h-screen bg-background">

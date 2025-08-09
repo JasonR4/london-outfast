@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { formatCurrencyWithVAT } from '@/utils/vat';
+import { formatCurrency } from '@/utils/currency';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,13 +25,6 @@ interface ContractAgreementsProps {
 
 export function ContractAgreements({ quote, onStatusUpdate }: ContractAgreementsProps) {
   const [isLoading, setIsLoading] = useState(false);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-    }).format(amount);
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-GB', {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { formatCurrencyWithVAT } from '@/utils/vat';
+import { formatCurrency } from '@/utils/currency';
 import { 
   Dialog, 
   DialogContent, 
@@ -74,13 +75,6 @@ interface QuoteDetailsModalProps {
 
 export function QuoteDetailsModal({ quote, isOpen, onClose }: QuoteDetailsModalProps) {
   const [copiedId, setCopiedId] = useState(false);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-    }).format(amount);
-  };
 
   const getInchargePeriodDates = (periodNumbers: number[]) => {
     const selectedPeriods = inchargePeriods.filter(p => 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { formatCurrencyWithVAT } from '@/utils/vat';
+import { formatCurrency } from '@/utils/currency';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -259,13 +260,6 @@ export function QuoteManager() {
       console.error('Error executing bulk action:', err);
       toast.error('Failed to execute bulk action');
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-    }).format(amount);
   };
 
   const getStatusColor = (status: string) => {
@@ -976,13 +970,6 @@ function QuoteCard({
   isSelected?: boolean;
   onSelect?: (checked: boolean) => void;
 }) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-    }).format(amount);
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'submitted': return 'bg-blue-100 text-blue-800';

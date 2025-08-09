@@ -12,6 +12,7 @@ import { QuoteDetailsModal } from '@/components/QuoteDetailsModal';
 import { ConfirmedMediaSchedule } from '@/components/ConfirmedMediaSchedule';
 import { ContractAgreements } from '@/components/ContractAgreements';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import { formatCurrency } from '@/utils/currency';
 
 interface UserQuote {
   id: string;
@@ -246,13 +247,6 @@ export default function ClientPortal() {
   const confirmedQuotes = quotes.filter(q => q.status === 'confirmed');
   const approvedQuotes = quotes.filter(q => q.status === 'approved' || q.status === 'contract');
   const activeQuotes = quotes.filter(q => q.status === 'active');
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-    }).format(amount);
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {

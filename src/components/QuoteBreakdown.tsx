@@ -1,4 +1,5 @@
 import React from "react";
+import { formatCurrency } from "@/utils/currency";
 
 interface QuoteBreakdownProps {
   campaignCost: number;      // Media cost after any discounts
@@ -9,12 +10,6 @@ interface QuoteBreakdownProps {
   totalIncVat: number;       // Subtotal + VAT
   currency?: string;         // Defaults to GBP
 }
-
-const formatCurrency = (value: number, currency = "GBP") =>
-  new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency
-  }).format(value);
 
 export const QuoteBreakdown: React.FC<QuoteBreakdownProps> = ({
   campaignCost,
