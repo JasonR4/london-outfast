@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { GeneratedMediaPlan } from '@/services/MediaPlanGenerator';
-import { formatCurrencyWithVAT } from '@/utils/vat';
+import { formatCurrency } from '@/utils/money';
 import { MapPin, Calendar, Target, Users, TrendingUp, CheckCircle } from 'lucide-react';
+import { countPrintRuns } from '@/utils/periods';
 
 interface MediaPlanModalProps {
   isOpen: boolean;
@@ -101,15 +102,15 @@ export const MediaPlanModal = ({
                         <>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Media Costs:</span>
-                            <span>£{actualCosts.mediaCosts.toLocaleString()}</span>
+                            <span>{formatCurrency(actualCosts.mediaCosts)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Production Costs:</span>
-                            <span>£{actualCosts.productionCosts.toLocaleString()}</span>
+                            <span>{formatCurrency(actualCosts.productionCosts)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Creative Development:</span>
-                            <span>£{actualCosts.creativeCosts.toLocaleString()}</span>
+                            <span>{formatCurrency(actualCosts.creativeCosts)}</span>
                           </div>
                         </>
                       );
@@ -119,7 +120,7 @@ export const MediaPlanModal = ({
                     {mediaPlan.items.some(item => item.recommendedQuantity >= 5) && (
                       <div className="flex justify-between text-green-600">
                         <span>💰 Volume Discount (10%):</span>
-                        <span>-£{(mediaPlan.totalBudget * 0.1).toLocaleString()}</span>
+                        <span>{formatCurrency(-(mediaPlan.totalBudget * 0.1))}</span>
                       </div>
                     )}
                     
@@ -140,15 +141,15 @@ export const MediaPlanModal = ({
                         <>
                           <div className="flex justify-between font-medium pt-2 border-t border-border/50">
                             <span>Subtotal (exc VAT):</span>
-                            <span>£{actualSubtotal.toLocaleString()}</span>
+                            <span>{formatCurrency(actualSubtotal)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">VAT (20%):</span>
-                            <span>£{vatAmount.toLocaleString()}</span>
+                            <span>{formatCurrency(vatAmount)}</span>
                           </div>
                           <div className="flex justify-between text-lg font-bold text-primary pt-2 border-t border-border/50">
                             <span>Total inc VAT:</span>
-                            <span>£{totalIncVat.toLocaleString()}</span>
+                            <span>{formatCurrency(totalIncVat)}</span>
                           </div>
                         </>
                       );
@@ -158,7 +159,7 @@ export const MediaPlanModal = ({
                     {mediaPlan.items.some(item => item.recommendedQuantity >= 5) && (
                       <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
                         <div className="text-sm text-green-700 dark:text-green-300 font-medium">
-                          🎉 Volume discounts applied! Total savings: £{((mediaPlan.totalBudget * 0.1) * 1.2).toLocaleString()} inc VAT
+                          🎉 Volume discounts applied! Total savings: {formatCurrency(((mediaPlan.totalBudget * 0.1) * 1.2))} inc VAT
                         </div>
                       </div>
                     )}
@@ -173,8 +174,8 @@ export const MediaPlanModal = ({
                     />
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Allocated: £{mediaPlan.totalAllocatedBudget.toLocaleString()}</span>
-                    <span>Remaining: £{mediaPlan.remainingBudget.toLocaleString()}</span>
+                    <span>Allocated: {formatCurrency(mediaPlan.totalAllocatedBudget)}</span>
+                    <span>Remaining: {formatCurrency(mediaPlan.remainingBudget)}</span>
                   </div>
                 </div>
               </div>
@@ -205,10 +206,10 @@ export const MediaPlanModal = ({
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-primary">
-                        £{(item.baseCost + item.productionCost + item.creativeCost).toLocaleString()}
-                      </p>
-                      <p className="text-sm text-muted-foreground">exc VAT</p>
+                    <p className="text-lg font-bold text-primary">
+                      {formatCurrency(item.baseCost + item.productionCost + item.creativeCost)}
+                    </p>
+                    <p className="text-sm text-muted-foreground">exc VAT</p>
                     </div>
                   </div>
                 </CardHeader>
@@ -239,6 +240,11 @@ export const MediaPlanModal = ({
                           </Badge>
                         ))}
                       </div>
+                      {item.selectedPeriods.length > 1 && countPrintRuns(item.selectedPeriods) > 1 && (
+                        <div className="mt-1 text-xs opacity-70">
+                          Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -261,15 +267,15 @@ export const MediaPlanModal = ({
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
                       <p className="text-muted-foreground">Media Cost</p>
-                      <p className="font-medium">{formatCurrencyWithVAT(item.baseCost)}</p>
+                      <p className="font-medium">{formatCurrency(item.baseCost)}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Production</p>
-                      <p className="font-medium">{formatCurrencyWithVAT(item.productionCost)}</p>
+                      <p className="font-medium">{formatCurrency(item.productionCost)}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Creative</p>
-                      <p className="font-medium">{formatCurrencyWithVAT(item.creativeCost)}</p>
+                      <p className="font-medium">{formatCurrency(item.creativeCost)}</p>
                     </div>
                   </div>
                 </CardContent>

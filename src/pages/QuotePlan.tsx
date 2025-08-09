@@ -11,7 +11,7 @@ import { QuoteSubmissionForm } from '@/components/QuoteSubmissionForm';
 import { inchargePeriods } from '@/data/inchargePeriods';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
-import { formatCurrency } from '@/utils/currency';
+import { formatCurrency } from '@/utils/money';
 import { countPrintRuns } from '@/utils/periods';
 
 export default function QuotePlan() {

@@ -431,13 +431,11 @@ export function useRateCards(formatSlug?: string) {
       adjustedRate: baseRate,
       totalPrice,
       discount: applicableDiscount?.discount_percentage || 0,
-      locationMarkup: 0,
       isOnSale: !!rateCard.sale_price,
       isReduced: !!rateCard.reduced_price && !rateCard.sale_price,
       periodsCount: selectedPeriods.length,
       ...calculateVAT(totalPrice) // Add VAT calculations
     };
-
     console.log('✅ Final price calculation result:', result);
     return result;
   };

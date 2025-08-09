@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { formatCurrencyWithVAT } from '@/utils/vat';
-import { formatCurrency } from '@/utils/currency';
+import { formatCurrency } from '@/utils/money';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -739,7 +738,7 @@ export function QuoteManager() {
                         {formatCurrency(selectedQuote.total_cost)} <span className="text-sm">exc VAT</span>
                       </div>
                       <div className="text-3xl font-bold">
-                        {formatCurrencyWithVAT(selectedQuote.total_inc_vat || selectedQuote.total_cost * 1.2, true)}
+                        {formatCurrency(selectedQuote.total_inc_vat || selectedQuote.total_cost * 1.2)} inc VAT
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
@@ -1016,7 +1015,7 @@ function QuoteCard({
                   {formatCurrency(quote.total_cost)} <span className="text-xs">exc VAT</span>
                 </div>
                 <div className="font-bold text-xl">
-                  {formatCurrencyWithVAT(quote.total_inc_vat || quote.total_cost * 1.2, true)}
+                  {formatCurrency(quote.total_inc_vat || quote.total_cost * 1.2)} inc VAT
                 </div>
                 <Badge className={getStatusColor(quote.status)}>
                   {quote.status}

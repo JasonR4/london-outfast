@@ -12,7 +12,7 @@ import { QuoteDetailsModal } from '@/components/QuoteDetailsModal';
 import { ConfirmedMediaSchedule } from '@/components/ConfirmedMediaSchedule';
 import { ContractAgreements } from '@/components/ContractAgreements';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
-import { formatCurrency } from '@/utils/currency';
+import { formatCurrency } from '@/utils/money';
 
 interface UserQuote {
   id: string;

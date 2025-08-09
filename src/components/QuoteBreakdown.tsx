@@ -1,5 +1,5 @@
 import React from "react";
-import { formatCurrency } from "@/utils/currency";
+import { formatCurrency } from "@/utils/money";
 
 interface QuoteBreakdownProps {
   campaignCost: number;      // Media cost after any discounts
@@ -36,9 +36,9 @@ export const QuoteBreakdown: React.FC<QuoteBreakdownProps> = ({
       description: "Number of distinct artworks supplied for your campaign.",
       value: formatCurrency(creativeCost, currency)
     },
-    { label: "Subtotal (ex VAT)", value: formatCurrency(subtotal, currency) },
-    { label: "VAT (20%)", value: formatCurrency(vat, currency) },
-    { label: "Total inc VAT", value: formatCurrency(totalIncVat, currency) }
+  { label: "Subtotal (ex VAT)", value: formatCurrency(subtotal, currency) },
+  { label: "VAT (20%)", value: formatCurrency(vat, currency) },
+  { label: "Total inc VAT", value: `${formatCurrency(totalIncVat, currency)} inc VAT` }
   ];
 
   return (

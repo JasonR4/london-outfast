@@ -81,7 +81,7 @@ export function ContractAgreements({ quote, onStatusUpdate }: ContractAgreements
                   {formatCurrency(quote.total_cost)} <span className="text-sm">exc VAT</span>
                 </div>
                 <div className="text-2xl font-bold text-green-600">
-                  {formatCurrencyWithVAT(quote.total_inc_vat || quote.total_cost * 1.2, true)}
+                  {formatCurrency(quote.total_inc_vat || quote.total_cost * 1.2)} inc VAT
                 </div>
                 <div className="text-sm text-muted-foreground">Total Contract Value</div>
               </div>

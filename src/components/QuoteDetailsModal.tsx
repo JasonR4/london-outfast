@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { formatCurrencyWithVAT } from '@/utils/vat';
-import { formatCurrency } from '@/utils/currency';
+import { formatCurrency } from '@/utils/money';
 import { 
   Dialog, 
   DialogContent, 
@@ -198,7 +197,7 @@ export function QuoteDetailsModal({ quote, isOpen, onClose }: QuoteDetailsModalP
                       {formatCurrency(quote.total_cost)} <span className="text-sm">exc VAT</span>
                     </div>
                     <div className="text-2xl font-bold text-primary">
-                      {formatCurrencyWithVAT(quote.total_inc_vat || quote.total_cost * 1.2, true)}
+                      {formatCurrency(quote.total_inc_vat || quote.total_cost * 1.2)} inc VAT
                     </div>
                     <div className="text-sm text-muted-foreground">Total Campaign Cost</div>
                   </div>

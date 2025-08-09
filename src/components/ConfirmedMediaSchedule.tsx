@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { formatCurrencyWithVAT } from '@/utils/vat';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { formatCurrency } from '@/utils/money';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { formatCurrency } from '@/utils/currency';
 
 interface ConfirmedMediaScheduleProps {
   quote: any;
@@ -143,7 +142,7 @@ export function ConfirmedMediaSchedule({ quote, onStatusUpdate }: ConfirmedMedia
                       {formatCurrency(quote.total_cost)} <span className="text-sm">exc VAT</span>
                     </div>
                     <div className="text-2xl font-bold text-primary">
-                      {formatCurrencyWithVAT(quote.total_inc_vat || quote.total_cost * 1.2, true)}
+                      {formatCurrency(quote.total_inc_vat || quote.total_cost * 1.2)} inc VAT
                     </div>
                     <div className="text-sm text-muted-foreground">Total Campaign Cost</div>
                   </div>
