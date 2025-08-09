@@ -47,12 +47,53 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Error handling for external resources -->
+    <!-- Enhanced error handling and security -->
     <script>
-      // Prevent external resource errors from breaking the site
+      // Block problematic external domains
+      const blockedDomains = ['aitopia.com', 'cdn.aitopia.com'];
+      
+      // Intercept and block network requests to problematic domains
+      const originalFetch = window.fetch;
+      window.fetch = function(...args) {
+        const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
+        if (blockedDomains.some(domain => url.includes(domain))) {
+          console.warn('Blocked request to problematic domain:', url);
+          return Promise.reject(new Error('Blocked domain'));
+        }
+        return originalFetch.apply(this, args);
+      };
+      
+      // Block script and image loading from problematic domains
+      document.addEventListener('DOMContentLoaded', function() {
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+              if (node.nodeType === 1) { // Element node
+                if ((node.tagName === 'SCRIPT' || node.tagName === 'IMG') && node.src) {
+                  if (blockedDomains.some(domain => node.src.includes(domain))) {
+                    console.warn('Blocked element from problematic domain:', node.src);
+                    node.remove();
+                  }
+                }
+              }
+            });
+          });
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      });
+      
+      // Enhanced error prevention
       window.addEventListener('error', function(e) {
-        if (e.target.tagName === 'IMG' || e.target.tagName === 'SCRIPT') {
-          console.warn('External resource failed to load:', e.target.src);
+        if (e.target && (e.target.tagName === 'IMG' || e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
+          const src = e.target.src || e.target.href;
+          if (src && blockedDomains.some(domain => src.includes(domain))) {
+            console.warn('Prevented error from blocked domain:', src);
+            e.target.remove();
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+          console.warn('External resource failed to load:', src);
           e.preventDefault();
         }
       }, true);
@@ -62,6 +103,13 @@
         console.warn('Unhandled promise rejection:', e.reason);
         e.preventDefault();
       });
+      
+      // Prevent infinite loading - force page to show after 10 seconds
+      setTimeout(function() {
+        const loadingElements = document.querySelectorAll('[data-loading="true"]');
+        loadingElements.forEach(el => el.style.display = 'none');
+        console.log('Page load timeout reached - forced display');
+      }, 10000);
     </script>
   </head>
 
