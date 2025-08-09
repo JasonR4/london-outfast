@@ -350,33 +350,67 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
           </div>
 
           {/* Cost Preview */}
-          {isConfigured && (
+          {quantity > 0 && rateCardData && (
             <div className="p-3 bg-muted/50 rounded-lg space-y-2">
               <div className="text-sm font-medium">Cost Preview</div>
+              
+              {/* Show partial preview even if not fully configured */}
+              {!isConfigured && (
+                <div className="text-xs text-muted-foreground mb-2">
+                  Select locations and periods above to see full pricing
+                </div>
+              )}
+              
               <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span>Media cost:</span>
-                  <span>{formatCurrency(existingItem?.mediaCost || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Production cost:</span>
-                  <span>{formatCurrency(existingItem?.productionCost || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Creative cost:</span>
-                  <span>{formatCurrency(existingItem?.creativeCost || 0)}</span>
-                </div>
-                {existingItem?.discountAmount && existingItem.discountAmount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Volume discount:</span>
-                    <span>-{formatCurrency(existingItem.discountAmount)}</span>
-                  </div>
+                {isConfigured ? (
+                  // Full breakdown when configured
+                  <>
+                    <div className="flex justify-between">
+                      <span>Media cost:</span>
+                      <span>{formatCurrency(existingItem?.mediaCost || 0)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Production cost:</span>
+                      <span>{formatCurrency(existingItem?.productionCost || 0)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Creative cost:</span>
+                      <span>{formatCurrency(existingItem?.creativeCost || 0)}</span>
+                    </div>
+                    {existingItem?.discountAmount && existingItem.discountAmount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Volume discount:</span>
+                        <span>-{formatCurrency(existingItem.discountAmount)}</span>
+                      </div>
+                    )}
+                    <hr className="my-2" />
+                    <div className="flex justify-between font-medium">
+                      <span>Total:</span>
+                      <span>{formatCurrency(currentCost)}</span>
+                    </div>
+                  </>
+                ) : (
+                  // Show basic rates when not fully configured
+                  <>
+                    <div className="flex justify-between">
+                      <span>Media rate per in-charge:</span>
+                      <span>{formatCurrency(rateCardData.saleRatePerInCharge)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Production per unit:</span>
+                      <span>{formatCurrency(rateCardData.productionRatePerUnit)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Creative per asset:</span>
+                      <span>{formatCurrency(rateCardData.creativeUnit)}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2">
+                      Select {!selectedLocations.length ? 'locations' : ''} 
+                      {!selectedLocations.length && !selectedPeriods.length ? ' and ' : ''}
+                      {!selectedPeriods.length ? 'periods' : ''} to calculate total cost
+                    </div>
+                  </>
                 )}
-                <hr className="my-2" />
-                <div className="flex justify-between font-medium">
-                  <span>Total:</span>
-                  <span>{formatCurrency(currentCost)}</span>
-                </div>
               </div>
             </div>
           )}
