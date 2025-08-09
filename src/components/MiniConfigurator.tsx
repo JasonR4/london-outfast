@@ -371,8 +371,8 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
             )}
           </div>
 
-          {/* Cost Preview */}
-          {isConfigured && (
+          {/* Cost Preview / Rate Summary */}
+          {isConfigured ? (
             <div className="p-3 bg-muted/50 rounded-lg space-y-2">
               <div className="text-sm font-medium">Cost Preview</div>
               <div className="space-y-1 text-xs">
