@@ -789,9 +789,9 @@ const FormatPage = () => {
                          <div className="text-sm text-muted-foreground mt-2">
                            <span>Selected {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''}</span>
                            {selectedPeriods.length > 1 && !arePeriodsConsecutive(selectedPeriods) && (
-                             <span className="text-amber-600 block mt-1">
-                               ⚠️ Non-consecutive periods may incur additional setup costs
-                             </span>
+                              <span className="text-amber-600 block mt-1">
+                                Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.
+                              </span>
                            )}
                          </div>
                       </div>
