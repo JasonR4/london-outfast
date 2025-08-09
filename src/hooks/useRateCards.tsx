@@ -213,27 +213,39 @@ export function useRateCards(formatSlug?: string) {
   };
 
 
-  const calculateProductionCost = (sites: number, periods: number, category?: string) => {
+  // Helper: Count print runs (contiguous periods)
+  const countPrintRuns = (periods: number[]) => {
+    const p = [...new Set(periods)].sort((a, b) => a - b);
+    if (!p.length) return 0;
+    let runs = 1;
+    for (let i = 1; i < p.length; i++) {
+      if (p[i] !== p[i - 1] + 1) runs++;
+    }
+    return runs;
+  };
+
+  const calculateProductionCost = (sites: number, periodsArray: number[], category?: string) => {
     console.log('🔍 Production Cost Debug:', {
       sites,
-      periods,
+      periodsArray,
       category,
-      availableTiers: productionCostTiers.length,
-      allTiers: productionCostTiers.map(t => ({
-        id: t.id,
-        location_area: t.location_area,
-        min_quantity: t.min_quantity,
-        max_quantity: t.max_quantity,
-        cost_per_unit: t.cost_per_unit,
-        category: t.category
-      }))
+      availableTiers: productionCostTiers.length
     });
 
-    const totalUnits = sites * periods;
+    // Calculate print runs based on contiguous periods
+    const printRuns = countPrintRuns(periodsArray);
+    const productionUnits = sites * printRuns;
+    
+    console.log('📊 Print runs calculation:', {
+      periods: periodsArray,
+      printRuns,
+      sites,
+      productionUnits
+    });
     
     const applicableTiers = productionCostTiers.filter(tier => 
-      tier.min_quantity <= totalUnits &&
-      (!tier.max_quantity || totalUnits <= tier.max_quantity) &&
+      tier.min_quantity <= productionUnits &&
+      (!tier.max_quantity || productionUnits <= tier.max_quantity) &&
       (!category || tier.category === category || tier.category === null)
     );
 
@@ -250,14 +262,15 @@ export function useRateCards(formatSlug?: string) {
 
     if (!bestTier) return null;
 
-    const totalCost = bestTier.cost_per_unit * totalUnits;
+    const totalCost = bestTier.cost_per_unit * productionUnits;
 
     const result = {
       costPerUnit: bestTier.cost_per_unit,
-      totalUnits,
+      printRuns,
+      productionUnits,
       totalCost,
       tier: bestTier,
-      ...calculateVAT(totalCost) // Add VAT calculations
+      ...calculateVAT(totalCost)
     };
 
     console.log('💰 Production Cost Result:', result);
@@ -306,6 +319,75 @@ export function useRateCards(formatSlug?: string) {
     // In a production system, you'd have a proper mapping table
     console.log('🗺️ Mapping area name to location code:', areaName);
     return "GD"; // Default to GD for all London areas for now
+  };
+
+  // Main Quote Calculation
+  const calculateQuote = ({ 
+    sites, 
+    periods, 
+    locationArea, 
+    baseRate, 
+    salePrice, 
+    reducedPrice, 
+    discountPct = 0, 
+    creativeCount = 1,
+    category = null 
+  }: {
+    sites: number;
+    periods: number[];
+    locationArea: string;
+    baseRate: number;
+    salePrice?: number;
+    reducedPrice?: number;
+    discountPct?: number;
+    creativeCount?: number;
+    category?: string;
+  }) => {
+    // 1. Media Cost
+    const finalRate = salePrice ?? reducedPrice ?? baseRate;
+    const mediaQty = sites * periods.length;
+    let mediaCost = finalRate * mediaQty;
+
+    // 2. Discount (if applicable)
+    const discountAmount = discountPct ? mediaCost * (discountPct / 100) : 0;
+    mediaCost -= discountAmount;
+
+    // 3. Production Cost (based on print runs)
+    const printRuns = countPrintRuns(periods);
+    const productionUnits = sites * printRuns;
+    const productionCostCalc = calculateProductionCost(sites, periods, category);
+    const productionCost = productionCostCalc?.totalCost || 0;
+
+    // 4. Creative Cost (based on artwork count)
+    const creativeCostCalc = calculateCreativeCost(locationArea, creativeCount, category || 'Basic Design');
+    const creativeCost = creativeCostCalc?.totalCost || 0;
+
+    // 5. Subtotal, VAT, Total
+    const subtotal = mediaCost + productionCost + creativeCost;
+    const vat = subtotal * 0.20;
+    const totalIncVat = subtotal + vat;
+
+    // 6. Return breakdown
+    return {
+      mediaCost,
+      discountAmount,
+      printRuns,
+      productionUnits,
+      productionCost,
+      creativeCount,
+      creativeCost,
+      subtotal,
+      vat,
+      totalIncVat,
+      breakdown: [
+        { label: "Campaign Cost", description: "Sites × periods at sale price, after discounts", value: mediaCost },
+        { label: "Production Cost", description: "Printing & posting based on print runs — extra runs only when periods are split", value: productionCost },
+        { label: "Creative Assets", description: "Number of distinct artworks supplied for your campaign", value: creativeCost },
+        { label: "Subtotal (ex VAT)", value: subtotal },
+        { label: "VAT (20%)", value: vat },
+        { label: "Total inc VAT", value: totalIncVat }
+      ]
+    };
   };
 
   const calculatePrice = (locationArea: string, selectedPeriods: number[]) => {
@@ -438,8 +520,10 @@ export function useRateCards(formatSlug?: string) {
     loading,
     error,
     calculatePrice,
+    calculateQuote,
     calculateProductionCost,
     calculateCreativeCost,
+    countPrintRuns,
     getAvailableLocations,
     getAvailablePeriodsForLocation,
     getAllAvailablePeriods,

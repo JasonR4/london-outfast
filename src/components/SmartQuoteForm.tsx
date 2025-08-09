@@ -228,7 +228,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
     // Calculate production cost for sites × periods
     if (selectedLocations.length > 0) {
-      const productionPrice = calculateProductionCost(totalQuantity, selectedPeriods.length);
+      const productionPrice = calculateProductionCost(totalQuantity, selectedPeriods);
       if (productionPrice && productionPrice.totalCost !== undefined) {
         totalProductionCost = productionPrice.totalCost;
         console.log(`🏭 Production cost for ${totalQuantity} sites × ${selectedPeriods.length} periods: ${totalProductionCost}`);
@@ -1079,7 +1079,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
                         {/* Production Cost Details */}
                         {pricing.productionCost > 0 && (() => {
-                          const productionResult = calculateProductionCost(totalQuantity, selectedPeriods.length);
+                          const productionResult = calculateProductionCost(totalQuantity, selectedPeriods);
                           if (!productionResult) return null;
                           
                           return (
@@ -1095,8 +1095,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                 </div>
                                 
                                 <div className="flex justify-between items-center">
-                                  <span className="text-muted-foreground">Total Units:</span>
-                                  <span>{productionResult.totalUnits} units</span>
+                                  <span className="text-muted-foreground">Production Units:</span>
+                                  <span>{productionResult.productionUnits} units</span>
                                 </div>
                                 
                                 <div className="flex justify-between items-center">
