@@ -1,105 +1,171 @@
-import React, { useMemo } from "react";
-import { usePlanStore, campaignTotals } from "@/state/planStore";
+import { useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
+import { formatCurrency } from "@/utils/money";
+import { countPrintRuns } from "@/utils/periods";
+import { usePlanDraft } from "@/state/plan";
 
-const currency = (v: number) =>
-  v.toLocaleString("en-GB", { style: "currency", currency: "GBP" });
+export default function QuickSummary() {
+  const { items } = usePlanDraft() as any;
+  const all = useMemo(() => Object.values(items || {}), [items]);
 
-const QuickSummary: React.FC = () => {
-  const items = usePlanStore((s) => s.items);
+  const {
+    formatNames,
+    fullFormatList,
+    formatCount,
+    sites,
+    locationsCount,
+    uniquePeriods,
+    creatives,
+    printRuns,
+    mediaAfterDiscount,
+    volumeDiscount,
+    production,
+    creative,
+    estimate,
+  } = useMemo(() => {
+    const names: string[] = [];
+    let sites = 0;
+    const allLocations: string[] = [];
+    const periodSet = new Set<number>();
+    let creatives = 0;
+    let printRuns = 0;
+    let mediaAfterDiscount = 0;
+    let volumeDiscount = 0;
+    let production = 0;
+    let creative = 0;
 
-  const data = useMemo(() => {
-    const formatsCount = items.length;
-    const sites = items.reduce((a, i) => a + (i.sites ?? 0), 0);
-    const allPeriods = Array.from(
-      new Set(items.flatMap((i) => i.periods ?? []))
-    ).sort();
-    const creatives = items.reduce((a, i) => a + (i.creativeAssets ?? 0), 0);
-    const printRuns = items.reduce((a, i) => a + (i.printRuns ?? 0), 0);
-    const totals = campaignTotals(items);
-    return { formatsCount, sites, allPeriods, creatives, printRuns, totals };
-  }, [items]);
+    for (const it of all) {
+      if ((it as any)?.formatName) names.push((it as any).formatName);
+      sites += Number((it as any)?.quantity || 0);
+      ((it as any)?.locations || []).forEach((l: string) => allLocations.push(l));
+      ((it as any)?.selectedPeriods || []).forEach((p: number) => periodSet.add(p));
+      creatives += Number((it as any)?.creativeAssets || 0);
+      printRuns += countPrintRuns((it as any)?.selectedPeriods || []);
+      mediaAfterDiscount += Number((it as any)?.mediaCost || 0);
+      volumeDiscount += Number((it as any)?.discountAmount || 0);
+      production += Number((it as any)?.productionCost || 0);
+      creative += Number((it as any)?.creativeCost || 0);
+    }
 
-  if (items.length === 0) {
-    return (
-      <div className="rounded-xl border p-4 bg-white">
-        <h3 className="font-semibold mb-2">Quick Summary</h3>
-        <p>No configured items yet. Select a format, set sites & periods.</p>
-      </div>
-    );
-  }
+    // Show up to 2 names, then "+N more"
+    const uniqueNames = Array.from(new Set(names));
+    const display =
+      uniqueNames.length <= 2
+        ? uniqueNames.join(", ")
+        : `${uniqueNames.slice(0, 2).join(", ")} +${uniqueNames.length - 2} more`;
 
-  const firstTwo = items.slice(0, 2).map((i) => i.formatName).join(", ");
-  const more = items.length > 2 ? ` +${items.length - 2} more` : "";
+    const mediaBeforeDiscount = mediaAfterDiscount + volumeDiscount;
+    const estimate = mediaAfterDiscount + production + creative;
+
+    return {
+      formatNames: display,
+      fullFormatList: uniqueNames.join(", "),
+      formatCount: uniqueNames.length,
+      sites,
+      locationsCount: new Set(allLocations).size,
+      uniquePeriods: Array.from(periodSet).sort((a, b) => a - b),
+      creatives,
+      printRuns,
+      mediaAfterDiscount,
+      mediaBeforeDiscount,
+      volumeDiscount,
+      production,
+      creative,
+      estimate,
+    };
+  }, [all]);
+
+  // Derive mediaBefore from after + discount so we can show both
+  const mediaBeforeDiscount = mediaAfterDiscount + volumeDiscount;
 
   return (
-    <div className="rounded-xl border p-4 bg-white">
-      <h3 className="font-semibold mb-3">Quick Summary</h3>
+    <TooltipProvider>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">Quick Summary</CardTitle>
+        </CardHeader>
+        <CardContent className="text-xs space-y-2">
+          <div className="space-y-1">
+            <div className="text-muted-foreground">Formats:</div>
+            <div className="font-medium">{formatCount} {formatCount === 1 ? "format" : "formats"}</div>
+            {formatNames && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className="line-clamp-2 max-h-10 overflow-hidden text-ellipsis whitespace-normal cursor-help text-xs text-muted-foreground"
+                    title={fullFormatList}
+                  >
+                    {formatNames}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>{fullFormatList}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-        <div>
-          <div className="text-slate-500">Formats</div>
-          <div className="font-medium">
-            {items.length}{" "}
-            <span className="text-slate-500 block">
-              {firstTwo}
-              {more}
+          <div className="grid grid-cols-2 gap-y-1">
+            <span className="text-muted-foreground">Sites:</span>
+            <span className="text-right font-medium">{sites}</span>
+
+            <span className="text-muted-foreground">Locations selected:</span>
+            <span className="text-right font-medium">{locationsCount}</span>
+
+            <span className="text-muted-foreground">Campaign periods:</span>
+            <span className="text-right font-medium truncate">
+              {uniquePeriods.length ? uniquePeriods.join(", ") : "—"}
             </span>
+
+            <span className="text-muted-foreground">Creatives:</span>
+            <span className="text-right font-medium">{creatives}</span>
+
+            <span className="text-muted-foreground">Print runs:</span>
+            <span className="text-right font-medium">{printRuns}</span>
           </div>
-        </div>
 
-        <div>
-          <div className="text-slate-500">Sites</div>
-          <div className="font-medium">{data.sites}</div>
-        </div>
+          <hr className="my-2" />
 
-        <div className="md:col-span-2">
-          <div className="text-slate-500">Campaign periods</div>
-          <div className="font-medium">{data.allPeriods.join(", ") || "—"}</div>
-        </div>
+          <div className="grid grid-cols-2 gap-y-1">
+            <span className="text-muted-foreground">Media (before discount):</span>
+            <span className="text-right font-medium">{formatCurrency(mediaBeforeDiscount)}</span>
 
-        <div>
-          <div className="text-slate-500">Creatives</div>
-          <div className="font-medium">{data.creatives}</div>
-        </div>
-        <div>
-          <div className="text-slate-500">Print runs</div>
-          <div className="font-medium">{data.printRuns}</div>
-        </div>
-      </div>
+            <span className="text-muted-foreground flex items-center gap-1">
+              Volume discount
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-3 w-3 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Applied when booking over 3 campaign periods. More periods = bigger savings.</p>
+                </TooltipContent>
+              </Tooltip>
+              :
+            </span>
+            <span className="text-right font-medium text-green-600">
+              - {formatCurrency(volumeDiscount)}
+            </span>
 
-      <hr className="my-3" />
+            <span className="text-muted-foreground">Media (after discount):</span>
+            <span className="text-right font-medium">{formatCurrency(mediaAfterDiscount)}</span>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
-        <div>
-          <div className="text-slate-500">Media (before discount)</div>
-          <div className="font-medium">{currency(data.totals.mediaBefore)}</div>
-        </div>
-        <div>
-          <div className="text-slate-500">Volume discount</div>
-          <div className="font-medium">
-            {data.totals.volDisc === 0 ? "—" : `- ${currency(-data.totals.volDisc)}`}
+            <span className="text-muted-foreground">Production:</span>
+            <span className="text-right font-medium">{formatCurrency(production)}</span>
+
+            <span className="text-muted-foreground">Creative:</span>
+            <span className="text-right font-medium">{formatCurrency(creative)}</span>
           </div>
-        </div>
-        <div>
-          <div className="text-slate-500">Media (after discount)</div>
-          <div className="font-medium">{currency(data.totals.mediaAfter)}</div>
-        </div>
-        <div>
-          <div className="text-slate-500">Production</div>
-          <div className="font-medium">{currency(data.totals.prod)}</div>
-        </div>
-        <div>
-          <div className="text-slate-500">Creative</div>
-          <div className="font-medium">{currency(data.totals.creative)}</div>
-        </div>
-      </div>
 
-      <div className="mt-3 text-sm">
-        <div className="text-slate-500">Estimate total</div>
-        <div className="font-semibold text-lg">{currency(data.totals.exVat)}</div>
-      </div>
-    </div>
+          <hr className="my-2" />
+
+          <div className="flex justify-between text-sm font-semibold">
+            <span>Estimate total:</span>
+            <span>{formatCurrency(estimate)}</span>
+          </div>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
-};
-
-export default QuickSummary;
+}

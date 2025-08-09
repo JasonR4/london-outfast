@@ -1,58 +1,110 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+
+export type PeriodId = string;     // e.g. "16"
 
 export type PlanItem = {
-  id: string;                     // stable key per format (e.g., "16-sheet-lu")
-  formatName: string;             // display name
-  saleRate: number;               // £ per site-per-period
-  productionRate: number;         // £ per site per print run
-  creativeRate: number;           // £ per creative asset
-  sites: number;                  // total sites across the campaign (not per period)
-  periods: string[];              // period ids (e.g., ["16","19","20"])
-  locationsCount: number;         // how many areas/locations selected for this format
-  printRuns: number;              // calculated from non-consecutive groups of periods
-  creativeAssets: number;         // count of creative assets
+  id: string;                      // stable key per selected format
+  formatId: string;
+  formatName: string;
+  saleRate: number;                // media rate per in-charge (per period)
+  sites: number;                   // campaign sites (spread across periods)
+  periods: PeriodId[];             // selected periods for this format
+  locations?: string[];            // selected area ids/names (capacity check only)
+  productionRate?: number;         // per site per print run
+  printRuns?: number;              // derived in UI (non-consecutive), optional
+  creativeAssets?: number;
+  creativeRate?: number;           // per asset
 };
 
-type PlanState = {
+type StoreState = {
   items: PlanItem[];
-  replace: (items: PlanItem[]) => void;
+  upsertItem: (item: PlanItem) => void;
+  removeItem: (id: string) => void;
+  setItems: (items: PlanItem[]) => void;
   clear: () => void;
 };
 
-export const usePlanStore = create<PlanState>((set) => ({
-  items: [],
-  replace: (items) => set({ items }),
-  clear: () => set({ items: [] }),
-}));
+export const usePlanStore = create<StoreState>()(
+  persist(
+    (set, get) => ({
+      items: [],
+      upsertItem: (item) => {
+        const items = get().items.slice();
+        const idx = items.findIndex(i => i.id === item.id);
+        if (idx >= 0) {
+          items[idx] = { ...items[idx], ...item };
+        } else {
+          items.push(item);
+        }
+        set({ items });
+      },
+      removeItem: (id) => set({ items: get().items.filter(i => i.id !== id) }),
+      setItems: (items) => set({ items }),
+      clear: () => set({ items: [] })
+    }),
+    {
+      name: "mbl-plan-v1",
+      storage: createJSONStorage(() => sessionStorage),
+      version: 2,
+      // Only persist the items array
+      partialize: (s) => ({ items: s.items }),
+      // Guard against legacy payloads or corrupted storage
+      migrate: (persisted, fromVersion) => {
+        const p = (persisted ?? {}) as any;
+        if (!Array.isArray(p.items)) return { items: [] };
+        // v1 -> v2 keeps items; anything else resets
+        return p;
+      }
+    }
+  )
+);
 
-// ---------- helpers (pure) ----------
-export const mediaInChargesForCost = (i: PlanItem) =>
-  i.sites * (i.periods?.length ?? 0);
+// ---------- Derived helpers (pure) ----------
+export const uniqueCampaignPeriods = (items: (PlanItem | any)[]): PeriodId[] => {
+  const s = new Set<PeriodId>();
+  items.forEach(i => {
+    const periods = i?.periods ?? i?.selectedPeriods ?? [];
+    (Array.isArray(periods) ? periods : []).forEach(p => s.add(String(p)));
+  });
+  return Array.from(s).sort();
+};
 
-export const mediaCostBeforeDiscount = (i: PlanItem) =>
-  i.saleRate * mediaInChargesForCost(i);
+export const displayInCharges = (item: PlanItem | any): number =>
+  (item?.periods?.length ?? item?.selectedPeriods?.length ?? 0); // DISPLAY ONLY (period windows)
 
-export const volumeDiscount = (i: PlanItem) =>
-  (i.periods?.length ?? 0) >= 3 ? -0.1 * mediaCostBeforeDiscount(i) : 0;
+export const mediaInChargesForCost = (item: PlanItem | any): number =>
+  (item?.sites ?? item?.quantity ?? 0) * (item?.periods?.length ?? item?.selectedPeriods?.length ?? 0); // COST math
 
-export const mediaCostAfterDiscount = (i: PlanItem) =>
-  mediaCostBeforeDiscount(i) + volumeDiscount(i);
+export const mediaCostBeforeDiscount = (item: PlanItem | any): number =>
+  (item?.saleRate ?? item?.saleRatePerInCharge ?? 0) * mediaInChargesForCost(item);
 
-export const productionCost = (i: PlanItem) =>
-  (i.productionRate ?? 0) * (i.sites ?? 0) * (i.printRuns ?? 1);
+export const volumeDiscount = (item: PlanItem | any): number => {
+  // 10% when 3+ periods (as per app rules)
+  const qualifies = (item?.periods?.length ?? item?.selectedPeriods?.length ?? 0) >= 3;
+  return qualifies ? -0.10 * mediaCostBeforeDiscount(item) : 0;
+};
 
-export const creativeCost = (i: PlanItem) =>
-  (i.creativeRate ?? 0) * (i.creativeAssets ?? 0);
+export const mediaCostAfterDiscount = (item: PlanItem | any): number =>
+  mediaCostBeforeDiscount(item) + volumeDiscount(item);
 
-export const formatSubtotalExVat = (i: PlanItem) =>
-  mediaCostAfterDiscount(i) + productionCost(i) + creativeCost(i);
+export const productionCost = (item: PlanItem | any): number => {
+  const runs = item?.printRuns ?? 1;
+  return (item?.productionRate ?? item?.productionCost ?? 0) * (item?.sites ?? item?.quantity ?? 0) * runs;
+};
 
-export const campaignTotals = (items: PlanItem[]) => {
-  const mediaBefore = items.reduce((a, it) => a + mediaCostBeforeDiscount(it), 0);
-  const volDisc = items.reduce((a, it) => a + volumeDiscount(it), 0);
+export const creativeCost = (item: PlanItem | any): number =>
+  (item?.creativeRate ?? 0) * (item?.creativeAssets ?? item?.creativeCost ?? 0);
+
+export const formatSubtotalExVat = (item: PlanItem | any): number =>
+  mediaCostAfterDiscount(item) + productionCost(item) + creativeCost(item);
+
+export const campaignTotals = (items: (PlanItem | any)[]) => {
+  const mediaBefore = items.reduce((a,i)=>a+mediaCostBeforeDiscount(i),0);
+  const volDisc    = items.reduce((a,i)=>a+volumeDiscount(i),0);
   const mediaAfter = mediaBefore + volDisc;
-  const prod = items.reduce((a, it) => a + productionCost(it), 0);
-  const creative = items.reduce((a, it) => a + creativeCost(it), 0);
-  const exVat = mediaAfter + prod + creative;
+  const prod       = items.reduce((a,i)=>a+productionCost(i),0);
+  const creative   = items.reduce((a,i)=>a+creativeCost(i),0);
+  const exVat      = mediaAfter + prod + creative;
   return { mediaBefore, volDisc, mediaAfter, prod, creative, exVat };
 };
