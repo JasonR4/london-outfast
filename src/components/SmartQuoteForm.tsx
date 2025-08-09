@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { calculateVAT, formatCurrencyWithVAT } from '@/utils/vat';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -126,6 +126,44 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     needsCreative,
     creativeCostPerAsset: creativeResult?.costPerUnit || 0
   });
+
+  /**
+   * START NEW QUOTE
+   * Clears all UI state + any cached keys we may have written previously.
+   * Keeps you on the Search tab with a completely blank configuration.
+   */
+  const handleStartNewQuote = useCallback(() => {
+    try {
+      // Clear any session/local storage keys that could leak old plans
+      const kill = [
+        "mbl-plan", "mbl-plan-v1", "mbl-plan-v2",
+        "plan-store", "zustand", "quote-draft"
+      ];
+      kill.forEach((k) => {
+        try { sessionStorage.removeItem(k); } catch {}
+        try { localStorage.removeItem(k); } catch {}
+      });
+    } catch {}
+
+    // Reset all known Configure state (guard each setter so this is safe on older code too)
+    try { setSelectedFormats([]); } catch {}
+    try { setFormatQuantities({}); } catch {}
+    try { setSelectedPeriods([]); } catch {}
+    try { setOpenCategories({}); } catch {}
+    try { setNeedsCreative(false); } catch {}
+    try { setCreativeQuantity(1); } catch {}
+    try { setSearchQuery(""); } catch {}
+    try { clearAllLocations(); } catch {}
+
+    // Return to Search
+    setActiveTab("search");
+  }, [
+    setActiveTab,
+    setSelectedFormats, setFormatQuantities,
+    setSelectedPeriods, setOpenCategories, 
+    setNeedsCreative, setCreativeQuantity, setSearchQuery,
+    clearAllLocations
+  ]);
 
   // Check authentication status
   useEffect(() => {
@@ -649,30 +687,15 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-xl font-semibold">Your Current Plan</h3>
-                      {/* Start new quote: clears persisted plan */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          // Clear the plan store
-                          import("@/state/planStore").then(m => {
-                            m.usePlanStore.getState().clear();
-                            // Also clear the persisted session key to be 100% sure
-                            try { 
-                              sessionStorage.removeItem("mbl-plan-v1"); 
-                            } catch {}
-                          });
-                          // Reset local state
-                          setSelectedFormats([]);
-                          setFormatQuantities({});
-                          setSelectedPeriods([]);
-                          // Navigate back to search
-                          setActiveTab("search");
-                        }}
-                        className="text-xs"
+                      <button
+                        type="button"
+                        onClick={handleStartNewQuote}
+                        className="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-slate-50
+                                   border-slate-300 text-slate-700"
+                        aria-label="Start new quote"
                       >
                         Start new quote
-                      </Button>
+                      </button>
                     </div>
                      {(() => {
                         const draftItems = usePlanDraft(state => state.items);
