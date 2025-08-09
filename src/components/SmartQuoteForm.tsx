@@ -29,6 +29,8 @@ import type { User } from "@supabase/supabase-js";
 import { formatCurrency } from '@/utils/money';
 import { countPrintRuns } from '@/utils/periods';
 import PlanBreakdown from '@/components/PlanBreakdown';
+import { usePlanDraft } from '@/state/plan';
+import MiniConfigurator from '@/components/MiniConfigurator';
 
 interface SmartQuoteFormProps {
   onQuoteSubmitted?: () => void;
@@ -661,279 +663,43 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                    </div>
                  </TabsContent>
 
-                 <TabsContent value="configure" className="space-y-6">
-                   {selectedFormats.length > 0 && (
-                     <>
-                       {/* Selected Formats Info */}
-                       <Card className="bg-primary/5 border-primary/20">
-                         <CardContent className="p-4">
-                           <h3 className="font-medium text-foreground mb-2">
-                             Selected Formats ({selectedFormats.length})
-                           </h3>
-                           <div className="space-y-2">
-                             {selectedFormats.map((format) => (
-                               <div key={format.id} className="flex items-center justify-between text-sm">
-                                 <span className="font-medium">{format.format_name}</span>
-                                 <Badge variant="outline">{format.type}</Badge>
-                               </div>
-                             ))}
-                           </div>
-                         </CardContent>
-                       </Card>
+                  <TabsContent value="configure" className="space-y-6">
+                    {selectedFormats.length === 0 && (
+                      <Alert>
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertDescription>
+                          Please select at least one media format before configuring your campaign.
+                        </AlertDescription>
+                      </Alert>
+                    )}
 
-                        {/* Quantity per Format */}
+                    {selectedFormats.length > 0 && (
+                      <div className="space-y-6">
+                        <h3 className="text-lg font-semibold">Configure Each Format</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Set up sites, periods, locations, and creative requirements for each selected format.
+                        </p>
+                        
                         <div className="space-y-4">
-                          <div>
-                            <Label className="text-base font-medium">
-                              Quantity per Format
-                            </Label>
-                            <p className="text-sm text-muted-foreground">
-                              Set the quantity for each selected media format
-                            </p>
-                          </div>
-                          
-                          <div className="space-y-3">
-                             {selectedFormats.map((format) => (
-                               <div key={format.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border">
-                                 <div className="flex-1">
-                                   <div className="font-medium text-sm">{format.format_name}</div>
-                                   <div className="text-xs text-muted-foreground">
-                                     {format.format_name.includes('Digital') ? 'Sites' : 'Units'} per Incharge Period
-                                   </div>
-                                 </div>
-                                 <div className="flex items-center gap-2">
-                                   <div className="w-24">
-                                     <Select 
-                                       value={(formatQuantities[format.format_slug] || 1).toString()} 
-                                       onValueChange={(value) => setFormatQuantities(prev => ({
-                                         ...prev,
-                                         [format.format_slug]: parseInt(value)
-                                       }))}
-                                     >
-                                       <SelectTrigger className="h-8">
-                                         <SelectValue />
-                                       </SelectTrigger>
-                                       <SelectContent>
-                                         {[1, 2, 3, 4, 5, 10, 15, 20, 25, 50].map(num => (
-                                           <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                                         ))}
-                                       </SelectContent>
-                                     </Select>
-                                   </div>
-                                   <Button
-                                     variant="ghost"
-                                     size="icon"
-                                     className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                     onClick={() => {
-                                       setSelectedFormats(prev => prev.filter(f => f.format_slug !== format.format_slug));
-                                       setFormatQuantities(prev => {
-                                         const newQuantities = { ...prev };
-                                         delete newQuantities[format.format_slug];
-                                         return newQuantities;
-                                       });
-                                     }}
-                                     title="Remove from selection"
-                                   >
-                                     <X className="h-4 w-4" />
-                                   </Button>
-                                 </div>
-                               </div>
-                             ))}
-                          </div>
+                          {selectedFormats.map((format) => (
+                            <MiniConfigurator
+                              key={format.format_slug}
+                              format={{ id: format.format_slug, name: format.format_name }}
+                              defaultSaleRate={rateCards[0]?.sale_price || 800}
+                            />
+                          ))}
                         </div>
-
-                      {/* Location Selection */}
-                      <div className="space-y-4">
-                        <LocationSelector
-                          selectedLocations={selectedLocations}
-                          onSelectionChange={(locations) => {
-                            clearAllLocations();
-                            locations.forEach(handleLocationToggle);
-                          }}
-                          title="Target Locations"
-                          description="Select your preferred London areas"
-                          showSelectedSummary={true}
-                          maxHeight="300px"
-                        />
                       </div>
-
-                       {/* Creative & Production */}
-                       <div className="space-y-4 p-4 border-2 border-primary/30 rounded-lg bg-primary/5">
-                         <div className="flex items-center gap-2">
-                           <Palette className="w-5 h-5 text-primary" />
-                           <h3 className="text-lg font-semibold">Creative & Production</h3>
-                         </div>
-                         
-                          <div className="space-y-3">
-                            <div className="flex items-center space-x-2">
-                              <Switch
-                                checked={needsCreative}
-                                onCheckedChange={setNeedsCreative}
-                              />
-                              <Label className="text-base font-medium">Need creative design?</Label>
-                            </div>
-                         </div>
-
-                         {needsCreative && (
-                           <>
-                             <div className="space-y-2">
-                               <Label className="text-sm font-medium">Number of creative assets needed</Label>
-                               <Select
-                                  value={creativeQuantity.toString()}
-                                  onValueChange={(value) => setCreativeQuantity(parseInt(value))}
-                               >
-                                 <SelectTrigger className="border-red-500">
-                                   <SelectValue />
-                                 </SelectTrigger>
-                                 <SelectContent>
-                                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                                     <SelectItem key={num} value={num.toString()}>
-                                       {num} asset{num > 1 ? 's' : ''}
-                                     </SelectItem>
-                                   ))}
-                                 </SelectContent>
-                               </Select>
-                                {creativeResult && (
-                                  <>
-                                    {console.log('🎨 Creative cost debug:', {
-                                      costPerUnit: creativeResult.costPerUnit,
-                                      creativeCostTiers: creativeCostTiers,
-                                      creativeQuantity
-                                    })}
-                                   <p className="text-sm text-muted-foreground">
-                                     £{creativeResult.costPerUnit} per creative asset
-                                   </p>
-                                 </>
-                               )}
-                             </div>
-
-                             <div className="space-y-3 p-3 bg-black border border-red-500 rounded-lg">
-                               <div className="flex items-center gap-2">
-                                 <div className="w-4 h-4 rounded-full bg-red-500 flex items-center justify-center">
-                                   <CheckCircle2 className="w-3 h-3 text-white" />
-                                 </div>
-                                 <h4 className="font-medium text-red-500">Creative Strategy Analysis</h4>
-                                 <Badge variant="destructive" className="text-xs">Optimal</Badge>
-                               </div>
-                               
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-sm text-red-500">Creative Efficiency</span>
-                                    <span className="text-sm font-medium text-red-500">{Math.round(creativeCapacity.efficiency)}%</span>
-                                  </div>
-                                  <div className="w-full bg-red-900/30 rounded-full h-2">
-                                    <div 
-                                      className="bg-red-500 h-2 rounded-full transition-all duration-300" 
-                                      style={{ width: `${Math.min(creativeCapacity.efficiency, 100)}%` }}
-                                    />
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-4 text-center">
-                                    <div>
-                                       <div className="text-lg font-semibold text-red-500">{creativeQuantity}</div>
-                                       <div className="text-xs text-red-400">creative{creativeQuantity > 1 ? 's' : ''}</div>
-                                    </div>
-                                     <div>
-                                       <div className="text-lg font-semibold text-red-500">{totalQuantity}</div>
-                                       <div className="text-xs text-red-400">site{totalQuantity > 1 ? 's' : ''}</div>
-                                     </div>
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-4 text-center text-sm">
-                                    <div>
-                                      <div className="font-medium text-red-500">{creativeCapacity.creativesPerSite.toFixed(2)}</div>
-                                      <div className="text-xs text-red-400">Creatives per Site</div>
-                                    </div>
-                                     <div>
-                                       <div className="font-medium text-red-500">{(totalQuantity / creativeQuantity).toFixed(1)}</div>
-                                       <div className="text-xs text-red-400">Sites per Creative</div>
-                                     </div>
-                                  </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <h5 className="text-sm font-medium text-red-500">Smart Recommendations:</h5>
-                                   <div className="text-xs text-red-400 space-y-1">
-                                     <p>Excellent! Your {creativeQuantity} creative{creativeQuantity > 1 ? 's' : ''} provide optimal coverage for {totalQuantity} site{totalQuantity > 1 ? 's' : ''}.</p>
-                                     <p>Your creative strategy maximizes both reach and frequency for optimal campaign performance.</p>
-                                   </div>
-                                </div>
-                             </div>
-                           </>
-                         )}
-                      </div>
-
-                      {/* Campaign Periods */}
-                      {selectedFormats.length > 0 && (
-                        <div className="space-y-2">
-                          <Label>Campaign Periods</Label>
-                          <p className="text-sm text-muted-foreground">
-                            Select campaign periods first, then choose your locations
-                          </p>
-                          <div className="grid grid-cols-2 gap-2">
-                            {getAllAvailablePeriods().map(period => {
-                              console.log('🗓️ Period data:', period);
-                              const periodId = period.period_number;
-                              const isSelected = selectedPeriods.includes(periodId);
-                              console.log(`Period ${periodId} selected:`, isSelected);
-                              
-                              return (
-                                <Card
-                                  key={period.id}
-                                  className={`cursor-pointer transition-all hover:shadow-md ${
-                                    isSelected ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-muted/50'
-                                  }`}
-                                  onClick={() => {
-                                    console.log('🖱️ Clicked period:', periodId);
-                                    console.log('📋 Current selected periods:', selectedPeriods);
-                                    setSelectedPeriods(prev => {
-                                      const newSelection = prev.includes(periodId)
-                                        ? prev.filter(p => p !== periodId)
-                                        : [...prev, periodId];
-                                      console.log('🔄 New selection:', newSelection);
-                                      return newSelection;
-                                    });
-                                  }}
-                                >
-                                  <CardContent className="p-3">
-                                    <div className="flex items-center justify-between">
-                                      <div>
-                                        <div className="text-sm font-medium">Period {period.period_number}</div>
-                                        <div className="text-xs text-muted-foreground">
-                                          {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
-                                        </div>
-                                      </div>
-                                      {isSelected && (
-                                        <CheckCircle2 className="h-4 w-4 text-primary" />
-                                      )}
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              );
-                            })}
-                           </div>
-                            {selectedPeriods.length > 0 && (
-                               <div className="text-sm text-muted-foreground">
-                                 {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''} selected
-                                 <br />
-                                 <span className="text-xs">Now you can select up to {totalQuantity * selectedPeriods.length} locations</span>
-                                 {countPrintRuns(selectedPeriods) > 1 && (
-                                   <div className="mt-1 text-xs opacity-70" role="note" aria-live="polite">
-                                     Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.
-                                   </div>
-                                 )}
-                              </div>
-                            )}
-                        </div>
-                      )}
-                    </>
-                  )}
+                    )}
                 </TabsContent>
 
                 <TabsContent value="pricing" className="space-y-6">
-                  {/* Current Plan Breakdown */}
+                  {/* Current Plan Breakdown - combines draft and saved items */}
                   <div className="mb-6">
                     <h3 className="text-xl font-semibold mb-4">Your Current Plan</h3>
-                    {(() => {
-                      const items = (currentQuote?.quote_items || []).map((item: any) => ({
+                     {(() => {
+                       const { items: draftItems } = usePlanDraft();
+                      const savedItems = (currentQuote?.quote_items || []).map((item: any) => ({
                         formatName: item.format_name,
                         sites: item.quantity,
                         selectedPeriods: item.selected_periods || [],
@@ -943,7 +709,26 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         productionCost: item.production_cost || 0,
                         creativeCost: item.creative_cost || 0,
                       }));
-                      return <PlanBreakdown items={items} showKpis={false} />;
+                      
+                      // Convert draft items to PlanBreakdown format
+                      const draftItemsFormatted = draftItems.map(item => ({
+                        formatName: item.formatName,
+                        sites: item.quantity,
+                        selectedPeriods: item.selectedPeriods,
+                        saleRate: item.saleRate,
+                        productionCost: item.productionCost,
+                        creativeCost: item.creativeCost,
+                      }));
+
+                      // Show draft items if any, otherwise show saved items
+                      const planItems = draftItemsFormatted.length > 0 ? draftItemsFormatted : savedItems;
+                      
+                      return planItems.length > 0 
+                        ? <PlanBreakdown items={planItems} showKpis={true} />
+                        : <div className="text-center py-8 text-muted-foreground">
+                            <p>No items configured yet.</p>
+                            <p className="text-sm">Configure formats above to see pricing breakdown.</p>
+                          </div>;
                     })()}
                   </div>
 
