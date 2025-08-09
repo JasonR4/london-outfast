@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SmartQuoteForm } from "@/components/SmartQuoteForm";
 import londonHero from "@/assets/london-hero.jpg";
+import { Link } from "react-router-dom";
+import { ShoppingCart } from "lucide-react";
 
 const Quote = () => {
   return (
@@ -41,6 +43,15 @@ const Quote = () => {
               <h3 className="font-semibold text-foreground mb-2">Full Coverage</h3>
               <p className="text-sm text-muted-foreground">Every format across London</p>
             </div>
+          </div>
+          
+          <div className="mt-8">
+            <Button asChild variant="outline" size="lg">
+              <Link to="/quote-plan">
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                View Your Current Plan
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
