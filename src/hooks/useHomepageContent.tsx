@@ -50,12 +50,12 @@ export const useHomepageContent = (sectionKey: string) => {
       }
     };
 
-    // Add timeout to prevent infinite loading
+    // Add immediate timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       console.warn(`Content loading timeout for ${sectionKey}, using fallback`);
       setContent({});
       setLoading(false);
-    }, 5000); // 5 second timeout
+    }, 2000); // 2 second timeout
 
     fetchContent().finally(() => {
       clearTimeout(timeoutId);
