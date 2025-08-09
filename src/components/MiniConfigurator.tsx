@@ -165,10 +165,11 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
   const hasCreativeAssets = creativeAssets > 0;
   const printRuns = countPrintRuns(selectedPeriods);
   const needsMultiplePrintRuns = printRuns > 1;
-  // UI rates (safe fallbacks)
+  // UI rates used in preview (fallbacks if store not ready)
   const uiSaleRate = rateCardData?.saleRatePerInCharge ?? existingItem?.saleRatePerInCharge ?? 0;
   const uiProductionRate = rateCardData?.productionRatePerUnit ?? existingItem?.productionRatePerUnit ?? 0;
   const uiCreativeRate = rateCardData?.creativeUnit ?? existingItem?.creativeUnit ?? 85;
+  const uniquePeriodCount = [...new Set(selectedPeriods)].length || 0;
   // Always-on header total (falls back to an estimate if not yet configured)
   const uniquePeriodsForEstimate = [...new Set(selectedPeriods)];
   const headerEstimate =
@@ -370,32 +371,26 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
             )}
           </div>
 
-          {/* Cost Preview / Rate Summary */}
-          {isConfigured ? (
+          {/* Cost Preview */}
+          {isConfigured && (
             <div className="p-3 bg-muted/50 rounded-lg space-y-2">
               <div className="text-sm font-medium">Cost Preview</div>
               <div className="space-y-1 text-xs">
-                {/* Unit rates row */}
+                {/* Unit rate helper */}
                 <div className="flex justify-between opacity-70">
                   <span>Unit rate (per in-charge):</span>
                   <span>{formatCurrency(uiSaleRate)}</span>
                 </div>
 
-                {/* Media cost rows */}
+                {/* Media at sale rate with breakdown */}
                 <div className="flex justify-between">
                   <span>
-                    Media cost at sale rate:
-                    {" "}
-                    {formatCurrency(uiSaleRate)}
-                    {" "}×{" "}
-                    {quantity} {quantity === 1 ? "site" : "sites"}
-                    {" "}×{" "}
-                    {[...new Set(selectedPeriods)].length} {"period" + ([...new Set(selectedPeriods)].length === 1 ? "" : "s")}
-                    {" "}=
+                    Media cost at sale rate: {formatCurrency(uiSaleRate)} × {quantity} {quantity === 1 ? 'site' : 'sites'} × {uniquePeriodCount} {uniquePeriodCount === 1 ? 'period' : 'periods'} =
                   </span>
-                  <span>{formatCurrency((uiSaleRate || 0) * quantity * ([...new Set(selectedPeriods)].length || 0))}</span>
+                  <span>{formatCurrency((uiSaleRate || 0) * quantity * uniquePeriodCount)}</span>
                 </div>
 
+                {/* Discount + after-discount (only if discount > 0) */}
                 {Boolean(existingItem?.discountAmount && existingItem.discountAmount > 0) && (
                   <>
                     <div className="flex justify-between text-green-600">
@@ -409,21 +404,21 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
                   </>
                 )}
 
-                {/* Production */}
+                {/* Production row only if > 0 */}
                 {existingItem?.productionCost && existingItem.productionCost > 0 && (
                   <div className="flex justify-between">
                     <span>
-                      Production cost: {formatCurrency(uiProductionRate)} × {needsMultiplePrintRuns ? printRuns : 1} print run{(needsMultiplePrintRuns ? printRuns : 1) === 1 ? "" : "s"} × {quantity} {quantity === 1 ? "site" : "sites"} =
+                      Production cost: {formatCurrency(uiProductionRate)} × {needsMultiplePrintRuns ? printRuns : 1} print run{(needsMultiplePrintRuns ? printRuns : 1) === 1 ? '' : 's'} × {quantity} {quantity === 1 ? 'site' : 'sites'} =
                     </span>
                     <span>{formatCurrency(existingItem.productionCost)}</span>
                   </div>
                 )}
 
-                {/* Creative */}
+                {/* Creative row only if > 0 */}
                 {existingItem?.creativeCost && existingItem.creativeCost > 0 && (
                   <div className="flex justify-between">
                     <span>
-                      Creative cost: {formatCurrency(uiCreativeRate)} × {Math.max(0, (existingItem as any)?.creativeAssets || 0)} {Math.max(0, (existingItem as any)?.creativeAssets || 0) === 1 ? "asset" : "assets"} =
+                      Creative cost: {formatCurrency(uiCreativeRate)} × {(existingItem as any).creativeAssets ?? 0} {(existingItem as any).creativeAssets === 1 ? 'asset' : 'assets'} =
                     </span>
                     <span>{formatCurrency(existingItem.creativeCost)}</span>
                   </div>
