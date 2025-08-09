@@ -241,12 +241,35 @@ export default function MiniConfigurator({ format }: MiniConfiguratorProps) {
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <LocationSelector
-                selectedLocations={selectedLocations}
-                onSelectionChange={setSelectedLocations}
-                showSelectedSummary={false}
-                maxHeight="200px"
-              />
+              <Select onValueChange={(value) => handleLocationToggle(value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select locations..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <div className="max-h-48 overflow-y-auto">
+                    {availableLocations.map((location) => (
+                      <SelectItem key={location} value={location}>
+                        {location}
+                      </SelectItem>
+                    ))}
+                  </div>
+                </SelectContent>
+              </Select>
+              {/* Show selected locations as badges */}
+              {selectedLocations.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {selectedLocations.map((location) => (
+                    <Badge
+                      key={location}
+                      variant="secondary"
+                      className="cursor-pointer"
+                      onClick={() => handleLocationToggle(location)}
+                    >
+                      {location} ×
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* In-Charge Periods */}
