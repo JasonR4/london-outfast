@@ -241,19 +241,12 @@ export default function MiniConfigurator({ format }: MiniConfiguratorProps) {
                   </TooltipContent>
                 </Tooltip>
               </div>
-              {/* Use simplified location badges for now - full LocationSelector can be integrated later */}
-              <div className="flex flex-wrap gap-2">
-                {['Central London', 'North London', 'South London', 'East London', 'West London'].map((location) => (
-                  <Badge
-                    key={location}
-                    variant={selectedLocations.includes(location) ? "default" : "outline"}
-                    className="cursor-pointer"
-                    onClick={() => handleLocationToggle(location)}
-                  >
-                    {location}
-                  </Badge>
-                ))}
-              </div>
+              <LocationSelector
+                selectedLocations={selectedLocations}
+                onSelectionChange={setSelectedLocations}
+                showSelectedSummary={false}
+                maxHeight="200px"
+              />
             </div>
 
             {/* In-Charge Periods */}
