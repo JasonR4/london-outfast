@@ -273,16 +273,27 @@ export default function MiniConfigurator({ format }: MiniConfiguratorProps) {
                     {selectedInCharges.length === availablePeriods.length ? 'Deselect All' : 'Select All'}
                   </Button>
                    <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
-                     {availablePeriods.map((period) => (
-                       <Badge
-                         key={period.id}
-                         variant={selectedInCharges.includes(period.id) ? "default" : "outline"}
-                         className="cursor-pointer text-xs p-2 justify-center"
-                         onClick={() => handleInChargeToggle(period.id)}
-                       >
-                         Period {period.period_number}: {period.start_date} - {period.end_date}
-                       </Badge>
-                     ))}
+                     {availablePeriods.map((period) => {
+                       const formatDate = (dateStr: string) => {
+                         const date = new Date(dateStr);
+                         return date.toLocaleDateString('en-GB', { 
+                           day: '2-digit', 
+                           month: '2-digit', 
+                           year: 'numeric' 
+                         });
+                       };
+                       
+                       return (
+                         <Badge
+                           key={period.id}
+                           variant={selectedInCharges.includes(period.id) ? "default" : "outline"}
+                           className="cursor-pointer text-xs p-2 justify-center"
+                           onClick={() => handleInChargeToggle(period.id)}
+                         >
+                           Period {period.period_number}: {formatDate(period.start_date)} - {formatDate(period.end_date)}
+                         </Badge>
+                       );
+                     })}
                    </div>
                 </div>
               )}
