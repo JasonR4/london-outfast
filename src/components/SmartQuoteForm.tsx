@@ -138,7 +138,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       const kill = [
         "mbl-plan", "mbl-plan-v1", "mbl-plan-v2",
         "plan-store", "zustand", "quote-draft",
-        "planDraft", "plan-draft"
+        "planDraft", "plan-draft", "mbl.quote.plan.v1"
       ];
       kill.forEach((k) => {
         try { sessionStorage.removeItem(k); } catch {}
@@ -146,10 +146,10 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       });
     } catch {}
 
-    // Clear the plan store completely
+    // Clear the plan draft store specifically
     try {
-      const { clearAll } = require("@/state/plan");
-      clearAll?.();
+      const { usePlanDraft } = require("@/state/plan");
+      usePlanDraft.getState().clear();
     } catch {}
 
     // Reset all known Configure state (guard each setter so this is safe on older code too)
@@ -177,10 +177,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     // Return to Search
     setActiveTab("search");
     
-    // Force a page refresh to ensure complete reset
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
+    console.log("🧹 Start new quote - all state cleared");
   }, [
     setActiveTab,
     setSelectedFormats, setFormatQuantities,
