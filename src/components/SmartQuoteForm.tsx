@@ -669,6 +669,10 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                         saleRate: item.saleRatePerInCharge,
                         productionCost: item.productionCost,
                         creativeCost: item.creativeCost,
+                        // Pass through all location-related fields
+                        locations: item.locations,
+                        locationsSelected: item.locations?.length ?? 0,
+                        locationCount: item.locations?.length ?? 0,
                       }));
 
                       // Show draft items if any, otherwise show saved items

@@ -10,6 +10,15 @@ export type PlanItemInput = {
   saleRate: number;           // per in-charge
   productionCost: number;
   creativeCost: number;
+  // Location-related fields that might be present
+  locations?: any[];
+  selectedLocations?: any[];
+  selectedAreas?: any[];
+  areaIds?: any[];
+  locationIds?: any[];
+  areas?: any[];
+  locationCount?: number;
+  locationsSelected?: number;
 };
 
 type Enriched = PlanItemInput & {
@@ -60,6 +69,15 @@ function groupByFormat(items: Enriched[]) {
         productionCost: 0,
         creativeCost: 0,
         subtotal: 0,
+        // Initialize location fields
+        locations: it.locations || [],
+        selectedLocations: it.selectedLocations || [],
+        selectedAreas: it.selectedAreas || [],
+        areaIds: it.areaIds || [],
+        locationIds: it.locationIds || [],
+        areas: it.areas || [],
+        locationCount: it.locationCount || 0,
+        locationsSelected: it.locationsSelected || 0,
       });
     }
     const g = map.get(key);
@@ -72,6 +90,15 @@ function groupByFormat(items: Enriched[]) {
     g.productionCost += it.productionCost;
     g.creativeCost += it.creativeCost;
     g.subtotal += it.subtotal;
+    // Aggregate location data (take from the latest item or combine arrays)
+    if (it.locations && it.locations.length > 0) g.locations = it.locations;
+    if (it.selectedLocations && it.selectedLocations.length > 0) g.selectedLocations = it.selectedLocations;
+    if (it.selectedAreas && it.selectedAreas.length > 0) g.selectedAreas = it.selectedAreas;
+    if (it.areaIds && it.areaIds.length > 0) g.areaIds = it.areaIds;
+    if (it.locationIds && it.locationIds.length > 0) g.locationIds = it.locationIds;
+    if (it.areas && it.areas.length > 0) g.areas = it.areas;
+    if (typeof it.locationCount === 'number' && it.locationCount > 0) g.locationCount = it.locationCount;
+    if (typeof it.locationsSelected === 'number' && it.locationsSelected > 0) g.locationsSelected = it.locationsSelected;
   }
   return Array.from(map.values())
     .map((g) => ({
@@ -146,7 +173,15 @@ export default function PlanBreakdown({
           creativeCost: g.creativeCost,
           subTotalExVat: g.subtotal,
           sharePct: g.share,
+          // Pass through all possible location fields from the original items
           locationsSelected: g.locationsSelected ?? g.locationCount ?? 0,
+          locationCount: g.locationCount,
+          locations: g.locations,
+          selectedLocations: g.selectedLocations,
+          selectedAreas: g.selectedAreas,
+          areaIds: g.areaIds,
+          locationIds: g.locationIds,
+          areas: g.areas,
         }} />
       ))}
 

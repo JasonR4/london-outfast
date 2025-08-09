@@ -16,6 +16,14 @@ interface CampaignFormat {
   // try a few likely field names for selected locations; fall back to 0
   locationCount?: number;
   locationsSelected?: number;
+  // Additional location-related fields that might be present
+  id?: string;
+  locations?: any[];
+  selectedLocations?: any[];
+  selectedAreas?: any[];
+  areaIds?: any[];
+  locationIds?: any[];
+  areas?: any[];
 }
 
 const FormatBreakdown = ({ format }: { format: CampaignFormat }) => {
@@ -38,9 +46,25 @@ const FormatBreakdown = ({ format }: { format: CampaignFormat }) => {
   } = format;
 
   // --- capacity maths ---
+  // --- Robust location counting across possible shapes ---
+  const metricsMap = null; // plan?.metrics?.locationsByFormat || plan?.metrics?.locationCountByFormat;
+  const fromMetrics =
+    (metricsMap && (metricsMap[format.name] ?? metricsMap[format.id || ''] ?? metricsMap[name])) ?? null;
+  const locArrays: any[] = [
+    format.locations,
+    format.selectedLocations,
+    format.selectedAreas,
+    format.areaIds,
+    format.locationIds,
+    format.areas
+  ].filter(Boolean);
+  const firstArrayLen = locArrays.length ? (Array.isArray(locArrays[0]) ? locArrays[0].length : 0) : 0;
   const selectedLocations =
     (typeof locationsSelected === "number" ? locationsSelected : undefined) ??
-    (typeof locationCount === "number" ? locationCount : undefined) ?? 0;
+    (typeof locationCount === "number" ? locationCount : undefined) ??
+    (typeof fromMetrics === "number" ? fromMetrics : undefined) ??
+    firstArrayLen ??
+    0;
   const capacity = (sites || 0) * (periods || 0);
   const remaining = capacity - selectedLocations;
   const headroomRatio = capacity > 0 ? remaining / capacity : 0;

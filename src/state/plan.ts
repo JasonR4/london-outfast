@@ -30,6 +30,8 @@ type PlanDraftState = {
 
 import { create } from "zustand";
 
+const STORAGE_KEY = "mbl.quote.plan.v1";
+
 export const usePlanDraft = create<PlanDraftState>((set, get) => ({
   items: [],
   getItem: (formatId) => get().items.find(item => item.formatId === formatId),
@@ -64,10 +66,47 @@ export const usePlanDraft = create<PlanDraftState>((set, get) => ({
       newItems.push(updatedItem);
     }
     
+    // Persist to sessionStorage on every meaningful change
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
+    } catch {}
+    
     return { items: newItems };
   }),
-  removeItem: (formatId) => set(state => ({
-    items: state.items.filter(item => item.formatId !== formatId)
-  })),
-  clear: () => set({ items: [] }),
+  removeItem: (formatId) => set(state => {
+    const newItems = state.items.filter(item => item.formatId !== formatId);
+    
+    // Persist to sessionStorage
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
+    } catch {}
+    
+    return { items: newItems };
+  }),
+  clear: () => set(state => {
+    // Clear sessionStorage
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {}
+    
+    return { items: [] };
+  }),
 }));
+
+// Restore once on mount if empty
+const restoreFromStorage = () => {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if (Array.isArray(saved) && saved.length > 0) {
+        usePlanDraft.setState({ items: saved });
+      }
+    }
+  } catch {}
+};
+
+// Auto-restore on module load
+if (typeof window !== 'undefined') {
+  restoreFromStorage();
+}
