@@ -133,6 +133,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
    * Keeps you on the Search tab with a completely blank configuration.
    */
   const handleStartNewQuote = useCallback(() => {
+    console.log("🧹 START NEW QUOTE - Before clearing");
+    console.log("📊 Plan draft items before:", usePlanDraft.getState().items);
+    
     try {
       // Clear any session/local storage keys that could leak old plans
       const kill = [
@@ -141,16 +144,28 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         "planDraft", "plan-draft", "mbl.quote.plan.v1"
       ];
       kill.forEach((k) => {
-        try { sessionStorage.removeItem(k); } catch {}
-        try { localStorage.removeItem(k); } catch {}
+        try { 
+          const val = sessionStorage.getItem(k);
+          if (val) console.log(`🗑️ Removing sessionStorage key: ${k}`, val);
+          sessionStorage.removeItem(k); 
+        } catch {}
+        try { 
+          const val = localStorage.getItem(k);
+          if (val) console.log(`🗑️ Removing localStorage key: ${k}`, val);
+          localStorage.removeItem(k); 
+        } catch {}
       });
     } catch {}
 
     // Clear the plan draft store specifically
     try {
       const { usePlanDraft } = require("@/state/plan");
+      console.log("📊 Plan draft items before clear:", usePlanDraft.getState().items);
       usePlanDraft.getState().clear();
-    } catch {}
+      console.log("📊 Plan draft items after clear:", usePlanDraft.getState().items);
+    } catch (e) {
+      console.error("❌ Error clearing plan draft:", e);
+    }
 
     // Reset all known Configure state (guard each setter so this is safe on older code too)
     try { setSelectedFormats([]); } catch {}
@@ -177,7 +192,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     // Return to Search
     setActiveTab("search");
     
-    console.log("🧹 Start new quote - all state cleared");
+    console.log("🧹 START NEW QUOTE - After clearing everything");
+    console.log("📊 Plan draft items final:", usePlanDraft.getState().items);
   }, [
     setActiveTab,
     setSelectedFormats, setFormatQuantities,
