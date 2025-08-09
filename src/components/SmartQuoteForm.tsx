@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import isEqual from 'fast-deep-equal';
+import { usePlanStore, type PlanItem } from "@/state/planStore";
 import { calculateVAT, formatCurrencyWithVAT } from '@/utils/vat';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -32,7 +33,52 @@ import { countPrintRuns } from '@/utils/periods';
 import PlanBreakdown from '@/components/PlanBreakdown';
 import MiniConfigurator from '@/components/MiniConfigurator';
 import QuickSummary from '@/components/QuickSummary';
-import { usePlanStore } from '@/state/planStore';
+import { usePlanStore as usePlanStoreImport } from '@/state/planStore';
+
+// Small stable hash (no extra deps)
+const stableHash = (obj: unknown) =>
+  JSON.stringify(obj, (k, v) => {
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      return Object.keys(v as Record<string, unknown>)
+        .sort()
+        .reduce((acc, key) => {
+          (acc as any)[key] = (v as any)[key];
+          return acc;
+        }, {} as Record<string, unknown>);
+    }
+    return v;
+  });
+
+/** Safely read a sale rate from whatever the rate-card calls it */
+const getSaleRate = (rateCard: any, slug: string): number => {
+  const rc = rateCard?.find?.((r: any) => r.media_format_id === slug || r.format_slug === slug);
+  return (
+    rc?.sale_price ??
+    rc?.saleRate ??
+    rc?.saleRatePerInCharge ??
+    rc?.unitRate ??
+    rc?.mediaRate ??
+    800 // fallback
+  );
+};
+
+/** Safely read a production rate (per site per print run) */
+const getProductionRate = (rateCard: any, slug: string): number => {
+  const rc = rateCard?.find?.((r: any) => r.media_format_id === slug || r.format_slug === slug);
+  return rc?.productionRate ?? rc?.productionUnit ?? rc?.production ?? 25;
+};
+
+const getCreativeRate = (rateCard: any, slug: string): number => {
+  const rc = rateCard?.find?.((r: any) => r.media_format_id === slug || r.format_slug === slug);
+  return rc?.creativeRate ?? rc?.creativeUnit ?? 350; // sensible default
+};
+
+function computePrintRuns(periods: string[] = []) {
+  // Non-consecutive = number of blocks. Use existing countPrintRuns if available
+  if (!periods.length) return 1;
+  // Fallback: treat any gap as extra run
+  return countPrintRuns ? countPrintRuns(periods.map(Number)) : 1;
+};
 
 interface SmartQuoteFormProps {
   onQuoteSubmitted?: () => void;
@@ -148,67 +194,68 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Build clean items from Configure state (no side-effects)
-  const planItems = useMemo(() => {
+  // Build clean items from Configure state (memoized)
+  const storeItems = usePlanStore((s) => s.items);
+  const setItems = usePlanStore((s) => s.setItems);
+
+  const planItems: PlanItem[] = useMemo(() => {
     console.log('🏗️ Building plan items from Configure state');
-    
-    if (!selectedFormats || selectedFormats.length === 0) {
-      return [];
-    }
+    const periodsArr = (selectedPeriods ?? []).map(String);
+    return (selectedFormats ?? [])
+      .map((fmt: any) => {
+        const formatKey = fmt.format_slug || fmt.id;
+        const sites = Number(formatQuantities?.[formatKey] ?? 0);
+        const saleRate = getSaleRate(rateCards, fmt.id);
+        const productionRate = getProductionRate(rateCards, fmt.id);
+        const creativeAssets = needsCreative ? Number(creativeQuantity ?? 0) : 0;
+        const creativeRate = needsCreative ? getCreativeRate(rateCards, fmt.id) : 0;
+        const printRuns = computePrintRuns(periodsArr);
 
-    const items = selectedFormats.map((fmt) => {
-      const formatKey = fmt.format_slug || fmt.id;
-      const sites = formatQuantities[formatKey] ?? 0;
-      const periods = selectedPeriods.map(String); // array of strings
-      const rateInfo = rateCards?.find((r) => r.media_format_id === fmt.id);
-      const saleRate = rateInfo?.sale_price ?? 800;
-      const productionRate = 25; // Default production rate
-      const printRuns = countPrintRuns(selectedPeriods);
-      const creativeAssets = needsCreative ? creativeQuantity : 0;
-      const creativeRate = needsCreative ? 350 : 0;
+        const locs = selectedLocations ?? [];
 
-      return {
-        id: formatKey,
-        formatSlug: formatKey,
-        name: fmt.format_name || fmt.name || formatKey,
-        sites,
-        periods,
-        saleRate,
-        productionRate,
-        printRuns,
-        creativeAssets,
-        creativeRate,
-        locations: selectedLocations.slice(0, sites * Math.max(periods.length, 1)),
-      };
-    }).filter(i => i.sites > 0 && i.periods.length > 0 && i.saleRate > 0);
+        return {
+          id: String(formatKey),
+          formatSlug: String(formatKey),
+          name: String(fmt.format_name ?? fmt.name ?? fmt.title ?? formatKey),
+          sites,
+          periods: periodsArr,
+          saleRate,
+          productionRate,
+          printRuns,
+          creativeAssets,
+          creativeRate,
+          locations: locs.slice(0, Math.max(sites * Math.max(periodsArr.length, 1), 0)),
+        } as PlanItem;
+      })
+      // keep only truly configured items
+      .filter((i) => i.sites > 0 && i.periods.length > 0 && i.saleRate > 0);
+  }, [
+    selectedFormats,
+    formatQuantities,
+    selectedPeriods,
+    selectedLocations,
+    needsCreative,
+    creativeQuantity,
+    rateCards,
+  ]);
 
-    console.log('📦 Built items:', items.length, 'valid items');
-    return items;
-  }, [selectedFormats, formatQuantities, selectedPeriods, selectedLocations, rateCards, needsCreative, creativeQuantity]);
-
-  // Guarded syncing: only write if changed
-  const storeItems = usePlanStore(s => s.items);
-  const setItems = usePlanStore(s => s.setItems);
-  const lastHashRef = useRef<string>('');
-
-  const planHash = useMemo(() => {
-    // stable string for comparison (faster than deep-equal on every render chain)
-    return JSON.stringify(planItems);
-  }, [planItems]);
+  // Guarded auto-sync: write only when payload actually changes
+  const lastHashRef = useRef<string>("");
+  const nextHash = useMemo(() => stableHash(planItems), [planItems]);
 
   useEffect(() => {
-    if (planHash === lastHashRef.current) return;
-    // also avoid writing when content is actually equal (covers order changes)
-    if (isEqual(storeItems, planItems)) {
-      lastHashRef.current = planHash;
+    if (nextHash === lastHashRef.current) return;
+    // Avoid writing during render loops: only write if different from store snapshot
+    const storeHash = stableHash(storeItems);
+    if (storeHash === nextHash) {
+      lastHashRef.current = nextHash;
       return;
     }
-    // write once
-    console.log('🔄 Writing to store - hash changed');
+    console.log('🔄 Writing to store - hash changed:', planItems.length, 'items');
     setItems(planItems);
-    lastHashRef.current = planHash;
+    lastHashRef.current = nextHash;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [planHash, setItems]); // DO NOT include storeItems here (prevents loops)
+  }, [nextHash, setItems]); // intentionally NOT depending on storeItems
 
   // Initialize quote on component mount
   useEffect(() => {
@@ -223,16 +270,6 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     format.format_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (format.description && format.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
-
-  // Group formats by category (we'll use dimensions as a proxy for category)
-  const formatsByCategory = filteredFormats.reduce((acc, format) => {
-    const category = format.dimensions || 'Various Sizes';
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(format);
-    return acc;
-  }, {} as Record<string, any[]>);
 
   // Calculate total costs from all quote items
   const calculateQuoteTotalCosts = () => {
@@ -570,10 +607,12 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
               />
             )}
 
-            {/* Quick Summary */}
-            {selectedFormats.length > 0 && (
-              <QuickSummary />
-            )}
+            {/* Quick Summary - always visible with empty state support */}
+            <QuickSummary 
+              draftSelectedFormats={selectedFormats}
+              draftFormatQuantities={formatQuantities}
+              draftSelectedPeriods={selectedPeriods.map(String)}
+            />
           </div>
         </div>
 
