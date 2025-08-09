@@ -168,8 +168,20 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     }
 
     // Reset all known Configure state (guard each setter so this is safe on older code too)
-    try { setSelectedFormats([]); } catch {}
-    try { setFormatQuantities({}); } catch {}
+    console.log("🧹 Clearing React state...");
+    console.log("📊 selectedFormats before clear:", selectedFormats);
+    console.log("📊 formatQuantities before clear:", formatQuantities);
+    
+    try { 
+      setSelectedFormats([]); 
+      console.log("✅ setSelectedFormats([]) called");
+    } catch (e) { console.error("❌ Error clearing selectedFormats:", e); }
+    
+    try { 
+      setFormatQuantities({}); 
+      console.log("✅ setFormatQuantities({}) called");
+    } catch (e) { console.error("❌ Error clearing formatQuantities:", e); }
+    
     try { setSelectedPeriods([]); } catch {}
     try { setOpenCategories({}); } catch {}
     try { setNeedsCreative(false); } catch {}
