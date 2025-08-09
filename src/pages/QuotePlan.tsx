@@ -14,6 +14,7 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import { formatCurrency } from '@/utils/money';
 import { countPrintRuns } from '@/utils/periods';
 import { enrichQuoteItem, groupByFormat, type QuoteItem } from '@/utils/quote';
+import PlanBreakdown from '@/components/PlanBreakdown';
 
 export default function QuotePlan() {
   const { currentQuote, loading, removeQuoteItem, fetchCurrentQuote, recalculateDiscounts } = useQuotes();
@@ -228,63 +229,19 @@ export default function QuotePlan() {
           );
         })()}
 
-        {/* Format Breakdown Cards */}
+        {/* Plan Breakdown using reusable component */}
         {(() => {
-          const planItems: QuoteItem[] = currentQuote.quote_items?.map(item => ({
+          const items = (currentQuote?.quote_items || []).map((item: any) => ({
             formatName: item.format_name,
             sites: item.quantity,
-            selectedPeriods: item.selected_periods,
-            saleRate: item.base_cost / item.selected_periods.length / item.quantity,
+            selectedPeriods: item.selected_periods || [],
+            saleRate: item.sale_rate_per_incharge ?? (item.base_cost && item.selected_periods?.length && item.quantity
+              ? (item.base_cost / (item.selected_periods.length * item.quantity))
+              : 0),
             productionCost: item.production_cost || 0,
             creativeCost: item.creative_cost || 0,
-          })) || [];
-
-          const formatGroups = groupByFormat(planItems.map(enrichQuoteItem));
-
-          return (
-            <div>
-              <h3>Format Breakdown</h3>
-              {formatGroups.map(group => (
-                <div key={group.formatName} className="format-breakdown">
-                  <div className="format-breakdown-header">
-                    <div>
-                      <strong>{group.formatName}</strong>
-                      <div style={{ fontSize: '0.85rem', color: '#555' }}>
-                        {group.sites} site{group.sites !== 1 ? 's' : ''} • {group.uniquePeriods} period{group.uniquePeriods !== 1 ? 's' : ''} • {group.incharges} in-charges
-                      </div>
-                    </div>
-                    <div>
-                      Sale rate (per in-charge): {formatCurrency(group.saleRate)}
-                      <div style={{ fontSize: '0.8rem', color: '#777' }}>
-                        ≈ {group.share.toFixed(0)}% of campaign
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="format-breakdown-body">
-                    <div>Media cost at sale rate: {formatCurrency(group.mediaCost)}</div>
-
-                    {group.volumeDiscount > 0 && (
-                      <>
-                        <div>💰 Volume discount (10% for 3+ in-charge periods): −{formatCurrency(group.volumeDiscount)}</div>
-                        <small>
-                          That's −{formatCurrency(group.volumeDiscount / group.incharges)} per unit per period ({group.incharges} in-charges).
-                        </small>
-                      </>
-                    )}
-
-                    <div>Media cost after discount: {formatCurrency(group.mediaAfterDiscount)}</div>
-                    <div>Total Production Cost: {formatCurrency(group.productionCost)}</div>
-                    <div>Total Creative Cost: {formatCurrency(group.creativeCost)}</div>
-                    <hr style={{ margin: '0.75rem 0' }} />
-                    <div>
-                      <strong>Format subtotal (ex VAT): {formatCurrency(group.subtotal)}</strong>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          );
+          }));
+          return <PlanBreakdown items={items} showKpis={false} />;
         })()}
 
         <div className="grid lg:grid-cols-3 gap-8">

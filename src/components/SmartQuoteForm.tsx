@@ -28,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { formatCurrency } from '@/utils/money';
 import { countPrintRuns } from '@/utils/periods';
+import PlanBreakdown from '@/components/PlanBreakdown';
 
 interface SmartQuoteFormProps {
   onQuoteSubmitted?: () => void;
@@ -928,12 +929,30 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                 </TabsContent>
 
                 <TabsContent value="pricing" className="space-y-6">
+                  {/* Current Plan Breakdown */}
+                  <div className="mb-6">
+                    <h3 className="text-xl font-semibold mb-4">Your Current Plan</h3>
+                    {(() => {
+                      const items = (currentQuote?.quote_items || []).map((item: any) => ({
+                        formatName: item.format_name,
+                        sites: item.quantity,
+                        selectedPeriods: item.selected_periods || [],
+                        saleRate: item.sale_rate_per_incharge ?? (item.base_cost && item.selected_periods?.length && item.quantity
+                          ? (item.base_cost / (item.selected_periods.length * item.quantity))
+                          : 0),
+                        productionCost: item.production_cost || 0,
+                        creativeCost: item.creative_cost || 0,
+                      }));
+                      return <PlanBreakdown items={items} showKpis={false} />;
+                    })()}
+                  </div>
+
                   {/* Show current item pricing or total quote breakdown */}
                   {currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0 ? (
                     // Show total quote breakdown when items exist
                     <Card className="bg-gradient-card border-border">
                       <CardHeader>
-                        <CardTitle className="text-lg">Pricing Breakdown</CardTitle>
+                        <CardTitle className="text-lg">Current Item Pricing</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="flex justify-between items-center">
