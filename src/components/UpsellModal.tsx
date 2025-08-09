@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { TrendingUp, MapPin, Calendar, Target, ArrowRight } from 'lucide-react';
+import { formatCurrency } from '@/utils/money';
 
 interface UpsellOption {
   title: string;
@@ -109,7 +110,7 @@ export const UpsellModal: React.FC<UpsellModalProps> = ({
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold">+£{option.costIncrease.toLocaleString()}</div>
+                      <div className="text-lg font-bold">+{formatCurrency(option.costIncrease)}</div>
                       <Button size="sm" className="mt-2">
                         Upgrade
                         <ArrowRight className="h-3 w-3 ml-1" />

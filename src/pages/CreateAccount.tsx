@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Zap, FileText, BarChart3, Calendar, Camera, Palette, Shield, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/utils/money';
 
 export default function CreateAccount() {
   const navigate = useNavigate();
@@ -208,7 +209,7 @@ export default function CreateAccount() {
                     <div className="space-y-4">
                       <div className="flex justify-between items-center p-4 bg-primary/5 rounded-lg border border-primary/10">
                         <span className="font-semibold text-lg">Total Campaign Cost</span>
-                        <span className="text-2xl font-bold text-primary">£{quoteDetails.total_cost?.toLocaleString()}</span>
+                        <span className="text-2xl font-bold text-primary">{formatCurrency(quoteDetails.total_cost || 0)}</span>
                       </div>
                       
                       <div className="space-y-3">
@@ -221,7 +222,7 @@ export default function CreateAccount() {
                                 {item.quantity} units • {item.selected_areas?.length || 0} areas
                               </p>
                             </div>
-                            <span className="font-semibold">£{item.total_cost?.toLocaleString()}</span>
+                            <span className="font-semibold">{formatCurrency(item.total_cost || 0)}</span>
                           </div>
                         ))}
                       </div>

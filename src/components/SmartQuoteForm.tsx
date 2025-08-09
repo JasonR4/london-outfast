@@ -1111,45 +1111,45 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                      
                      {/* Detailed cost breakdown */}
                      <div className="space-y-2 text-sm">
-                       <div className="flex justify-between">
-                         <span>Media Cost:</span>
-                         <span>£{(item.base_cost || 0).toLocaleString()}</span>
-                       </div>
-                       <div className="flex justify-between">
-                         <span>Production Cost:</span>
-                         <span>£{(item.production_cost || 0).toLocaleString()}</span>
-                       </div>
-                       {(item.creative_cost || 0) > 0 && (
-                         <div className="flex justify-between">
-                           <span>Creative Development:</span>
-                           <span>£{(item.creative_cost || 0).toLocaleString()}</span>
-                         </div>
-                       )}
-                       {(item.discount_amount || 0) > 0 && (
-                         <div className="flex justify-between text-green-600 dark:text-green-400">
-                           <span>Discount ({item.discount_percentage}%):</span>
-                           <span>-£{(item.discount_amount || 0).toLocaleString()}</span>
-                         </div>
-                       )}
-                       <div className="border-t pt-2 flex justify-between font-medium">
-                         <span>Subtotal:</span>
-                         <span>£{(item.total_cost || 0).toLocaleString()}</span>
-                       </div>
-                     </div>
+                        <div className="flex justify-between">
+                          <span>Media Cost:</span>
+                          <span>{formatCurrency(item.base_cost || 0)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Production Cost:</span>
+                          <span>{formatCurrency(item.production_cost || 0)}</span>
+                        </div>
+                        {(item.creative_cost || 0) > 0 && (
+                          <div className="flex justify-between">
+                            <span>Creative Development:</span>
+                            <span>{formatCurrency(item.creative_cost || 0)}</span>
+                          </div>
+                        )}
+                        {(item.discount_amount || 0) > 0 && (
+                          <div className="flex justify-between text-green-600 dark:text-green-400">
+                            <span>Discount ({item.discount_percentage}%):</span>
+                            <span>-{formatCurrency(item.discount_amount || 0)}</span>
+                          </div>
+                        )}
+                        <div className="border-t pt-2 flex justify-between font-medium">
+                          <span>Subtotal:</span>
+                          <span>{formatCurrency(item.total_cost || 0)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                 <div className="border-t border-border pt-3 mt-3 space-y-2">
+                   <div className="flex justify-between items-center">
+                     <span>Subtotal (exc VAT):</span>
+                     <span className="font-medium">{formatCurrency(currentQuote.total_cost || 0)}</span>
                    </div>
-                 ))}
-                <div className="border-t border-border pt-3 mt-3 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span>Subtotal (exc VAT):</span>
-                    <span className="font-medium">£{currentQuote.total_cost?.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm text-muted-foreground">
-                    <span>VAT (20%):</span>
-                    <span>£{((currentQuote.total_cost || 0) * 0.20).toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center font-semibold border-t pt-2">
-                    <span>Total inc VAT:</span>
-                    <span className="text-primary">£{((currentQuote.total_cost || 0) * 1.20).toLocaleString()}</span>
+                   <div className="flex justify-between items-center text-sm text-muted-foreground">
+                     <span>VAT (20%):</span>
+                     <span>{formatCurrency((currentQuote.total_cost || 0) * 0.20)}</span>
+                   </div>
+                   <div className="flex justify-between items-center font-semibold border-t pt-2">
+                     <span>Total inc VAT:</span>
+                     <span className="text-primary">{formatCurrency((currentQuote.total_cost || 0) * 1.20)}</span>
                   </div>
                 </div>
               </CardContent>
