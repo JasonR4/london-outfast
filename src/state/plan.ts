@@ -83,12 +83,14 @@ export const usePlanDraft = create<PlanDraftState>((set, get) => ({
     
     return { items: newItems };
   }),
-  clear: () => set(state => {
+  clear: () => set(() => {
     // Clear sessionStorage
     try {
       sessionStorage.removeItem(STORAGE_KEY);
+      console.log("🧹 Cleared sessionStorage key:", STORAGE_KEY);
     } catch {}
     
+    console.log("🧹 Plan store cleared - setting items to empty array");
     return { items: [] };
   }),
 }));
