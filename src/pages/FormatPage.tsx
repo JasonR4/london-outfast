@@ -31,6 +31,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Search, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { QuoteBreakdown } from '@/components/QuoteBreakdown';
 
 const FormatPage = () => {
   const { formatSlug } = useParams();
@@ -1219,7 +1220,6 @@ const FormatPage = () => {
                               
                               <div className="border-t pt-3 space-y-2">
                                 {(() => {
-                                  // Remove any surcharge references from the breakdown data before rendering
                                   const campaignCost = priceCalculation.totalPrice * quantity;
                                   const productionCost = productionCostCalc ? productionCostCalc.totalCost : 0;
                                   const creativeCost = needsCreative ? creativeAssets * 85 : 0;
@@ -1227,53 +1227,15 @@ const FormatPage = () => {
                                   const vat = subtotal * 0.20;
                                   const totalIncVat = subtotal + vat;
 
-                                  const breakdownItems = [
-                                    {
-                                      label: "Campaign Cost",
-                                      description: "Sites × periods at sale price, after any applicable media discounts",
-                                      value: `£${campaignCost.toFixed(2)}`
-                                    },
-                                    {
-                                      label: "Production Cost",
-                                      description: "Printing & posting based on print runs. Split (non-consecutive) periods require extra print runs. Media rate unchanged.",
-                                      value: `£${productionCost.toFixed(2)}`
-                                    },
-                                    {
-                                      label: "Creative Assets",
-                                      description: "Number of distinct artworks supplied for your campaign",
-                                      value: `£${creativeCost.toFixed(2)}`
-                                    },
-                                    {
-                                      label: "Subtotal (ex VAT)",
-                                      value: `£${subtotal.toFixed(2)}`
-                                    },
-                                    {
-                                      label: "VAT (20%)",
-                                      value: `£${vat.toFixed(2)}`
-                                    },
-                                    {
-                                      label: "Total inc VAT",
-                                      value: `£${totalIncVat.toFixed(2)}`
-                                    }
-                                  ];
-
-                                  // Render the breakdown
                                   return (
-                                    <div className="quote-breakdown space-y-2">
-                                      {breakdownItems.map((item, index) => (
-                                        <div key={index} className="breakdown-row flex justify-between items-start">
-                                          <div className="label flex-1">
-                                            <span className={index >= 3 ? "font-semibold" : ""}>{item.label}</span>
-                                            {item.description && (
-                                              <div className="description text-sm text-muted-foreground mt-1">{item.description}</div>
-                                            )}
-                                          </div>
-                                          <div className={`value ml-4 ${index >= 3 ? "font-semibold" : ""} ${index === 5 ? "text-xl text-primary" : ""}`}>
-                                            {item.value}
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
+                                    <QuoteBreakdown
+                                      campaignCost={campaignCost}
+                                      productionCost={productionCost}
+                                      creativeCost={creativeCost}
+                                      subtotal={subtotal}
+                                      vat={vat}
+                                      totalIncVat={totalIncVat}
+                                    />
                                   );
                                 })()}
                               </div>
