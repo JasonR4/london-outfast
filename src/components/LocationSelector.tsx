@@ -114,16 +114,25 @@ export const LocationSelector = ({
             />
           </div>
           
-          <div className="flex justify-end">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={addAllAreas}
-              className="h-7 px-3 text-xs"
-            >
-              Add All Areas
-            </Button>
-          </div>
+           <div className="flex justify-between gap-2">
+             <Button 
+               variant="outline" 
+               size="sm" 
+               onClick={clearAllLocations}
+               className="h-7 px-3 text-xs"
+               disabled={selectedLocations.length === 0}
+             >
+               Remove All Areas
+             </Button>
+             <Button 
+               variant="outline" 
+               size="sm" 
+               onClick={addAllAreas}
+               className="h-7 px-3 text-xs"
+             >
+               Add All Areas
+             </Button>
+           </div>
         </div>
 
         <ScrollArea className="rounded-md border" style={{ height: maxHeight }}>
