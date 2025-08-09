@@ -150,19 +150,21 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
 
   // Initialize quote on component mount and clear stale plan store data
   useEffect(() => {
+    console.log('🚀 SmartQuoteForm: Initializing quote and clearing stale data');
     createOrGetQuote();
     // Clear plan store on fresh component mount to prevent showing stale data
     const { clear } = usePlanStore.getState();
     clear();
-  }, []);
+  }, []); // Empty dependency array to run only once
 
-  // Clear plan store when starting fresh search (no selections)
+  // Clear plan store when starting fresh search (no selections) - simplified to prevent loops
   useEffect(() => {
-    if (selectedFormats.length === 0 && selectedPeriods.length === 0 && selectedLocations.length === 0) {
+    if (selectedFormats.length === 0 && selectedPeriods.length === 0) {
+      console.log('🧹 Clearing plan store for fresh search');
       const { clear } = usePlanStore.getState();
       clear();
     }
-  }, [selectedFormats.length, selectedPeriods.length, selectedLocations.length]);
+  }, [selectedFormats.length, selectedPeriods.length]); // Only depend on lengths to prevent object reference issues
 
   // Sync plan store with current configuration to keep pricing tab updated
   useEffect(() => {
@@ -173,8 +175,8 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       // Build plan items from current selection state
       const planItems = selectedFormats.map(format => {
         const quantity = formatQuantities[format.format_slug] || 1;
-        const rateCard = rateCards.find(rc => rc.media_format_id === format.id);
-        const saleRate = rateCard?.sale_price || 800; // fallback rate
+        // Use a stable fallback rate to avoid dependency on rateCards
+        const saleRate = 800; // Use consistent fallback rate
         
         return {
           id: format.format_slug,
@@ -191,9 +193,26 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         };
       });
       
-      setItems(planItems);
+      // Only update if there are actual changes to prevent loops
+      const currentItems = usePlanStore.getState().items;
+      const hasChanges = JSON.stringify(currentItems.map(i => ({
+        id: i.id,
+        sites: i.sites,
+        periods: i.periods,
+        creativeAssets: i.creativeAssets
+      }))) !== JSON.stringify(planItems.map(i => ({
+        id: i.id,
+        sites: i.sites,
+        periods: i.periods,
+        creativeAssets: i.creativeAssets
+      })));
+      
+      if (hasChanges) {
+        console.log('🔄 Updating plan store with new items:', planItems);
+        setItems(planItems);
+      }
     }
-  }, [selectedFormats, formatQuantities, selectedPeriods, selectedLocations, needsCreative, creativeQuantity, rateCards]);
+  }, [selectedFormats, formatQuantities, selectedPeriods, selectedLocations, needsCreative, creativeQuantity]); // Removed rateCards dependency
 
   const { mediaFormats, loading: formatsLoading } = useMediaFormats();
   
