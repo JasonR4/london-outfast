@@ -4,12 +4,16 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Info } from "lucide-react";
 import { formatCurrency } from "@/utils/money";
 import { countPrintRuns } from "@/utils/periods";
-import { usePlanStore, mediaCostBeforeDiscount, volumeDiscount, mediaCostAfterDiscount, productionCost, creativeCost } from "@/state/planStore";
+import { usePlanStore, selectValidItems, selectHasActivePlan, uniqueCampaignPeriods, mediaCostBeforeDiscount, volumeDiscount, productionCost, creativeCost } from "@/state/planStore";
 
 export default function QuickSummary() {
-  const items = usePlanStore(state => state.items);
+  const hasActive = usePlanStore(selectHasActivePlan);
+  const items = usePlanStore(selectValidItems);
   
-  console.log('🔍 QuickSummary items from plan store:', items);
+  console.log('🔍 QuickSummary hasActive:', hasActive, 'items:', items);
+
+  // Bullet-proof: show nothing if there is no valid, active plan
+  if (!hasActive) return null;
 
   const {
     formatNames,
@@ -26,42 +30,34 @@ export default function QuickSummary() {
     creative,
     estimate,
   } = useMemo(() => {
-    console.log('🔍 Processing QuickSummary with items:', items);
+    console.log('🔍 Processing QuickSummary with valid items:', items);
     
-    const names: string[] = [];
-    let sites = 0;
+    const formatsList = items.map(i => i.formatName ?? i.name).filter(Boolean);
+    const sites = items.reduce((a,i)=>a + (i.sites ?? 0), 0);
+    const periods = uniqueCampaignPeriods(items);
     const allLocations: string[] = [];
-    const periodSet = new Set<string>();
-    let creatives = 0;
-    let printRuns = 0;
-    let mediaAfterDiscount = 0;
-    let volumeDiscountAmount = 0;
-    let production = 0;
-    let creative = 0;
-
-    for (const item of items) {
-      if (item?.formatName) names.push(item.formatName);
-      sites += Number(item?.sites || 0);
+    
+    // Aggregate locations from all items
+    items.forEach(item => {
       (item?.locations || []).forEach((l: string) => allLocations.push(l));
-      (item?.periods || []).forEach((p: string) => periodSet.add(p));
-      creatives += Number(item?.creativeAssets || 0);
-      
-      // Use the plan store calculation functions for consistency
-      mediaAfterDiscount += mediaCostAfterDiscount(item);
-      volumeDiscountAmount += Math.abs(volumeDiscount(item)); // Make positive for display
-      production += productionCost(item);
-      creative += creativeCost(item);
-      printRuns += item?.printRuns || 1;
-    }
+    });
+
+    // Costs using plan store functions for consistency
+    const mediaBefore = items.reduce((a,i)=>a + mediaCostBeforeDiscount(i), 0);
+    const volDisc = items.reduce((a,i)=>a + volumeDiscount(i), 0);
+    const mediaAfter = mediaBefore + volDisc;
+    const production = items.reduce((a,i)=>a + productionCost(i), 0);
+    const creative = items.reduce((a,i)=>a + creativeCost(i), 0);
+    const total = mediaAfter + production + creative;
+    
+    const creatives = items.reduce((a,i)=>a + (i.creativeAssets ?? 0), 0);
+    const printRuns = items.reduce((a,i)=>a + (i.printRuns ?? 1), 0);
 
     // Show up to 2 names, then "+N more"
-    const uniqueNames = Array.from(new Set(names));
-    const display =
-      uniqueNames.length <= 2
-        ? uniqueNames.join(", ")
-        : `${uniqueNames.slice(0, 2).join(", ")} +${uniqueNames.length - 2} more`;
-
-    const estimate = mediaAfterDiscount + production + creative;
+    const uniqueNames = Array.from(new Set(formatsList));
+    const display = uniqueNames.length > 1 
+      ? `${uniqueNames.length} formats` 
+      : (uniqueNames[0] ?? "1 format");
 
     return {
       formatNames: display,
@@ -69,14 +65,14 @@ export default function QuickSummary() {
       formatCount: uniqueNames.length,
       sites,
       locationsCount: new Set(allLocations).size,
-      uniquePeriods: Array.from(periodSet).sort((a, b) => Number(a) - Number(b)),
+      uniquePeriods: periods,
       creatives,
       printRuns,
-      mediaAfterDiscount,
-      volumeDiscountAmount,
+      mediaAfterDiscount: mediaAfter,
+      volumeDiscountAmount: Math.abs(volDisc),
       production,
       creative,
-      estimate,
+      estimate: total,
     };
   }, [items]);
 

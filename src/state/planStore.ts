@@ -8,13 +8,14 @@ export type PlanItem = {
   formatId: string;
   formatName: string;
   saleRate: number;                // media rate per in-charge (per period)
-  sites: number;                   // campaign sites (spread across periods)
+  sites: number;                   // total sites across the whole campaign
   periods: PeriodId[];             // selected periods for this format
   locations?: string[];            // selected area ids/names (capacity check only)
   productionRate?: number;         // per site per print run
   printRuns?: number;              // derived in UI (non-consecutive), optional
   creativeAssets?: number;
   creativeRate?: number;           // per asset
+  name?: string;
 };
 
 type StoreState = {
@@ -44,21 +45,33 @@ export const usePlanStore = create<StoreState>()(
       clear: () => set({ items: [] })
     }),
     {
-      name: "mbl-plan-v1",
+      name: "mbl-plan-v2",
       storage: createJSONStorage(() => sessionStorage),
       version: 2,
-      // Only persist the items array
-      partialize: (s) => ({ items: s.items }),
-      // Guard against legacy payloads or corrupted storage
-      migrate: (persisted, fromVersion) => {
-        const p = (persisted ?? {}) as any;
-        if (!Array.isArray(p.items)) return { items: [] };
-        // v1 -> v2 keeps items; anything else resets
-        return p;
-      }
+      migrate: (state: any, version) => {
+        // If we detect an unexpected shape from a previous session, drop it.
+        if (!state || !Array.isArray(state.items)) return { items: [] };
+        const items = (state.items as any[]).filter(isValidPlanItem);
+        return { items };
+      },
+      partialize: (state) => ({ items: state.items }) // store only items
     }
   )
 );
+
+// ---------- Guards & selectors ----------
+export const isValidPlanItem = (it: any): it is PlanItem => {
+  const sites = Number(it?.sites ?? it?.quantity ?? 0);
+  const periods = Array.isArray(it?.periods ?? it?.selectedPeriods) ? (it?.periods ?? it?.selectedPeriods) : [];
+  const rate = Number(it?.saleRate ?? it?.saleRatePerInCharge ?? 0);
+  return sites > 0 && periods.length > 0 && rate > 0;
+};
+
+export const selectValidItems = (s: { items: PlanItem[] }) =>
+  (s.items ?? []).filter(isValidPlanItem);
+
+export const selectHasActivePlan = (s: { items: PlanItem[] }) =>
+  selectValidItems(s).length > 0;
 
 // ---------- Derived helpers (pure) ----------
 export const uniqueCampaignPeriods = (items: (PlanItem | any)[]): PeriodId[] => {
