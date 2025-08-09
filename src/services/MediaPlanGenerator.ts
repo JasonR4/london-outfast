@@ -256,9 +256,8 @@ export class MediaPlanGenerator {
       if (rateCards && rateCards.length > 0) {
         // Use first available rate card for estimation
         const rateCard = rateCards[0];
-        const baseRate = rateCard.sale_price || rateCard.reduced_price || rateCard.base_rate_per_incharge;
-        const markupMultiplier = 1 + (rateCard.location_markup_percentage / 100);
-        const adjustedRate = baseRate * markupMultiplier;
+        const baseRate = rateCard.base_rate_per_incharge;
+        const adjustedRate = (rateCard.sale_price ?? rateCard.reduced_price ?? baseRate);
         
         // Apply discount tiers
         const { data: discountTiers } = await supabase
@@ -533,9 +532,8 @@ export class MediaPlanGenerator {
       }
 
       const rateCard = rateCards[0];
-      const baseRate = rateCard.sale_price || rateCard.reduced_price || rateCard.base_rate_per_incharge;
-      const markupMultiplier = 1 + (rateCard.location_markup_percentage / 100);
-      const adjustedRate = baseRate * markupMultiplier;
+      const baseRate = rateCard.base_rate_per_incharge;
+      const adjustedRate = (rateCard.sale_price ?? rateCard.reduced_price ?? baseRate);
 
       // Apply discount tiers
       const { data: discountTiers } = await supabase
