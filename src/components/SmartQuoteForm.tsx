@@ -27,6 +27,7 @@ import { londonAreas } from "@/data/londonAreas";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { formatCurrency } from '@/utils/money';
+import { countPrintRuns } from '@/utils/periods';
 
 interface SmartQuoteFormProps {
   onQuoteSubmitted?: () => void;
@@ -173,7 +174,9 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         productionCost: 0,
         creativeCost: 0,
         totalCost: 0,
-        totalDiscount: 0,
+        mediaDiscount: 0,
+        mediaAfterDiscount: 0,
+        qualifiesVolume: false,
         originalCost: 0
       };
     }
@@ -183,15 +186,22 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       acc.productionCost += item.production_cost || 0;
       acc.creativeCost += item.creative_cost || 0;
       acc.totalCost += item.total_cost || 0;
+      acc.mediaDiscount += item.discount_amount || 0;
       return acc;
     }, {
       mediaPrice: 0,
       productionCost: 0,
       creativeCost: 0,
       totalCost: 0,
-      totalDiscount: 0,
+      mediaDiscount: 0,
+      mediaAfterDiscount: 0,
+      qualifiesVolume: false,
       originalCost: 0
     });
+
+    // Calculate mediaAfterDiscount for quote totals
+    totals.mediaAfterDiscount = totals.mediaPrice - totals.mediaDiscount;
+    totals.qualifiesVolume = totals.mediaDiscount > 0;
 
     console.log('📊 Quote total costs:', totals);
     console.log('📋 Quote items:', currentQuote.quote_items);
@@ -199,7 +209,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     return totals;
   };
 
-  // Calculate total pricing for current item configuration
+  // Calculate total pricing for current item configuration using standardized volume discount
   const calculateTotalPrice = () => {
     console.log('💰 calculateTotalPrice called');
     console.log('📊 Current state:', {
@@ -216,18 +226,27 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
         productionCost: 0, 
         creativeCost: 0, 
         totalCost: 0, 
-        totalDiscount: 0,
+        mediaDiscount: 0,
+        qualifiesVolume: false,
         originalCost: 0 
       };
     }
 
-    let totalMediaPrice = 0;
-    let totalProductionCost = 0;
-    let totalCreativeCost = 0;
-    let totalDiscount = 0;
-    let originalMediaCost = 0;
+    // Standardized calculation inputs
+    const units = totalQuantity;
+    const uniquePeriods = [...new Set(selectedPeriods)].length;
+    const saleRate = rateCards[0]?.sale_price || 800; // Use first rate card's sale price
 
-    // Calculate production cost for sites × periods
+    // Volume discount eligibility: 10% for 3+ in-charge periods
+    const qualifiesVolume = uniquePeriods >= 3;
+
+    // Media cost calculation
+    const mediaCost = saleRate * units * uniquePeriods;
+    const mediaDiscount = qualifiesVolume ? mediaCost * 0.10 : 0;
+    const mediaAfterDiscount = mediaCost - mediaDiscount;
+
+    // Production cost (print runs calculation)
+    let totalProductionCost = 0;
     if (selectedLocations.length > 0) {
       const productionPrice = calculateProductionCost(totalQuantity, selectedPeriods);
       if (productionPrice && productionPrice.totalCost !== undefined) {
@@ -236,55 +255,27 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       }
     }
 
-    selectedLocations.forEach(location => {
-      try {
-        console.log(`🏙️ Calculating price for location: ${location}`);
-        console.log(`📅 Selected periods: ${selectedPeriods}`);
-        
-        const mediaPrice = calculatePrice(location, selectedPeriods);
-        // Calculate creative cost based on creative quantity
-        const creativePrice = needsCreative ? calculateCreativeCost(location, creativeQuantity, "London Underground (TfL)") : null;
-        
-        console.log(`💰 Media price result:`, mediaPrice);
-        console.log(`🎨 Creative price result:`, creativePrice);
-        console.log(`🎨 CreativeResult for display:`, creativePrice);
-        
-        // Handle media price and discount
-        if (mediaPrice !== null && mediaPrice !== undefined) {
-          const priceToAdd = typeof mediaPrice === 'number' ? mediaPrice : (mediaPrice.totalPrice || 0);
-          const originalPrice = typeof mediaPrice === 'object' ? 
-            (mediaPrice.basePrice || mediaPrice.adjustedRate || 0) * selectedPeriods.length : priceToAdd;
-          
-          totalMediaPrice += priceToAdd;
-          originalMediaCost += originalPrice;
-          
-          // Calculate discount amount
-          if (typeof mediaPrice === 'object' && mediaPrice.discount > 0) {
-            const discountAmount = originalPrice * (mediaPrice.discount / 100);
-            totalDiscount += discountAmount;
-          }
-          
-          console.log(`➕ Added media price: ${priceToAdd}, original: ${originalPrice}, total: ${totalMediaPrice}`);
-        }
-        
-        // Handle creative price (only if needed)
-        if (needsCreative && creativePrice && creativePrice.totalCost !== undefined) {
-          totalCreativeCost += creativePrice.totalCost;
-          console.log(`➕ Added creative cost: ${creativePrice.totalCost}, total: ${totalCreativeCost}`);
-        }
-      } catch (error) {
-        console.warn(`⚠️ Error calculating price for location ${location}:`, error);
+    // Creative cost
+    let totalCreativeCost = 0;
+    if (needsCreative && selectedLocations.length > 0) {
+      const creativePrice = calculateCreativeCost(selectedLocations[0], creativeQuantity, "London Underground (TfL)");
+      if (creativePrice && creativePrice.totalCost !== undefined) {
+        totalCreativeCost = creativePrice.totalCost;
+        console.log(`🎨 Creative cost: ${totalCreativeCost}`);
       }
-    });
+    }
 
-    const subtotal = totalMediaPrice + totalProductionCost + totalCreativeCost;
+    // Totals
+    const subtotal = mediaAfterDiscount + totalProductionCost + totalCreativeCost;
     const result = {
-      mediaPrice: totalMediaPrice,
+      mediaPrice: mediaCost,
+      mediaAfterDiscount,
+      mediaDiscount,
+      qualifiesVolume,
       productionCost: totalProductionCost,
       creativeCost: totalCreativeCost,
       totalCost: subtotal,
-      totalDiscount,
-      originalCost: originalMediaCost + totalProductionCost + totalCreativeCost
+      originalCost: mediaCost + totalProductionCost + totalCreativeCost
     };
     
     console.log('🎯 Final pricing result:', result);
@@ -373,7 +364,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
           selected_areas: selectedLocations,
           production_cost: pricing.productionCost / selectedFormats.length,
           creative_cost: needsCreative ? (pricing.creativeCost / selectedFormats.length) : 0,
-          base_cost: pricing.mediaPrice / selectedFormats.length,
+          base_cost: ('mediaAfterDiscount' in pricing ? pricing.mediaAfterDiscount : pricing.mediaPrice - (pricing.mediaDiscount || 0)) / selectedFormats.length,
           total_cost: pricing.totalCost / selectedFormats.length
         });
         console.log(`✅ Item added successfully: ${success}`);
@@ -901,12 +892,17 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                             })}
                           </div>
                            {selectedPeriods.length > 0 && (
-                             <div className="text-sm text-muted-foreground">
-                               {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''} selected
-                               <br />
-                               <span className="text-xs">Now you can select up to {totalQuantity * selectedPeriods.length} locations</span>
-                            </div>
-                          )}
+                              <div className="text-sm text-muted-foreground">
+                                {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''} selected
+                                <br />
+                                <span className="text-xs">Now you can select up to {totalQuantity * selectedPeriods.length} locations</span>
+                                {countPrintRuns(selectedPeriods) > 1 && (
+                                  <div className="mt-1 text-xs opacity-70" role="note" aria-live="polite">
+                                    Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.
+                                  </div>
+                                )}
+                             </div>
+                           )}
                         </div>
                       )}
                     </>
@@ -1046,11 +1042,14 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                                   </>
                                 )}
                                 
-                                {firstLocationPrice.discount > 0 && (
+                                {pricing.qualifiesVolume && (
                                   <div className="border-t border-border/50 pt-2 mt-2">
-                                    <div className="flex justify-between items-center text-orange-600 font-medium">
-                                      <span>💰 Volume Discount ({firstLocationPrice.discount}%):</span>
-                                      <span>-£{pricing.totalDiscount.toLocaleString()}</span>
+                                    <div className="flex justify-between items-center text-green-600 font-medium">
+                                      <span>💰 Volume discount (10% for 3+ in-charge periods):</span>
+                                      <span>−{formatCurrency(pricing.mediaDiscount)}</span>
+                                    </div>
+                                    <div className="text-xs text-green-700 mt-1">
+                                      That's −{formatCurrency(pricing.mediaDiscount / (totalQuantity * selectedPeriods.length))} per unit per period ({totalQuantity * selectedPeriods.length} in-charges).
                                     </div>
                                   </div>
                                 )}
@@ -1157,48 +1156,61 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                             </div>
                         )}
 
-                        {/* Total Summary */}
+                        {/* Total Summary with Standardized Volume Discount UI */}
                         <div className="border-t border-border pt-4">
-                          {pricing.totalDiscount > 0 && (
-                            <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg mb-4">
-                              <div className="text-sm font-medium text-green-800 dark:text-green-200">
-                                💰 Total Volume Discount Applied
-                              </div>
-                              <div className="text-xs text-green-600 dark:text-green-300">
-                                You saved {formatCurrency(pricing.totalDiscount)} across all locations
-                              </div>
+                          {/* Media Cost Breakdown */}
+                          <div className="space-y-1 mb-4">
+                            <div className="flex justify-between">
+                              <span>Media cost at sale rate</span>
+                              <span>{formatCurrency(pricing.mediaPrice)}</span>
                             </div>
-                          )}
-                          
+
+                            {pricing.qualifiesVolume && (
+                              <>
+                                <div className="flex justify-between text-green-600">
+                                  <span>💰 Volume discount (10% for 3+ in-charge periods)</span>
+                                  <span>−{formatCurrency(pricing.mediaDiscount)}</span>
+                                </div>
+                                <div className="text-xs opacity-70">
+                                  That's −{formatCurrency(pricing.mediaDiscount / (totalQuantity * selectedPeriods.length))} per unit per period ({totalQuantity * selectedPeriods.length} in-charges).
+                                </div>
+                              </>
+                            )}
+
+                            <div className="flex justify-between font-medium">
+                              <span>Media cost after discount</span>
+                              <span>{formatCurrency('mediaAfterDiscount' in pricing ? pricing.mediaAfterDiscount : pricing.mediaPrice - (pricing.mediaDiscount || 0))}</span>
+                            </div>
+                          </div>
+
+                          {/* Production + Creative + Totals */}
                           <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                              <span>Total Media Costs:</span>
-                              <span className="font-medium">{formatCurrency(totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800))}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span>Production Costs:</span>
-                              <span className="font-medium">{formatCurrency(pricing.productionCost)}</span>
+                            <div className="flex justify-between">
+                              <span>Total Production Cost</span>
+                              <span>{formatCurrency(pricing.productionCost)}</span>
                             </div>
                             {needsCreative && pricing.creativeCost > 0 && (
-                              <div className="flex justify-between items-center">
-                                <span>Creative Development ({creativeQuantity} assets):</span>
-                                <span className="font-medium">{formatCurrency(pricing.creativeCost)}</span>
+                              <div className="flex justify-between">
+                                <span>Total Creative Cost</span>
+                                <span>{formatCurrency(pricing.creativeCost)}</span>
                               </div>
                             )}
                           </div>
-                          
-                          <div className="border-t border-border pt-4 mt-4 space-y-2">
-                            <div className="flex justify-between items-center">
-                              <span>Subtotal (exc VAT):</span>
-                              <span className="font-medium">{formatCurrency((totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)) + pricing.productionCost + pricing.creativeCost)}</span>
+
+                          <hr className="my-2 opacity-20" />
+
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span>Subtotal (exc VAT)</span>
+                              <span>{formatCurrency(pricing.totalCost)}</span>
                             </div>
-                            <div className="flex justify-between items-center text-sm text-muted-foreground">
-                              <span>VAT (20%):</span>
-                              <span>{formatCurrency((((totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)) + pricing.productionCost + pricing.creativeCost) * 0.20))}</span>
+                            <div className="flex justify-between">
+                              <span>VAT (20%)</span>
+                              <span>{formatCurrency(pricing.totalCost * 0.20)}</span>
                             </div>
-                            <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
-                              <span>Total inc VAT:</span>
-                              <span className="text-primary">{formatCurrency((((totalQuantity * selectedPeriods.length * (rateCards[0]?.sale_price || 800)) + pricing.productionCost + pricing.creativeCost) * 1.20))} inc VAT</span>
+                            <div className="flex justify-between font-semibold">
+                              <span>Total inc VAT</span>
+                              <span>{formatCurrency(pricing.totalCost * 1.20)} inc VAT</span>
                             </div>
                           </div>
                         </div>

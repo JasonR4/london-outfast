@@ -258,12 +258,12 @@ export default function QuotePlan() {
                                         </div>
                                       </>
                                     )}
-                                    {item.discount_percentage > 0 && (
-                                      <div className="flex justify-between text-xs text-green-600">
-                                        <span>Volume Discount ({item.discount_percentage}%):</span>
-                                        <span>Additional -{formatCurrency((item.discount_amount || 0) / item.selected_periods.length / item.quantity)} per period</span>
-                                      </div>
-                                    )}
+                                     {item.discount_percentage > 0 && (
+                                       <div className="flex justify-between text-xs text-green-600">
+                                         <span>💰 Volume discount (10% for 3+ in-charge periods):</span>
+                                         <span>−{formatCurrency(item.discount_amount || 0)}</span>
+                                       </div>
+                                     )}
                                   </>
                                 );
                               })()}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { calculateVAT, formatCurrencyWithVAT } from '@/utils/vat';
+import { formatCurrency } from '@/utils/money';
+import { countPrintRuns } from '@/utils/periods';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -780,11 +781,11 @@ const FormatPage = () => {
                          
                          <div className="text-sm text-muted-foreground mt-2">
                            <span>Selected {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''}</span>
-                           {selectedPeriods.length > 1 && !arePeriodsConsecutive(selectedPeriods) && (
-                              <span className="text-amber-600 block mt-1">
-                                Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.
-                              </span>
-                           )}
+                            {countPrintRuns(selectedPeriods) > 1 && (
+                               <div className="mt-1 text-xs opacity-70" role="note" aria-live="polite">
+                                 Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.
+                               </div>
+                            )}
                          </div>
                       </div>
                     )}
@@ -1142,86 +1143,83 @@ const FormatPage = () => {
                         }
                         
                          if (priceCalculation) {
-                           let campaignTotal = priceCalculation.totalPrice * quantity;
-                           
-                           
-                            // Production costs are always calculated
-                            const productionCostCalc = calculateProductionCost(quantity, selectedPeriods, format.category);
-                            const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
+                           // Standardized calculation inputs
+                           const units = quantity;
+                           const uniquePeriods = [...new Set(selectedPeriods)].length;
+                           const saleRate = priceCalculation.basePrice; // Use the rate from price calculation
+
+                           // Volume discount eligibility: 10% for 3+ in-charge periods
+                           const qualifiesVolume = uniquePeriods >= 3;
+
+                           // Media cost calculation
+                           const mediaCost = saleRate * units * uniquePeriods;
+                           const mediaDiscount = qualifiesVolume ? mediaCost * 0.10 : 0;
+                           const mediaAfterDiscount = mediaCost - mediaDiscount;
+
+                           // Production costs are always calculated
+                           const productionCostCalc = calculateProductionCost(quantity, selectedPeriods, format.category);
+                           const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
                            
                            const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
-                           const grandTotal = campaignTotal + productionTotal + creativeTotal;
+                           const grandTotal = mediaAfterDiscount + productionTotal + creativeTotal;
                           
                           return (
                             <div className="space-y-3">
                               
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                  <div className="flex justify-between text-sm">
-                                    <span>Base Rate per Incharge{priceCalculation.discount > 0 ? ` (${priceCalculation.discount}% discount applied)` : ''}:</span>
-                                    <span>£{priceCalculation.basePrice.toFixed(2)}</span>
-                                   </div>
-                                   {(priceCalculation.isOnSale || priceCalculation.isReduced) && (
-                                     <>
-                                       <div className="flex justify-between text-sm text-green-600 font-medium">
-                                         <span>{priceCalculation.isOnSale ? 'Sale Price' : 'Reduced Price'} per Incharge:</span>
-                                         <span>£{(priceCalculation.totalPrice / selectedPeriods.length).toFixed(2)}</span>
-                                       </div>
-                                       <div className="flex justify-between text-xs text-green-700 bg-green-50 px-2 py-1 rounded">
-                                         <span>You Save:</span>
-                                         <span className="font-semibold">£{(priceCalculation.basePrice - (priceCalculation.totalPrice / selectedPeriods.length)).toFixed(2)} per Incharge</span>
-                                       </div>
-                                     </>
-                                   )}
-                                  {priceCalculation.discount > 0 && (
-                                    <div className="flex justify-between text-xs text-muted-foreground">
-                                      <span>Original rate: £{priceCalculation.adjustedRate.toFixed(2)}</span>
-                                      <span>Saved: £{(priceCalculation.adjustedRate - (priceCalculation.totalPrice / selectedPeriods.length)).toFixed(2)}</span>
-                                    </div>
-                                  )}
-                                  {priceCalculation.discount > 0 && (
-                                    <div className="flex justify-between text-sm text-green-600">
-                                      <span>Total Volume Savings ({priceCalculation.discount}%):</span>
-                                      <span>-£{((priceCalculation.adjustedRate - (priceCalculation.totalPrice / selectedPeriods.length)) * selectedPeriods.length * quantity).toFixed(2)}</span>
-                                    </div>
-                                  )}
+                              {/* Standardized Media Cost Breakdown */}
+                              <div className="space-y-1 mb-4">
+                                <div className="flex justify-between">
+                                  <span>Media cost at sale rate</span>
+                                  <span>{formatCurrency(mediaCost)}</span>
                                 </div>
-                                <div className="space-y-2">
-                                  {priceCalculation.isOnSale && (
-                                    <div className="flex justify-between text-sm text-green-600">
-                                      <span>⚡ Special Offer:</span>
-                                      <span>Sale Price Applied</span>
+
+                                {qualifiesVolume && (
+                                  <>
+                                    <div className="flex justify-between text-green-600">
+                                      <span>💰 Volume discount (10% for 3+ in-charge periods)</span>
+                                      <span>−{formatCurrency(mediaDiscount)}</span>
                                     </div>
-                                  )}
-                                  {priceCalculation.isReduced && (
-                                    <div className="flex justify-between text-sm text-blue-600">
-                                      <span>💰 Reduced Rate:</span>
-                                      <span>Lower Price Applied</span>
+                                    <div className="text-xs opacity-70">
+                                      That's −{formatCurrency(mediaDiscount / (units * uniquePeriods))} per unit per period ({units * uniquePeriods} in-charges).
                                     </div>
-                                  )}
+                                  </>
+                                )}
+
+                                <div className="flex justify-between font-medium">
+                                  <span>Media cost after discount</span>
+                                  <span>{formatCurrency(mediaAfterDiscount)}</span>
                                 </div>
                               </div>
                               
-                              <div className="border-t pt-3 space-y-2">
-                                {(() => {
-                                  const campaignCost = priceCalculation.totalPrice * quantity;
-                                  const productionCost = productionCostCalc ? productionCostCalc.totalCost : 0;
-                                  const creativeCost = needsCreative ? creativeAssets * 85 : 0;
-                                  const subtotal = campaignCost + productionCost + creativeCost;
-                                  const vat = subtotal * 0.20;
-                                  const totalIncVat = subtotal + vat;
+                              {/* Production + Creative + Totals */}
+                              <div className="mt-3 space-y-2">
+                                <div className="flex justify-between">
+                                  <span>Total Production Cost</span>
+                                  <span>{formatCurrency(productionTotal)}</span>
+                                </div>
+                                {creativeTotal > 0 && (
+                                  <div className="flex justify-between">
+                                    <span>Total Creative Cost</span>
+                                    <span>{formatCurrency(creativeTotal)}</span>
+                                  </div>
+                                )}
+                              </div>
 
-                                  return (
-                                    <QuoteBreakdown
-                                      campaignCost={campaignCost}
-                                      productionCost={productionCost}
-                                      creativeCost={creativeCost}
-                                      subtotal={subtotal}
-                                      vat={vat}
-                                      totalIncVat={totalIncVat}
-                                    />
-                                  );
-                                })()}
+                              <hr className="my-2 opacity-20" />
+
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>Subtotal (exc VAT)</span>
+                                  <span>{formatCurrency(grandTotal)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>VAT (20%)</span>
+                                  <span>{formatCurrency(grandTotal * 0.20)}</span>
+                                </div>
+                                <div className="flex justify-between font-semibold">
+                                  <span>Total inc VAT</span>
+                                  <span>{formatCurrency(grandTotal * 1.20)} inc VAT</span>
+                                </div>
                               </div>
 
                               <Button onClick={handleBuildPlan} size="lg" className="w-full mt-4 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg font-semibold text-lg">
