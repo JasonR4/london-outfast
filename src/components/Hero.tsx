@@ -70,7 +70,7 @@ const Hero = () => {
               variant="outline" 
               size="lg" 
               className="text-lg px-8 py-6"
-              onClick={() => navigate('/quote-plan?review=1')}
+              onClick={() => navigate('/configurator')}
             >
               I Need Guidance
             </Button>

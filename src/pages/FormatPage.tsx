@@ -408,7 +408,9 @@ const FormatPage = () => {
     const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
     const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
     
-    const finalCampaignTotal = campaignTotal;
+    // Calculate non-consecutive surcharge
+    const nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(selectedPeriods, campaignTotal);
+    const finalCampaignTotal = campaignTotal + nonConsecutiveSurcharge;
     const grandTotal = finalCampaignTotal + productionTotal + creativeTotal;
 
     // Create quote item
@@ -433,7 +435,7 @@ const FormatPage = () => {
     const success = await addQuoteItem(quoteItem);
     
     if (success) {
-      navigate('/quote-plan?review=1');
+      navigate('/quote-plan');
     }
   };
 
@@ -748,8 +750,8 @@ const FormatPage = () => {
                                    <AlertTriangle className="h-4 w-4 text-amber-500" />
                                  </TooltipTrigger>
                                  <TooltipContent>
-                                    <p>Non-consecutive periods selected.</p>
-                                    <p>This affects production costs only and does not change your media rate.</p>
+                                   <p>Non-consecutive periods selected.</p>
+                                   <p>Additional production setup may apply.</p>
                                  </TooltipContent>
                                </Tooltip>
                              </TooltipProvider>
@@ -1149,7 +1151,9 @@ const FormatPage = () => {
                          if (priceCalculation) {
                            let campaignTotal = priceCalculation.totalPrice * quantity;
                            
-                           // Non-consecutive surcharge removed: production-only impact
+                           // Apply non-consecutive surcharge if applicable
+                           const nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(selectedPeriods, campaignTotal);
+                           campaignTotal += nonConsecutiveSurcharge;
                            
                             // Production costs are always calculated
                             const productionCostCalc = calculateProductionCost(quantity, selectedPeriods, format.category);
@@ -1183,6 +1187,12 @@ const FormatPage = () => {
                                     <div className="flex justify-between text-xs text-muted-foreground">
                                       <span>Original rate: £{priceCalculation.adjustedRate.toFixed(2)}</span>
                                       <span>Saved: £{(priceCalculation.adjustedRate - (priceCalculation.totalPrice / selectedPeriods.length)).toFixed(2)}</span>
+                                    </div>
+                                  )}
+                                  {priceCalculation.locationMarkup > 0 && (
+                                    <div className="flex justify-between text-sm text-blue-600">
+                                      <span>Location Markup ({priceCalculation.locationMarkup}%):</span>
+                                      <span>+£{((priceCalculation.adjustedRate - priceCalculation.basePrice) * selectedPeriods.length * quantity).toFixed(2)}</span>
                                     </div>
                                   )}
                                   {priceCalculation.discount > 0 && (
@@ -1231,7 +1241,7 @@ const FormatPage = () => {
                               </div>
 
                               <Button onClick={handleBuildPlan} size="lg" className="w-full mt-4 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg font-semibold text-lg">
-                                Add to Plan
+                                Build My Plan
                               </Button>
                             </div>
                           );

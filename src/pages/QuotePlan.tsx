@@ -299,6 +299,15 @@ export default function QuotePlan() {
                                    <span>Production Cost ({item.quantity} unit{item.quantity !== 1 ? 's' : ''}):</span>
                                    <span className="font-medium text-foreground">{formatCurrency(item.production_cost || 0)}</span>
                                  </div>
+                                 {(() => {
+                                   const nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(item.selected_periods, item.base_cost);
+                                   return nonConsecutiveSurcharge > 0 ? (
+                                     <div className="flex justify-between">
+                                       <span className="text-amber-600">Non-consecutive setup surcharge (15%):</span>
+                                       <span className="font-medium text-amber-600">+{formatCurrency(nonConsecutiveSurcharge)}</span>
+                                     </div>
+                                   ) : null;
+                                 })()}
                                  {item.creative_cost > 0 && (
                                    <div className="flex justify-between">
                                      <span>Creative Assets:</span>
@@ -312,7 +321,8 @@ export default function QuotePlan() {
                            {/* Subtotal and VAT */}
                            <div className="border-t pt-3 space-y-2">
                              {(() => {
-                               const subtotalExcVat = (item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0));
+                               const nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(item.selected_periods, item.base_cost);
+                               const subtotalExcVat = (item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0) + nonConsecutiveSurcharge);
                                const vatAmount = subtotalExcVat * 0.2;
                                
                                return (
@@ -448,7 +458,8 @@ export default function QuotePlan() {
                        <div className="flex justify-between text-sm">
                          <span>{item.format_name} (×{item.quantity})</span>
                          <span>{(() => {
-                           const subtotalExcVat = (item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0));
+                           const nonConsecutiveSurcharge = calculateNonConsecutiveSurcharge(item.selected_periods, item.base_cost);
+                           const subtotalExcVat = (item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0) + nonConsecutiveSurcharge);
                            const correctedTotal = subtotalExcVat * 1.2; // Add 20% VAT
                            return formatCurrency(correctedTotal);
                          })()}</span>
@@ -486,6 +497,9 @@ export default function QuotePlan() {
                        const totalProductionCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.production_cost || 0), 0) || 0;
                        const totalCreativeCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.creative_cost || 0), 0) || 0;
                        const totalDiscountAmount = currentQuote.quote_items?.reduce((sum, item) => sum + (item.discount_amount || 0), 0) || 0;
+                       const totalNonConsecutiveSurcharge = currentQuote.quote_items?.reduce((sum, item) => {
+                         return sum + calculateNonConsecutiveSurcharge(item.selected_periods, item.base_cost);
+                       }, 0) || 0;
                        const totalSaleDiscount = currentQuote.quote_items?.reduce((sum, item) => {
                          const originalCost = item.original_cost || 0;
                          const baseCost = item.base_cost || 0;
@@ -511,6 +525,12 @@ export default function QuotePlan() {
                              <span>{formatCurrency(totalProductionCost)}</span>
                            </div>
                            
+                           {totalNonConsecutiveSurcharge > 0 && (
+                             <div className="flex justify-between text-sm text-amber-600">
+                               <span>Non-consecutive setup surcharge (15%):</span>
+                               <span>+{formatCurrency(totalNonConsecutiveSurcharge)}</span>
+                             </div>
+                           )}
                            
                            <div className="flex justify-between text-sm">
                              <span>Creative Costs:</span>
@@ -528,12 +548,12 @@ export default function QuotePlan() {
                           
                            <div className="flex justify-between text-sm font-medium">
                              <span>Subtotal (exc VAT):</span>
-                              <span>{formatCurrency((totalBaseCost + totalProductionCost + totalCreativeCost - totalDiscountAmount))}</span>
-                            </div>
-                            
-                            <div className="flex justify-between text-sm">
-                              <span>VAT (20%):</span>
-                              <span>{formatCurrency((totalBaseCost + totalProductionCost + totalCreativeCost - totalDiscountAmount) * 0.2)}</span>
+                             <span>{formatCurrency((totalBaseCost + totalProductionCost + totalCreativeCost + totalNonConsecutiveSurcharge - totalDiscountAmount))}</span>
+                           </div>
+                           
+                           <div className="flex justify-between text-sm">
+                             <span>VAT (20%):</span>
+                             <span>{formatCurrency((totalBaseCost + totalProductionCost + totalCreativeCost + totalNonConsecutiveSurcharge - totalDiscountAmount) * 0.2)}</span>
                            </div>
                         </div>
                       );
@@ -563,7 +583,11 @@ export default function QuotePlan() {
                        const totalProductionCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.production_cost || 0), 0) || 0;
                        const totalCreativeCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.creative_cost || 0), 0) || 0;
                        const totalDiscountAmount = currentQuote.quote_items?.reduce((sum, item) => sum + (item.discount_amount || 0), 0) || 0;
-                       const subtotalExcVat = totalBaseCost + totalProductionCost + totalCreativeCost - totalDiscountAmount;
+                       const totalNonConsecutiveSurcharge = currentQuote.quote_items?.reduce((sum, item) => {
+                         return sum + calculateNonConsecutiveSurcharge(item.selected_periods, item.base_cost);
+                       }, 0) || 0;
+                       
+                       const subtotalExcVat = totalBaseCost + totalProductionCost + totalCreativeCost + totalNonConsecutiveSurcharge - totalDiscountAmount;
                        const finalTotal = subtotalExcVat * 1.2; // Add 20% VAT
                        
                        return formatCurrency(finalTotal);

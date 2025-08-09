@@ -1,23 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { OOHConfigurator } from '@/components/OOHConfigurator';
 import { QuoteSubmissionForm } from '@/components/QuoteSubmissionForm';
 import { useQuotes } from '@/hooks/useQuotes';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useLocation } from 'react-router-dom';
 
 export default function Configurator() {
   const [showSubmission, setShowSubmission] = useState(false);
   const { currentQuote, loading } = useQuotes();
-  const location = useLocation();
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.get('review') === '1') {
-      setShowSubmission(true);
-    }
-  }, [location.search]);
- 
+
   const handleConfigurationComplete = () => {
     setShowSubmission(true);
   };

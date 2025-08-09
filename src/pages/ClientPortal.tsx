@@ -339,7 +339,7 @@ export default function ClientPortal() {
                   <FileText className="h-4 w-4 mr-2" />
                   Browse Formats
                 </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/quote-plan?review=1')}>
+                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/configurator')}>
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Campaign Planner
                 </Button>
