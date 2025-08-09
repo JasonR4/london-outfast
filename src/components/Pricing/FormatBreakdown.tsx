@@ -1,37 +1,20 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-type MaybeNum = number | undefined | null;
-type MaybeStr = string | undefined | null;
-
-type PlanItem = {
-  formatName?: MaybeStr;
-  quantity?: MaybeNum;                    // sites (total across the campaign)
-  selectedPeriods?: number[];             // campaign period numbers
-  locations?: string[];                   // preferred primary key
-  selectedLocations?: string[];           // fallbacks
-  selectedAreas?: string[];               // fallbacks
-  saleRatePerInCharge?: MaybeNum;         // £ per site per in-charge
-  mediaCost?: MaybeNum;                   // media after discount
-  productionCost?: MaybeNum;
-  creativeCost?: MaybeNum;
-  discountAmount?: MaybeNum;              // absolute £ discount
-  mediaBeforeDiscount?: MaybeNum;         // optional: if present we use it
-  percentageOfCampaign?: MaybeNum;        // 0..1 optional
-};
+import { displayInCharges, type PlanItem } from "@/state/planStore";
 
 type FormatBreakdownProps = {
-  item: PlanItem;
+  item: PlanItem | any; // Support both new PlanItem and legacy format
   shareOfCampaign?: number; // 0..1 (kept for compatibility)
   className?: string;
 };
 
 const FormatBreakdown: React.FC<FormatBreakdownProps> = ({ item, shareOfCampaign }) => {
-  const sites = item?.quantity ?? 0; // TOTAL sites across the whole campaign
-  const periods = (item?.selectedPeriods?.length ?? 0); // in-charges count
-  const inChargesCount = periods; // NEW: in-charges = number of campaign periods (not multiplied)
-  const saleRate = item?.saleRatePerInCharge ?? 0;
+  // Support both new PlanItem structure and legacy format
+  const sites = item?.sites ?? item?.quantity ?? 0;
+  const periods = item?.periods?.length ?? item?.selectedPeriods?.length ?? 0;
+  const inChargesCount = displayInCharges(item) || periods;
+  const saleRate = item?.saleRate ?? item?.saleRatePerInCharge ?? 0;
 
   // Locations: use whichever field exists
   const rawLocs = item?.locations ?? item?.selectedLocations ?? item?.selectedAreas ?? [];
@@ -59,7 +42,7 @@ const FormatBreakdown: React.FC<FormatBreakdownProps> = ({ item, shareOfCampaign
   return (
     <div className={cn("rounded-xl border bg-card text-card-foreground p-4 space-y-2")}>
       <div className="flex items-center justify-between">
-        <div className="font-medium">{item?.formatName ?? "Format"}</div>
+        <div className="font-medium">{item?.formatName ?? item?.name ?? "Format"}</div>
         <div className="text-xs text-muted-foreground">{pctText}</div>
       </div>
 
