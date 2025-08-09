@@ -1,6 +1,7 @@
 import React from "react";
 import { formatCurrency } from "@/utils/money";
 import { countPrintRuns } from "@/utils/periods";
+import FormatBreakdown from "@/components/Pricing/FormatBreakdown";
 
 export type PlanItemInput = {
   formatName: string;
@@ -132,37 +133,21 @@ export default function PlanBreakdown({
 
       <h3 className="text-xl font-semibold mb-4">Format Breakdown</h3>
       {groups.map((g:any) => (
-        <div key={g.formatName} className="format-breakdown">
-          <div className="format-breakdown-header">
-            <div>
-              <strong>{g.formatName}</strong>
-              <div className="text-sm text-muted-foreground">
-                {g.sites} sites • {g.uniquePeriods} periods • {g.incharges} in-charges
-              </div>
-            </div>
-            <div className="text-right">
-              <div>Sale rate (per in-charge): {formatCurrency(g.saleRate)}</div>
-              <div className="text-xs text-muted-foreground">≈ {g.share.toFixed(0)}% of campaign</div>
-            </div>
-          </div>
-
-          <div className="format-breakdown-body">
-            <div>Media cost at sale rate: {formatCurrency(g.mediaCost)}</div>
-            {g.volumeDiscount > 0 && (
-              <>
-                <div>💰 Volume discount (10% for 3+ in-charge periods): −{formatCurrency(g.volumeDiscount)}</div>
-                <div className="text-xs text-muted-foreground">
-                  That's −{formatCurrency(g.volumeDiscount / g.incharges)} per unit per period ({g.incharges} in-charges).
-                </div>
-              </>
-            )}
-            <div>Media cost after discount: {formatCurrency(g.mediaAfterDiscount)}</div>
-            <div>Production cost: {formatCurrency(g.productionCost)}</div>
-            <div>Creative cost: {formatCurrency(g.creativeCost)}</div>
-            <hr className="my-3 border-border" />
-            <div className="font-semibold">Format subtotal (exc VAT): {formatCurrency(g.subtotal)}</div>
-          </div>
-        </div>
+        <FormatBreakdown key={g.formatName} format={{
+          name: g.formatName,
+          sites: g.sites,
+          periods: g.uniquePeriods,
+          inCharges: g.incharges,
+          saleRate: g.saleRate,
+          mediaBeforeDiscount: g.mediaCost,
+          volumeDiscount: g.volumeDiscount,
+          mediaAfterDiscount: g.mediaAfterDiscount,
+          productionCost: g.productionCost,
+          creativeCost: g.creativeCost,
+          subTotalExVat: g.subtotal,
+          sharePct: g.share,
+          locationsSelected: g.locationsSelected ?? g.locationCount ?? 0,
+        }} />
       ))}
 
       <div className="grand-total">
