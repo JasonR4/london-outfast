@@ -40,12 +40,12 @@ export default function QuickSummary() {
         <CardHeader className="pb-2">
           <CardTitle className="text-sm">Quick Summary</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-xs">
-          <div className="flex items-center justify-between">
-            <span>Formats:</span>
-            <div className="flex items-center">
+        <CardContent className="space-y-3 text-xs">
+          <div className="flex items-start justify-between gap-2">
+            <span className="flex-shrink-0">Formats:</span>
+            <div className="flex flex-col items-end gap-1">
               <span className="font-medium">{totalFormats} {s(totalFormats, "format")}</span>
-              {formatList && <Badge variant="secondary" className="ml-1 text-xs">{formatList}</Badge>}
+              {formatList && <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">{formatList}</Badge>}
             </div>
           </div>
           <div className="flex items-center justify-between">
