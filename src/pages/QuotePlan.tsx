@@ -546,138 +546,79 @@ export default function QuotePlan() {
                 <CardTitle>Cost Summary</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {currentQuote.quote_items?.map((item, index) => (
-                    <div key={item.id || index} className="space-y-1">
-                       <div className="flex justify-between text-sm">
-                         <span>{item.format_name} (×{item.quantity})</span>
-                         <span>{(() => {
-                            const subtotalExcVat = (item.base_cost + (item.production_cost || 0) + (item.creative_cost || 0));
-                            const correctedTotal = subtotalExcVat * 1.2; // Add 20% VAT
-                           return formatCurrency(correctedTotal);
-                         })()}</span>
-                       </div>
-                      
-                      {/* Show discount breakdown if discount exists */}
-                      {item.discount_percentage && item.discount_percentage > 0 && (
-                        <div className="ml-4 space-y-1 text-xs text-muted-foreground border-l-2 border-green-200 pl-2">
-                          <div className="flex justify-between">
-                            <span>Original cost:</span>
-                            <span>{formatCurrency(item.original_cost || item.base_cost + item.production_cost + item.creative_cost)}</span>
-                          </div>
-                          <div className="flex justify-between text-green-600">
-                            <span>Volume discount ({item.discount_percentage}%):</span>
-                            <span>-{formatCurrency(item.discount_amount || 0)}</span>
-                          </div>
-                          <div className="flex justify-between font-medium">
-                            <span>After discount:</span>
-                            <span>{formatCurrency(item.total_cost)}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  
-                  <Separator />
-                  
-                  {/* Overall Campaign Breakdown */}
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-lg">Campaign Cost Breakdown</h4>
-                    
-                     {/* Calculate totals */}
-                     {(() => {
-                       const totalBaseCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.base_cost || 0), 0) || 0;
-                       const totalProductionCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.production_cost || 0), 0) || 0;
-                       const totalCreativeCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.creative_cost || 0), 0) || 0;
-                       const totalDiscountAmount = currentQuote.quote_items?.reduce((sum, item) => sum + (item.discount_amount || 0), 0) || 0;
-                       const totalSaleDiscount = currentQuote.quote_items?.reduce((sum, item) => {
-                         const originalCost = item.original_cost || 0;
-                         const baseCost = item.base_cost || 0;
-                         return sum + Math.max(0, originalCost - baseCost);
-                       }, 0) || 0;
-                       
-                       return (
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span>Base Campaign Cost:</span>
-                            <span>{formatCurrency(totalBaseCost)}</span>
-                          </div>
-                          
-                          {totalSaleDiscount > 0 && (
-                            <div className="flex justify-between text-sm text-orange-600">
-                              <span>Sale Price Savings:</span>
-                              <span>-{formatCurrency(totalSaleDiscount)}</span>
+                {(() => {
+                  const planItems: QuoteItem[] = currentQuote.quote_items?.map(item => ({
+                    formatName: item.format_name,
+                    sites: item.quantity,
+                    selectedPeriods: item.selected_periods,
+                    saleRate: item.base_cost / item.selected_periods.length / item.quantity,
+                    productionCost: item.production_cost || 0,
+                    creativeCost: item.creative_cost || 0,
+                  })) || [];
+
+                  const enrichedItems = planItems.map(enrichQuoteItem);
+                  const totalExVAT = enrichedItems.reduce((sum, item) => sum + item.subtotal, 0);
+                  const totalVAT = totalExVAT * 0.2;
+                  const totalIncVAT = totalExVAT + totalVAT;
+
+                  return (
+                    <>
+                      {/* ====== PER-FORMAT BREAKDOWN ====== */}
+                      <div style={{ marginTop: '1rem' }}>
+                        {groupByFormat(enrichedItems).map(group => (
+                          <div key={group.formatName} className="format-breakdown">
+                            <div className="format-breakdown-header">
+                              <div>
+                                <strong>{group.formatName}</strong>
+                                <div style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))' }}>
+                                  {group.sites} site{group.sites !== 1 ? 's' : ''} • {group.uniquePeriods} period{group.uniquePeriods !== 1 ? 's' : ''} • {group.incharges} in-charges
+                                </div>
+                              </div>
+                              <div>
+                                Sale rate: {formatCurrency(group.saleRate)}
+                              </div>
                             </div>
-                          )}
-                          
-                           <div className="flex justify-between text-sm">
-                             <span>Production Costs:</span>
-                             <span>{formatCurrency(totalProductionCost)}</span>
-                           </div>
-                           
-                           
-                           <div className="flex justify-between text-sm">
-                             <span>Creative Costs:</span>
-                             <span>{formatCurrency(totalCreativeCost)}</span>
-                           </div>
-                          
-                          {totalDiscountAmount > 0 && (
-                            <div className="flex justify-between text-sm text-green-600">
-                              <span>Volume Discount:</span>
-                              <span>-{formatCurrency(totalDiscountAmount)}</span>
+
+                            <div className="format-breakdown-body">
+                              <div>Media cost at sale rate: {formatCurrency(group.mediaCost)}</div>
+
+                              {group.volumeDiscount > 0 && (
+                                <>
+                                  <div>💰 Volume discount (10% for 3+ in-charge periods): −{formatCurrency(group.volumeDiscount)}</div>
+                                  <small>
+                                    That's −{formatCurrency(group.volumeDiscount / group.incharges)} per unit per period ({group.incharges} in-charges).
+                                  </small>
+                                </>
+                              )}
+
+                              <div>Media cost after discount: {formatCurrency(group.mediaAfterDiscount)}</div>
+                              <div>Production cost: {formatCurrency(group.productionCost)}</div>
+                              <div>Creative cost: {formatCurrency(group.creativeCost)}</div>
+                              <hr style={{ margin: '0.75rem 0' }} />
+                              <div>
+                                <strong>Subtotal (ex VAT): {formatCurrency(group.subtotal)}</strong>
+                                <span style={{ float: 'right', color: 'hsl(var(--muted-foreground))' }}>{group.share.toFixed(0)}% of campaign</span>
+                              </div>
                             </div>
-                          )}
-                          
-                          <Separator />
-                          
-                           <div className="flex justify-between text-sm font-medium">
-                             <span>Subtotal (exc VAT):</span>
-                             <span>{formatCurrency((totalBaseCost + totalProductionCost + totalCreativeCost - totalDiscountAmount))}</span>
-                           </div>
-                           
-                           <div className="flex justify-between text-sm">
-                             <span>VAT (20%):</span>
-                             <span>{formatCurrency((totalBaseCost + totalProductionCost + totalCreativeCost - totalDiscountAmount) * 0.2)}</span>
-                           </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* ====== GRAND TOTALS ====== */}
+                      <div className="grand-total" style={{ marginTop: '2rem' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                          Campaign total (ex VAT): {formatCurrency(totalExVAT)}
                         </div>
-                      );
-                    })()}
-                  </div>
-                  
-                  {/* Volume discount summary if applicable */}
-                  {currentQuote.quote_items?.some(item => item.discount_percentage && item.discount_percentage > 0) && (
-                    <div className="bg-green-50 p-3 rounded-lg">
-                      <div className="text-sm font-medium text-green-800 mb-1">
-                        🎉 Volume Discount Applied!
+                        <div style={{ fontSize: '0.9rem', color: 'hsl(var(--muted-foreground))' }}>
+                          VAT @ 20%: {formatCurrency(totalVAT)}
+                        </div>
+                        <div style={{ fontWeight: 'bold', fontSize: '1.2rem', marginTop: '0.25rem' }}>
+                          Campaign total (inc VAT): {formatCurrency(totalIncVAT)}
+                        </div>
                       </div>
-                      <div className="text-xs text-green-700">
-                        Total periods: {currentQuote.quote_items?.reduce((sum, item) => sum + item.selected_periods.length, 0)} periods
-                        {currentQuote.quote_items?.reduce((sum, item) => sum + item.selected_periods.length, 0) >= 4 && (
-                          <span className="ml-1">(4+ periods qualifies for bulk pricing)</span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  
-                  <Separator />
-                   <div className="flex justify-between font-bold text-xl text-primary">
-                     <span>Total Campaign Cost</span>
-                     <span>{(() => {
-                       const totalBaseCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.base_cost || 0), 0) || 0;
-                       const totalProductionCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.production_cost || 0), 0) || 0;
-                       const totalCreativeCost = currentQuote.quote_items?.reduce((sum, item) => sum + (item.creative_cost || 0), 0) || 0;
-                       const totalDiscountAmount = currentQuote.quote_items?.reduce((sum, item) => sum + (item.discount_amount || 0), 0) || 0;
-                        
-                        const subtotalExcVat = totalBaseCost + totalProductionCost + totalCreativeCost - totalDiscountAmount;
-                        const finalTotal = subtotalExcVat * 1.2; // Add 20% VAT
-                       
-                       return formatCurrency(finalTotal);
-                     })()}</span>
-                   </div>
-                  <div className="text-xs text-muted-foreground text-center">
-                    All prices include VAT
-                  </div>
-                </div>
+                    </>
+                  );
+                })()}
               </CardContent>
             </Card>
           </div>

@@ -70,7 +70,32 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
-  }
+}
+
+/* Format breakdown styles */
+.format-breakdown {
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: hsl(var(--card));
+}
+
+.format-breakdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+
+.format-breakdown-body > div {
+  margin-bottom: 0.35rem;
+}
+
+.grand-total {
+  border-top: 2px solid hsl(var(--foreground));
+  padding-top: 1rem;
+}
 
   .dark {
     --background: 222.2 84% 4.9%;
