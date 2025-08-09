@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -194,6 +194,13 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
 
   const setRecommendedCreatives = () => setCreativeAssets(recommendedCreatives);
 
+  // ---- Local anchors for helper buttons ----
+  const qtyAnchorRef = useRef<HTMLDivElement | null>(null);
+  const locationsAnchorRef = useRef<HTMLDivElement | null>(null);
+  const scrollTo = (ref: React.RefObject<HTMLDivElement>) => {
+    if (ref.current) ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
   const uiSaleRate = rateCardData?.saleRatePerInCharge ?? existingItem?.saleRatePerInCharge ?? 0;
   const uiProductionRate = rateCardData?.productionRatePerUnit ?? existingItem?.productionRatePerUnit ?? 0;
   const uiCreativeRate = rateCardData?.creativeUnit ?? existingItem?.creativeUnit ?? 85;
@@ -243,7 +250,7 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
         
         <CardContent className="space-y-4">
           {/* Quantity Selection */}
-          <div className="space-y-2">
+          <div className="space-y-2" ref={qtyAnchorRef}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-2">
@@ -304,7 +311,7 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
           </div>
 
           {/* Location Selection */}
-          <div className="space-y-2">
+          <div className="space-y-2" ref={locationsAnchorRef}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-2">
@@ -458,6 +465,7 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
                 <div className="text-sm font-medium">Location Capacity</div>
                 <div className="text-xs text-muted-foreground">{usage}/{capacity || 0} used</div>
               </div>
+              <div className="text-[11px] text-muted-foreground mb-1">Capacity = sites × periods</div>
               <div className="h-2 w-full bg-muted rounded overflow-hidden">
                 <div
                   className={`h-full ${usage > capacity && capacity > 0 ? 'bg-red-500' : 'bg-primary'}`}
@@ -467,16 +475,16 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
               <div className="mt-2 text-xs text-muted-foreground">{capacityStatus}</div>
               <div className="mt-2 flex gap-2">
                 {capacity > 0 && usage < capacity && (
-                  <Button variant="outline" size="sm" onClick={() => { /* focus locations list */ }}>
+                  <Button variant="outline" size="sm" onClick={() => scrollTo(locationsAnchorRef)}>
                     Add locations
                   </Button>
                 )}
                 {capacity > 0 && usage > capacity && (
                   <>
-                    <Button variant="outline" size="sm" onClick={() => { /* open quantity dropdown */ }}>
+                    <Button variant="outline" size="sm" onClick={() => scrollTo(qtyAnchorRef)}>
                       Increase sites
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => { /* focus locations list */ }}>
+                    <Button variant="outline" size="sm" onClick={() => scrollTo(locationsAnchorRef)}>
                       Review locations
                     </Button>
                   </>
@@ -511,11 +519,6 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
                   </Button>
                 )}
               </div>
-              {needsMultiplePrintRuns && (
-                <div className="mt-2 text-[11px] text-muted-foreground">
-                  Non-consecutive periods don't change media rate; creative count is unchanged.
-                </div>
-              )}
             </div>
           </div>
 
