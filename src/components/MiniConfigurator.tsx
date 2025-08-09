@@ -316,8 +316,8 @@ export default function MiniConfigurator({ format }: MiniConfiguratorProps) {
                   <TooltipTrigger>
                     <Info className="h-4 w-4 text-muted-foreground" />
                   </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Design & artwork production costs.</p>
+                   <TooltipContent>
+                     <p>Do you need creative design work for your campaign?</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
