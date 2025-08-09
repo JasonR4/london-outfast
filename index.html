@@ -11,10 +11,10 @@
     <meta name="keywords" content="OOH advertising London, outdoor advertising agency, billboard advertising, bus shelter ads, tube advertising, digital billboards London, media buying agency" />
     
     <!-- Favicon and Icons -->
-    <link rel="icon" href="/Media_Buying_London_OOH/28a73291-dea0-4613-86a7-66ef9fb9bb77.png" type="image/png">
-    <link rel="apple-touch-icon" href="/Media_Buying_London_OOH/28a73291-dea0-4613-86a7-66ef9fb9bb77.png">
-    <link rel="icon" sizes="32x32" href="/Media_Buying_London_OOH/28a73291-dea0-4613-86a7-66ef9fb9bb77.png" type="image/png">
-    <link rel="icon" sizes="16x16" href="/Media_Buying_London_OOH/28a73291-dea0-4613-86a7-66ef9fb9bb77.png" type="image/png">
+    <link rel="icon" href="/lovable-uploads/28a73291-dea0-4613-86a7-66ef9fb9bb77.png" type="image/png">
+    <link rel="apple-touch-icon" href="/lovable-uploads/28a73291-dea0-4613-86a7-66ef9fb9bb77.png">
+    <link rel="icon" sizes="32x32" href="/lovable-uploads/28a73291-dea0-4613-86a7-66ef9fb9bb77.png" type="image/png">
+    <link rel="icon" sizes="16x16" href="/lovable-uploads/28a73291-dea0-4613-86a7-66ef9fb9bb77.png" type="image/png">
     
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-FNYQ5VFL2F"></script>
@@ -30,7 +30,7 @@
     <meta property="og:description" content="London's fastest out-of-home media buying agency. Unbeaten on price, unmatched on speed. Same-day quotes for all OOH formats across Greater London." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://mediabuyinglondon.co.uk/" />
-    <meta property="og:image" content="https://mediabuyinglondon.co.uk/Media_Buying_London_OOH/28a73291-dea0-4613-86a7-66ef9fb9bb77.png" />
+    <meta property="og:image" content="https://mediabuyinglondon.co.uk/lovable-uploads/28a73291-dea0-4613-86a7-66ef9fb9bb77.png" />
     <meta property="og:site_name" content="Media Buying London" />
     <meta property="og:locale" content="en_GB" />
 
@@ -38,7 +38,7 @@
     <meta name="twitter:site" content="@mediabuyinglondon" />
     <meta name="twitter:title" content="Media Buying London - Fastest OOH Media Buying Agency" />
     <meta name="twitter:description" content="London's fastest out-of-home media buying agency. Unbeaten on price, unmatched on speed. Same-day quotes for all OOH formats across Greater London." />
-    <meta name="twitter:image" content="https://mediabuyinglondon.co.uk/Media_Buying_London_OOH/28a73291-dea0-4613-86a7-66ef9fb9bb77.png" />
+    <meta name="twitter:image" content="https://mediabuyinglondon.co.uk/lovable-uploads/28a73291-dea0-4613-86a7-66ef9fb9bb77.png" />
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://mediabuyinglondon.co.uk/" />
@@ -46,6 +46,23 @@
     <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Error handling for external resources -->
+    <script>
+      // Prevent external resource errors from breaking the site
+      window.addEventListener('error', function(e) {
+        if (e.target.tagName === 'IMG' || e.target.tagName === 'SCRIPT') {
+          console.warn('External resource failed to load:', e.target.src);
+          e.preventDefault();
+        }
+      }, true);
+      
+      // Handle promise rejections
+      window.addEventListener('unhandledrejection', function(e) {
+        console.warn('Unhandled promise rejection:', e.reason);
+        e.preventDefault();
+      });
+    </script>
   </head>
 
   <body>
