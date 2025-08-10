@@ -781,11 +781,11 @@ const FormatPage = () => {
                          
                          <div className="text-sm text-muted-foreground mt-2">
                            <span>Selected {selectedPeriods.length} period{selectedPeriods.length !== 1 ? 's' : ''}</span>
-                            {countPrintRuns(selectedPeriods) > 1 && (
-                               <div className="mt-1 text-xs opacity-70" role="note" aria-live="polite">
-                                 Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.
-                               </div>
-                            )}
+                             {countPrintRuns(selectedPeriods) > 1 && (
+                                <div className="mt-1 text-xs opacity-70" role="note" aria-live="polite">
+                                  Non-consecutive periods = {countPrintRuns(selectedPeriods)} print runs (production only).
+                                </div>
+                             )}
                          </div>
                       </div>
                     )}
@@ -1167,7 +1167,11 @@ const FormatPage = () => {
                             <div className="space-y-3">
                               
                               {/* Standardized Media Cost Breakdown */}
-                              <div className="space-y-1 mb-4">
+                               <div className="space-y-1 mb-4">
+                                <div className="flex justify-between">
+                                  <span>Media rate (per in-charge)</span>
+                                  <span>{formatCurrency(saleRate)}</span>
+                                </div>
                                 <div className="flex justify-between">
                                   <span>Media cost at sale rate</span>
                                   <span>{formatCurrency(mediaCost)}</span>
