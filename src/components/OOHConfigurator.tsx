@@ -1215,7 +1215,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                    }
                 }} 
                 variant="outline"
-                className="flex-1"
+                className="hidden sm:inline-flex"
                 disabled={isCreatingQuote}
               >
                 {isCreatingQuote ? 'Creating Quote...' : 'Quick Quote'}
@@ -1296,13 +1296,15 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
             <div className="space-y-3">
               <Input
                 type="text"
-                placeholder="e.g., £25000, £25K, £30,000"
+                placeholder="e.g. £25,000"
+                inputMode="numeric"
+                autoComplete="off"
                 value={budgetInput}
                 onChange={(e) => setBudgetInput(e.target.value)}
                 className="text-lg"
               />
               <p className="text-xs text-muted-foreground">
-                Enter your total campaign budget. You can use formats like £25K, £25000, or £25,000
+                Enter the total for this campaign. You can type 25k, £25,000, or 25000.
               </p>
             </div>
           ) : (

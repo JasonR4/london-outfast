@@ -206,7 +206,7 @@ export default function Configurator() {
             </div>
 
             <div className="lg:col-span-1">
-              <div id="submit-gate">
+              <div>
                 <SubmitGate source="configurator" className="mt-4" />
               </div>
             </div>
@@ -217,7 +217,7 @@ export default function Configurator() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 py-12 pb-28 sm:pb-8">
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">
@@ -230,7 +230,7 @@ export default function Configurator() {
         
         <OOHConfigurator onComplete={handleConfigurationComplete} />
         {/* Desktop/Tablet gate (kept on the page) */}
-        <div id="submit-gate" className="hidden sm:block mt-10">
+        <div className="hidden sm:block mt-10">
           <SubmitGate source="configurator" />
         </div>
 
@@ -238,7 +238,7 @@ export default function Configurator() {
         <div className="sm:hidden">
           <FloatingSubmitBar
             show={!showGate}
-            onPress={revealAndFocusGate}
+            onRevealGate={revealAndFocusGate}
           />
         </div>
 

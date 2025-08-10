@@ -92,8 +92,8 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
         contact_email: user?.email || '',
       });
 
-      // Call unified server function for side-effects (pdf, hubspot, versioning)
-      await submitDraftQuote({
+      // Kick off side-effects without blocking (pdf, hubspot, versioning)
+      submitDraftQuote({
         quoteSessionId,
         contact: {
           firstName: user?.user_metadata?.first_name || '',
@@ -101,7 +101,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
           email: user?.email || '',
         },
         source,
-      });
+      }).catch(() => toast({ title: 'Submitted', description: 'Some background tasks will retry shortly.' }));
       if (!toastShown) { toast({ title: 'Plan submitted! Redirecting…' }); setToastShown(true); }
       nav('/client-portal');
     } catch (e) {
@@ -125,7 +125,8 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
       try { localStorage.setItem('submitted_quote_data', JSON.stringify(contact)); } catch {}
       const quoteSessionId = getCurrentQuoteSessionId();
       await submitQuoteDb(mapToDbContact(contact)); // updates quotes table with guest details
-      await submitDraftQuote({ quoteSessionId, contact, source });
+      submitDraftQuote({ quoteSessionId, contact, source })
+        .catch(() => toast({ title: 'Submitted', description: 'Some background tasks will retry shortly.' }));
       if (!toastShown) { toast({ title: 'Plan submitted! Redirecting…' }); setToastShown(true); }
       // Ensure the current quote session persists post-submit
       if (quoteSessionId) {

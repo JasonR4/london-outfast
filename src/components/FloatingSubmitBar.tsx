@@ -2,23 +2,31 @@ import React from 'react';
 
 export default function FloatingSubmitBar({
   show,
-  onPress,
-}: { show: boolean; onPress: () => void }) {
+  onSubmit,
+  onRevealGate,
+}: {
+  show: boolean;
+  onSubmit?: () => void;        // (unused now — we reveal gate instead)
+  onRevealGate: () => void;
+}) {
   if (!show) return null;
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10
-                 bg-white/90 dark:bg-slate-900/90 backdrop-blur
-                 shadow-[0_-8px_30px_rgba(0,0,0,0.25)]
-                 px-4 pt-2 pb-[calc(env(safe-area-inset-bottom)+10px)]"
-      role="region"
-      aria-label="Submit plan"
+      className="
+        fixed inset-x-0 bottom-0 z-40
+        backdrop-blur-md
+        bg-[rgb(16,22,30)/.92]  /* navy */
+        border-t border-white/10
+        px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+12px)]
+        sm:hidden
+      "
+      role="region" aria-label="Submit plan"
     >
       <button
         type="button"
-        onClick={onPress}
-        className="w-full rounded-md bg-gradient-hero text-white
-                   text-base font-semibold py-3 active:opacity-90"
+        onClick={onRevealGate}
+        className="w-full h-12 rounded-md bg-gradient-hero text-white font-semibold shadow-lg shadow-black/20"
+        aria-label="Submit This Plan"
       >
         Submit This Plan
       </button>
