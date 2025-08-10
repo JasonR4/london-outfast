@@ -273,6 +273,23 @@ const Navigation = () => {
                   </Button>
                 )}
                 
+                {/* Client Portal / Sign in */}
+                {user ? (
+                  <Button 
+                    onClick={() => handleNavigation('/client-portal')}
+                    className="w-full mt-4"
+                  >
+                    Client Portal
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => handleNavigation('/auth')}
+                    className="w-full mt-4"
+                  >
+                    Sign in
+                  </Button>
+                )}
+
                 <Button 
                   onClick={() => window.location.href = 'tel:+442045243019'}
                   className="w-full mt-4"
