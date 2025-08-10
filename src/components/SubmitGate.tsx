@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { submitDraftQuote, SubmitContact } from '@/lib/submitQuote';
@@ -21,6 +21,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
   const { submitQuote: submitQuoteDb } = useQuotes();
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'guest' | 'signin' | 'authed'>('guest');
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [contact, setContact] = useState<SubmitContact>(() => {
     try {
@@ -98,6 +99,8 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
     }
     setLoading(true);
     try {
+      // Persist for /create-account prefill
+      try { localStorage.setItem('submitted_quote_data', JSON.stringify(contact)); } catch {}
       const quoteSessionId = getCurrentQuoteSessionId();
       await submitQuoteDb(mapToDbContact(contact)); // updates quotes table with guest details
       await submitDraftQuote({ quoteSessionId, contact, source });
@@ -145,7 +148,10 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
                 Sign in
               </button>
               <button
-                onClick={handleGuestSubmit as any}
+                onClick={() => {
+                  if (loading) return;
+                  formRef.current?.requestSubmit();
+                }}
                 disabled={loading}
                 className="flex-1 rounded-md bg-black text-white py-3 text-sm font-medium disabled:opacity-60"
               >
@@ -197,7 +203,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
             </button>
           </form>
         ) : (
-          <form onSubmit={handleGuestSubmit} className="mt-4 space-y-4">
+          <form ref={formRef} onSubmit={handleGuestSubmit} className="mt-4 space-y-4" noValidate>
             <p className="text-sm text-gray-600">
               Don't have an account? No problem. Enter your details and submit.
               You'll be able to create a password after submitting.
