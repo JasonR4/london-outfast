@@ -90,79 +90,84 @@ export const MediaPlanModal = ({
                   
                   <div className="space-y-2 text-sm">
                     {(() => {
-                      // Calculate actual costs from media plan items
-                      const actualCosts = mediaPlan.items.reduce((acc, item) => {
-                        acc.mediaCosts += item.baseCost;
-                        acc.productionCosts += item.productionCost;
-                        acc.creativeCosts += item.creativeCost;
-                        return acc;
-                      }, { mediaCosts: 0, productionCosts: 0, creativeCosts: 0 });
-                      
+                      // Period-based roll-up across items
+                      const rollup = mediaPlan.items.reduce(
+                        (acc: { media: number; production: number; creative: number; discount: number }, it: any) => {
+                          const pCount = uniquePeriodsCount(it?.selectedPeriods ?? []);
+                          const base = Number(it?.baseCost ?? 0);
+                          acc.media += base;
+                          acc.production += Number(it?.productionCost ?? 0);
+                          acc.creative += Number(it?.creativeCost ?? 0);
+                          if (pCount >= 3 && base > 0) acc.discount += base * 0.10;
+                          return acc;
+                        },
+                        { media: 0, production: 0, creative: 0, discount: 0 }
+                      );
                       return (
                         <>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Media Costs:</span>
-                            <span>{formatCurrency(actualCosts.mediaCosts)}</span>
+                            <span>{formatGBP(rollup.media)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Production Costs:</span>
-                            <span>{formatCurrency(actualCosts.productionCosts)}</span>
+                            <span>{formatGBP(rollup.production)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Creative Development:</span>
-                            <span>{formatCurrency(actualCosts.creativeCosts)}</span>
+                            <span>{formatGBP(rollup.creative)}</span>
                           </div>
+                          {rollup.discount > 0 && (
+                            <div className="flex justify-between text-green-600">
+                              <span>💰 Volume discount (10% for 3+ in-charge periods)</span>
+                              <span>-{formatGBP(rollup.discount)}</span>
+                            </div>
+                          )}
                         </>
                       );
                     })()}
                     
-                    {/* Show potential volume discount */}
-                    {mediaPlan.items.some(item => item.recommendedQuantity >= 5) && (
-                      <div className="flex justify-between text-green-600">
-                        <span>💰 Volume Discount (10%):</span>
-                        <span>{formatCurrency(-(mediaPlan.totalBudget * 0.1))}</span>
-                      </div>
-                    )}
-                    
                     {(() => {
-                      // Calculate actual subtotal from the real costs
-                      const actualCosts = mediaPlan.items.reduce((acc, item) => {
-                        acc.mediaCosts += item.baseCost;
-                        acc.productionCosts += item.productionCost;
-                        acc.creativeCosts += item.creativeCost;
-                        return acc;
-                      }, { mediaCosts: 0, productionCosts: 0, creativeCosts: 0 });
-                      
-                      const actualSubtotal = actualCosts.mediaCosts + actualCosts.productionCosts + actualCosts.creativeCosts;
-                      const vatAmount = actualSubtotal * 0.2;
-                      const totalIncVat = actualSubtotal + vatAmount;
-                      
+                      // Totals with period-based discount roll-up
+                      const rollup = mediaPlan.items.reduce(
+                        (acc: { media: number; production: number; creative: number; discount: number }, it: any) => {
+                          const pCount = uniquePeriodsCount(it?.selectedPeriods ?? []);
+                          const base = Number(it?.baseCost ?? 0);
+                          acc.media += base;
+                          acc.production += Number(it?.productionCost ?? 0);
+                          acc.creative += Number(it?.creativeCost ?? 0);
+                          if (pCount >= 3 && base > 0) acc.discount += base * 0.10;
+                          return acc;
+                        },
+                        { media: 0, production: 0, creative: 0, discount: 0 }
+                      );
+                      const subtotalExVat = rollup.media - rollup.discount + rollup.production + rollup.creative;
+                      const vatAmount = subtotalExVat * 0.2;
+                      const totalIncVat = subtotalExVat + vatAmount;
                       return (
                         <>
                           <div className="flex justify-between font-medium pt-2 border-t border-border/50">
                             <span>Subtotal (exc VAT):</span>
-                            <span>{formatCurrency(actualSubtotal)}</span>
+                            <span>{formatGBP(subtotalExVat)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">VAT (20%):</span>
-                            <span>{formatCurrency(vatAmount)}</span>
+                            <span>{formatGBP(vatAmount)}</span>
                           </div>
                           <div className="flex justify-between text-lg font-bold text-primary pt-2 border-t border-border/50">
                             <span>Total inc VAT:</span>
-                            <span>{formatCurrency(totalIncVat)}</span>
+                            <span>{formatGBP(totalIncVat)}</span>
                           </div>
+                          {rollup.discount > 0 && (
+                            <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                              <div className="text-sm text-green-700 dark:text-green-300 font-medium">
+                                🎉 Volume discounts applied! Total savings: {formatGBP(rollup.discount * 1.2)} inc VAT
+                              </div>
+                            </div>
+                          )}
                         </>
                       );
                     })()}
-                    
-                    {/* Show savings message */}
-                    {mediaPlan.items.some(item => item.recommendedQuantity >= 5) && (
-                      <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                        <div className="text-sm text-green-700 dark:text-green-300 font-medium">
-                          🎉 Volume discounts applied! Total savings: {formatCurrency(((mediaPlan.totalBudget * 0.1) * 1.2))} inc VAT
-                        </div>
-                      </div>
-                    )}
                   </div>
                   
                   <div className="w-full bg-muted rounded-full h-3 mt-4">
