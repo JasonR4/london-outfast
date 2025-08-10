@@ -1191,7 +1191,7 @@ const FormatPage = () => {
                                 )}
 
                                 <div className="flex justify-between font-medium">
-                                  <span>Media cost after discount</span>
+                                  <span>Media (after discount)</span>
                                   <span>{formatCurrency(mediaAfterDiscount)}</span>
                                 </div>
                               </div>
