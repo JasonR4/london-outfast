@@ -9,7 +9,7 @@ type Props = {
 
 
 const PlanBreakdown: React.FC<Props> = ({ items, showKpis = true }) => {
-  // Share-of-campaign uses media BEFORE discount so it's stable
+  // Percent-of-plan uses ex-VAT subtotal; secondary shows media-before share for transparency
   const getMedia = (it: any) => {
     const rate = Number(it?.saleRate ?? it?.saleRatePerInCharge ?? 0);
     const sites = Number(it?.sites ?? it?.quantity ?? 0);
@@ -37,13 +37,28 @@ const PlanBreakdown: React.FC<Props> = ({ items, showKpis = true }) => {
 
   return (
     <div>
-      {items.map((it, idx) => (
-        <FormatBreakdown
-          key={idx}
-          item={it}
-          shareOfCampaign={getMedia(it).before / totalMediaBefore}
-        />
-      ))}
+      {items.map((it, idx) => {
+        const media = getMedia(it);
+        const sites = Number(it?.sites ?? it?.quantity ?? 0);
+        const prodRate = Number(it?.productionRate ?? it?.productionCost ?? 0);
+        const creativeRate = Number(it?.creativeRate ?? 0);
+        const creativeCount = Number(it?.creativeAssets ?? it?.creativeCount ?? 0);
+        const runs = media.printRuns || 1;
+        const production = prodRate * sites * runs;
+        const creative = creativeRate * creativeCount;
+        const subtotalExVatItem = media.after + production + creative;
+        const safeTotal = exVat || 1;
+        const shareOfPlan = subtotalExVatItem / safeTotal;
+        const mediaShareBefore = media.before / safeTotal;
+        return (
+          <FormatBreakdown
+            key={idx}
+            item={it}
+            shareOfPlan={shareOfPlan}
+            mediaShareBefore={mediaShareBefore}
+          />
+        );
+      })}
 
       <div className="rounded-lg border mt-4 p-4 bg-slate-900/60 text-sm">
         <div>Campaign total (ex VAT): <strong>{formatGBP(exVat)}</strong></div>

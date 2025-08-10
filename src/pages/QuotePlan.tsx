@@ -535,7 +535,10 @@ export default function QuotePlan() {
                               <hr style={{ margin: '0.75rem 0' }} />
                               <div>
                                 <strong>Subtotal (ex VAT): {formatCurrency(group.subtotal)}</strong>
-                                <span style={{ float: 'right', color: 'hsl(var(--muted-foreground))' }}>{group.share.toFixed(0)}% of campaign</span>
+                                <span style={{ float: 'right', color: 'hsl(var(--muted-foreground))' }}>{group.share.toFixed(0)}% of plan</span>
+                                <small style={{ float: 'right', clear: 'both', color: 'hsl(var(--muted-foreground))' }}>
+                                  Media share (before discount): {((group.mediaCost / totalExVAT) * 100).toFixed(0)}%
+                                </small>
                               </div>
                             </div>
                           </div>
