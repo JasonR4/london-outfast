@@ -32,13 +32,19 @@ import Contact from "./pages/Contact";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import { trackPageView, initCampaignTracking } from "@/utils/analytics";
+import { updateMetaTags } from "@/utils/seo";
 
 const queryClient = new QueryClient();
 
 const RouterAnalytics = () => {
   const location = useLocation();
   useEffect(() => { initCampaignTracking(); }, []);
-  useEffect(() => { trackPageView(location.pathname, document.title); }, [location.pathname]);
+  useEffect(() => {
+    trackPageView(location.pathname, document.title);
+    const metaDesc = (document.querySelector('meta[name="description"]') as HTMLMetaElement)?.content || "London's fastest out-of-home media buying agency.";
+    const url = new URL(location.pathname + location.search, 'https://mediabuyinglondon.co.uk').toString();
+    updateMetaTags(document.title, metaDesc, url);
+  }, [location.pathname, location.search]);
   return null;
 };
 
