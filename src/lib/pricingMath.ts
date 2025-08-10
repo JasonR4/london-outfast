@@ -33,3 +33,7 @@ export const computeMedia = (inp: MediaInputs) => {
   const runs = countPrintRuns(inp.periods);
   return { rate, sites, periodCount: pCount, before, qualifies, showDiscount, discount, after, printRuns: runs };
 };
+
+// Percent helpers
+export const pct = (part: number, whole: number) => (Number(whole) > 0 ? Number(part) / Number(whole) : 0);
+export const pctText = (x: number) => `${(x * 100).toFixed(1)}%`;

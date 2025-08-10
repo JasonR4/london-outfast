@@ -118,7 +118,7 @@ export const MediaPlanModal = ({
                             <span>{formatGBP(rollup.creative)}</span>
                           </div>
                           {rollup.discount > 0 && (
-                            <div className="flex justify-between text-green-600">
+                            <div className="flex justify-between text-emerald-400">
                               <span>💰 Volume discount (10% for 3+ in-charge periods)</span>
                               <span>-{formatGBP(rollup.discount)}</span>
                             </div>
@@ -197,17 +197,39 @@ export const MediaPlanModal = ({
                     <div>
                       <CardTitle className="text-lg">{item.formatName}</CardTitle>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="secondary">
-                          {(() => {
-                            const actualItemCost = item.baseCost + item.productionCost + item.creativeCost;
-                            const totalActualCost = mediaPlan.items.reduce((sum, planItem) => 
-                              sum + planItem.baseCost + planItem.productionCost + planItem.creativeCost, 0
-                            );
-                            const actualPercentage = totalActualCost > 0 ? (actualItemCost / totalActualCost) * 100 : 0;
-                            return `${actualPercentage.toFixed(0)}% of budget`;
-                          })()}
-                        </Badge>
-                        <Badge variant="outline">{item.recommendedQuantity} units</Badge>
+                        {(() => {
+                          // Percent-of-plan: after-discount media + production + creative (ex VAT)
+                          const totals = mediaPlan.items.map((it) => {
+                            const pCount = uniquePeriodsCount(it.selectedPeriods || []);
+                            const base = Number(it.baseCost || 0);
+                            const discount = pCount >= 3 && base > 0 ? base * 0.10 : 0;
+                            const mediaAfter = base - discount;
+                            const production = Number(it.productionCost || 0);
+                            const creative = Number(it.creativeCost || 0);
+                            return { subtotal: mediaAfter + production + creative, mediaBefore: base };
+                          });
+                          const planEx = totals.reduce((s, t) => s + t.subtotal, 0) || 1;
+                          const myP = uniquePeriodsCount(item.selectedPeriods || []);
+                          const myBase = Number(item.baseCost || 0);
+                          const myDiscount = myP >= 3 && myBase > 0 ? myBase * 0.10 : 0;
+                          const myAfter = myBase - myDiscount;
+                          const myProduction = Number(item.productionCost || 0);
+                          const myCreative = Number(item.creativeCost || 0);
+                          const mySubtotal = myAfter + myProduction + myCreative;
+                          const shareOfPlan = mySubtotal / planEx;
+                          const mediaShareBefore = myBase / planEx;
+                          return (
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary">{`${(shareOfPlan * 100).toFixed(0)}% of plan`}</Badge>
+                                <Badge variant="outline">{item.recommendedQuantity} units</Badge>
+                              </div>
+                              <div className="text-[10px] text-muted-foreground">
+                                Media share (before discount): {(mediaShareBefore * 100).toFixed(0)}%
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                     <div className="text-right">
@@ -282,7 +304,7 @@ export const MediaPlanModal = ({
                           <div className="flex justify-between"><span className="text-muted-foreground">Media rate (per in-charge)</span><span>{formatGBP(rate)}</span></div>
                           <div className="flex justify-between"><span className="text-muted-foreground">Media (before discount)</span><span>{formatGBP(item.baseCost)}</span></div>
                           {showDiscount && (
-                            <div className="flex justify-between text-green-600"><span>💰 Volume discount (10% for 3+ in-charge periods)</span><span>-{formatGBP(discount)}</span></div>
+                            <div className="flex justify-between text-emerald-400"><span>💰 Volume discount (10% for 3+ in-charge periods)</span><span>-{formatGBP(discount)}</span></div>
                           )}
                           <div className="flex justify-between"><span className="text-muted-foreground">Media (after discount)</span><span>{formatGBP(after)}</span></div>
                         </>

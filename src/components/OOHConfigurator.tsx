@@ -15,7 +15,7 @@ import { MediaPlanGenerator, GeneratedMediaPlan } from '@/services/MediaPlanGene
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/utils/money';
 import { trackQuoteItemAdded } from '@/utils/analytics';
-import { computeMedia, formatGBP, countPrintRuns } from '@/lib/pricingMath';
+import { computeMedia, formatGBP, countPrintRuns, uniquePeriodsCount } from '@/lib/pricingMath';
 
 export interface Answer {
   questionId: string;
@@ -1042,7 +1042,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                         <div className="space-y-2 text-sm">
                           {(() => {
                             const selectedPeriods = getSelectedPeriods();
-                            const pCount = selectedPeriods ? new Set(selectedPeriods.map(String)).size : 0;
+                            const pCount = uniquePeriodsCount(selectedPeriods);
                             const sites = rec.calculatedQuantity || 0;
                             const rate = sites && pCount ? (rec.costPerUnit || 0) / pCount : 0;
                             const media = { ...computeMedia({ saleRate: rate, sites, periods: selectedPeriods }) };
@@ -1051,7 +1051,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                                 <div className="flex justify-between"><span className="text-muted-foreground">Media rate (per in-charge)</span><span>{formatGBP(media.rate)}</span></div>
                                 <div className="flex justify-between"><span className="text-muted-foreground">Media (before discount)</span><span>{formatGBP(media.before)}</span></div>
                                 {media.showDiscount && (
-                                  <div className="flex justify-between text-green-600"><span>💰 Volume discount (10% for 3+ in-charge periods)</span><span>-{formatGBP(media.discount)}</span></div>
+                                  <div className="flex justify-between text-emerald-400"><span>💰 Volume discount (10% for 3+ in-charge periods)</span><span>-{formatGBP(media.discount)}</span></div>
                                 )}
                                 <div className="flex justify-between"><span className="text-muted-foreground">Media (after discount)</span><span>{formatGBP(media.after)}</span></div>
                               </>
