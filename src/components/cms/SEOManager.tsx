@@ -90,6 +90,29 @@ export const SEOManager = () => {
           : page.content_structure || { word_count: 0, readability_score: 0, keyword_density: 0 }
       }));
       
+      // Auto-sanitize legacy wording: replace "agency" with "specialists" in descriptions
+      const pagesNeedingUpdate = transformedData.filter(
+        (p) => typeof p.meta_description === 'string' && /agency/i.test(p.meta_description)
+      );
+      if (pagesNeedingUpdate.length > 0) {
+        try {
+          await Promise.all(
+            pagesNeedingUpdate.map((p) =>
+              supabase
+                .from('seo_pages')
+                .update({ meta_description: p.meta_description!.replace(/agency/gi, 'specialists') })
+                .eq('page_slug', p.page_slug)
+            )
+          );
+          // Reflect updates locally
+          pagesNeedingUpdate.forEach((p) => {
+            p.meta_description = p.meta_description!.replace(/agency/gi, 'specialists');
+          });
+        } catch (e) {
+          console.warn('Non-blocking: failed to sanitize some descriptions', e);
+        }
+      }
+      
       setSeoPages(transformedData);
     } catch (error) {
       console.error('Error fetching SEO pages:', error);

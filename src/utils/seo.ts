@@ -55,13 +55,21 @@ export const generateStructuredData = (format?: any, seoData?: any) => {
     "serviceType": "Out-of-Home Media Buying"
   };
 
-  // Use CMS SEO data if available
+  const websiteData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Media Buying London",
+    "alternateName": "MBL",
+    "url": "https://mediabuyinglondon.co.uk"
+  };
+
+  // Use CMS SEO data if available; always include WebSite schema
   if (seoData?.schema_markup) {
-    return seoData.schema_markup;
+    return [websiteData, seoData.schema_markup];
   }
 
   if (format) {
-    return {
+    const serviceData = {
       ...baseStructuredData,
       "@type": ["LocalBusiness", "Service"],
       "name": `${format.name} in London | Media Buying London`,
@@ -72,9 +80,10 @@ export const generateStructuredData = (format?: any, seoData?: any) => {
         "areaServed": "London"
       }
     };
+    return [websiteData, serviceData];
   }
 
-  return baseStructuredData;
+  return [websiteData, baseStructuredData];
 };
 
 export const updateMetaTags = (title: string, description: string, url?: string, seoData?: any) => {
