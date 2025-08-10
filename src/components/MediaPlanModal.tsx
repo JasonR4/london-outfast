@@ -332,12 +332,6 @@ export const MediaPlanModal = ({
             ))}
           </div>
 
-          {/* Mobile-only inline fallback submit gate */}
-          <div className="sm:hidden mt-6">
-            <div id="submit-gate">
-              <SubmitGate source="configurator" />
-            </div>
-          </div>
 
           {/* Action Buttons */}
           <div className="flex justify-between pt-4">

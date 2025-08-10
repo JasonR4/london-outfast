@@ -128,39 +128,6 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
 
   return (
     <div className={className}>
-      {/* Mobile sticky submit on small screens */}
-      <div className="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t bg-white/95 backdrop-blur">
-        <div className="mx-auto max-w-screen-sm p-3 flex gap-2">
-          {mode === 'authed' ? (
-            <button
-              onClick={handleAuthedSubmit}
-              disabled={loading}
-              className="flex-1 rounded-md bg-black text-white py-3 text-sm font-medium disabled:opacity-60"
-            >
-              {loading ? 'Submitting…' : 'Submit plan'}
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={() => setMode('signin')}
-                className="w-1/3 rounded-md border border-gray-300 py-3 text-sm"
-              >
-                Sign in
-              </button>
-              <button
-                onClick={() => {
-                  if (loading) return;
-                  formRef.current?.requestSubmit();
-                }}
-                disabled={loading}
-                className="flex-1 rounded-md bg-black text-white py-3 text-sm font-medium disabled:opacity-60"
-              >
-                {loading ? 'Submitting…' : 'Submit plan'}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
 
       {/* Desktop / full panel */}
       <div className={`${panel} sm:mt-0 mt-3`}>
@@ -184,7 +151,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
             <button
               onClick={handleAuthedSubmit}
               disabled={loading}
-              className="w-full sm:w-auto rounded-md bg-black text-white px-5 py-3 text-sm font-medium disabled:opacity-60"
+              className="w-full sm:w-auto rounded-md bg-gradient-hero text-white px-5 py-3 text-sm font-semibold disabled:opacity-60 shadow-sm active:opacity-90"
             >
               {loading ? 'Submitting…' : 'Submit plan'}
             </button>
@@ -278,7 +245,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="rounded-md bg-black text-white px-5 py-3 text-sm font-medium disabled:opacity-60"
+                className="rounded-md bg-gradient-hero text-white px-5 py-3 text-sm font-semibold disabled:opacity-60 shadow-sm active:opacity-90"
               >
                 {loading ? 'Submitting…' : 'Submit plan'}
               </button>

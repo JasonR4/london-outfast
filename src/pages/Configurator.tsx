@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { OOHConfigurator } from '@/components/OOHConfigurator';
 import SubmitGate from '@/components/SubmitGate';
+import FloatingSubmitBar from '@/components/FloatingSubmitBar';
 import { useQuotes } from '@/hooks/useQuotes';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
@@ -232,6 +233,21 @@ export default function Configurator() {
         <div id="submit-gate" className="hidden sm:block mt-10">
           <SubmitGate source="configurator" />
         </div>
+
+        {/* Mobile floating CTA appears only when gate is NOT open */}
+        <div className="sm:hidden">
+          <FloatingSubmitBar
+            show={!showGate}
+            onPress={revealAndFocusGate}
+          />
+        </div>
+
+        {/* Mobile inline gate appears only when opened, so the CTA never overlaps it */}
+        {showGate && (
+          <div className="sm:hidden mt-6 px-4">
+            <SubmitGate source="configurator" className="max-w-2xl mx-auto" />
+          </div>
+        )}
       </div>
     </div>
   );
