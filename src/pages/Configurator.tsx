@@ -33,6 +33,37 @@ export default function Configurator() {
       }, 400);
     });
   };
+
+  // Unified listener so any "reveal-submit-gate" signal opens, scrolls, and focuses the gate
+  React.useEffect(() => {
+    const open = () => {
+      setShowGate(true);
+      requestAnimationFrame(() => {
+        const el = document.getElementById('submit-gate');
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => {
+          const focusEl = el.querySelector('input,button,textarea') as HTMLElement | null;
+          focusEl?.focus();
+        }, 250);
+      });
+    };
+
+    const onReveal = () => open();
+    const onHash = () => {
+      if (window.location.hash === '#submit-gate') open();
+    };
+
+    window.addEventListener('reveal-submit-gate', onReveal as EventListener);
+    window.addEventListener('hashchange', onHash);
+    onHash(); // handle pre-set hash
+
+    return () => {
+      window.removeEventListener('reveal-submit-gate', onReveal as EventListener);
+      window.removeEventListener('hashchange', onHash);
+    };
+  }, []);
+
   if (showSubmission) {
     if (loading) {
       return (
@@ -230,7 +261,8 @@ export default function Configurator() {
         
         <OOHConfigurator onComplete={handleConfigurationComplete} />
         {/* Desktop/Tablet gate (kept on the page) */}
-        <div className="hidden sm:block mt-10">
+        <div id="submit-gate-anchor" aria-hidden />
+        <div className="hidden sm:block mt-10" id="submit-gate">
           <SubmitGate source="configurator" />
         </div>
 
@@ -244,7 +276,7 @@ export default function Configurator() {
 
         {/* Mobile inline gate appears only when opened, so the CTA never overlaps it */}
         {showGate && (
-          <div className="sm:hidden mt-6 px-4">
+          <div className="sm:hidden mt-6 px-4" id="submit-gate">
             <SubmitGate source="configurator" className="max-w-2xl mx-auto" />
           </div>
         )}

@@ -24,7 +24,11 @@ export default function FloatingSubmitBar({
     >
       <button
         type="button"
-        onClick={onRevealGate}
+        onClick={() => {
+          try { window.location.hash = '#submit-gate'; } catch {}
+          window.dispatchEvent(new Event('reveal-submit-gate'));
+          onRevealGate?.();
+        }}
         className="w-full h-12 rounded-md bg-gradient-hero text-white font-semibold shadow-lg shadow-black/20"
         aria-label="Submit This Plan"
       >

@@ -342,22 +342,10 @@ export const MediaPlanModal = ({
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                // 1) Close the modal first so the page can scroll
+                // Signal the configurator to open the submit gate, then close the modal
+                try { window.location.hash = '#submit-gate'; } catch {}
+                window.dispatchEvent(new Event('reveal-submit-gate'));
                 onClose();
-
-                // 2) After it closes, scroll to the gate and focus first field
-                setTimeout(() => {
-                  const el = document.getElementById('submit-gate');
-                  if (el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    setTimeout(() => {
-                      (el.querySelector('input,button,textarea') as HTMLElement | null)?.focus();
-                    }, 300);
-                  } else {
-                    // Fallback if gate mounts a moment later
-                    window.location.hash = '#submit-gate';
-                  }
-                }, 50);
               }}
               className="bg-gradient-hero hover:opacity-90 pointer-events-auto"
             >
