@@ -7,6 +7,42 @@ declare global {
   }
 }
 
+// Capture and persist campaign parameters (UTM, gclid/fbclid)
+export const getCampaignParams = (): Record<string, string | null> => {
+  try {
+    if (typeof window === 'undefined') return {};
+    const params = new URLSearchParams(window.location.search);
+    const current = {
+      source: params.get('utm_source') || params.get('source'),
+      medium: params.get('utm_medium') || params.get('medium'),
+      campaign: params.get('utm_campaign') || params.get('campaign'),
+      term: params.get('utm_term'),
+      content: params.get('utm_content'),
+      gclid: params.get('gclid'),
+      fbclid: params.get('fbclid'),
+    };
+
+    // Store first-touch attribution once
+    const stored = typeof localStorage !== 'undefined'
+      ? localStorage.getItem('first_touch_utm')
+      : null;
+
+    if (!stored && (current.source || current.medium || current.campaign || current.gclid || current.fbclid)) {
+      localStorage.setItem('first_touch_utm', JSON.stringify(current));
+    }
+
+    const firstTouch = stored ? JSON.parse(stored) : null;
+    return firstTouch || current || {};
+  } catch {
+    return {};
+  }
+};
+
+// Initialize campaign tracking on app load (safe no-op if already stored)
+export const initCampaignTracking = () => {
+  try { getCampaignParams(); } catch {}
+};
+
 // Track quote submission as a lead conversion
 export const trackQuoteSubmission = (quoteData: {
   quoteId: string;
@@ -18,17 +54,15 @@ export const trackQuoteSubmission = (quoteData: {
   try {
     // Google Analytics 4 conversion event
     if (typeof window !== 'undefined' && window.gtag) {
+      const campaign = getCampaignParams();
       window.gtag('event', 'generate_lead', {
-        event_category: 'Lead Generation',
-        event_label: 'Quote Submission',
         value: quoteData.totalValue,
         currency: 'GBP',
-        custom_parameters: {
-          quote_id: quoteData.quoteId,
-          item_count: quoteData.itemCount,
-          contact_email: quoteData.contactEmail || 'unknown',
-          contact_company: quoteData.contactCompany || 'unknown'
-        }
+        quote_id: quoteData.quoteId,
+        item_count: quoteData.itemCount,
+        contact_email: quoteData.contactEmail || 'unknown',
+        contact_company: quoteData.contactCompany || 'unknown',
+        ...campaign
       });
 
       // Also track as a conversion (for Google Ads if configured)
@@ -100,9 +134,11 @@ export const trackQuoteStarted = () => {
 export const trackPageView = (pagePath: string, pageTitle?: string) => {
   try {
     if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('config', 'GA_MEASUREMENT_ID', {
+      const campaign = getCampaignParams();
+      window.gtag('event', 'page_view', {
         page_path: pagePath,
-        page_title: pageTitle
+        page_title: pageTitle,
+        ...campaign
       });
       console.log('📊 Analytics: Page view tracked', { pagePath, pageTitle });
     }
