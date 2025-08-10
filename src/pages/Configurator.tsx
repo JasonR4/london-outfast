@@ -191,7 +191,9 @@ export default function Configurator() {
             </div>
 
             <div className="lg:col-span-1">
-              <SubmitGate source="configurator" className="mt-4" />
+              <div id="submit-gate">
+                <SubmitGate source="configurator" className="mt-4" />
+              </div>
             </div>
           </div>
         </div>

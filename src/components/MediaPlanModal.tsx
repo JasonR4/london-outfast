@@ -337,11 +337,13 @@ export const MediaPlanModal = ({
               Modify Plan
             </Button>
             <Button 
-              onClick={onSubmitPlan}
-              disabled={isSubmitting}
+              onClick={() => {
+                const el = document.getElementById('submit-gate');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
               className="bg-gradient-hero hover:opacity-90"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit This Plan'}
+              Submit This Plan
             </Button>
           </div>
         </div>
