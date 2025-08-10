@@ -22,6 +22,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
   const { submitQuote: submitQuoteDb } = useQuotes();
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'guest' | 'signin' | 'authed'>('guest');
+  const [toastShown, setToastShown] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const [contact, setContact] = useState<SubmitContact>(() => {
@@ -39,6 +40,17 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
       localStorage.setItem('submitted_quote_data', JSON.stringify(contact));
     } catch {}
   }, [contact]);
+
+  // Focus the first invalid field on native validation failure
+  React.useEffect(() => {
+    const form = formRef.current;
+    if (!form) return;
+    const onInvalid = (e: Event) => {
+      (e.target as HTMLElement)?.focus();
+    };
+    form.addEventListener('invalid', onInvalid, true);
+    return () => form.removeEventListener('invalid', onInvalid, true);
+  }, []);
 
   // Helpers
   function getCurrentQuoteSessionId() {
@@ -90,7 +102,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
         },
         source,
       });
-      toast({ title: 'Plan submitted! Redirecting…' });
+      if (!toastShown) { toast({ title: 'Plan submitted! Redirecting…' }); setToastShown(true); }
       nav('/client-portal');
     } catch (e) {
       console.error(e);
@@ -114,7 +126,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
       const quoteSessionId = getCurrentQuoteSessionId();
       await submitQuoteDb(mapToDbContact(contact)); // updates quotes table with guest details
       await submitDraftQuote({ quoteSessionId, contact, source });
-      toast({ title: 'Plan submitted! Redirecting…' });
+      if (!toastShown) { toast({ title: 'Plan submitted! Redirecting…' }); setToastShown(true); }
       // Ensure the current quote session persists post-submit
       if (quoteSessionId) {
         try { localStorage.setItem('quote_session_id', quoteSessionId); } catch {}
@@ -195,18 +207,26 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
               <div className={row}>
                 <input
                   className={inputCls}
+                  name="firstName"
                   placeholder="First name*"
                   value={contact.firstName}
                   onChange={(e) => setContact(c => ({ ...c, firstName: e.target.value }))}
                   autoComplete="given-name"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   required
                 />
                 <input
                   className={inputCls}
+                  name="lastName"
                   placeholder="Last name*"
                   value={contact.lastName}
                   onChange={(e) => setContact(c => ({ ...c, lastName: e.target.value }))}
                   autoComplete="family-name"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   required
                 />
               </div>
@@ -215,55 +235,75 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
                 <input
                   className={inputCls}
                   type="email"
+                  name="email"
                   placeholder="Work email*"
                   value={contact.email}
                   onChange={(e) => setContact(c => ({ ...c, email: e.target.value }))}
                   autoComplete="email"
                   inputMode="email"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   required
                 />
                 <input
                   className={inputCls}
                   type="tel"
+                  name="phone"
                   placeholder="Phone (optional)"
                   value={contact.phone || ''}
                   onChange={(e) => setContact(c => ({ ...c, phone: e.target.value }))}
                   autoComplete="tel"
                   inputMode="tel"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                 />
               </div>
 
               <div className={row}>
                 <input
                   className={inputCls}
+                  name="company"
                   placeholder="Company (optional)"
                   value={contact.company || ''}
                   onChange={(e) => setContact(c => ({ ...c, company: e.target.value }))}
                   autoComplete="organization"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                 />
                 <input
                   className={inputCls}
+                  name="website"
                   placeholder="Website (optional)"
                   value={contact.website || ''}
                   onChange={(e) => setContact(c => ({ ...c, website: e.target.value }))}
                   inputMode="url"
                   autoComplete="url"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                 />
               </div>
 
               <textarea
                 className={inputCls}
                 rows={4}
+                name="notes"
                 placeholder="Additional requirements (optional)"
                 value={contact.notes || ''}
                 onChange={(e) => setContact(c => ({ ...c, notes: e.target.value }))}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
               />
 
               <div className="mt-4 hidden sm:flex gap-2">
                 <button
                   type="button"
                   onClick={() => setMode('signin')}
-                  className="inline-flex sm:hidden rounded-md border dark:border-white/15 px-4 py-3 text-sm dark:text-white/90"
+                  className="inline-flex rounded-md border dark:border-white/15 px-4 py-3 text-sm dark:text-white/90"
                   disabled={loading}
                 >
                   Sign in
@@ -283,13 +323,13 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
       
       {/* Mobile fixed bottom submit bar inside gate */}
       {mode === 'guest' && (
-        <div className="sm:hidden fixed inset-x-0 bottom-0 z-50 border-t border-foreground/10 bg-background/90 backdrop-blur px-4 pt-2 pb-[calc(env(safe-area-inset-bottom)+10px)]" role="region" aria-label="Submit plan bar">
+        <div className="sm:hidden fixed inset-x-0 bottom-0 z-50 border-t border-foreground/10 bg-background/90 backdrop-blur px-4 pt-2" role="region" aria-label="Submit plan bar" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}>
           <button
             type="button"
             aria-label="Submit plan"
             onClick={() => formRef.current?.requestSubmit()}
             disabled={loading}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-red-500 to-indigo-500 text-white font-medium h-12 disabled:opacity-60"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-gradient-hero text-white font-medium h-12 disabled:opacity-60"
             aria-busy={loading}
           >
             {loading && (
