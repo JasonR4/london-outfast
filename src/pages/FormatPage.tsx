@@ -1174,8 +1174,7 @@ const FormatPage = () => {
                                    <span>{formatCurrency(saleRate)}</span>
                                  </div>
                                  <div className="flex justify-between">
--                                  <span>Media cost at sale rate</span>
-+                                  <span>Media (before discount)</span>
+                                   <span>Media (before discount)</span>
                                    <span>{formatCurrency(mediaCost)}</span>
                                  </div>
 

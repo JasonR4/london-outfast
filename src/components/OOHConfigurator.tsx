@@ -132,7 +132,7 @@ const questions: Question[] = [
   {
     id: 'campaign_periods',
     title: 'Select your campaign periods',
-    subtitle: 'Choose the incharge periods for your campaign. Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.',
+    subtitle: 'Choose the incharge periods for your campaign. Non-consecutive periods = additional print runs (production only).',
     type: 'periods',
     options: [] // Will be handled by period selector
   },

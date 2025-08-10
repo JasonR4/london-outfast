@@ -1073,7 +1073,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                           {/* Media Cost Breakdown */}
                           <div className="space-y-1 mb-4">
                             <div className="flex justify-between">
-                              <span>Media cost at sale rate</span>
+                              <span>Media rate (per in-charge)</span>
+                              <span>{formatCurrency(pricing.mediaPrice / (totalQuantity * selectedPeriods.length))}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Media (before discount)</span>
                               <span>{formatCurrency(pricing.mediaPrice)}</span>
                             </div>
 
@@ -1090,7 +1094,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
                              )}
 
                             <div className="flex justify-between font-medium">
-                              <span>Media cost after discount</span>
+                              <span>Media (after discount)</span>
                               <span>{formatCurrency('mediaAfterDiscount' in pricing ? pricing.mediaAfterDiscount : pricing.mediaPrice - (pricing.mediaDiscount || 0))}</span>
                             </div>
                           </div>
