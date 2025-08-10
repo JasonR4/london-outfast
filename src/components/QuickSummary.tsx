@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 import { formatCurrency } from "@/utils/money";
-import { countPrintRuns } from "@/utils/periods";
+import { countPrintRuns } from "@/lib/pricingMath";
 import { usePlanDraft } from "@/state/plan";
 
 export default function QuickSummary() {
@@ -135,21 +135,8 @@ export default function QuickSummary() {
             <span className="text-muted-foreground">Media (before discount):</span>
             <span className="text-right font-medium">{formatCurrency(mediaBeforeDiscount)}</span>
 
-            <span className="text-muted-foreground flex items-center gap-1">
-              Volume discount
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-3 w-3 text-muted-foreground" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Applied when booking over 3 campaign periods. More periods = bigger savings.</p>
-                </TooltipContent>
-              </Tooltip>
-              :
-            </span>
-            <span className="text-right font-medium text-green-600">
-              - {formatCurrency(volumeDiscount)}
-            </span>
+            <span className="text-muted-foreground">💰 Volume discount (10% for 3+ in-charge periods)</span>
+            <span className="text-right font-medium text-green-600">- {formatCurrency(volumeDiscount)}</span>
 
             <span className="text-muted-foreground">Media (after discount):</span>
             <span className="text-right font-medium">{formatCurrency(mediaAfterDiscount)}</span>

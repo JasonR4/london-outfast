@@ -142,7 +142,7 @@ export default function Configurator() {
                               </div>
                               {totals.totalDiscount > 0 && (
                                 <div className="flex justify-between text-green-600">
-                                  <span>💰 Volume Discount:</span>
+                                  <span>💰 Volume discount (10% for 3+ in-charge periods)</span>
                                   <span>-£{totals.totalDiscount.toFixed(2)}</span>
                                 </div>
                               )}

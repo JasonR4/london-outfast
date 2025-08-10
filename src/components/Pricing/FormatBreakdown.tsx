@@ -1,52 +1,33 @@
 import React from "react";
-
-// Shared helpers – keep the math identical everywhere
-const gbp = (v: number) =>
-  v.toLocaleString("en-GB", { style: "currency", currency: "GBP" });
-
-const periodsCount = (item: any) =>
-  item?.periods?.length ?? item?.selectedPeriods?.length ?? 0;
-
-const sitesCount = (item: any) => item?.sites ?? item?.quantity ?? 0;
-
-const saleRate = (item: any) => item?.saleRate ?? item?.saleRatePerInCharge ?? 0;
-const productionRate = (item: any) =>
-  item?.productionRate ?? item?.productionCost ?? 0;
-const creativeRate = (item: any) => item?.creativeRate ?? 0;
-const creativeAssets = (item: any) =>
-  item?.creativeAssets ?? item?.creativeCount ?? 0;
-const printRuns = (item: any) => item?.printRuns ?? 1;
-
-const mediaBefore = (item: any) =>
-  saleRate(item) * sitesCount(item) * periodsCount(item);
-
-const volumeDiscount = (item: any) =>
-  periodsCount(item) >= 3 ? -0.1 * mediaBefore(item) : 0;
-
-const mediaAfter = (item: any) => mediaBefore(item) + volumeDiscount(item);
-
-const productionCost = (item: any) =>
-  productionRate(item) * sitesCount(item) * printRuns(item);
-
-const creativeCost = (item: any) => creativeRate(item) * creativeAssets(item);
-
-const subtotalExVat = (item: any) =>
-  mediaAfter(item) + productionCost(item) + creativeCost(item);
+import { computeMedia, formatGBP, countPrintRuns } from "@/lib/pricingMath";
 
 type Props = {
   item: any;
   shareOfCampaign?: number; // 0..1
 };
 
+
 const FormatBreakdown: React.FC<Props> = ({ item, shareOfCampaign }) => {
-  const sites = sitesCount(item);
-  const periods = periodsCount(item);
-  const inChargesCount = periods; // display only (not sites×periods)
+  const sites = Number(item?.sites ?? item?.quantity ?? 0);
+  const periodsArr = (item?.periods ?? item?.selectedPeriods ?? []) as Array<number | string>;
+  const rate = Number(item?.saleRate ?? item?.saleRatePerInCharge ?? 0);
+
+  const media = computeMedia({ saleRate: rate, sites, periods: periodsArr });
+  const runs = countPrintRuns(periodsArr);
+  const inChargesCount = media.periodCount; // display only (not sites×periods)
 
   const pctText =
     typeof shareOfCampaign === "number"
       ? `≈ ${(shareOfCampaign * 100).toFixed(1)}% of campaign`
       : undefined;
+
+  // Production & creative (outside media discount)
+  const productionUnit = Number(item?.productionRate ?? item?.productionCost ?? 0);
+  const creativeUnit = Number(item?.creativeRate ?? 0);
+  const creativeAssets = Number(item?.creativeAssets ?? item?.creativeCount ?? 0);
+  const production = productionUnit * sites * (runs || 1);
+  const creative = creativeUnit * creativeAssets;
+  const subtotalExVat = media.after + production + creative;
 
   return (
     <div className="rounded-lg border p-4 bg-slate-800/60">
@@ -59,17 +40,17 @@ const FormatBreakdown: React.FC<Props> = ({ item, shareOfCampaign }) => {
       </div>
 
       <div className="space-y-1 text-sm">
-        <div>Sale rate (per in-charge): {gbp(saleRate(item))}</div>
-        <div>Media (before discount): {gbp(mediaBefore(item))}</div>
-        {volumeDiscount(item) !== 0 && (
+        <div>Media rate (per in-charge): {formatGBP(media.rate)}</div>
+        <div>Media (before discount): {formatGBP(media.before)}</div>
+        {media.showDiscount && (
           <div className="text-emerald-400">
-            💰 Volume discount (over 3 campaign periods): {gbp(volumeDiscount(item))}
+            💰 Volume discount (10% for 3+ in-charge periods): -{formatGBP(media.discount)}
           </div>
         )}
-        <div>Media (after discount): {gbp(mediaAfter(item))}</div>
-        <div>Production: {gbp(productionCost(item))}</div>
-        <div>Creative: {gbp(creativeCost(item))}</div>
-        <div className="mt-2 font-semibold">Subtotal (ex VAT): {gbp(subtotalExVat(item))}</div>
+        <div>Media (after discount): {formatGBP(media.after)}</div>
+        <div>Production: {formatGBP(production)}</div>
+        <div>Creative: {formatGBP(creative)}</div>
+        <div className="mt-2 font-semibold">Subtotal (ex VAT): {formatGBP(subtotalExVat)}</div>
       </div>
     </div>
   );

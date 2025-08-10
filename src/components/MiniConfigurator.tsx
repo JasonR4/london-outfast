@@ -416,27 +416,31 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
                 </div>
                 <div className="flex justify-between">
                   <span>
-                    Media cost at sale rate: {formatCurrency(uiSaleRate)} × {quantity} {quantity === 1 ? 'site' : 'sites'} × {uniquePeriodCount} {uniquePeriodCount === 1 ? 'period' : 'periods'} =
+-                    Media cost at sale rate: {formatCurrency(uiSaleRate)} × {quantity} {quantity === 1 ? 'site' : 'sites'} × {uniquePeriodCount} {uniquePeriodCount === 1 ? 'period' : 'periods'} =
++                    Media (before discount): {formatCurrency(uiSaleRate)} × {quantity} {quantity === 1 ? 'site' : 'sites'} × {uniquePeriodCount} {uniquePeriodCount === 1 ? 'period' : 'periods'} =
                   </span>
                   <span>{formatCurrency(uiSaleRate * quantity * uniquePeriodCount)}</span>
                 </div>
                 {Boolean(existingItem?.discountAmount && existingItem.discountAmount > 0) && (
                   <>
                      <div className="flex justify-between text-green-600">
-                       <Tooltip>
-                         <TooltipTrigger asChild>
-                           <span className="cursor-help underline decoration-dotted">Volume discount (over 3 campaign periods):</span>
-                         </TooltipTrigger>
-                         <TooltipContent>
-                           <p>Discount applied for booking more than 3 campaign periods. Additional periods = bigger savings.</p>
-                         </TooltipContent>
-                       </Tooltip>
-                       <span>-{formatCurrency(existingItem!.discountAmount)}</span>
-                     </div>
+-                       <Tooltip>
+-                         <TooltipTrigger asChild>
+-                           <span className="cursor-help underline decoration-dotted">Volume discount (over 3 campaign periods):</span>
+-                         </TooltipTrigger>
+-                         <TooltipContent>
+-                           <p>Discount applied for booking more than 3 campaign periods. Additional periods = bigger savings.</p>
+-                         </TooltipContent>
+-                       </Tooltip>
+-                       <span>-{formatCurrency(existingItem!.discountAmount)}</span>
++                       <span>💰 Volume discount (10% for 3+ in-charge periods)</span>
++                       <span>-{formatCurrency(existingItem!.discountAmount)}</span>
+                      </div>
                     <div className="flex justify-between">
-                      <span>Media cost after discount:</span>
-                      <span>{formatCurrency(existingItem?.mediaCost || 0)}</span>
-                    </div>
+-                      <span>Media cost after discount:</span>
++                      <span>Media (after discount):</span>
+                       <span>{formatCurrency(existingItem?.mediaCost || 0)}</span>
+                     </div>
                   </>
                 )}
                 {existingItem?.productionCost > 0 && (

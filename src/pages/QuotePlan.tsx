@@ -401,8 +401,9 @@ export default function QuotePlan() {
                           </div>
                           {item.selected_periods.length > 1 && countPrintRuns(item.selected_periods) > 1 && (
                             <p className="text-xs text-amber-600 mt-2">
-                              Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.
-                            </p>
+-                              Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.
++                              Non-consecutive periods = {countPrintRuns(item.selected_periods)} print runs (production only).
+                             </p>
                           )}
                         </div>
 
@@ -512,24 +513,28 @@ export default function QuotePlan() {
                                   {group.sites} site{group.sites !== 1 ? 's' : ''} • {group.uniquePeriods} period{group.uniquePeriods !== 1 ? 's' : ''} • {group.incharges} in-charges
                                 </div>
                               </div>
-                              <div>
-                                Sale rate: {formatCurrency(group.saleRate)}
-                              </div>
-                            </div>
-
-                            <div className="format-breakdown-body">
-                              <div>Media cost at sale rate: {formatCurrency(group.mediaCost)}</div>
-
-                              {group.volumeDiscount > 0 && (
-                                <>
-                                  <div>💰 Volume discount (10% for 3+ in-charge periods): −{formatCurrency(group.volumeDiscount)}</div>
-                                  <small>
-                                    That's −{formatCurrency(group.volumeDiscount / group.incharges)} per unit per period ({group.incharges} in-charges).
-                                  </small>
-                                </>
-                              )}
-
-                              <div>Media cost after discount: {formatCurrency(group.mediaAfterDiscount)}</div>
+                                <div>
+-                                Sale rate: {formatCurrency(group.saleRate)}
++                                Media rate (per in-charge): {formatCurrency(group.saleRate)}
+                                 </div>
+                             </div>
+ 
+                             <div className="format-breakdown-body">
+-                              <div>Media cost at sale rate: {formatCurrency(group.mediaCost)}</div>
++                              <div>Media (before discount): {formatCurrency(group.mediaCost)}</div>
+ 
+                               {group.volumeDiscount > 0 && (
+                                 <>
+-                                  <div>💰 Volume discount (10% for 3+ in-charge periods): −{formatCurrency(group.volumeDiscount)}</div>
++                                  <div>💰 Volume discount (10% for 3+ in-charge periods): −{formatCurrency(group.volumeDiscount)}</div>
+                                   <small>
+                                     That's −{formatCurrency(group.volumeDiscount / group.incharges)} per unit per period ({group.incharges} in-charges).
+                                   </small>
+                                 </>
+                               )}
+ 
+-                              <div>Media cost after discount: {formatCurrency(group.mediaAfterDiscount)}</div>
++                              <div>Media (after discount): {formatCurrency(group.mediaAfterDiscount)}</div>
                               <div>Production cost: {formatCurrency(group.productionCost)}</div>
                               <div>Creative cost: {formatCurrency(group.creativeCost)}</div>
                               <hr style={{ margin: '0.75rem 0' }} />

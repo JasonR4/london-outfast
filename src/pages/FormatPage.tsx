@@ -1170,13 +1170,14 @@ const FormatPage = () => {
                               {/* Standardized Media Cost Breakdown */}
                                <div className="space-y-1 mb-4">
                                 <div className="flex justify-between">
-                                  <span>Media rate (per in-charge)</span>
-                                  <span>{formatCurrency(saleRate)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>Media cost at sale rate</span>
-                                  <span>{formatCurrency(mediaCost)}</span>
-                                </div>
+                                   <span>Media rate (per in-charge)</span>
+                                   <span>{formatCurrency(saleRate)}</span>
+                                 </div>
+                                 <div className="flex justify-between">
+-                                  <span>Media cost at sale rate</span>
++                                  <span>Media (before discount)</span>
+                                   <span>{formatCurrency(mediaCost)}</span>
+                                 </div>
 
                                 {showDiscount && (
                                   <>
