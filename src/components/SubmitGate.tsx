@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { submitDraftQuote, SubmitContact } from '@/lib/submitQuote';
 import { useQuotes } from '@/hooks/useQuotes';
+import { toast } from '@/components/ui/use-toast';
 
 type Props = {
   source: 'smart-quote' | 'outdoor-media' | 'configurator';
@@ -10,7 +11,7 @@ type Props = {
 };
 
 const inputCls =
-  'w-full rounded-md border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/70';
+  'w-full rounded-md bg-white/5 text-white placeholder-white/40 ring-1 ring-white/10 focus:ring-2 focus:ring-white/25 outline-none px-4 py-3 transition';
 
 const row = 'grid grid-cols-1 gap-3 sm:grid-cols-2';
 const panel =
@@ -89,6 +90,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
         },
         source,
       });
+      toast({ title: 'Plan submitted! Redirecting…' });
       nav('/client-portal');
     } catch (e) {
       console.error(e);
@@ -112,6 +114,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
       const quoteSessionId = getCurrentQuoteSessionId();
       await submitQuoteDb(mapToDbContact(contact)); // updates quotes table with guest details
       await submitDraftQuote({ quoteSessionId, contact, source });
+      toast({ title: 'Plan submitted! Redirecting…' });
       // Ensure the current quote session persists post-submit
       if (quoteSessionId) {
         try { localStorage.setItem('quote_session_id', quoteSessionId); } catch {}
@@ -139,123 +142,124 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
   }
 
   return (
-    <div className={className}>
-
-      {/* Desktop / full panel */}
-      <div className={`${panel} sm:mt-0 mt-3`}>
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold">Submit your plan</h3>
-          {mode !== 'authed' && (
-            <button
-              onClick={() => setMode(mode === 'signin' ? 'guest' : 'signin')}
-              className="hidden sm:inline-flex text-sm underline"
-            >
-              {mode === 'signin' ? 'Use details instead' : 'Have an account? Sign in'}
-            </button>
-          )}
-        </div>
-
-        {mode === 'authed' ? (
-          <div className="mt-4">
-            <p className="text-sm text-gray-600 mb-4">
-              You're signed in. We'll use your account details for the submission.
-            </p>
-            <button
-              onClick={handleAuthedSubmit}
-              disabled={loading}
-              className="w-full sm:w-auto rounded-md bg-gradient-hero text-white px-5 py-3 text-sm font-semibold disabled:opacity-60 shadow-sm active:opacity-90"
-            >
-              {loading ? 'Submitting…' : 'Submit plan'}
-            </button>
+    <section id="submit-gate" className="relative">
+      <div className="pb-28 sm:pb-0">
+        {/* Desktop / full panel */}
+        <div className={`${panel} sm:mt-0 mt-3`}>
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-semibold">Submit your plan</h3>
+            {mode !== 'authed' && (
+              <button
+                onClick={() => setMode(mode === 'signin' ? 'guest' : 'signin')}
+                className="hidden sm:inline-flex text-sm underline"
+              >
+                {mode === 'signin' ? 'Use details instead' : 'Have an account? Sign in'}
+              </button>
+            )}
           </div>
-        ) : mode === 'signin' ? (
-          <form onSubmit={handleSignIn} className="mt-4">
-            <p className="text-sm text-gray-600 mb-4">
-              Sign in to submit with one click.
-            </p>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full sm:w-auto rounded-md border border-gray-300 px-5 py-3 text-sm font-medium disabled:opacity-60"
-            >
-              Continue to sign in
-            </button>
-          </form>
-        ) : (
-          <form ref={formRef} onSubmit={handleGuestSubmit} className="mt-4 space-y-4" noValidate>
-            <p className="text-sm text-gray-600">
-              Don't have an account? No problem. Enter your details and submit.
-              You'll be able to create a password after submitting.
-            </p>
 
-            <div className={row}>
-              <input
-                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
-                placeholder="First name*"
-                value={contact.firstName}
-                onChange={(e) => setContact(c => ({ ...c, firstName: e.target.value }))}
-                autoComplete="given-name"
-                required
-              />
-              <input
-                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
-                placeholder="Last name*"
-                value={contact.lastName}
-                onChange={(e) => setContact(c => ({ ...c, lastName: e.target.value }))}
-                autoComplete="family-name"
-                required
-              />
+          {mode === 'authed' ? (
+            <div className="mt-4">
+              <p className="text-sm text-gray-600 mb-4">
+                You're signed in. We'll use your account details for the submission.
+              </p>
+              <button
+                onClick={handleAuthedSubmit}
+                aria-label="Submit plan"
+                disabled={loading}
+                className="w-full sm:w-auto rounded-md bg-gradient-hero text-white px-5 py-3 text-sm font-semibold disabled:opacity-60 shadow-sm active:opacity-90"
+              >
+                {loading ? 'Submitting…' : 'Submit plan'}
+              </button>
             </div>
+          ) : mode === 'signin' ? (
+            <form onSubmit={handleSignIn} className="mt-4">
+              <p className="text-sm text-gray-600 mb-4">
+                Sign in to submit with one click.
+              </p>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full sm:w-auto rounded-md border border-gray-300 px-5 py-3 text-sm font-medium disabled:opacity-60"
+              >
+                Continue to sign in
+              </button>
+            </form>
+          ) : (
+            <form ref={formRef} onSubmit={handleGuestSubmit} className="mt-4 space-y-4" noValidate>
+              <p className="text-sm text-gray-600">
+                Don't have an account? No problem. Enter your details and submit.
+                You'll be able to create a password after submitting.
+              </p>
 
-            <div className={row}>
-              <input
-                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
-                type="email"
-                placeholder="Work email*"
-                value={contact.email}
-                onChange={(e) => setContact(c => ({ ...c, email: e.target.value }))}
-                autoComplete="email"
-                inputMode="email"
-                required
-              />
-              <input
-                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
-                type="tel"
-                placeholder="Phone (optional)"
-                value={contact.phone || ''}
-                onChange={(e) => setContact(c => ({ ...c, phone: e.target.value }))}
-                autoComplete="tel"
-                inputMode="tel"
-              />
-            </div>
+              <div className={row}>
+                <input
+                  className={inputCls}
+                  placeholder="First name*"
+                  value={contact.firstName}
+                  onChange={(e) => setContact(c => ({ ...c, firstName: e.target.value }))}
+                  autoComplete="given-name"
+                  required
+                />
+                <input
+                  className={inputCls}
+                  placeholder="Last name*"
+                  value={contact.lastName}
+                  onChange={(e) => setContact(c => ({ ...c, lastName: e.target.value }))}
+                  autoComplete="family-name"
+                  required
+                />
+              </div>
 
-            <div className={row}>
-              <input
-                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
-                placeholder="Company (optional)"
-                value={contact.company || ''}
-                onChange={(e) => setContact(c => ({ ...c, company: e.target.value }))}
-                autoComplete="organization"
-              />
-              <input
-                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
-                placeholder="Website (optional)"
-                value={contact.website || ''}
-                onChange={(e) => setContact(c => ({ ...c, website: e.target.value }))}
-                inputMode="url"
-                autoComplete="url"
-              />
-            </div>
+              <div className={row}>
+                <input
+                  className={inputCls}
+                  type="email"
+                  placeholder="Work email*"
+                  value={contact.email}
+                  onChange={(e) => setContact(c => ({ ...c, email: e.target.value }))}
+                  autoComplete="email"
+                  inputMode="email"
+                  required
+                />
+                <input
+                  className={inputCls}
+                  type="tel"
+                  placeholder="Phone (optional)"
+                  value={contact.phone || ''}
+                  onChange={(e) => setContact(c => ({ ...c, phone: e.target.value }))}
+                  autoComplete="tel"
+                  inputMode="tel"
+                />
+              </div>
+
+              <div className={row}>
+                <input
+                  className={inputCls}
+                  placeholder="Company (optional)"
+                  value={contact.company || ''}
+                  onChange={(e) => setContact(c => ({ ...c, company: e.target.value }))}
+                  autoComplete="organization"
+                />
+                <input
+                  className={inputCls}
+                  placeholder="Website (optional)"
+                  value={contact.website || ''}
+                  onChange={(e) => setContact(c => ({ ...c, website: e.target.value }))}
+                  inputMode="url"
+                  autoComplete="url"
+                />
+              </div>
 
               <textarea
-                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
+                className={inputCls}
                 rows={4}
                 placeholder="Additional requirements (optional)"
                 value={contact.notes || ''}
                 onChange={(e) => setContact(c => ({ ...c, notes: e.target.value }))}
               />
 
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 hidden sm:flex gap-2">
                 <button
                   type="button"
                   onClick={() => setMode('signin')}
@@ -272,10 +276,33 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
                   {loading ? 'Submitting…' : 'Submit plan'}
                 </button>
               </div>
-          </form>
-        )}
+            </form>
+          )}
+        </div>
       </div>
-    </div>
+      
+      {/* Mobile fixed bottom submit bar inside gate */}
+      {mode === 'guest' && (
+        <div className="sm:hidden fixed inset-x-0 bottom-0 z-50 border-t border-foreground/10 bg-background/90 backdrop-blur px-4 pt-2 pb-[calc(env(safe-area-inset-bottom)+10px)]" role="region" aria-label="Submit plan bar">
+          <button
+            type="button"
+            aria-label="Submit plan"
+            onClick={() => formRef.current?.requestSubmit()}
+            disabled={loading}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-red-500 to-indigo-500 text-white font-medium h-12 disabled:opacity-60"
+            aria-busy={loading}
+          >
+            {loading && (
+              <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4A4 4 0 008 12H4z" />
+              </svg>
+            )}
+            <span>{loading ? 'Submitting…' : 'Submit plan'}</span>
+          </button>
+        </div>
+      )}
+    </section>
   );
 };
 
