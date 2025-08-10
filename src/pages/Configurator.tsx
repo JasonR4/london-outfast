@@ -11,6 +11,7 @@ export default function Configurator() {
   const [showSubmission, setShowSubmission] = useState(false);
   const { currentQuote, loading } = useQuotes();
   const [showGate, setShowGate] = React.useState(false);
+  const revealingRef = React.useRef(false);
 
   const handleConfigurationComplete = () => {
     setShowSubmission(true);
@@ -37,18 +38,21 @@ export default function Configurator() {
   // Unified listener so any "reveal-submit-gate" signal opens, scrolls, and focuses the gate
   React.useEffect(() => {
     const open = () => {
+      if (revealingRef.current) return;
+      revealingRef.current = true;
       setShowGate(true);
       requestAnimationFrame(() => {
         const el = document.getElementById('submit-gate')
           || document.getElementById('submit-gate-desktop')
           || document.getElementById('submit-gate-anchor');
-        if (!el) return;
+        if (!el) { revealingRef.current = false; return; }
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         setTimeout(() => {
           const focusEl = (document.getElementById('submit-gate') || el)?.querySelector('input,button,textarea') as HTMLElement | null;
           focusEl?.focus();
           // Clear the hash to avoid future bounce loops
           try { history.replaceState(null, '', location.pathname + location.search); } catch {}
+          setTimeout(() => { revealingRef.current = false; }, 500);
         }, 250);
       });
     };

@@ -15,7 +15,7 @@ const inputCls =
 
 const row = 'grid grid-cols-1 gap-3 sm:grid-cols-2';
 const panel =
-  'rounded-lg border border-border bg-background/90 backdrop-blur p-4 sm:p-6 shadow-[0_10px_40px_hsl(var(--foreground)/0.15)] text-foreground';
+  'rounded-xl border border-border bg-background/95 dark:bg-background/90 backdrop-blur px-4 sm:px-6 py-4 sm:py-6 shadow-[0_10px_40px_hsl(var(--foreground)/0.15)] text-foreground';
 
 export const SubmitGate: React.FC<Props> = ({ source, className }) => {
   const nav = useNavigate();
@@ -93,15 +93,17 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
       });
 
       // Kick off side-effects without blocking (pdf, hubspot, versioning)
-      submitDraftQuote({
-        quoteSessionId,
-        contact: {
-          firstName: user?.user_metadata?.first_name || '',
-          lastName: user?.user_metadata?.last_name || '',
-          email: user?.email || '',
-        },
-        source,
-      }).catch(() => toast({ title: 'Submitted', description: 'Some background tasks will retry shortly.' }));
+      Promise.allSettled([
+        submitDraftQuote({
+          quoteSessionId,
+          contact: {
+            firstName: user?.user_metadata?.first_name || '',
+            lastName: user?.user_metadata?.last_name || '',
+            email: user?.email || '',
+          },
+          source,
+        })
+      ]);
       if (!toastShown) { toast({ title: 'Plan submitted! Redirecting…' }); setToastShown(true); }
       nav('/client-portal');
     } catch (e) {
@@ -125,8 +127,9 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
       try { localStorage.setItem('submitted_quote_data', JSON.stringify(contact)); } catch {}
       const quoteSessionId = getCurrentQuoteSessionId();
       await submitQuoteDb(mapToDbContact(contact)); // updates quotes table with guest details
-      submitDraftQuote({ quoteSessionId, contact, source })
-        .catch(() => toast({ title: 'Submitted', description: 'Some background tasks will retry shortly.' }));
+      Promise.allSettled([
+        submitDraftQuote({ quoteSessionId, contact, source })
+      ]);
       if (!toastShown) { toast({ title: 'Plan submitted! Redirecting…' }); setToastShown(true); }
       // Ensure the current quote session persists post-submit
       if (quoteSessionId) {
@@ -155,7 +158,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
   }
 
   return (
-    <section id="submit-gate" className="relative">
+    <section className="relative">
       <div className="pb-28 sm:pb-0">
         {/* Desktop / full panel */}
         <div className={`${panel} sm:mt-0 mt-3`}>

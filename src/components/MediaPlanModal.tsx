@@ -342,6 +342,7 @@ export const MediaPlanModal = ({
               type="button"
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 // Signal the configurator to open the submit gate, then close the modal
                 try { window.location.hash = '#submit-gate'; } catch {}
                 window.dispatchEvent(new Event('reveal-submit-gate'));

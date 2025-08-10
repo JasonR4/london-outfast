@@ -148,7 +148,7 @@ export class MediaPlanGenerator {
         const planItem: MediaPlanItem = {
           formatSlug: rec.format,
           formatName: rec.formatName,
-          recommendedQuantity: rec.calculatedQuantity || 1,
+          recommendedQuantity: rec.calculatedQuantity ?? 0,
           selectedAreas: selectedAreas, // Use ALL selected areas, not just slice(0, 3)
           selectedPeriods: this.getSelectedPeriodsFromAnswers(),
           baseCost: rec.budgetAllocation * 0.7, // 70% for media from recommendation
@@ -246,16 +246,18 @@ export class MediaPlanGenerator {
         const allocatedBudget = i === 0 ? Math.floor(budget * 0.65) : Math.floor(budget * 0.35); // 65/35 split
         const costData = await this.calculateRealCosts(mediaFormat.id, allocatedBudget, periodsCount);
         
-        recommendations.push({
-          format: formatSlug,
-          formatName: mediaFormat.format_name,
-          score,
-          reasons: [`Optimized for your ${this.getCampaignObjectiveFromAnswers(answers)} objective`],
-          description: mediaFormat.description || '',
-          calculatedQuantity: costData.quantity,
-          budgetAllocation: costData.totalCost,
-          costPerUnit: costData.costPerUnit
-        });
+        if (costData.quantity >= 1) {
+          recommendations.push({
+            format: formatSlug,
+            formatName: mediaFormat.format_name,
+            score,
+            reasons: [`Optimized for your ${this.getCampaignObjectiveFromAnswers(answers)} objective`],
+            description: mediaFormat.description || '',
+            calculatedQuantity: costData.quantity,
+            budgetAllocation: costData.totalCost,
+            costPerUnit: costData.costPerUnit
+          });
+        }
       }
 
       return recommendations;
@@ -604,8 +606,8 @@ export class MediaPlanGenerator {
       
       // Calculate quantity that fits within budget constraints
       const maxQuantity = Math.floor(totalBudget / costPerUnit);
-      const quantity = Math.max(1, maxQuantity);
-      const totalCost = Math.min(totalBudget, costPerUnit * quantity);
+      const quantity = Math.max(0, maxQuantity);
+      const totalCost = costPerUnit * quantity;
 
       return {
         quantity,
