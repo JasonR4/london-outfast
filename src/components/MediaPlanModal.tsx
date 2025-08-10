@@ -7,6 +7,7 @@ import { GeneratedMediaPlan } from '@/services/MediaPlanGenerator';
 import { formatCurrency } from '@/utils/money';
 import { MapPin, Calendar, Target, Users, TrendingUp, CheckCircle } from 'lucide-react';
 import { formatGBP, uniquePeriodsCount, countPrintRuns } from '@/lib/pricingMath';
+import SubmitGate from '@/components/SubmitGate';
 
 interface MediaPlanModalProps {
   isOpen: boolean;
@@ -329,6 +330,13 @@ export const MediaPlanModal = ({
                 </CardContent>
               </Card>
             ))}
+          </div>
+
+          {/* Mobile-only inline fallback submit gate */}
+          <div className="sm:hidden mt-6">
+            <div id="submit-gate">
+              <SubmitGate source="configurator" />
+            </div>
           </div>
 
           {/* Action Buttons */}

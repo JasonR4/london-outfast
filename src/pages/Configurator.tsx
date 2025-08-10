@@ -228,6 +228,10 @@ export default function Configurator() {
         </div>
         
         <OOHConfigurator onComplete={handleConfigurationComplete} />
+        {/* Desktop/Tablet gate (kept on the page) */}
+        <div id="submit-gate" className="hidden sm:block mt-10">
+          <SubmitGate source="configurator" />
+        </div>
       </div>
     </div>
   );
