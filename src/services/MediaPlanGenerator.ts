@@ -31,6 +31,8 @@ export interface GeneratedMediaPlan {
   endDate: string;
 }
 
+const MIN_BUDGET_GBP = 1000;
+
 export class MediaPlanGenerator {
   private answers: Answer[] = [];
   
@@ -64,6 +66,22 @@ export class MediaPlanGenerator {
       if (!budget) {
         console.error('Missing budget:', { budget });
         return null;
+      }
+
+      if (budget < MIN_BUDGET_GBP) {
+        const campaignDates = this.calculateCampaignDates(inchargePeriods);
+        return {
+          totalBudget: budget,
+          totalAllocatedBudget: 0,
+          remainingBudget: budget,
+          items: [],
+          campaignObjective: objective,
+          targetAudience: audience,
+          estimatedReach: 'TBC',
+          campaignDuration: this.calculateCampaignDuration(inchargePeriods),
+          startDate: campaignDates.startDate,
+          endDate: campaignDates.endDate
+        };
       }
 
       // Get recommendations using the same logic as OOH configurator
@@ -574,11 +592,11 @@ export class MediaPlanGenerator {
         .limit(1);
 
       if (!rateCards || rateCards.length === 0) {
-        // Fallback: keep within budget constraints
+        // Fallback: keep within budget constraints without forcing one unit
         const maxQuantity = Math.floor(totalBudget / 3000);
         return {
-          quantity: Math.max(1, maxQuantity),
-          totalCost: Math.min(totalBudget, maxQuantity * 3000),
+          quantity: Math.max(0, maxQuantity),
+          totalCost: Math.max(0, Math.min(totalBudget, maxQuantity * 3000)),
           costPerUnit: 3000
         };
       }
@@ -587,24 +605,28 @@ export class MediaPlanGenerator {
       const baseRate = rateCard.base_rate_per_incharge;
       const adjustedRate = (rateCard.sale_price ?? rateCard.reduced_price ?? baseRate);
 
-      // Apply discount tiers
-      const { data: discountTiers } = await supabase
-        .from('discount_tiers')
-        .select('*')
-        .eq('media_format_id', mediaFormatId)
-        .eq('is_active', true)
-        .lte('min_periods', periodsCount)
-        .or(`max_periods.is.null,max_periods.gte.${periodsCount}`)
-        .order('discount_percentage', { ascending: false })
-        .limit(1);
+      // Determine if volume discount may apply (only when not budget constrained)
+      const costPerUnitNoDiscount = adjustedRate * periodsCount;
+      const maxQtyNoDisc = Math.floor(totalBudget / costPerUnitNoDiscount);
 
-      const discount = discountTiers?.[0]?.discount_percentage || 0;
-      const discountMultiplier = 1 - (discount / 100);
-      const finalRate = adjustedRate * discountMultiplier;
+      let finalRate = adjustedRate;
+      if (periodsCount >= 3 && maxQtyNoDisc >= 3) {
+        // Apply discount tiers only for genuine volume buys
+        const { data: discountTiers } = await supabase
+          .from('discount_tiers')
+          .select('*')
+          .eq('media_format_id', mediaFormatId)
+          .eq('is_active', true)
+          .lte('min_periods', periodsCount)
+          .or(`max_periods.is.null,max_periods.gte.${periodsCount}`)
+          .order('discount_percentage', { ascending: false })
+          .limit(1);
+        const discount = discountTiers?.[0]?.discount_percentage || 0;
+        const discountMultiplier = 1 - (discount / 100);
+        if (discount > 0) finalRate = adjustedRate * discountMultiplier;
+      }
       
       const costPerUnit = finalRate * periodsCount;
-      
-      // Calculate quantity that fits within budget constraints
       const maxQuantity = Math.floor(totalBudget / costPerUnit);
       const quantity = Math.max(0, maxQuantity);
       const totalCost = costPerUnit * quantity;
@@ -618,8 +640,8 @@ export class MediaPlanGenerator {
       console.error('Error calculating real costs:', error);
       const fallbackQuantity = Math.floor(totalBudget / 3000);
       return {
-        quantity: Math.max(1, fallbackQuantity),
-        totalCost: Math.min(totalBudget, fallbackQuantity * 3000),
+        quantity: Math.max(0, fallbackQuantity),
+        totalCost: Math.max(0, Math.min(totalBudget, fallbackQuantity * 3000)),
         costPerUnit: 3000
       };
     }

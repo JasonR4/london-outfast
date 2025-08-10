@@ -15,8 +15,8 @@ export default function FloatingSubmitBar({
       className="
         fixed inset-x-0 bottom-0 z-40
         backdrop-blur-md
-        bg-[rgb(16,22,30)/.92]  /* navy */
-        border-t border-white/10
+        bg-[hsl(var(--dark-navy))]/95
+        border-t border-border
         px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+12px)]
         sm:hidden
       "
@@ -29,7 +29,7 @@ export default function FloatingSubmitBar({
           window.dispatchEvent(new Event('reveal-submit-gate'));
           onRevealGate?.();
         }}
-        className="w-full h-12 rounded-md bg-gradient-hero text-white font-semibold shadow-lg shadow-black/20"
+        className="w-full h-12 rounded-md bg-gradient-hero text-white font-semibold shadow-lg"
         aria-label="Submit This Plan"
       >
         Submit This Plan

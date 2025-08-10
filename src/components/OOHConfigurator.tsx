@@ -14,6 +14,7 @@ import { MediaPlanModal } from './MediaPlanModal';
 import { MediaPlanGenerator, GeneratedMediaPlan } from '@/services/MediaPlanGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/utils/money';
+import { ToastAction } from '@/components/ui/toast';
 import { trackQuoteItemAdded } from '@/utils/analytics';
 import { computeMedia, formatGBP, countPrintRuns, uniquePeriodsCount } from '@/lib/pricingMath';
 
@@ -345,6 +346,17 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
   const { addQuoteItem, createOrGetQuote, fetchCurrentQuote } = useQuotes();
   const { toast } = useToast();
 
+  const MIN_BUDGET_GBP = 1000;
+  const [budgetError, setBudgetError] = useState<string | null>(null);
+  const parseBudget = (input: string): number => {
+    if (!input) return 0;
+    const txt = input.trim().toLowerCase();
+    const k = /k\b/.test(txt);
+    const n = Number(txt.replace(/[^0-9.]/g, ''));
+    if (Number.isNaN(n)) return 0;
+    return k ? Math.round(n * 1000) : Math.round(n);
+  };
+  
   // Fetch incharge periods on component mount
   useEffect(() => {
     const fetchInchargePeriods = async () => {
@@ -436,12 +448,28 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
   };
 
   const goNext = () => {
-    // Check if we can proceed based on question type
-    if (currentQuestion.type === 'budget_input') {
-      if (!budgetInput.trim()) return;
-    } else {
-      if (selectedValues.length === 0) return;
+  // Check if we can proceed based on question type
+  if (currentQuestion.type === 'budget_input') {
+    if (!budgetInput.trim()) return;
+    const value = parseBudget(budgetInput);
+    if (value < MIN_BUDGET_GBP) {
+      setBudgetError(`Minimum campaign budget is £${MIN_BUDGET_GBP.toLocaleString()}.`);
+      toast({
+        title: 'Budget too low',
+        description: `Our minimum is £${MIN_BUDGET_GBP.toLocaleString()} to ensure real delivery and production costs.`,
+        action: (
+          <ToastAction altText="Call us" asChild>
+            <a href="tel:02071234567">Call us</a>
+          </ToastAction>
+        ),
+        variant: 'destructive'
+      });
+      return; // BLOCK progression
     }
+    setBudgetError(null);
+  } else {
+    if (selectedValues.length === 0) return;
+  }
 
     // Calculate scores for this answer
     let combinedScores: Record<string, number> = {};
@@ -1301,11 +1329,16 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                 autoComplete="off"
                 value={budgetInput}
                 onChange={(e) => setBudgetInput(e.target.value)}
+                aria-invalid={!!budgetError}
+                aria-describedby="budget-help budget-error"
                 className="text-lg"
               />
-              <p className="text-xs text-muted-foreground">
-                Enter the total for this campaign. You can type 25k, £25,000, or 25000.
+              <p id="budget-help" className="text-xs text-muted-foreground">
+                Enter the total for this campaign. You can type <b>25k</b>, <b>£25,000</b>, or <b>25000</b>.
               </p>
+              {budgetError && (
+                <p id="budget-error" className="text-xs text-destructive">{budgetError}</p>
+              )}
             </div>
           ) : (
             currentQuestion.options.map((option, index) => {
