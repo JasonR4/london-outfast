@@ -26,11 +26,18 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
   const [contact, setContact] = useState<SubmitContact>(() => {
     try {
       const pre = localStorage.getItem('submitted_quote_data');
-      return pre ? JSON.parse(pre) : { firstName: '', lastName: '', email: '' } as SubmitContact;
+      return pre ? JSON.parse(pre) : ({ firstName: '', lastName: '', email: '' } as SubmitContact);
     } catch {
       return { firstName: '', lastName: '', email: '' } as SubmitContact;
     }
   });
+
+  // Persist guest details as the user types for smoother flows
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('submitted_quote_data', JSON.stringify(contact));
+    } catch {}
+  }, [contact]);
 
   // Helpers
   function getCurrentQuoteSessionId() {
@@ -93,6 +100,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
 
   async function handleGuestSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     if (!contact.firstName || !contact.lastName || !contact.email) {
       alert('Please complete first name, last name, and email.');
       return;
@@ -104,6 +112,10 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
       const quoteSessionId = getCurrentQuoteSessionId();
       await submitQuoteDb(mapToDbContact(contact)); // updates quotes table with guest details
       await submitDraftQuote({ quoteSessionId, contact, source });
+      // Ensure the current quote session persists post-submit
+      if (quoteSessionId) {
+        try { localStorage.setItem('quote_session_id', quoteSessionId); } catch {}
+      }
       nav('/quote-submitted'); // always the same for guests
     } catch (e) {
       console.error(e);
@@ -178,78 +190,88 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
 
             <div className={row}>
               <input
-                className={inputCls}
+                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
                 placeholder="First name*"
                 value={contact.firstName}
                 onChange={(e) => setContact(c => ({ ...c, firstName: e.target.value }))}
+                autoComplete="given-name"
                 required
               />
               <input
-                className={inputCls}
+                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
                 placeholder="Last name*"
                 value={contact.lastName}
                 onChange={(e) => setContact(c => ({ ...c, lastName: e.target.value }))}
+                autoComplete="family-name"
                 required
               />
             </div>
 
             <div className={row}>
               <input
-                className={inputCls}
+                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
                 type="email"
                 placeholder="Work email*"
                 value={contact.email}
                 onChange={(e) => setContact(c => ({ ...c, email: e.target.value }))}
+                autoComplete="email"
+                inputMode="email"
                 required
               />
               <input
-                className={inputCls}
+                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
                 type="tel"
                 placeholder="Phone (optional)"
                 value={contact.phone || ''}
                 onChange={(e) => setContact(c => ({ ...c, phone: e.target.value }))}
+                autoComplete="tel"
+                inputMode="tel"
               />
             </div>
 
             <div className={row}>
               <input
-                className={inputCls}
+                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
                 placeholder="Company (optional)"
                 value={contact.company || ''}
                 onChange={(e) => setContact(c => ({ ...c, company: e.target.value }))}
+                autoComplete="organization"
               />
               <input
-                className={inputCls}
+                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
                 placeholder="Website (optional)"
                 value={contact.website || ''}
                 onChange={(e) => setContact(c => ({ ...c, website: e.target.value }))}
+                inputMode="url"
+                autoComplete="url"
               />
             </div>
 
-            <textarea
-              className={inputCls}
-              rows={3}
-              placeholder="Additional requirements (optional)"
-              value={contact.notes || ''}
-              onChange={(e) => setContact(c => ({ ...c, notes: e.target.value }))}
-            />
+              <textarea
+                className={`${inputCls} dark:bg-white/5 dark:border-white/15 dark:text-white dark:placeholder-white/60`}
+                rows={4}
+                placeholder="Additional requirements (optional)"
+                value={contact.notes || ''}
+                onChange={(e) => setContact(c => ({ ...c, notes: e.target.value }))}
+              />
 
-            <div className="hidden sm:flex gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setMode('signin')}
-                className="rounded-md border border-gray-300 px-5 py-3 text-sm"
-              >
-                Sign in
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="rounded-md bg-gradient-hero text-white px-5 py-3 text-sm font-semibold disabled:opacity-60 shadow-sm active:opacity-90"
-              >
-                {loading ? 'Submitting…' : 'Submit plan'}
-              </button>
-            </div>
+              <div className="mt-4 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMode('signin')}
+                  className="inline-flex sm:hidden rounded-md border dark:border-white/15 px-4 py-3 text-sm dark:text-white/90"
+                  disabled={loading}
+                >
+                  Sign in
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 rounded-md bg-gradient-hero text-white px-5 py-3 text-sm font-medium disabled:opacity-60"
+                >
+                  {loading ? 'Submitting…' : 'Submit plan'}
+                </button>
+              </div>
           </form>
         )}
       </div>
