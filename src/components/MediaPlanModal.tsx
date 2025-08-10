@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { GeneratedMediaPlan } from '@/services/MediaPlanGenerator';
 import { formatCurrency } from '@/utils/money';
 import { MapPin, Calendar, Target, Users, TrendingUp, CheckCircle } from 'lucide-react';
-import { countPrintRuns } from '@/utils/periods';
+import { formatGBP, uniquePeriodsCount, countPrintRuns } from '@/lib/pricingMath';
 
 interface MediaPlanModalProps {
   isOpen: boolean;
@@ -264,10 +264,31 @@ export const MediaPlanModal = ({
 
                   <Separator className="my-4" />
 
+                  <div className="space-y-1 text-sm mb-2">
+                    {(() => {
+                      const pCount = uniquePeriodsCount(item.selectedPeriods);
+                      const sites = item.recommendedQuantity || 0;
+                      const rate = sites && pCount ? item.baseCost / (sites * pCount) : 0;
+                      const showDiscount = pCount >= 3 && item.baseCost > 0;
+                      const discount = showDiscount ? item.baseCost * 0.10 : 0;
+                      const after = item.baseCost - discount;
+                      return (
+                        <>
+                          <div className="flex justify-between"><span className="text-muted-foreground">Media rate (per in-charge)</span><span>{formatGBP(rate)}</span></div>
+                          <div className="flex justify-between"><span className="text-muted-foreground">Media (before discount)</span><span>{formatGBP(item.baseCost)}</span></div>
+                          {showDiscount && (
+                            <div className="flex justify-between text-green-600"><span>💰 Volume discount (10% for 3+ in-charge periods)</span><span>-{formatGBP(discount)}</span></div>
+                          )}
+                          <div className="flex justify-between"><span className="text-muted-foreground">Media (after discount)</span><span>{formatGBP(after)}</span></div>
+                        </>
+                      );
+                    })()}
+                  </div>
+
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
-                      <p className="text-muted-foreground">Media Cost</p>
-                      <p className="font-medium">{formatCurrency(item.baseCost)}</p>
+                      <p className="text-muted-foreground">Media (after discount)</p>
+                      <p className="font-medium">{(() => { const pCount = uniquePeriodsCount(item.selectedPeriods); const discount = pCount >= 3 ? item.baseCost * 0.10 : 0; return formatGBP(item.baseCost - discount); })()}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Production</p>
