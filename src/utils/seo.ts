@@ -43,7 +43,7 @@ export const generateStructuredData = (format?: any, seoData?: any) => {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "Media Buying London",
-    "description": "London's fastest out-of-home media buying agency. Unbeaten on price, unmatched on speed.",
+    "description": "London's fastest out-of-home media buying specialists. Unbeaten on price, unmatched on speed.",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "London",

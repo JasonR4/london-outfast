@@ -14,8 +14,8 @@ const Hero = () => {
     const loadHomepageSEO = async () => {
       const seoData = await getSEODataForPage('/');
       
-      const title = seoData?.meta_title || "London's Fastest OOH Media Buying Agency | Media Buying London";
-      const description = seoData?.meta_description || "London's fastest out-of-home media buying agency. Unbeaten on price, unmatched on speed. Get your campaign live in 48 hours.";
+      const title = seoData?.meta_title || "London's Fastest OOH Media Buying Specialists | Media Buying London";
+      const description = seoData?.meta_description || "London's fastest out-of-home media buying specialists. Unbeaten on price, unmatched on speed. Get your campaign live in 48 hours.";
       
       updateMetaTags(title, description, 'https://mediabuyinglondon.co.uk', seoData);
     };

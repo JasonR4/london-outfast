@@ -135,8 +135,8 @@ export const SEOManager = () => {
     };
     
     return {
-      meta_title: `${cleanMediaType} Advertising London | #1 OOH Media Agency | Get Quote`,
-      meta_description: `London's fastest ${cleanMediaType.toLowerCase()} advertising agency. Unbeaten prices, unmatched speed. Get your ${cleanMediaType.toLowerCase()} campaign live in 48 hours. Free quote in 60 seconds.`,
+      meta_title: `${cleanMediaType} Advertising London | #1 OOH Media Specialists | Get Quote`,
+      meta_description: `London's fastest ${cleanMediaType.toLowerCase()} advertising specialists. Unbeaten prices, unmatched speed. Get your ${cleanMediaType.toLowerCase()} campaign live in 48 hours. Free quote in 60 seconds.`,
       focus_keyword: `${cleanMediaType.toLowerCase()} advertising london`,
       h1_heading,
       h2_headings,
@@ -744,7 +744,7 @@ export const SEOManager = () => {
                       ]).flat(),
                       
                       // Service + Location Keywords  
-                      'outdoor advertising agency london',
+                      'outdoor advertising specialists london',
                       'ooh media buying london',
                       'billboard advertising london cheap',
                       'london outdoor advertising prices',
@@ -766,7 +766,7 @@ export const SEOManager = () => {
                       'urgent outdoor advertising london',
                       'weekend billboard advertising london',
                       'london outdoor advertising specialists',
-                      'professional ooh agency london',
+                      'professional ooh specialists london',
                       'experienced outdoor advertising london',
                       'premium billboard locations london',
                       'high traffic outdoor sites london',
