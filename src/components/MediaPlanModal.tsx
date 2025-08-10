@@ -339,7 +339,13 @@ export const MediaPlanModal = ({
             <Button 
               onClick={() => {
                 const el = document.getElementById('submit-gate');
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  setTimeout(() => {
+                    const focusEl = el.querySelector('input,button,textarea') as HTMLElement | null;
+                    focusEl?.focus();
+                  }, 400);
+                }
               }}
               className="bg-gradient-hero hover:opacity-90"
             >
