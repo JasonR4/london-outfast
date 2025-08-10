@@ -39,12 +39,16 @@ export default function Configurator() {
     const open = () => {
       setShowGate(true);
       requestAnimationFrame(() => {
-        const el = document.getElementById('submit-gate');
+        const el = document.getElementById('submit-gate')
+          || document.getElementById('submit-gate-desktop')
+          || document.getElementById('submit-gate-anchor');
         if (!el) return;
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         setTimeout(() => {
-          const focusEl = el.querySelector('input,button,textarea') as HTMLElement | null;
+          const focusEl = (document.getElementById('submit-gate') || el)?.querySelector('input,button,textarea') as HTMLElement | null;
           focusEl?.focus();
+          // Clear the hash to avoid future bounce loops
+          try { history.replaceState(null, '', location.pathname + location.search); } catch {}
         }, 250);
       });
     };
@@ -262,7 +266,7 @@ export default function Configurator() {
         <OOHConfigurator onComplete={handleConfigurationComplete} />
         {/* Desktop/Tablet gate (kept on the page) */}
         <div id="submit-gate-anchor" aria-hidden />
-        <div className="hidden sm:block mt-10" id="submit-gate">
+        <div className="hidden sm:block mt-10" id="submit-gate-desktop">
           <SubmitGate source="configurator" />
         </div>
 

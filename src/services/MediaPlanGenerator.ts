@@ -70,9 +70,59 @@ export class MediaPlanGenerator {
       const recommendations = await this.generateRecommendationsFromAnswers(answers, budget);
       console.log('Generated recommendations:', recommendations);
 
+      // Low-budget fallback: offer a starter one-unit plan if recs are empty
       if (recommendations.length === 0) {
-        console.error('No recommendations generated');
-        return null;
+        const selectedAreas = this.getSelectedAreasFromAnswers(answers);
+        const selectedPeriods = this.getSelectedPeriodsFromAnswers();
+        // Cheapest starter pack assumptions (ex VAT)
+        const CHEAPEST = { mediaRate: 283.5, production: 75 };
+        const exVat = CHEAPEST.mediaRate + CHEAPEST.production;
+        const incVat = Math.round(exVat * 1.2 * 100) / 100;
+
+        if (budget >= incVat) {
+          const planItems: MediaPlanItem[] = [{
+            formatSlug: 'lt_panel_6sheet',
+            formatName: '6-sheet Posters',
+            recommendedQuantity: 1,
+            selectedAreas: selectedAreas,
+            selectedPeriods: selectedPeriods,
+            baseCost: CHEAPEST.mediaRate,
+            productionCost: CHEAPEST.production,
+            creativeCost: 0,
+            totalCost: exVat,
+            budgetAllocation: 100,
+            reasonForRecommendation: ['Starter option to get live quickly within budget']
+          }];
+
+          const allocatedBudget = planItems.reduce((s, i) => s + i.totalCost, 0);
+          const campaignDates = this.calculateCampaignDates(inchargePeriods);
+          return {
+            totalBudget: budget,
+            totalAllocatedBudget: allocatedBudget,
+            remainingBudget: Math.max(0, budget - allocatedBudget),
+            items: planItems,
+            campaignObjective: this.getCampaignObjectiveFromAnswers(answers),
+            targetAudience: this.getTargetAudienceFromAnswers(answers),
+            estimatedReach: this.calculateEstimatedReach(planItems),
+            campaignDuration: this.calculateCampaignDuration(inchargePeriods),
+            startDate: campaignDates.startDate,
+            endDate: campaignDates.endDate
+          };
+        }
+        // If even a starter unit doesn't fit, return a minimal plan so UX can proceed
+        const campaignDates = this.calculateCampaignDates(inchargePeriods);
+        return {
+          totalBudget: budget,
+          totalAllocatedBudget: 0,
+          remainingBudget: budget,
+          items: [],
+          campaignObjective: this.getCampaignObjectiveFromAnswers(answers),
+          targetAudience: this.getTargetAudienceFromAnswers(answers),
+          estimatedReach: 'TBC',
+          campaignDuration: this.calculateCampaignDuration(inchargePeriods),
+          startDate: campaignDates.startDate,
+          endDate: campaignDates.endDate
+        };
       }
 
       // Get media formats for ID lookup

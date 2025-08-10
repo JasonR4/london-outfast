@@ -15,7 +15,7 @@ const inputCls =
 
 const row = 'grid grid-cols-1 gap-3 sm:grid-cols-2';
 const panel =
-  'rounded-lg border border-gray-200 bg-white/80 backdrop-blur p-4 sm:p-6 shadow-sm';
+  'rounded-lg border border-border bg-background/90 backdrop-blur p-4 sm:p-6 shadow-[0_10px_40px_hsl(var(--foreground)/0.15)] text-foreground';
 
 export const SubmitGate: React.FC<Props> = ({ source, className }) => {
   const nav = useNavigate();
@@ -173,7 +173,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
 
           {mode === 'authed' ? (
             <div className="mt-4">
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 You're signed in. We'll use your account details for the submission.
               </p>
               <button
@@ -187,20 +187,20 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
             </div>
           ) : mode === 'signin' ? (
             <form onSubmit={handleSignIn} className="mt-4">
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 Sign in to submit with one click.
               </p>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full sm:w-auto rounded-md border border-gray-300 px-5 py-3 text-sm font-medium disabled:opacity-60"
+                className="w-full sm:w-auto rounded-md border border-border px-5 py-3 text-sm font-medium disabled:opacity-60"
               >
                 Continue to sign in
               </button>
             </form>
           ) : (
             <form ref={formRef} onSubmit={handleGuestSubmit} className="mt-4 space-y-4" noValidate>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Don't have an account? No problem. Enter your details and submit.
                 You'll be able to create a password after submitting.
               </p>
