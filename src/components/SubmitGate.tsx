@@ -18,7 +18,7 @@ const panel =
 
 export const SubmitGate: React.FC<Props> = ({ source, className }) => {
   const nav = useNavigate();
-  const { getCurrentQuoteSessionId, submitQuote: submitQuoteDb } = useQuotes();
+  const { submitQuote: submitQuoteDb } = useQuotes();
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'guest' | 'signin' | 'authed'>('guest');
 
@@ -31,8 +31,27 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
     }
   });
 
-  const session = useMemo(() => supabase.auth.getSession(), []);
-  // async resolve session
+  // Helpers
+  function getCurrentQuoteSessionId() {
+    try {
+      return localStorage.getItem('quote_session_id');
+    } catch {
+      return null;
+    }
+  }
+
+  function mapToDbContact(c: SubmitContact) {
+    return {
+      contact_name: `${c.firstName} ${c.lastName}`.trim(),
+      contact_email: c.email,
+      contact_phone: c.phone,
+      contact_company: c.company,
+      additional_requirements: c.notes,
+      website: c.website,
+    };
+  }
+
+  // Resolve auth mode on mount
   React.useEffect(() => {
     (async () => {
       const { data } = await supabase.auth.getSession();
@@ -43,15 +62,25 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
   async function handleAuthedSubmit() {
     setLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       const quoteSessionId = getCurrentQuoteSessionId();
-      // Persist in DB quotes table via your existing hook
-      await submitQuoteDb(); // marks submitted in DB (server will still be source of truth)
+
+      // Persist in DB quotes table via existing hook with minimal account details
+      await submitQuoteDb({
+        contact_name: `${user?.user_metadata?.first_name || ''} ${user?.user_metadata?.last_name || ''}`.trim() || (user?.email || ''),
+        contact_email: user?.email || '',
+      });
+
       // Call unified server function for side-effects (pdf, hubspot, versioning)
-      await submitDraftQuote({ quoteSessionId, contact: {
-        firstName: (session as any)?.data?.session?.user?.user_metadata?.first_name || '',
-        lastName: (session as any)?.data?.session?.user?.user_metadata?.last_name || '',
-        email: (session as any)?.data?.session?.user?.email || '',
-      }, source });
+      await submitDraftQuote({
+        quoteSessionId,
+        contact: {
+          firstName: user?.user_metadata?.first_name || '',
+          lastName: user?.user_metadata?.last_name || '',
+          email: user?.email || '',
+        },
+        source,
+      });
       nav('/client-portal');
     } catch (e) {
       console.error(e);
@@ -70,7 +99,7 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
     setLoading(true);
     try {
       const quoteSessionId = getCurrentQuoteSessionId();
-      await submitQuoteDb({ contact }); // updates quotes table with guest details
+      await submitQuoteDb(mapToDbContact(contact)); // updates quotes table with guest details
       await submitDraftQuote({ quoteSessionId, contact, source });
       nav('/quote-submitted'); // always the same for guests
     } catch (e) {
