@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { OOHConfigurator } from '@/components/OOHConfigurator';
-import { QuoteSubmissionForm } from '@/components/QuoteSubmissionForm';
+import SubmitGate from '@/components/SubmitGate';
 import { useQuotes } from '@/hooks/useQuotes';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
@@ -191,7 +191,7 @@ export default function Configurator() {
             </div>
 
             <div className="lg:col-span-1">
-              <QuoteSubmissionForm quote={currentQuote} />
+              <SubmitGate source="configurator" className="mt-4" />
             </div>
           </div>
         </div>

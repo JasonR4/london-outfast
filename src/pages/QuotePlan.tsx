@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Plus, Trash2, MapPin, Calendar, Package, User, Lock, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
-import { QuoteSubmissionForm } from '@/components/QuoteSubmissionForm';
+import SubmitGate from '@/components/SubmitGate';
 import { inchargePeriods } from '@/data/inchargePeriods';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -566,7 +566,7 @@ export default function QuotePlan() {
 
           {/* Submission Form */}
           <div className="lg:col-span-1">
-            <QuoteSubmissionForm quote={currentQuote} />
+            <SubmitGate source="outdoor-media" className="mt-4" />
           </div>
         </div>
       </div>
