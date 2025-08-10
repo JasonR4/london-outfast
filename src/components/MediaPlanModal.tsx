@@ -342,9 +342,10 @@ export const MediaPlanModal = ({
                 if (el) {
                   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   setTimeout(() => {
-                    const focusEl = el.querySelector('input,button,textarea') as HTMLElement | null;
+                    const focusEl = (document.querySelector('#submit-gate form input, #submit-gate button, #submit-gate textarea') as HTMLElement | null)
+                      || (el.querySelector('input,button,textarea') as HTMLElement | null);
                     focusEl?.focus();
-                  }, 400);
+                  }, 600);
                 }
               }}
               className="bg-gradient-hero hover:opacity-90"
