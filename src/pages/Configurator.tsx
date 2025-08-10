@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { OOHConfigurator } from '@/components/OOHConfigurator';
 import SubmitGate from '@/components/SubmitGate';
 import { useQuotes } from '@/hooks/useQuotes';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 export default function Configurator() {
   const [showSubmission, setShowSubmission] = useState(false);
   const { currentQuote, loading } = useQuotes();
+  const [showGate, setShowGate] = React.useState(false);
 
   const handleConfigurationComplete = () => {
     setShowSubmission(true);
@@ -18,6 +19,19 @@ export default function Configurator() {
     setShowSubmission(false);
   };
 
+  const revealAndFocusGate = () => {
+    setShowGate(true);
+    // wait until gate mounts in DOM
+    requestAnimationFrame(() => {
+      const el = document.getElementById('submit-gate');
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => {
+        const focusEl = el.querySelector('input,button,textarea') as HTMLElement | null;
+        focusEl?.focus();
+      }, 400);
+    });
+  };
   if (showSubmission) {
     if (loading) {
       return (

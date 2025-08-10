@@ -337,15 +337,19 @@ export const MediaPlanModal = ({
               Modify Plan
             </Button>
             <Button 
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
                 const el = document.getElementById('submit-gate');
                 if (el) {
                   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   setTimeout(() => {
-                    const focusEl = (document.querySelector('#submit-gate form input, #submit-gate button, #submit-gate textarea') as HTMLElement | null)
-                      || (el.querySelector('input,button,textarea') as HTMLElement | null);
+                    const focusEl = el.querySelector('input,button,textarea') as HTMLElement | null;
                     focusEl?.focus();
-                  }, 600);
+                  }, 400);
+                } else {
+                  // Fallback: push a hash to force browser anchor scroll if the element
+                  // is added a moment later; page logic will mount it.
+                  window.location.hash = '#submit-gate';
                 }
               }}
               className="bg-gradient-hero hover:opacity-90"
