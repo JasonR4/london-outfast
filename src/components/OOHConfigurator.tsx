@@ -15,6 +15,7 @@ import { MediaPlanGenerator, GeneratedMediaPlan } from '@/services/MediaPlanGene
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/utils/money';
 import { trackQuoteItemAdded } from '@/utils/analytics';
+import { computeMedia, formatGBP, countPrintRuns } from '@/lib/pricingMath';
 
 export interface Answer {
   questionId: string;
@@ -1039,10 +1040,23 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                       
                       {rec.budgetAllocation && (
                         <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Media Costs:</span>
-                            <span>{formatCurrency(rec.budgetAllocation * 0.7)}</span>
-                          </div>
+                          {(() => {
+                            const selectedPeriods = getSelectedPeriods();
+                            const pCount = selectedPeriods ? new Set(selectedPeriods.map(String)).size : 0;
+                            const sites = rec.calculatedQuantity || 0;
+                            const rate = sites && pCount ? (rec.costPerUnit || 0) / pCount : 0;
+                            const media = { ...computeMedia({ saleRate: rate, sites, periods: selectedPeriods }) };
+                            return (
+                              <>
+                                <div className="flex justify-between"><span className="text-muted-foreground">Media rate (per in-charge)</span><span>{formatGBP(media.rate)}</span></div>
+                                <div className="flex justify-between"><span className="text-muted-foreground">Media (before discount)</span><span>{formatGBP(media.before)}</span></div>
+                                {media.showDiscount && (
+                                  <div className="flex justify-between text-green-600"><span>💰 Volume discount (10% for 3+ in-charge periods)</span><span>-{formatGBP(media.discount)}</span></div>
+                                )}
+                                <div className="flex justify-between"><span className="text-muted-foreground">Media (after discount)</span><span>{formatGBP(media.after)}</span></div>
+                              </>
+                            );
+                          })()}
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Production Costs:</span>
                             <span>{formatCurrency(rec.budgetAllocation * 0.15)}</span>
@@ -1051,15 +1065,6 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                             <span className="text-muted-foreground">Creative Development:</span>
                             <span>{formatCurrency(rec.budgetAllocation * 0.15)}</span>
                           </div>
-                          
-                          {/* Show potential discount based on quantity */}
-                          {rec.calculatedQuantity && rec.calculatedQuantity >= 5 && (
-                            <div className="flex justify-between text-green-600">
-                              <span>💰 Volume Discount (10%):</span>
-                              <span>{formatCurrency(-(rec.budgetAllocation * 0.1))}</span>
-                            </div>
-                          )}
-                          
                           <div className="flex justify-between font-medium pt-2 border-t border-border/50">
                             <span>Subtotal (exc VAT):</span>
                             <span>{formatCurrency(rec.budgetAllocation)}</span>
@@ -1072,15 +1077,8 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                             <span>Total inc VAT:</span>
                             <span>{formatCurrency(rec.budgetAllocation * 1.2)} inc VAT</span>
                           </div>
-                          
-                          {/* Show savings message for volume discounts */}
-                          {rec.calculatedQuantity && rec.calculatedQuantity >= 5 && (
-                            <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                              <div className="text-xs text-green-700 dark:text-green-300 font-medium">
-                                🎉 Volume discount applied! You save {formatCurrency((rec.budgetAllocation * 0.1) * 1.2)} inc VAT
-                              </div>
-                            </div>
-                          )}
+                          {(() => { const runs = countPrintRuns(getSelectedPeriods()); return runs > 1 ? (<div className="mt-2 text-xs opacity-80">Non-consecutive periods = {runs} print runs (production only).</div>) : null; })()}
+                          {(() => { const selectedPeriods = getSelectedPeriods(); const sites = rec.calculatedQuantity || 0; const pCount = selectedPeriods ? new Set(selectedPeriods.map(String)).size : 0; const rate = sites && pCount ? (rec.costPerUnit || 0) / pCount : 0; const media = computeMedia({ saleRate: rate, sites, periods: selectedPeriods }); return media.showDiscount ? (<div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg"><div className="text-xs text-green-700 dark:text-green-300 font-medium">🎉 Volume discounts applied! Total savings: {formatCurrency(media.discount * 1.2)} inc VAT</div></div>) : null; })()}
                         </div>
                       )}
                       

@@ -242,7 +242,7 @@ export const MediaPlanModal = ({
                       </div>
                       {item.selectedPeriods.length > 1 && countPrintRuns(item.selectedPeriods) > 1 && (
                         <div className="mt-1 text-xs opacity-70">
-                          Note: Non-consecutive in-charge periods will require additional print runs. This affects production costs only and does not change your media rate.
+                          Non-consecutive periods = {countPrintRuns(item.selectedPeriods)} print runs (production only).
                         </div>
                       )}
                     </div>
