@@ -1154,6 +1154,7 @@ const FormatPage = () => {
                            // Media cost calculation
                            const mediaCost = saleRate * units * uniquePeriods;
                            const mediaDiscount = qualifiesVolume ? mediaCost * 0.10 : 0;
+                           const showDiscount = qualifiesVolume && mediaCost > 0;
                            const mediaAfterDiscount = mediaCost - mediaDiscount;
 
                            // Production costs are always calculated
@@ -1177,7 +1178,7 @@ const FormatPage = () => {
                                   <span>{formatCurrency(mediaCost)}</span>
                                 </div>
 
-                                {qualifiesVolume && (
+                                {showDiscount && (
                                   <>
                                     <div className="flex justify-between text-green-600">
                                       <span>💰 Volume discount (10% for 3+ in-charge periods)</span>
