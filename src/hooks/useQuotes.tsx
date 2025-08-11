@@ -527,3 +527,42 @@ export const useQuotes = () => {
     }
   };
 };
+
+// Server-side totals recalculator: sums item totals and updates the quote totals
+export async function recalcQuoteTotals(quoteId: string) {
+  const { data: items, error } = await supabase
+    .from('quote_items')
+    .select('total_cost, base_cost, production_cost, creative_cost')
+    .eq('quote_id', quoteId);
+
+  if (error) throw error;
+
+  const exVat = (items || []).reduce((s, i) =>
+    s + (Number(i.total_cost ?? 0) || ((i.base_cost || 0) + (i.production_cost || 0) + (i.creative_cost || 0))), 0);
+
+  const vatRate = 20; // percent
+  const vatAmount = Math.round(exVat * (vatRate / 100) * 100) / 100;
+  const totalIncVat = Math.round((exVat + vatAmount) * 100) / 100;
+
+  await supabase
+    .from('quotes')
+    .update({
+      total_cost: exVat,
+      subtotal: exVat,
+      vat_rate: vatRate,
+      vat_amount: vatAmount,
+      total_inc_vat: totalIncVat,
+    })
+    .eq('id', quoteId);
+}
+
+// Fetch a fresh quote by ID, including items
+export async function getQuoteById(quoteId: string) {
+  const { data, error } = await supabase
+    .from('quotes')
+    .select('*, quote_items(*)')
+    .eq('id', quoteId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}

@@ -15,6 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Search, MapPin, Zap, Calculator, CheckCircle2, AlertTriangle, Info, Palette, ChevronDown, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuotes } from "@/hooks/useQuotes";
+import { recalcQuoteTotals, getQuoteById } from "@/hooks/useQuotes";
 import { useRateCards } from "@/hooks/useRateCards";
 import { useLocationSelector } from "@/hooks/useLocationSelector";
 import { useLocationCapacity } from "@/hooks/useLocationCapacity";
@@ -534,7 +535,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       console.error('❌ syncDraftsToQuoteIfNeeded error', e);
       return [] as any[];
     }
-  }, [addQuoteItem, currentQuote?.quote_items]);
+  }, [addQuoteItem, currentQuote?.quote_items, navigate, toast]);
 
   const handleSubmitQuote = async () => {
     console.log('🚀 handleSubmitQuote called');
@@ -622,8 +623,29 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
           console.log('🔄 Navigating to client portal');
           navigate('/client-portal');
         } else {
-          console.log('🔄 Navigating to create account');
-          navigate('/create-account');
+          console.log('🔄 Recalculating totals before redirect to create account');
+          try {
+            const qid = latest?.id || currentQuote?.id;
+            if (qid) {
+              await recalcQuoteTotals(qid);
+              const fresh = await getQuoteById(qid);
+              const count = fresh?.quote_items?.length ?? 0;
+              if (!fresh || count === 0) {
+                toast({
+                  title: "Could not finalize quote",
+                  description: "Please try again.",
+                  variant: "destructive",
+                });
+                return;
+              }
+              navigate(`/create-account?quote_id=${fresh.id}`);
+            } else {
+              navigate('/create-account');
+            }
+          } catch (e) {
+            console.error('❌ Recalc before redirect failed', e);
+            navigate('/create-account');
+          }
         }
       } else {
         console.log('❌ Submit returned false');

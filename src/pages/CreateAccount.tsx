@@ -13,7 +13,7 @@ import { formatCurrency } from '@/utils/money';
 export default function CreateAccount() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const quoteId = searchParams.get('quote');
+  const quoteId = searchParams.get('quote_id');
   
   const [isLoading, setIsLoading] = useState(false);
   const [hasQuoteData, setHasQuoteData] = useState(false);
@@ -58,6 +58,29 @@ export default function CreateAccount() {
       }
     }
   }, []);
+
+  // Always fetch the latest quote by query param to avoid stale totals
+  useEffect(() => {
+    const qid = searchParams.get('quote_id');
+    if (!qid) return;
+    (async () => {
+      try {
+        console.debug('🔄 Fetching fresh quote for CreateAccount', qid);
+        const { data, error } = await supabase
+          .from('quotes')
+          .select('*, quote_items(*)')
+          .eq('id', qid)
+          .maybeSingle();
+        if (error) throw error;
+        if (data) {
+          setQuoteDetails(data);
+          setHasQuoteData(true);
+        }
+      } catch (e) {
+        console.error('❌ Failed to fetch quote by id', e);
+      }
+    })();
+  }, [searchParams]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -209,7 +232,7 @@ export default function CreateAccount() {
                     <div className="space-y-4">
                       <div className="flex justify-between items-center p-4 bg-primary/5 rounded-lg border border-primary/10">
                         <span className="font-semibold text-lg">Total Campaign Cost</span>
-                        <span className="text-2xl font-bold text-primary">{formatCurrency(quoteDetails.total_cost || 0)}</span>
+                        <span className="text-2xl font-bold text-primary">{formatCurrency((quoteDetails?.total_cost && quoteDetails.total_cost > 0) ? quoteDetails.total_cost : (quoteDetails?.quote_items || []).reduce((s: number, i: any) => s + (i.total_cost ?? ((i.base_cost||0)+(i.production_cost||0)+(i.creative_cost||0))), 0))}</span>
                       </div>
                       
                       <div className="space-y-3">
