@@ -42,7 +42,7 @@ const FormatDirectory = () => {
             OOH FORMAT DIRECTORY
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent">
-            London OOH Media Formats
+            London OOH Formats & Rates
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
             Explore all available Out-of-Home advertising formats across London. From digital billboards to underground panels, find the perfect format for your campaign.

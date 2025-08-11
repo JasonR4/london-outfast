@@ -107,9 +107,38 @@
         console.log('Page load timeout reached - forced display');
       }, 10000);
     </script>
+    <style>
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0,0,0,0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
   </head>
 
   <body>
+    <h1 id="seo-h1" class="sr-only">
+      London’s Fastest OOH Media Buying Specialist – Transparent Rates, Same-Day Quotes
+    </h1>
+
+    <noscript>
+      <section id="seo-noscript" style="padding:16px;max-width:900px;margin:0 auto;">
+        <h2>Media Buying London – Out-of-Home Specialists</h2>
+        <p>
+          We specialise in planning and buying out-of-home media across London:
+          roadside billboards, digital screens, Tube panels, and bus formats.
+          With transparent rates and rapid turnaround, our campaigns are
+          precisely planned and ready to activate when you are.
+        </p>
+      </section>
+    </noscript>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

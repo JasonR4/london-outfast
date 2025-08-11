@@ -188,7 +188,7 @@ const Industries = () => {
             INDUSTRY SPECIALISTS
           </Badge>
           <h1 className="text-4xl lg:text-5xl font-bold mb-6">
-            Out-of-Home Advertising by Industry
+            Targeted OOH Solutions by Sector
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             Tailored outdoor advertising solutions for every sector. Our industry expertise ensures 

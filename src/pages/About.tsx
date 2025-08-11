@@ -108,7 +108,7 @@ const About = () => {
           <div className="animate-fade-in">
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 text-white leading-tight">
               <span className="block animate-[fade-in_0.6s_ease-out]">
-                {content.hero_title || 'About Us'}
+                {content.hero_title || 'Media Buying London – Specialist in London OOH'}
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed animate-[fade-in_0.8s_ease-out_0.2s_both]">
