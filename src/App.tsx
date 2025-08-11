@@ -35,6 +35,7 @@ import BlogPost from "./pages/BlogPost";
 import { trackPageView, initCampaignTracking } from "@/utils/analytics";
 import { updateMetaTags } from "@/utils/seo";
 import EmailTest from "./pages/EmailTest";
+import NoInspect from "@/components/security/NoInspect";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,7 @@ const App = () => {
           <BrowserRouter>
           <ScrollToTop />
           <RouterAnalytics />
+          <NoInspect />
           <div className="min-h-screen bg-background">
             <AnalyticsScripts />
             <Navigation />
