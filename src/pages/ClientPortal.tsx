@@ -285,17 +285,17 @@ export default function ClientPortal() {
         {/* Header */}
         <div className="md:sticky top-0 z-40 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b mb-4 sm:mb-6 px-1 py-2 sm:py-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
           <div>
-            <h1 className="text-xl sm:text-3xl font-bold">Welcome back, {user.user_metadata?.first_name || 'there'}!</h1>
+            <h1 className="text-lg sm:text-3xl font-bold">Welcome back, {user.user_metadata?.first_name || 'there'}!</h1>
             <p className="hidden sm:block text-muted-foreground">
               Manage your campaigns and access premium features
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => navigate('/')}>
+          <div className="flex items-center gap-1">
+            <Button size="xs" variant="outline" onClick={() => navigate('/')}>
               <Plus className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">New Campaign</span>
             </Button>
-            <Button size="sm" variant="ghost" onClick={handleSignOut} className="gap-2">
+            <Button size="xs" variant="ghost" onClick={handleSignOut} className="gap-2">
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Sign Out</span>
             </Button>
@@ -314,7 +314,7 @@ export default function ClientPortal() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 space-y-2">
-                <div>
+                <div className="text-sm">
                   <p className="text-sm font-medium">{user.user_metadata?.full_name || user.email}</p>
                   <p className="text-xs text-muted-foreground">{user.email}</p>
                   {user.user_metadata?.company && (
@@ -355,22 +355,22 @@ export default function ClientPortal() {
             {/* Stats Overview */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
               <Card>
-                <CardContent className="p-4 sm:pt-6">
-                  <div className="text-2xl font-bold">{quotes.length}</div>
+                <CardContent className="p-3 sm:pt-6">
+                  <div className="text-xl font-bold">{quotes.length}</div>
                   <p className="text-xs text-muted-foreground">Total Quotes</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-4 sm:pt-6">
-                  <div className="text-2xl font-bold">
+                <CardContent className="p-3 sm:pt-6">
+                  <div className="text-xl font-bold">
                     {formatCurrency(quotes.reduce((sum, quote) => sum + quote.total_cost, 0))}
                   </div>
                   <p className="text-xs text-muted-foreground">Total Campaign Value</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-4 sm:pt-6">
-                  <div className="text-2xl font-bold">
+                <CardContent className="p-3 sm:pt-6">
+                  <div className="text-xl font-bold">
                     {quotes.filter(q => q.status === 'active').length}
                   </div>
                   <p className="text-xs text-muted-foreground">Active Campaigns</p>
@@ -384,7 +384,7 @@ export default function ClientPortal() {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <CardTitle className="text-lg sm:text-xl">Your Quotes & Campaigns</CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-sm">
                       Track your quotes through every stage of the process
                     </CardDescription>
                   </div>
