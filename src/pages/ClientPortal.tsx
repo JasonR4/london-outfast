@@ -353,7 +353,7 @@ export default function ClientPortal() {
           <div className="lg:col-span-3 space-y-6">
             
             {/* Stats Overview */}
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-4 md:gap-6">
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{quotes.length}</div>
@@ -435,12 +435,12 @@ export default function ClientPortal() {
                             className="border rounded-lg p-4 hover:bg-muted/30 transition-colors cursor-pointer"
                             onClick={() => handleViewQuote(quote)}
                           >
-                            <div className="flex items-center justify-between mb-3">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-3">
                               <div className="flex items-center gap-3">
                                 <h3 className="font-semibold">Quote #{quote.id.slice(0, 8)}</h3>
                                 <Badge variant="secondary">Under Review</Badge>
                               </div>
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-3 sm:shrink-0">
                                 <div className="text-right">
                                   <div className="font-semibold">{formatCurrency(quote.total_cost)}</div>
                                   <div className="text-xs text-muted-foreground">
@@ -496,11 +496,12 @@ export default function ClientPortal() {
                     ) : (
                       <div className="space-y-6">
                         {confirmedQuotes.map((quote) => (
-                          <ConfirmedMediaSchedule 
-                            key={quote.id} 
-                            quote={quote} 
-                            onStatusUpdate={handleQuoteStatusUpdate}
-                          />
+                          <div key={quote.id} className="-mx-4 sm:mx-0 overflow-x-auto">
+                            <ConfirmedMediaSchedule 
+                              quote={quote} 
+                              onStatusUpdate={handleQuoteStatusUpdate}
+                            />
+                          </div>
                         ))}
                       </div>
                     )}
@@ -518,11 +519,12 @@ export default function ClientPortal() {
                     ) : (
                       <div className="space-y-6">
                         {approvedQuotes.map((quote) => (
-                          <ContractAgreements 
-                            key={quote.id} 
-                            quote={quote} 
-                            onStatusUpdate={handleQuoteStatusUpdate}
-                          />
+                          <div key={quote.id} className="-mx-4 sm:mx-0 overflow-x-auto">
+                            <ContractAgreements 
+                              quote={quote} 
+                              onStatusUpdate={handleQuoteStatusUpdate}
+                            />
+                          </div>
                         ))}
                       </div>
                     )}
@@ -544,7 +546,7 @@ export default function ClientPortal() {
                             key={quote.id} 
                             className="border rounded-lg p-4 bg-green-50 border-green-200"
                           >
-                            <div className="flex items-center justify-between mb-3">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-3">
                               <div className="flex items-center gap-3">
                                 <h3 className="font-semibold">Campaign #{quote.id.slice(0, 8)}</h3>
                                 <Badge className="bg-green-500">Live</Badge>
