@@ -280,7 +280,7 @@ export default function ClientPortal() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 pt-3 pb-6 sm:pt-8 sm:pb-8 pb-[env(safe-area-inset-bottom)]">
+      <div className="container mx-auto px-4 pt-3 pb-6 sm:pt-8 sm:pb-8">
         
         {/* Header */}
         <div className="md:sticky top-0 z-40 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b mb-4 sm:mb-6 px-1 py-2 sm:py-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
@@ -328,7 +328,7 @@ export default function ClientPortal() {
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 sm:p-6 space-y-1 sm:space-y-2">
+              <CardContent className="p-3 sm:p-6 grid grid-cols-2 sm:grid-cols-1 gap-2">
                 <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3" onClick={() => navigate('/outdoor-media')}>
                   <FileText className="h-4 w-4 mr-2" />
                   Browse Formats
@@ -353,7 +353,7 @@ export default function ClientPortal() {
           <div className="lg:col-span-3 space-y-6">
             
             {/* Stats Overview */}
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
               <Card>
                 <CardContent className="p-4 sm:pt-6">
                   <div className="text-2xl font-bold">{quotes.length}</div>
@@ -569,6 +569,7 @@ export default function ClientPortal() {
             </Card>
           </div>
         </div>
+        <div className="h-[env(safe-area-inset-bottom)] sm:h-0" />
       </div>
 
       {/* Quote Details Modal */}
