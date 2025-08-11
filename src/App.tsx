@@ -42,7 +42,7 @@ const RouterAnalytics = () => {
   useEffect(() => {
     trackPageView(location.pathname, document.title);
     const metaDesc = (document.querySelector('meta[name="description"]') as HTMLMetaElement)?.content || "London's fastest out-of-home media buying specialists.";
-    const url = new URL(location.pathname + location.search, 'https://mediabuyinglondon.co.uk').toString();
+    const url = new URL(location.pathname + location.search, window.location.origin).toString();
     updateMetaTags(document.title, metaDesc, url);
   }, [location.pathname, location.search]);
   return null;
