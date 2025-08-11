@@ -143,8 +143,8 @@ const CMS = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+        <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -155,15 +155,15 @@ const CMS = () => {
               <ArrowLeft className="w-4 h-4" />
               Back to Site
             </Button>
-            <h1 className="text-2xl font-bold">Media Buying London CMS</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">Media Buying London CMS</h1>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
+            <span className="hidden sm:inline text-sm text-muted-foreground">
               Welcome, {userProfile?.full_name || user.email}
             </span>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+            <Button variant="outline" size="sm" onClick={handleSignOut} className="gap-2">
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Sign Out</span>
             </Button>
           </div>
         </div>
@@ -173,60 +173,60 @@ const CMS = () => {
         <Tabs defaultValue="quotes" className="space-y-6">
           <div className="space-y-2">
             {/* First row of tabs */}
-            <TabsList className="grid w-full grid-cols-6 gap-1">
-              <TabsTrigger value="quotes" className="flex items-center gap-2">
+            <TabsList className="flex w-full overflow-x-auto gap-2 sm:gap-1">
+              <TabsTrigger value="quotes" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <ClipboardList className="w-4 h-4" />
                 Quotes
               </TabsTrigger>
-              <TabsTrigger value="homepage" className="flex items-center gap-2">
+              <TabsTrigger value="homepage" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <Home className="w-4 h-4" />
                 Homepage
               </TabsTrigger>
-              <TabsTrigger value="content" className="flex items-center gap-2">
+              <TabsTrigger value="content" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <PenTool className="w-4 h-4" />
                 Content
               </TabsTrigger>
-              <TabsTrigger value="industries" className="flex items-center gap-2">
+              <TabsTrigger value="industries" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <Building className="w-4 h-4" />
                 Industries
               </TabsTrigger>
-              <TabsTrigger value="legal" className="flex items-center gap-2">
+              <TabsTrigger value="legal" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <Scale className="w-4 h-4" />
                 Legal
               </TabsTrigger>
-              <TabsTrigger value="media" className="flex items-center gap-2">
+              <TabsTrigger value="media" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <Image className="w-4 h-4" />
                 Media
               </TabsTrigger>
             </TabsList>
             
             {/* Second row of tabs */}
-            <TabsList className="grid w-full grid-cols-7 gap-1">
-              <TabsTrigger value="blog" className="flex items-center gap-2">
+            <TabsList className="flex w-full overflow-x-auto gap-2 sm:gap-1">
+              <TabsTrigger value="blog" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <BookOpen className="w-4 h-4" />
                 Blog
               </TabsTrigger>
-              <TabsTrigger value="pages" className="flex items-center gap-2">
+              <TabsTrigger value="pages" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <FileText className="w-4 h-4" />
                 Pages
               </TabsTrigger>
-              <TabsTrigger value="rates" className="flex items-center gap-2">
+              <TabsTrigger value="rates" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <Calculator className="w-4 h-4" />
                 Rates
               </TabsTrigger>
-              <TabsTrigger value="seo" className="flex items-center gap-2">
+              <TabsTrigger value="seo" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <Search className="w-4 h-4" />
                 SEO
               </TabsTrigger>
-              <TabsTrigger value="global" className="flex items-center gap-2">
+              <TabsTrigger value="global" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <Globe className="w-4 h-4" />
                 Global
               </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <TabsTrigger value="analytics" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <BarChart3 className="w-4 h-4" />
                 Analytics
               </TabsTrigger>
-              <TabsTrigger value="team" className="flex items-center gap-2">
+              <TabsTrigger value="team" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <Users className="w-4 h-4" />
                 Team
               </TabsTrigger>
