@@ -283,7 +283,7 @@ export default function ClientPortal() {
       <div className="container mx-auto px-4 pt-3 pb-6 sm:pt-8 sm:pb-8">
         
         {/* Header */}
-        <div className="md:sticky top-0 z-40 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b mb-3 sm:mb-6 px-1 py-1.5 sm:py-3 flex flex-wrap items-center justify-between gap-1.5 sm:gap-3">
+        <div className="sticky top-0 z-40 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b mb-3 sm:mb-6 px-2 py-2 sm:px-1 sm:py-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
           <div>
             <h1 className="text-base sm:text-3xl font-bold">Welcome back, {user.user_metadata?.first_name || 'there'}!</h1>
             <p className="hidden sm:block text-muted-foreground">
@@ -291,12 +291,12 @@ export default function ClientPortal() {
             </p>
           </div>
           <div className="flex items-center gap-1">
-            <Button size="xs" variant="outline" onClick={() => navigate('/') }>
-              <Plus className="h-3 w-3 mr-2" />
+            <Button size="sm" variant="outline" onClick={() => navigate('/') }>
+              <Plus className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">New Campaign</span>
             </Button>
-            <Button size="xs" variant="ghost" onClick={handleSignOut} className="gap-2">
-              <LogOut className="h-3 w-3" />
+            <Button size="sm" variant="ghost" onClick={handleSignOut} className="gap-2">
+              <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Sign Out</span>
             </Button>
           </div>
@@ -329,20 +329,20 @@ export default function ClientPortal() {
                 <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="p-2 sm:p-5 grid grid-cols-2 sm:grid-cols-1 gap-2">
-                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3 text-xs" onClick={() => navigate('/outdoor-media')}>
-                  <FileText className="h-3 w-3 mr-2" />
+                <Button variant="outline" size="sm" className="w-full justify-start [&_svg]:size-4 text-sm" onClick={() => navigate('/outdoor-media')}>
+                  <FileText className="h-4 w-4 mr-2" />
                   Browse Formats
                 </Button>
-                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3 text-xs" onClick={() => navigate('/configurator')}>
-                  <BarChart3 className="h-3 w-3 mr-2" />
+                <Button variant="outline" size="sm" className="w-full justify-start [&_svg]:size-4 text-sm" onClick={() => navigate('/configurator')}>
+                  <BarChart3 className="h-4 w-4 mr-2" />
                   Campaign Planner
                 </Button>
-                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3 text-xs" disabled>
-                  <Camera className="h-3 w-3 mr-2" />
+                <Button variant="outline" size="sm" className="w-full justify-start [&_svg]:size-4 text-sm" disabled>
+                  <Camera className="h-4 w-4 mr-2" />
                   Proof Gallery
                 </Button>
-                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3 text-xs" disabled>
-                  <Palette className="h-3 w-3 mr-2" />
+                <Button variant="outline" size="sm" className="w-full justify-start [&_svg]:size-4 text-sm" disabled>
+                  <Palette className="h-4 w-4 mr-2" />
                   Creative Studio
                 </Button>
               </CardContent>
@@ -388,7 +388,7 @@ export default function ClientPortal() {
                       Track your quotes through every stage of the process
                     </CardDescription>
                   </div>
-                  <Button size="xs" onClick={() => navigate('/outdoor-media')}>
+                  <Button size="sm" onClick={() => navigate('/outdoor-media')}>
                     <Plus className="h-3 w-3 mr-2" />
                     New Quote
                   </Button>
@@ -396,20 +396,20 @@ export default function ClientPortal() {
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
                 <Tabs defaultValue="submitted" className="w-full">
-                  <TabsList className="flex w-full overflow-x-auto gap-1 -mx-1 px-1 pb-1 text-xs h-8 [&_svg]:size-3">
-                    <TabsTrigger value="submitted" className="flex items-center gap-1.5 whitespace-nowrap shrink-0 h-7 px-2 text-xs">
+                  <TabsList className="flex w-full overflow-x-auto gap-1 -mx-4 px-4 pb-1 text-sm h-10 md:h-8 md:text-xs [&_svg]:size-4 md:[&_svg]:size-3 snap-x snap-mandatory">
+                    <TabsTrigger value="submitted" className="flex items-center gap-1.5 whitespace-nowrap shrink-0 h-9 md:h-7 px-3 md:px-2 text-sm md:text-xs snap-start">
                       <FileText className="h-3 w-3" />
                       Submitted ({submittedQuotes.length})
                     </TabsTrigger>
-                    <TabsTrigger value="confirmed" className="flex items-center gap-1.5 whitespace-nowrap shrink-0 h-7 px-2 text-xs">
+                    <TabsTrigger value="confirmed" className="flex items-center gap-1.5 whitespace-nowrap shrink-0 h-9 md:h-7 px-3 md:px-2 text-sm md:text-xs snap-start">
                       <Clock className="h-3 w-3" />
                       Media Schedule ({confirmedQuotes.length})
                     </TabsTrigger>
-                    <TabsTrigger value="contracts" className="flex items-center gap-1.5 whitespace-nowrap shrink-0 h-7 px-2 text-xs">
+                    <TabsTrigger value="contracts" className="flex items-center gap-1.5 whitespace-nowrap shrink-0 h-9 md:h-7 px-3 md:px-2 text-sm md:text-xs snap-start">
                       <FileCheck className="h-3 w-3" />
                       Contracts ({approvedQuotes.length})
                     </TabsTrigger>
-                    <TabsTrigger value="active" className="flex items-center gap-1.5 whitespace-nowrap shrink-0 h-7 px-2 text-xs">
+                    <TabsTrigger value="active" className="flex items-center gap-1.5 whitespace-nowrap shrink-0 h-9 md:h-7 px-3 md:px-2 text-sm md:text-xs snap-start">
                       <CheckCircle className="h-3 w-3" />
                       Active ({activeQuotes.length})
                     </TabsTrigger>
