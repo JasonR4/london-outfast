@@ -27,11 +27,19 @@ const secondaryPct =
     : undefined;
 
   // Production & creative (outside media discount)
-  const productionUnit = Number(item?.productionRate ?? item?.productionCost ?? 0);
-  const creativeUnit = Number(item?.creativeRate ?? 0);
+  const productionRateUnit = Number(item?.productionRatePerUnit ?? item?.productionRate ?? 0);
+  const creativeRateUnit = Number(item?.creativeUnit ?? item?.creativeRate ?? 0);
+  const productionTotalFromItem = Number(item?.productionCost ?? 0);
+  const creativeTotalFromItem = Number(item?.creativeCost ?? 0);
   const creativeAssets = Number(item?.creativeAssets ?? item?.creativeCount ?? 0);
-  const production = productionUnit * sites * (runs || 1);
-  const creative = creativeUnit * creativeAssets;
+
+  const production = productionRateUnit > 0
+    ? productionRateUnit * sites * (runs || 1)
+    : productionTotalFromItem;
+
+  const creative = creativeRateUnit > 0
+    ? creativeRateUnit * creativeAssets
+    : creativeTotalFromItem;
   const subtotalExVat = media.after + production + creative;
 
   return (

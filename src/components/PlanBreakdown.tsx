@@ -21,15 +21,17 @@ const PlanBreakdown: React.FC<Props> = ({ items, showKpis = true }) => {
   const mediaAfterTotal = items.reduce((a, it) => a + getMedia(it).after, 0);
   const volDiscTotal = mediaAfterTotal - mediaBeforeTotal; // negative when discount applied
   const productionTotal = items.reduce((a, it) => {
-    const prodRate = Number(it?.productionRate ?? it?.productionCost ?? 0);
+    const unit = Number(it?.productionRatePerUnit ?? it?.productionRate ?? 0);
+    const totalProvided = Number(it?.productionCost ?? 0);
     const sites = Number(it?.sites ?? it?.quantity ?? 0);
     const runs = getMedia(it).printRuns || 1;
-    return a + prodRate * sites * runs;
+    return a + (unit > 0 ? unit * sites * runs : totalProvided);
   }, 0);
   const creativeTotal = items.reduce((a, it) => {
-    const crRate = Number(it?.creativeRate ?? 0);
+    const unit = Number(it?.creativeUnit ?? it?.creativeRate ?? 0);
     const assets = Number(it?.creativeAssets ?? it?.creativeCount ?? 0);
-    return a + crRate * assets;
+    const totalProvided = Number(it?.creativeCost ?? 0);
+    return a + (unit > 0 ? unit * assets : totalProvided);
   }, 0);
   const exVat = mediaAfterTotal + productionTotal + creativeTotal;
   const vat = exVat * 0.2;
@@ -39,13 +41,14 @@ const PlanBreakdown: React.FC<Props> = ({ items, showKpis = true }) => {
     <div>
       {items.map((it, idx) => {
         const media = getMedia(it);
-        const sites = Number(it?.sites ?? it?.quantity ?? 0);
-        const prodRate = Number(it?.productionRate ?? it?.productionCost ?? 0);
-        const creativeRate = Number(it?.creativeRate ?? 0);
+        const sitesLocal = Number(it?.sites ?? it?.quantity ?? 0);
+        const prodUnit = Number(it?.productionRatePerUnit ?? it?.productionRate ?? 0);
+        const prodProvided = Number(it?.productionCost ?? 0);
+        const creativeUnit = Number(it?.creativeUnit ?? it?.creativeRate ?? 0);
         const creativeCount = Number(it?.creativeAssets ?? it?.creativeCount ?? 0);
         const runs = media.printRuns || 1;
-        const production = prodRate * sites * runs;
-        const creative = creativeRate * creativeCount;
+        const production = prodUnit > 0 ? prodUnit * sitesLocal * runs : prodProvided;
+        const creative = creativeUnit > 0 ? creativeUnit * creativeCount : Number(it?.creativeCost ?? 0);
         const subtotalExVatItem = media.after + production + creative;
         const safeTotal = exVat || 1;
         const shareOfPlan = subtotalExVatItem / safeTotal;
