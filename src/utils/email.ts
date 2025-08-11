@@ -9,6 +9,8 @@ export type SendEmailParams = {
   cc?: string[];
   bcc?: string[];
   reply_to?: string;
+  brand_name?: string;
+  brand_from?: string;
 };
 
 export async function sendEmail(params: SendEmailParams) {
