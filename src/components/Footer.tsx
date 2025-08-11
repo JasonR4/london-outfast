@@ -5,7 +5,7 @@ import IndustriesDropdown from './IndustriesDropdown';
 
 const Footer = () => {
   const navigate = useNavigate();
-  const { footer, loading } = useGlobalSettings();
+  const { navigation, footer, loading } = useGlobalSettings();
 
   if (loading || !footer) {
     return (
@@ -36,12 +36,12 @@ const Footer = () => {
             </div>
             
             <div className="space-y-3">
-              {footer.company?.phone && (
+              {(navigation?.phone || footer.company?.phone) && (
                 <div className="flex items-center gap-3 text-sm">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <span className="text-primary">📞</span>
                   </div>
-                  <span className="font-medium">{footer.company.phone}</span>
+                  <span className="font-medium">{navigation?.phone || footer.company?.phone}</span>
                 </div>
               )}
               {footer.company?.email && (
