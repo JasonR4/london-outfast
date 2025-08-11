@@ -87,7 +87,7 @@ const Quote = () => {
             
             <div>
               <h2 className="text-3xl font-bold mb-6">London OOH Coverage Areas</h2>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {[
                   "Zone 1 Central", "Zone 2 Inner", "Zone 3-6 Outer", "Canary Wharf",
                   "Shoreditch", "Camden", "Clapham", "Brixton", "Croydon", "Heathrow",

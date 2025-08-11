@@ -115,7 +115,7 @@ export default function QuotePlan() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -275,7 +275,7 @@ export default function QuotePlan() {
               <CardContent className="space-y-4">
                 {currentQuote.quote_items?.map((item, index) => (
                   <div key={item.id || index}>
-                    <div className="flex items-start justify-between p-4 rounded-lg border">
+                    <div className="flex flex-col sm:flex-row items-start justify-between gap-3 p-4 rounded-lg border">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <h3 className="font-semibold text-lg">{item.format_name}</h3>
@@ -287,7 +287,7 @@ export default function QuotePlan() {
                           <h4 className="font-semibold mb-3 text-primary">Estimated Campaign Costs</h4>
                           
                           {/* Base Rate and Sale Price */}
-                          <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div className="space-y-2">
                               {(() => {
                                 const baseRatePerPeriod = item.original_cost ? (item.original_cost / item.selected_periods.length / item.quantity) : (item.base_cost / item.selected_periods.length / item.quantity);
@@ -372,7 +372,7 @@ export default function QuotePlan() {
                            </div>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <MapPin className="h-4 w-4" />
                             <span>{item.selected_areas.length} location{item.selected_areas.length !== 1 ? 's' : ''}</span>
