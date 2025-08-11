@@ -280,7 +280,7 @@ export default function ClientPortal() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 pt-4 pb-24 sm:pt-8 sm:pb-8">
+      <div className="container mx-auto px-4 pt-3 pb-6 sm:pt-8 sm:pb-8 pb-[env(safe-area-inset-bottom)]">
         
         {/* Header */}
         <div className="md:sticky top-0 z-40 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b mb-4 sm:mb-6 px-1 py-2 sm:py-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
@@ -329,19 +329,19 @@ export default function ClientPortal() {
                 <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="p-3 sm:p-6 space-y-1 sm:space-y-2">
-                <Button variant="outline" size="sm" className="w-full justify-start [&_svg]:size-3" onClick={() => navigate('/outdoor-media')}>
+                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3" onClick={() => navigate('/outdoor-media')}>
                   <FileText className="h-4 w-4 mr-2" />
                   Browse Formats
                 </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start [&_svg]:size-3" onClick={() => navigate('/configurator')}>
+                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3" onClick={() => navigate('/configurator')}>
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Campaign Planner
                 </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start [&_svg]:size-3" disabled>
+                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3" disabled>
                   <Camera className="h-4 w-4 mr-2" />
                   Proof Gallery
                 </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start [&_svg]:size-3" disabled>
+                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3" disabled>
                   <Palette className="h-4 w-4 mr-2" />
                   Creative Studio
                 </Button>
