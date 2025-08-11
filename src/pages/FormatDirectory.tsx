@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useMediaFormats } from "@/hooks/useMediaFormats";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -129,9 +129,11 @@ const FormatDirectory = () => {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <Button variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                      Learn More
-                      <ArrowRight className="ml-1 h-3 w-3" />
+                    <Button asChild variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      <Link to={`/outdoor-media/${format.format_slug}`}>
+                        Learn More
+                        <ArrowRight className="ml-1 h-3 w-3" />
+                      </Link>
                     </Button>
                   </div>
                 </CardContent>

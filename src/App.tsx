@@ -36,6 +36,7 @@ import { trackPageView, initCampaignTracking } from "@/utils/analytics";
 import { updateMetaTags } from "@/utils/seo";
 import EmailTest from "./pages/EmailTest";
 import NoInspect from "@/components/security/NoInspect";
+import HtmlSitemap from "./pages/HtmlSitemap";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +89,8 @@ const App = () => {
               <Route path="/auth" element={<Auth />} />
               <Route path="/email-test" element={<EmailTest />} />
               <Route path="/cms" element={<ProtectedRoute><CMS /></ProtectedRoute>} />
+              <Route path="/sitemap" element={<HtmlSitemap />} />
+              <Route path="/sitemap-html" element={<HtmlSitemap />} />
               {/* Legal Pages */}
               <Route path="/privacy-policy" element={<LegalPage />} />
               <Route path="/terms-of-service" element={<LegalPage />} />
