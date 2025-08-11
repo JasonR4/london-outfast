@@ -34,6 +34,7 @@ import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import { trackPageView, initCampaignTracking } from "@/utils/analytics";
 import { updateMetaTags } from "@/utils/seo";
+import EmailTest from "./pages/EmailTest";
 
 const queryClient = new QueryClient();
 
@@ -77,13 +78,14 @@ const App = () => {
               <Route path="/outdoor-media/industries/:industrySlug" element={<IndustryPage />} />
               <Route path="/industries" element={<Industries />} />
               <Route path="/industries/:industrySlug" element={<IndustryPage />} />
-<Route path="/about" element={<About />} />
-<Route path="/faqs" element={<FAQs />} />
-<Route path="/contact" element={<Contact />} />
-<Route path="/blog" element={<Blog />} />
-<Route path="/blog/:slug" element={<BlogPost />} />
-<Route path="/auth" element={<Auth />} />
-<Route path="/cms" element={<ProtectedRoute><CMS /></ProtectedRoute>} />
+              <Route path="/about" element={<About />} />
+              <Route path="/faqs" element={<FAQs />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/email-test" element={<EmailTest />} />
+              <Route path="/cms" element={<ProtectedRoute><CMS /></ProtectedRoute>} />
               {/* Legal Pages */}
               <Route path="/privacy-policy" element={<LegalPage />} />
               <Route path="/terms-of-service" element={<LegalPage />} />

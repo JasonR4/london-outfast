@@ -14,8 +14,13 @@ export type SendEmailParams = {
 };
 
 export async function sendEmail(params: SendEmailParams) {
+  const payload: SendEmailParams = {
+    brand_name: params.brand_name ?? 'Media Buying London',
+    brand_from: params.brand_from ?? 'Media Buying London <quotes@mediabuyinglondon.co.uk>',
+    ...params,
+  };
   const { data, error } = await supabase.functions.invoke("send-email", {
-    body: params,
+    body: payload,
   });
   if (error) throw error;
   return data;
