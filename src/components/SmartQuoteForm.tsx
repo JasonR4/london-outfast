@@ -507,7 +507,11 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       const existing = (currentQuote?.quote_items || []);
       const added: any[] = [];
       for (const d of drafts) {
-        const already = existing.some(it => it.format_slug === d.formatId);
+        const already = existing.some(it =>
+          it.format_slug === d.formatId &&
+          JSON.stringify(it.selected_periods || []) === JSON.stringify(d.selectedPeriods || []) &&
+          JSON.stringify(it.selected_areas || []) === JSON.stringify(d.locations || [])
+        );
         if (!already) {
           const itemPayload = {
             format_slug: d.formatId,
@@ -541,27 +545,19 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       contactDetails
     });
 
-    // Fetch latest quote and use it for validation
+    // 1) Ensure drafts are synced into quote_items before validation
+    await syncDraftsToQuoteIfNeeded();
+
+    // 2) Fetch latest quote and validate strictly on item count
     const latest = (await fetchCurrentQuote?.()) || currentQuote;
-    console.log('🔍 Latest quote for validation:', {
-      quoteId: latest?.id,
-      itemsArray: latest?.quote_items,
-      itemsLength: latest?.quote_items?.length,
-      totalCost: latest?.total_cost,
-      hasLatest: !!latest
-    });
-    
     const itemsCount = latest?.quote_items?.length ?? 0;
-    const hasItems = itemsCount > 0 || (latest?.total_cost ?? 0) > 0;
-    
-    console.log('🔍 Validation check:', {
-      itemsCount,
-      totalCost: latest?.total_cost ?? 0,
-      hasItems,
-      willBlock: !hasItems
+
+    console.log('🔍 Validation (post-sync):', {
+      quoteId: latest?.id,
+      itemsLength: itemsCount,
     });
 
-    if (!hasItems) {
+    if (itemsCount === 0) {
       console.log('❌ No quote items detected - blocking submit');
       toast({
         title: "No Items in Quote",
@@ -571,7 +567,7 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       return;
     }
 
-    // For non-authenticated users, require contact details
+    // 3) For non-authenticated users, require contact details
     if (!user && (!contactDetails.contact_name || !contactDetails.contact_email)) {
       console.log('❌ Missing contact details for non-authenticated user');
       toast({
@@ -581,6 +577,21 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
       });
       return;
     }
+
+    // 4) Debug payload preview to confirm items are included
+    const payloadPreview = {
+      contact: {
+        name: contactDetails.contact_name,
+        email: contactDetails.contact_email,
+        phone: contactDetails.contact_phone,
+        company: contactDetails.contact_company,
+        website: contactDetails.website,
+        notes: contactDetails.additional_requirements,
+      },
+      items: latest?.quote_items ?? [],
+      source: 'smart-quote' as const,
+    };
+    console.debug('Submitting quote payload (preview):', payloadPreview);
 
     try {
       console.log('📤 Submitting quote...');
