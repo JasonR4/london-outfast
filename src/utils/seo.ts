@@ -109,14 +109,28 @@ export const updateMetaTags = (title: string, description: string, url?: string,
     metaKeywords.setAttribute('content', seoData.keywords.join(', '));
   }
 
-  // Update canonical URL
+  // Update canonical URL (guard against cross-domain canonicals)
   let canonical = document.querySelector('link[rel="canonical"]');
   if (!canonical) {
     canonical = document.createElement('link');
     canonical.setAttribute('rel', 'canonical');
     document.head.appendChild(canonical);
   }
-  canonical.setAttribute('href', seoData?.canonical_url || url || window.location.href);
+  const currentHref = window.location.href;
+  let desiredCanonical = seoData?.canonical_url || url || currentHref;
+
+  try {
+    const desiredUrl = new URL(desiredCanonical, currentHref);
+    // If the canonical points to a different host, prefer self-canonical to avoid "alternate page" deindexing
+    if (desiredUrl.hostname !== window.location.hostname) {
+      desiredCanonical = currentHref;
+    } else {
+      desiredCanonical = desiredUrl.toString();
+    }
+  } catch {
+    desiredCanonical = currentHref;
+  }
+  canonical.setAttribute('href', desiredCanonical);
 
   // Update Open Graph tags
   const ogTitle = document.querySelector('meta[property="og:title"]') || createMetaTag('property', 'og:title');
