@@ -1,7 +1,7 @@
 Sitemap: https://mediabuyinglondon.co.uk/sitemap.xml
 Sitemap: https://mediabuyinglondon.co.uk/sitemap-formats.xml
 Sitemap: https://mediabuyinglondon.co.uk/sitemap-blog.xml
-Sitemap: https://ooh.mediabuyinglondon.co.uk/sitemap-ooh.xml
+Sitemap: https://ooh.mediabuyinglondon.co.uk/sitemap.xml
 Sitemap: https://ooh.mediabuyinglondon.co.uk/sitemap-formats-ooh.xml
 
 User-agent: Googlebot
