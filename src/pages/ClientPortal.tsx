@@ -283,20 +283,20 @@ export default function ClientPortal() {
       <div className="container mx-auto px-4 pt-3 pb-6 sm:pt-8 sm:pb-8">
         
         {/* Header */}
-        <div className="md:sticky top-0 z-40 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b mb-4 sm:mb-6 px-1 py-2 sm:py-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+        <div className="md:sticky top-0 z-40 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b mb-3 sm:mb-6 px-1 py-1.5 sm:py-3 flex flex-wrap items-center justify-between gap-1.5 sm:gap-3">
           <div>
-            <h1 className="text-lg sm:text-3xl font-bold">Welcome back, {user.user_metadata?.first_name || 'there'}!</h1>
+            <h1 className="text-base sm:text-3xl font-bold">Welcome back, {user.user_metadata?.first_name || 'there'}!</h1>
             <p className="hidden sm:block text-muted-foreground">
               Manage your campaigns and access premium features
             </p>
           </div>
           <div className="flex items-center gap-1">
-            <Button size="xs" variant="outline" onClick={() => navigate('/')}>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button size="xs" variant="outline" onClick={() => navigate('/') }>
+              <Plus className="h-3 w-3 mr-2" />
               <span className="hidden sm:inline">New Campaign</span>
             </Button>
             <Button size="xs" variant="ghost" onClick={handleSignOut} className="gap-2">
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-3 w-3" />
               <span className="hidden sm:inline">Sign Out</span>
             </Button>
           </div>
@@ -307,13 +307,13 @@ export default function ClientPortal() {
           {/* Quick Actions */}
           <div className="lg:col-span-1 space-y-4 sm:space-y-6">
             <Card>
-              <CardHeader className="p-4 sm:p-6">
+              <CardHeader className="p-3 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                   <User className="h-5 w-5" />
                   Account
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 sm:p-6 space-y-2">
+              <CardContent className="p-3 sm:p-6 space-y-1.5">
                 <div className="text-sm">
                   <p className="text-sm font-medium">{user.user_metadata?.full_name || user.email}</p>
                   <p className="text-xs text-muted-foreground">{user.email}</p>
@@ -325,24 +325,24 @@ export default function ClientPortal() {
             </Card>
 
             <Card>
-              <CardHeader className="p-4 sm:p-6">
+              <CardHeader className="p-3 sm:p-6">
                 <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 sm:p-6 grid grid-cols-2 sm:grid-cols-1 gap-2">
-                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3 text-sm" onClick={() => navigate('/outdoor-media')}>
-                  <FileText className="h-4 w-4 mr-2" />
+              <CardContent className="p-2 sm:p-5 grid grid-cols-2 sm:grid-cols-1 gap-2">
+                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3 text-xs" onClick={() => navigate('/outdoor-media')}>
+                  <FileText className="h-3 w-3 mr-2" />
                   Browse Formats
                 </Button>
-                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3 text-sm" onClick={() => navigate('/configurator')}>
-                  <BarChart3 className="h-4 w-4 mr-2" />
+                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3 text-xs" onClick={() => navigate('/configurator')}>
+                  <BarChart3 className="h-3 w-3 mr-2" />
                   Campaign Planner
                 </Button>
-                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3 text-sm" disabled>
-                  <Camera className="h-4 w-4 mr-2" />
+                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3 text-xs" disabled>
+                  <Camera className="h-3 w-3 mr-2" />
                   Proof Gallery
                 </Button>
-                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3 text-sm" disabled>
-                  <Palette className="h-4 w-4 mr-2" />
+                <Button variant="outline" size="xs" className="w-full justify-start [&_svg]:size-3 text-xs" disabled>
+                  <Palette className="h-3 w-3 mr-2" />
                   Creative Studio
                 </Button>
               </CardContent>
@@ -353,77 +353,77 @@ export default function ClientPortal() {
           <div className="lg:col-span-3 space-y-6">
             
             {/* Stats Overview */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 md:gap-6">
               <Card>
-                <CardContent className="p-3 sm:pt-6">
-                  <div className="text-xl font-bold">{quotes.length}</div>
-                  <p className="text-xs text-muted-foreground">Total Quotes</p>
+                <CardContent className="p-2 sm:pt-5">
+                  <div className="text-lg font-semibold">{quotes.length}</div>
+                  <p className="text-[11px] text-muted-foreground">Total Quotes</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-3 sm:pt-6">
-                  <div className="text-xl font-bold">
+                <CardContent className="p-2 sm:pt-5">
+                  <div className="text-lg font-semibold">
                     {formatCurrency(quotes.reduce((sum, quote) => sum + quote.total_cost, 0))}
                   </div>
-                  <p className="text-xs text-muted-foreground">Total Campaign Value</p>
+                  <p className="text-[11px] text-muted-foreground">Total Campaign Value</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-3 sm:pt-6">
-                  <div className="text-xl font-bold">
+                <CardContent className="p-2 sm:pt-5">
+                  <div className="text-lg font-semibold">
                     {quotes.filter(q => q.status === 'active').length}
                   </div>
-                  <p className="text-xs text-muted-foreground">Active Campaigns</p>
+                  <p className="text-[11px] text-muted-foreground">Active Campaigns</p>
                 </CardContent>
               </Card>
             </div>
 
             {/* Tabbed Quotes and Campaigns */}
             <Card>
-              <CardHeader className="p-3 sm:p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+              <CardHeader className="p-2 sm:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <CardTitle className="text-lg sm:text-xl">Your Quotes & Campaigns</CardTitle>
-                    <CardDescription className="text-sm">
+                    <CardTitle className="text-base sm:text-xl">Your Quotes & Campaigns</CardTitle>
+                    <CardDescription className="text-xs">
                       Track your quotes through every stage of the process
                     </CardDescription>
                   </div>
-                  <Button size="sm" onClick={() => navigate('/outdoor-media')}>
-                    <Plus className="h-4 w-4 mr-2" />
+                  <Button size="xs" onClick={() => navigate('/outdoor-media')}>
+                    <Plus className="h-3 w-3 mr-2" />
                     New Quote
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
                 <Tabs defaultValue="submitted" className="w-full">
-                  <TabsList className="flex w-full overflow-x-auto gap-2 sm:gap-1 -mx-1 px-1 pb-1 text-sm h-9">
-                    <TabsTrigger value="submitted" className="flex items-center gap-2 whitespace-nowrap shrink-0 h-8 px-3 text-sm">
-                      <FileText className="h-4 w-4" />
+                  <TabsList className="flex w-full overflow-x-auto gap-1 -mx-1 px-1 pb-1 text-xs h-8 [&_svg]:size-3">
+                    <TabsTrigger value="submitted" className="flex items-center gap-1.5 whitespace-nowrap shrink-0 h-7 px-2 text-xs">
+                      <FileText className="h-3 w-3" />
                       Submitted ({submittedQuotes.length})
                     </TabsTrigger>
-                    <TabsTrigger value="confirmed" className="flex items-center gap-2 whitespace-nowrap shrink-0 h-8 px-3 text-sm">
-                      <Clock className="h-4 w-4" />
+                    <TabsTrigger value="confirmed" className="flex items-center gap-1.5 whitespace-nowrap shrink-0 h-7 px-2 text-xs">
+                      <Clock className="h-3 w-3" />
                       Media Schedule ({confirmedQuotes.length})
                     </TabsTrigger>
-                    <TabsTrigger value="contracts" className="flex items-center gap-2 whitespace-nowrap shrink-0 h-8 px-3 text-sm">
-                      <FileCheck className="h-4 w-4" />
+                    <TabsTrigger value="contracts" className="flex items-center gap-1.5 whitespace-nowrap shrink-0 h-7 px-2 text-xs">
+                      <FileCheck className="h-3 w-3" />
                       Contracts ({approvedQuotes.length})
                     </TabsTrigger>
-                    <TabsTrigger value="active" className="flex items-center gap-2 whitespace-nowrap shrink-0 h-8 px-3 text-sm">
-                      <CheckCircle className="h-4 w-4" />
+                    <TabsTrigger value="active" className="flex items-center gap-1.5 whitespace-nowrap shrink-0 h-7 px-2 text-xs">
+                      <CheckCircle className="h-3 w-3" />
                       Active ({activeQuotes.length})
                     </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="submitted" className="mt-6">
                     {submittedQuotes.length === 0 ? (
-                      <div className="text-center py-4 sm:py-6">
-                        <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">No submitted quotes</h3>
-                        <p className="text-muted-foreground mb-4">
+                      <div className="text-center py-3 sm:py-6">
+                        <FileText className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                        <h3 className="text-base font-semibold mb-2">No submitted quotes</h3>
+                        <p className="text-muted-foreground mb-4 text-sm">
                           Your submitted quotes will appear here while they're being reviewed
                         </p>
-                        <Button onClick={() => navigate('/outdoor-media')}>
+                        <Button onClick={() => navigate('/outdoor-media')} size="xs">
                           Create Your First Quote
                         </Button>
                       </div>
@@ -486,10 +486,10 @@ export default function ClientPortal() {
 
                   <TabsContent value="confirmed" className="mt-6">
                     {confirmedQuotes.length === 0 ? (
-                      <div className="text-center py-4 sm:py-6">
-                        <Clock className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">No confirmed media schedules</h3>
-                        <p className="text-muted-foreground">
+                      <div className="text-center py-3 sm:py-6">
+                        <Clock className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                        <h3 className="text-base font-semibold mb-2">No confirmed media schedules</h3>
+                        <p className="text-muted-foreground text-sm">
                           Once our team confirms your media plan details, they'll appear here for your approval
                         </p>
                       </div>
@@ -509,10 +509,10 @@ export default function ClientPortal() {
 
                   <TabsContent value="contracts" className="mt-6">
                     {approvedQuotes.length === 0 ? (
-                      <div className="text-center py-4 sm:py-6">
-                        <FileCheck className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">No contracts ready</h3>
-                        <p className="text-muted-foreground">
+                      <div className="text-center py-3 sm:py-6">
+                        <FileCheck className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                        <h3 className="text-base font-semibold mb-2">No contracts ready</h3>
+                        <p className="text-muted-foreground text-sm">
                           After approving your media schedule, contracts and payment details will appear here
                         </p>
                       </div>
@@ -532,10 +532,10 @@ export default function ClientPortal() {
 
                   <TabsContent value="active" className="mt-6">
                     {activeQuotes.length === 0 ? (
-                      <div className="text-center py-4 sm:py-6">
-                        <CheckCircle className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">No active campaigns</h3>
-                        <p className="text-muted-foreground">
+                      <div className="text-center py-3 sm:py-6">
+                        <CheckCircle className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                        <h3 className="text-base font-semibold mb-2">No active campaigns</h3>
+                        <p className="text-muted-foreground text-sm">
                           Your live campaigns will appear here with tracking and reporting
                         </p>
                       </div>
