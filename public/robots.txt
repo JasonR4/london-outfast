@@ -3,6 +3,7 @@ Sitemap: https://mediabuyinglondon.co.uk/sitemap-formats.xml
 Sitemap: https://mediabuyinglondon.co.uk/sitemap-blog.xml
 Sitemap: https://ooh.mediabuyinglondon.co.uk/sitemap.xml
 Sitemap: https://ooh.mediabuyinglondon.co.uk/sitemap-formats-ooh.xml
+Sitemap: https://ooh.mediabuyinglondon.co.uk/sitemap-core-ooh.xml
 
 User-agent: Googlebot
 Allow: /
