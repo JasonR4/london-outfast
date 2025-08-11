@@ -1,6 +1,6 @@
 // supabase/functions/send-email/index.ts
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
-import { serve } from 'jsr:@supabase/functions-js/edge'
+
 import { Resend } from 'npm:resend@3.0.0'
 
 const corsHeaders = {
@@ -23,7 +23,7 @@ type EmailRequest = {
   brand_from?: string
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
