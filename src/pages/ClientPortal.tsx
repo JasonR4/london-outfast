@@ -280,7 +280,7 @@ export default function ClientPortal() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-4 sm:py-8">
+      <div className="container mx-auto px-4 pt-4 pb-24 sm:pt-8 sm:pb-8">
         
         {/* Header */}
         <div className="sticky top-0 z-40 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b mb-6 px-1 py-3 flex flex-wrap items-center justify-between gap-3">
@@ -305,15 +305,15 @@ export default function ClientPortal() {
         <div className="grid lg:grid-cols-4 gap-6">
           
           {/* Quick Actions */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-4 sm:space-y-6">
             <Card>
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5" />
                   Account
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="p-4 sm:p-6 space-y-2">
                 <div>
                   <p className="text-sm font-medium">{user.user_metadata?.full_name || user.email}</p>
                   <p className="text-xs text-muted-foreground">{user.email}</p>
@@ -325,23 +325,23 @@ export default function ClientPortal() {
             </Card>
 
             <Card>
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/outdoor-media')}>
+              <CardContent className="p-3 sm:p-6 space-y-1 sm:space-y-2">
+                <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => navigate('/outdoor-media')}>
                   <FileText className="h-4 w-4 mr-2" />
                   Browse Formats
                 </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/configurator')}>
+                <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => navigate('/configurator')}>
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Campaign Planner
                 </Button>
-                <Button variant="outline" className="w-full justify-start" disabled>
+                <Button variant="outline" size="sm" className="w-full justify-start" disabled>
                   <Camera className="h-4 w-4 mr-2" />
                   Proof Gallery
                 </Button>
-                <Button variant="outline" className="w-full justify-start" disabled>
+                <Button variant="outline" size="sm" className="w-full justify-start" disabled>
                   <Palette className="h-4 w-4 mr-2" />
                   Creative Studio
                 </Button>
