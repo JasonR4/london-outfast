@@ -1,0 +1,3 @@
+Sitemap: https://ooh.mediabuyinglondon.co.uk/sitemap.xml
+User-agent: *
+Allow: /
