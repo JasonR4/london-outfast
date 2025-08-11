@@ -280,24 +280,24 @@ export default function ClientPortal() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 sm:py-8">
         
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="sticky top-0 z-40 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b mb-6 px-1 py-3 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold">Welcome back, {user.user_metadata?.first_name || 'there'}!</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Welcome back, {user.user_metadata?.first_name || 'there'}!</h1>
             <p className="text-muted-foreground">
               Manage your campaigns and access premium features
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Button variant="outline" onClick={() => navigate('/')}>
               <Plus className="h-4 w-4 mr-2" />
               New Campaign
             </Button>
-            <Button variant="ghost" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
+            <Button variant="ghost" onClick={handleSignOut} className="gap-2">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign Out</span>
             </Button>
           </div>
         </div>
@@ -381,7 +381,7 @@ export default function ClientPortal() {
             {/* Tabbed Quotes and Campaigns */}
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <CardTitle>Your Quotes & Campaigns</CardTitle>
                     <CardDescription>
@@ -396,20 +396,20 @@ export default function ClientPortal() {
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="submitted" className="w-full">
-                  <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="submitted" className="flex items-center gap-2">
+                  <TabsList className="flex w-full overflow-x-auto gap-2 sm:gap-1">
+                    <TabsTrigger value="submitted" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                       <FileText className="h-4 w-4" />
                       Submitted ({submittedQuotes.length})
                     </TabsTrigger>
-                    <TabsTrigger value="confirmed" className="flex items-center gap-2">
+                    <TabsTrigger value="confirmed" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                       <Clock className="h-4 w-4" />
                       Media Schedule ({confirmedQuotes.length})
                     </TabsTrigger>
-                    <TabsTrigger value="contracts" className="flex items-center gap-2">
+                    <TabsTrigger value="contracts" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                       <FileCheck className="h-4 w-4" />
                       Contracts ({approvedQuotes.length})
                     </TabsTrigger>
-                    <TabsTrigger value="active" className="flex items-center gap-2">
+                    <TabsTrigger value="active" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                       <CheckCircle className="h-4 w-4" />
                       Active ({activeQuotes.length})
                     </TabsTrigger>
