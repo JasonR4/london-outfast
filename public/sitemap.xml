@@ -70,4 +70,5 @@
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
   </url>
+  <!-- updated 2025-08-10 to trigger redeploy -->
 </urlset>
