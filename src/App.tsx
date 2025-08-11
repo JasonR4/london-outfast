@@ -16,6 +16,7 @@ import FormatPage from "./pages/FormatPage";
 import FormatDirectory from "./pages/FormatDirectory";
 import Auth from "./pages/Auth";
 import CMS from "./pages/CMS";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import About from "./pages/About";
 import FAQs from "./pages/FAQs";
 import LegalPage from "./pages/LegalPage";
@@ -82,7 +83,7 @@ const App = () => {
 <Route path="/blog" element={<Blog />} />
 <Route path="/blog/:slug" element={<BlogPost />} />
 <Route path="/auth" element={<Auth />} />
-<Route path="/cms" element={<CMS />} />
+<Route path="/cms" element={<ProtectedRoute><CMS /></ProtectedRoute>} />
               {/* Legal Pages */}
               <Route path="/privacy-policy" element={<LegalPage />} />
               <Route path="/terms-of-service" element={<LegalPage />} />
