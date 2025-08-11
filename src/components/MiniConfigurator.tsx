@@ -21,7 +21,7 @@ interface MiniConfiguratorProps {
 }
 
 export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
-  const { getItem, upsertItem, removeItem } = usePlanDraft();
+  const { getItem, upsertItem, removeItem, addOrReplace } = usePlanDraft();
   
   // Rate card data and loading state
   const [rateCardData, setRateCardData] = useState<RateCardResponse | null>(null);
@@ -99,9 +99,9 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
     const discountAmount = qualifiesVolume ? mediaCost * 0.10 : 0;
     const mediaAfterDiscount = mediaCost - discountAmount;
 
-    // Production cost (using print runs)
-    const printRuns = countPrintRuns(selectedPeriods);
-    const productionCost = productionRate * quantity * printRuns;
+    // Production cost (per period × site)
+    const periodsCount = uniquePeriods.length;
+    const productionCost = productionRate * quantity * periodsCount;
 
     // Creative cost
     const creativeCost = creativeRate * creativeAssets;
@@ -114,8 +114,12 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
       ? `You have selected ${selectedLocations.length} locations but capacity is ${capacity} (sites × periods). Reduce selections or increase capacity.`
       : undefined;
 
-    // Update draft store
-    upsertItem(format.id, {
+    // Update draft store (persist full payload with a stable key)
+    const stableKey = `${format.id}::${JSON.stringify(uniquePeriods)}::${JSON.stringify([...(selectedLocations || [])].sort())}`;
+    addOrReplace({
+      id: stableKey,
+      key: stableKey,
+      formatId: format.id,
       formatName: format.name,
       saleRatePerInCharge: saleRate,
       productionRatePerUnit: productionRate,
@@ -209,7 +213,7 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
   const uniquePeriodsForEstimate = [...new Set(selectedPeriods)];
   const headerEstimate =
     (rateCardData?.saleRatePerInCharge || 0) * (quantity * uniquePeriodsForEstimate.length) +
-    (rateCardData?.productionRatePerUnit || 0) * quantity * countPrintRuns(selectedPeriods) +
+    (rateCardData?.productionRatePerUnit || 0) * quantity * uniquePeriodsForEstimate.length +
     (rateCardData?.creativeUnit ?? 85) * (creativeAssets || 0);
   const headerTotal = existingItem?.totalCost ?? (headerEstimate > 0 ? headerEstimate : 0);
 

@@ -1,6 +1,7 @@
 // Working draft of the user's in-progress configuration (not yet "added to plan")
 export type DraftItem = {
-  id: string;                 // `${formatId}-${Date.now()}`
+  id: string;                 // stable identifier (can be a composite key)
+  key?: string;               // optional stable key for dedupe across sessions
   formatId: string;
   formatName: string;
   saleRatePerInCharge: number;          // from Rate Card Manager
@@ -24,6 +25,7 @@ type PlanDraftState = {
   items: DraftItem[];
   getItem(formatId: string): DraftItem | undefined;
   upsertItem(formatId: string, updates: Partial<Omit<DraftItem, 'id' | 'formatId'>>): void;
+  addOrReplace(d: DraftItem): void;
   removeItem(formatId: string): void;
   clear(): void;
 };
@@ -71,6 +73,38 @@ export const usePlanDraft = create<PlanDraftState>((set, get) => ({
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
     } catch {}
     
+    return { items: newItems };
+  }),
+  addOrReplace: (d) => set(state => {
+    const key = d.key || `${d.formatId}::${JSON.stringify([...new Set(d.selectedPeriods)].sort())}::${JSON.stringify([...(d.locations||[])].sort())}`;
+    // find by key if present, else by formatId
+    const idx = state.items.findIndex(item => (item.key || item.id) === key || item.formatId === d.formatId);
+
+    const next: DraftItem = {
+      id: key,
+      key,
+      formatId: d.formatId,
+      formatName: d.formatName,
+      saleRatePerInCharge: d.saleRatePerInCharge,
+      productionRatePerUnit: d.productionRatePerUnit,
+      creativeUnit: d.creativeUnit,
+      quantity: d.quantity,
+      selectedPeriods: d.selectedPeriods,
+      locations: d.locations,
+      creativeAssets: d.creativeAssets,
+      validation: d.validation,
+      mediaCost: d.mediaCost,
+      productionCost: d.productionCost,
+      creativeCost: d.creativeCost,
+      totalCost: d.totalCost,
+      discountAmount: d.discountAmount,
+      qualifiesVolume: d.qualifiesVolume,
+    };
+
+    const newItems = [...state.items];
+    if (idx >= 0) newItems[idx] = next; else newItems.push(next);
+
+    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(newItems)); } catch {}
     return { items: newItems };
   }),
   removeItem: (formatId) => set(state => {
