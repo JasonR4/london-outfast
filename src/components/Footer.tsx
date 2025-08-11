@@ -4,7 +4,7 @@ import useGlobalSettings from '@/hooks/useGlobalSettings';
 import IndustriesDropdown from './IndustriesDropdown';
 
 const Footer = () => {
-  const navigate = useNavigate();
+  
   const { navigation, footer, loading } = useGlobalSettings();
 
   if (loading || !footer) {
@@ -61,13 +61,13 @@ const Footer = () => {
               <h4 className="text-lg font-bold mb-6 text-foreground">Services</h4>
               <div className="space-y-3">
                 {footer.links.services.map((link: any, index: number) => (
-                  <button 
+                  <Link 
                     key={index}
-                    onClick={() => navigate(link.url)}
+                    to={link.url}
                     className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
                   >
                     {link.label}
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -85,13 +85,13 @@ const Footer = () => {
               <h4 className="text-lg font-bold mb-6 text-foreground">Company</h4>
               <div className="space-y-3">
                 {footer.links.company.map((link: any, index: number) => (
-                  <button 
+                  <Link 
                     key={index}
-                    onClick={() => navigate(link.url)}
+                    to={link.url}
                     className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
                   >
                     {link.label}
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -103,13 +103,13 @@ const Footer = () => {
               <h4 className="text-lg font-bold mb-6 text-foreground">Legal</h4>
               <div className="space-y-3">
                 {footer.links.legal.map((link: any, index: number) => (
-                  <button 
+                  <Link 
                     key={index}
-                    onClick={() => navigate(link.url)}
+                    to={link.url}
                     className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
                   >
                     {link.label}
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -124,12 +124,12 @@ const Footer = () => {
               {footer.copyright || '© 2024 Media Buying London. All rights reserved.'}
             </div>
             <div className="flex items-center gap-6">
-              <button 
-                onClick={() => navigate('/cms')}
+              <Link 
+                to={'/cms'}
                 className="text-xs text-muted-foreground hover:text-primary transition-colors duration-200 font-medium"
               >
                 Admin
-              </button>
+              </Link>
               <div className="text-xs text-muted-foreground">
                 Built with ❤️ in London
               </div>
