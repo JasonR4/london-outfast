@@ -9,13 +9,16 @@
   RewriteEngine On
   RewriteBase /
 
+  # Redirect AMP to canonical root
+  RewriteRule ^amp(/.*)?$ / [R=301,L]
+
   # Serve existing files/directories as-is
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
   # Do NOT rewrite these extensions (allow direct serving)
-  RewriteCond %{REQUEST_URI} \.(xml|txt|ico|png|jpg|jpeg|gif|webp|svg|css|js|map|json|woff|woff2|ttf|eot|otf|pdf)$ [NC]
+  RewriteCond %{REQUEST_URI} \.(xml|txt|ico|png|jpg|jpeg|gif|webp|svg|css|js|map|json|woff|woff2|ttf|eot|pdf)$ [NC]
   RewriteRule ^ - [L]
 
   # SPA fallback for everything else
