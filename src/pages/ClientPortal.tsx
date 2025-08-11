@@ -283,32 +283,32 @@ export default function ClientPortal() {
       <div className="container mx-auto px-4 pt-4 pb-24 sm:pt-8 sm:pb-8">
         
         {/* Header */}
-        <div className="sticky top-0 z-40 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b mb-6 px-1 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="md:sticky top-0 z-40 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b mb-4 sm:mb-6 px-1 py-2 sm:py-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Welcome back, {user.user_metadata?.first_name || 'there'}!</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl sm:text-3xl font-bold">Welcome back, {user.user_metadata?.first_name || 'there'}!</h1>
+            <p className="hidden sm:block text-muted-foreground">
               Manage your campaigns and access premium features
             </p>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Button variant="outline" onClick={() => navigate('/')}>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => navigate('/')}>
               <Plus className="h-4 w-4 mr-2" />
-              New Campaign
+              <span className="hidden sm:inline">New Campaign</span>
             </Button>
-            <Button variant="ghost" onClick={handleSignOut} className="gap-2">
+            <Button size="sm" variant="ghost" onClick={handleSignOut} className="gap-2">
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Sign Out</span>
             </Button>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-6">
+        <div className="grid lg:grid-cols-4 gap-4 sm:gap-6">
           
           {/* Quick Actions */}
           <div className="lg:col-span-1 space-y-4 sm:space-y-6">
             <Card>
               <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                   <User className="h-5 w-5" />
                   Account
                 </CardTitle>
@@ -326,22 +326,22 @@ export default function ClientPortal() {
 
             <Card>
               <CardHeader className="p-4 sm:p-6">
-                <CardTitle>Quick Actions</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="p-3 sm:p-6 space-y-1 sm:space-y-2">
-                <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => navigate('/outdoor-media')}>
+                <Button variant="outline" size="sm" className="w-full justify-start [&_svg]:size-3" onClick={() => navigate('/outdoor-media')}>
                   <FileText className="h-4 w-4 mr-2" />
                   Browse Formats
                 </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => navigate('/configurator')}>
+                <Button variant="outline" size="sm" className="w-full justify-start [&_svg]:size-3" onClick={() => navigate('/configurator')}>
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Campaign Planner
                 </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start" disabled>
+                <Button variant="outline" size="sm" className="w-full justify-start [&_svg]:size-3" disabled>
                   <Camera className="h-4 w-4 mr-2" />
                   Proof Gallery
                 </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start" disabled>
+                <Button variant="outline" size="sm" className="w-full justify-start [&_svg]:size-3" disabled>
                   <Palette className="h-4 w-4 mr-2" />
                   Creative Studio
                 </Button>
@@ -353,15 +353,15 @@ export default function ClientPortal() {
           <div className="lg:col-span-3 space-y-6">
             
             {/* Stats Overview */}
-            <div className="grid md:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
               <Card>
-                <CardContent className="pt-6">
+                <CardContent className="p-4 sm:pt-6">
                   <div className="text-2xl font-bold">{quotes.length}</div>
                   <p className="text-xs text-muted-foreground">Total Quotes</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="pt-6">
+                <CardContent className="p-4 sm:pt-6">
                   <div className="text-2xl font-bold">
                     {formatCurrency(quotes.reduce((sum, quote) => sum + quote.total_cost, 0))}
                   </div>
@@ -369,7 +369,7 @@ export default function ClientPortal() {
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="pt-6">
+                <CardContent className="p-4 sm:pt-6">
                   <div className="text-2xl font-bold">
                     {quotes.filter(q => q.status === 'active').length}
                   </div>
@@ -380,7 +380,7 @@ export default function ClientPortal() {
 
             {/* Tabbed Quotes and Campaigns */}
             <Card>
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <CardTitle>Your Quotes & Campaigns</CardTitle>
@@ -394,9 +394,9 @@ export default function ClientPortal() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <Tabs defaultValue="submitted" className="w-full">
-                  <TabsList className="flex w-full overflow-x-auto gap-2 sm:gap-1">
+                  <TabsList className="flex w-full overflow-x-auto gap-2 sm:gap-1 -mx-1 px-1 pb-1">
                     <TabsTrigger value="submitted" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                       <FileText className="h-4 w-4" />
                       Submitted ({submittedQuotes.length})
@@ -417,7 +417,7 @@ export default function ClientPortal() {
 
                   <TabsContent value="submitted" className="mt-6">
                     {submittedQuotes.length === 0 ? (
-                      <div className="text-center py-8">
+                      <div className="text-center py-6 sm:py-8">
                         <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-lg font-semibold mb-2">No submitted quotes</h3>
                         <p className="text-muted-foreground mb-4">
@@ -486,7 +486,7 @@ export default function ClientPortal() {
 
                   <TabsContent value="confirmed" className="mt-6">
                     {confirmedQuotes.length === 0 ? (
-                      <div className="text-center py-8">
+                      <div className="text-center py-6 sm:py-8">
                         <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-lg font-semibold mb-2">No confirmed media schedules</h3>
                         <p className="text-muted-foreground">
@@ -509,7 +509,7 @@ export default function ClientPortal() {
 
                   <TabsContent value="contracts" className="mt-6">
                     {approvedQuotes.length === 0 ? (
-                      <div className="text-center py-8">
+                      <div className="text-center py-6 sm:py-8">
                         <FileCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-lg font-semibold mb-2">No contracts ready</h3>
                         <p className="text-muted-foreground">
@@ -532,7 +532,7 @@ export default function ClientPortal() {
 
                   <TabsContent value="active" className="mt-6">
                     {activeQuotes.length === 0 ? (
-                      <div className="text-center py-8">
+                      <div className="text-center py-6 sm:py-8">
                         <CheckCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-lg font-semibold mb-2">No active campaigns</h3>
                         <p className="text-muted-foreground">
