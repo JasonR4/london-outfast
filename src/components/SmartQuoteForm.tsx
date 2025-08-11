@@ -500,6 +500,38 @@ export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
     }
   };
 
+  // Ensure any saved MiniConfigurator drafts are inserted as quote items before validation
+  const syncDraftsToQuoteIfNeeded = useCallback(async () => {
+    try {
+      const drafts = usePlanDraft.getState().items || [];
+      const existing = (currentQuote?.quote_items || []);
+      const added: any[] = [];
+      for (const d of drafts) {
+        const already = existing.some(it => it.format_slug === d.formatId);
+        if (!already) {
+          const itemPayload = {
+            format_slug: d.formatId,
+            format_name: d.formatName,
+            quantity: d.quantity,
+            selected_periods: d.selectedPeriods,
+            selected_areas: d.locations,
+            production_cost: d.productionCost || 0,
+            creative_cost: d.creativeCost || 0,
+            base_cost: d.mediaCost || 0,
+            total_cost: d.totalCost || 0,
+          };
+          console.log('🧩 Syncing draft to quote item:', itemPayload);
+          const ok = await addQuoteItem(itemPayload as any);
+          if (ok) added.push(itemPayload);
+        }
+      }
+      return added;
+    } catch (e) {
+      console.error('❌ syncDraftsToQuoteIfNeeded error', e);
+      return [] as any[];
+    }
+  }, [addQuoteItem, currentQuote?.quote_items]);
+
   const handleSubmitQuote = async () => {
     console.log('🚀 handleSubmitQuote called');
     console.log('📊 Current state:', {
