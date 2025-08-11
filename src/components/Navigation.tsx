@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -75,12 +75,12 @@ const Navigation = () => {
       <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            <button 
-              onClick={() => handleNavigation('/')}
+            <Link 
+              to="/"
               className="font-bold text-xl bg-gradient-hero bg-clip-text text-transparent"
             >
               Media Buying London
-            </button>
+            </Link>
           </div>
         </div>
       </nav>
@@ -93,12 +93,12 @@ const Navigation = () => {
         <div className="flex items-center justify-between h-16">
           
           {/* Logo */}
-          <button 
-            onClick={() => handleNavigation(navigation.logo?.url || '/')}
+          <Link 
+            to={navigation.logo?.url || '/'}
             className="font-bold text-xl bg-gradient-hero bg-clip-text text-transparent"
           >
             {navigation.logo?.text || 'Media Buying London'}
-          </button>
+          </Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
@@ -125,14 +125,15 @@ const Navigation = () => {
                           : item.submenu
 
                         return enrichedSubmenu.map((subItem: any, subIndex: number) => (
-                          <DropdownMenuItem 
-                            key={subIndex}
-                            onClick={() => handleNavigation(subItem.url)}
-                            className={`cursor-pointer hover:bg-muted ${
-                              isActive(subItem.url) ? 'bg-muted text-primary' : ''
-                            }`}
-                          >
-                            {subItem.label}
+                          <DropdownMenuItem asChild key={subIndex}>
+                            <Link
+                              to={subItem.url}
+                              className={`cursor-pointer hover:bg-muted ${
+                                isActive(subItem.url) ? 'bg-muted text-primary' : ''
+                              }`}
+                            >
+                              {subItem.label}
+                            </Link>
                           </DropdownMenuItem>
                         ))
                       })()}
@@ -142,53 +143,57 @@ const Navigation = () => {
               }
               
               return (
-                <button
+                <Link
                   key={index}
-                  onClick={() => handleNavigation(item.url)}
+                  to={item.url}
                   className={`text-sm font-medium transition-colors hover:text-primary ${
                     isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
                   }`}
                 >
                   {item.label}
-                </button>
+                </Link>
               );
             })}
             {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
-              <button
-                onClick={() => handleNavigation('/blog')}
+              <Link
+                to={'/blog'}
                 className={`text-sm font-medium transition-colors hover:text-primary ${
                   isActive('/blog') ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
                 Blog
-              </button>
+              </Link>
             )}
             
             {/* Your Plan Button - Show if user is client or has active quote */}
             {(userProfile?.role === 'client' || (currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0)) && (
               <Button 
-                onClick={() => handleNavigation('/quote-plan')}
+                asChild
                 variant={isActive('/quote-plan') ? "default" : "outline"}
                 size="sm"
                 className="relative"
               >
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Your Plan
-                {currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0 && (
-                  <Badge variant="secondary" className="ml-2 text-xs">
-                    {currentQuote.quote_items.length}
-                  </Badge>
-                )}
+                <Link to="/quote-plan">
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Your Plan
+                  {currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0 && (
+                    <Badge variant="secondary" className="ml-2 text-xs">
+                      {currentQuote.quote_items.length}
+                    </Badge>
+                  )}
+                </Link>
               </Button>
             )}
             
             <Button 
-              onClick={() => window.location.href = 'tel:+442045243019'}
+              asChild
               variant="outline"
               size="sm"
             >
-              <Phone className="h-4 w-4 mr-2" />
-              +44 204 524 3019
+              <a href='tel:+442045243019'>
+                <Phone className="h-4 w-4 mr-2" />
+                +44 204 524 3019
+              </a>
             </Button>
           </div>
 
@@ -222,15 +227,16 @@ const Navigation = () => {
                               : item.submenu
 
                             return enrichedSubmenu.map((subItem: any, subIndex: number) => (
-                              <button
+                              <Link
                                 key={subIndex}
-                                onClick={() => handleNavigation(subItem.url)}
+                                to={subItem.url}
+                                onClick={() => setIsOpen(false)}
                                 className={`block w-full text-left text-base font-medium transition-colors hover:text-primary ${
                                   isActive(subItem.url) ? 'text-primary' : 'text-muted-foreground'
                                 }`}
                               >
                                 {subItem.label}
-                              </button>
+                              </Link>
                             ))
                           })()}
                         </CollapsibleContent>
@@ -239,63 +245,73 @@ const Navigation = () => {
                   }
                   
                   return (
-                    <button
+                    <Link
                       key={index}
-                      onClick={() => handleNavigation(item.url)}
+                      to={item.url}
+                      onClick={() => setIsOpen(false)}
                       className={`text-left text-lg font-medium transition-colors hover:text-primary ${
                         isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
                       }`}
                     >
                       {item.label}
-                    </button>
+                    </Link>
                   );
                 })}
                 {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
-                  <button
-                    onClick={() => handleNavigation('/blog')}
+                  <Link
+                    to={'/blog'}
+                    onClick={() => setIsOpen(false)}
                     className={`text-left text-lg font-medium transition-colors hover:text-primary ${
                       isActive('/blog') ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
                     Blog
-                  </button>
+                  </Link>
                 )}
                 
                 {/* Mobile Your Plan Button - Show if user is client or has active quote */}
                 {(userProfile?.role === 'client' || (currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0)) && (
-                  <Button 
-                    onClick={() => handleNavigation('/quote-plan')}
-                    variant={isActive('/quote-plan') ? "default" : "outline"}
-                    className="w-full mt-4"
-                  >
+                <Button 
+                  asChild
+                  variant={isActive('/quote-plan') ? "default" : "outline"}
+                  className="w-full mt-4"
+                >
+                  <Link to="/quote-plan" onClick={() => setIsOpen(false)}>
                     <ShoppingCart className="h-4 w-4 mr-2" />
                     Your Plan {currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0 && `(${currentQuote.quote_items.length})`}
-                  </Button>
+                  </Link>
+                </Button>
                 )}
                 
                 {/* Client Portal / Sign in */}
                 {user ? (
-                  <Button 
-                    onClick={() => handleNavigation('/client-portal')}
-                    className="w-full mt-4"
-                  >
+                <Button 
+                  asChild
+                  className="w-full mt-4"
+                >
+                  <Link to="/client-portal" onClick={() => setIsOpen(false)}>
                     Client Portal
-                  </Button>
+                  </Link>
+                </Button>
                 ) : (
-                  <Button 
-                    onClick={() => handleNavigation('/auth')}
-                    className="w-full mt-4"
-                  >
+                <Button 
+                  asChild
+                  className="w-full mt-4"
+                >
+                  <Link to="/auth" onClick={() => setIsOpen(false)}>
                     Sign in
-                  </Button>
+                  </Link>
+                </Button>
                 )}
 
                 <Button 
-                  onClick={() => window.location.href = 'tel:+442045243019'}
+                  asChild
                   className="w-full mt-4"
                 >
-                  <Phone className="h-4 w-4 mr-2" />
-                  +44 204 524 3019
+                  <a href='tel:+442045243019' onClick={() => setIsOpen(false)}>
+                    <Phone className="h-4 w-4 mr-2" />
+                    +44 204 524 3019
+                  </a>
                 </Button>
               </div>
             </SheetContent>
