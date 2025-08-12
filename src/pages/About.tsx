@@ -4,15 +4,58 @@ import { Button } from "@/components/ui/button";
 
 import { updateMetaTags } from "@/utils/seo";
 
-const PAGE_TITLE = "About Media Buying London — Cutting Through the Dark Arts of OOH";
+const PAGE_TITLE = "About Media Buying London | OOH Without the Dark Arts";
 const META_DESCRIPTION =
-  "Media Buying London removes hidden margins and inflated OOH rates with transparent buying, insider knowledge, and fast, market‑beating campaigns.";
+  "Transparent OOH buying in London. We remove hidden margins and inflated rates with insider planning, clear rate cards, and same‑day quotes.";
 
 const About: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    updateMetaTags(PAGE_TITLE, META_DESCRIPTION, window.location.href);
+    const origin = window.location.origin;
+    const url = `${origin}/about`;
+    const seoData = {
+      og_title: PAGE_TITLE,
+      og_description: META_DESCRIPTION,
+      twitter_title: PAGE_TITLE,
+      twitter_description: META_DESCRIPTION,
+      keywords: [
+        "About Media Buying London",
+        "London OOH",
+        "OOH media buying",
+        "billboard advertising London",
+        "Tube advertising",
+        "bus shelter ads"
+      ],
+      canonical_url: "/about",
+    } as const;
+
+    updateMetaTags(PAGE_TITLE, META_DESCRIPTION, url, seoData);
+
+    // Add AboutPage structured data (in addition to base WebSite/LocalBusiness)
+    const aboutStructuredData = {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      name: "About Media Buying London",
+      url,
+      description: META_DESCRIPTION,
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: `${origin}/` },
+          { "@type": "ListItem", position: 2, name: "About", item: url },
+        ],
+      },
+    } as const;
+
+    let aboutScript = document.getElementById("about-ld-json") as HTMLScriptElement | null;
+    if (!aboutScript) {
+      aboutScript = document.createElement("script");
+      aboutScript.type = "application/ld+json";
+      aboutScript.id = "about-ld-json";
+      document.head.appendChild(aboutScript);
+    }
+    aboutScript.textContent = JSON.stringify(aboutStructuredData);
   }, []);
 
   return (
