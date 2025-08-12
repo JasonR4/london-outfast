@@ -12,6 +12,9 @@
   # Redirect AMP to canonical root
   RewriteRule ^amp(/.*)?$ / [R=301,L]
 
+  # Legacy redirect for old /lander path
+  RewriteRule ^lander/?$ / [R=301,L]
+
   # Serve existing files/directories as-is
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
