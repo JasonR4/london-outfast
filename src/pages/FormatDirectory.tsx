@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMediaFormats } from "@/hooks/useMediaFormats";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,11 @@ const FormatDirectory = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const { mediaFormats, loading } = useMediaFormats();
+  const { mediaFormats, loading, refetch } = useMediaFormats();
+  
+  useEffect(() => {
+    refetch();
+  }, []);
   
   // Get unique dimensions as categories
   const categories = [...new Set(mediaFormats.map(format => format.dimensions || 'Various Sizes'))];
