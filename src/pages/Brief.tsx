@@ -15,6 +15,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LocationSelector } from "@/components/LocationSelector";
 import { useCentralizedMediaFormats } from "@/hooks/useCentralizedMediaFormats";
+import { oohFormats } from "@/data/oohFormats";
 const objectives = [
   "Brand awareness",
   "Store visits",
@@ -97,21 +98,36 @@ defaultValues: {
     }
   }, [location.pathname, location.search]);
 
-// Media formats with categories and filtering
+// Media formats with categories and filtering (DB with local fallback)
 const { mediaFormats } = useCentralizedMediaFormats(false);
-const allFormatCategories = useMemo(() => {
-  const set = new Set<string>();
-  mediaFormats.forEach(f => f.categories?.format?.forEach(c => set.add(c)));
-  return Array.from(set).sort();
-}, [mediaFormats]);
 const [formatSearch, setFormatSearch] = useState('');
 const [formatCategory, setFormatCategory] = useState<string | undefined>();
+
+const useDbFormats = (mediaFormats?.length || 0) > 0;
+
+const allFormatCategories = useMemo(() => {
+  if (useDbFormats) {
+    const set = new Set<string>();
+    mediaFormats.forEach(f => f.categories?.format?.forEach(c => set.add(c)));
+    return Array.from(set).sort();
+  }
+  // Fallback to local categories
+  return Array.from(new Set(oohFormats.map(f => f.category))).sort();
+}, [mediaFormats]);
+
 const filteredFormatNames = useMemo(() => {
   const q = formatSearch.trim().toLowerCase();
-  return mediaFormats
-    .filter(f => !formatCategory || (f.categories?.format || []).includes(formatCategory))
-    .filter(f => !q || f.format_name.toLowerCase().includes(q) || (f.description?.toLowerCase().includes(q)))
-    .map(f => f.format_name);
+  if (useDbFormats) {
+    return mediaFormats
+      .filter(f => !formatCategory || (f.categories?.format || []).includes(formatCategory))
+      .filter(f => !q || f.format_name.toLowerCase().includes(q) || (f.description?.toLowerCase().includes(q)))
+      .map(f => f.format_name);
+  }
+  // Local fallback list
+  return oohFormats
+    .filter(f => !formatCategory || f.category === formatCategory)
+    .filter(f => !q || f.name.toLowerCase().includes(q) || f.description.toLowerCase().includes(q))
+    .map(f => f.shortName || f.name);
 }, [mediaFormats, formatCategory, formatSearch]);
 
 const objectiveValue = form.watch('objective');
