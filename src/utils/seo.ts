@@ -190,3 +190,27 @@ const createMetaTag = (attrName: string, attrValue: string) => {
   document.head.appendChild(meta);
   return meta;
 };
+
+// Enforce canonical on demand (initial load and SPA route changes)
+export function enforceCanonical(href?: string) {
+  const base = 'https://mediabuyinglondon.co.uk';
+  const toCoUk = (input: string) => {
+    const u = new URL(input || '/', base);
+    u.protocol = 'https:';
+    u.hostname = 'mediabuyinglondon.co.uk';
+    u.port = '';
+    return u.toString().replace(/(https:\/\/mediabuyinglondon\.co\.uk)\/{2,}/, '$1/');
+  };
+
+  const path = typeof window !== 'undefined' ? (window.location.pathname || '/') : '/';
+  let desired = href ? toCoUk(href) : toCoUk(typeof window !== 'undefined' ? window.location.href : base);
+  if (path === '/' || path === '') desired = `${base}/`;
+
+  let link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (!link) {
+    link = document.createElement('link');
+    link.setAttribute('rel', 'canonical');
+    document.head.appendChild(link);
+  }
+  link.setAttribute('href', desired);
+}
