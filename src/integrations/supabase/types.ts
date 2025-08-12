@@ -1155,6 +1155,30 @@ export type Database = {
           },
         ]
       }
+      seo_canonical_backups: {
+        Row: {
+          backed_up_at: string
+          id: string
+          new_canonical_url: string | null
+          old_canonical_url: string
+          seo_page_id: string
+        }
+        Insert: {
+          backed_up_at?: string
+          id?: string
+          new_canonical_url?: string | null
+          old_canonical_url: string
+          seo_page_id: string
+        }
+        Update: {
+          backed_up_at?: string
+          id?: string
+          new_canonical_url?: string | null
+          old_canonical_url?: string
+          seo_page_id?: string
+        }
+        Relationships: []
+      }
       seo_pages: {
         Row: {
           alt_texts: string[] | null
