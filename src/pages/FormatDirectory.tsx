@@ -30,7 +30,7 @@ const FormatDirectory = () => {
   // Get unique format categories from CMS categories
   const categories = Array.from(
     new Set(
-      combinedFormats.flatMap((format) => format.categories?.format ?? [])
+      combinedFormats.flatMap((format) => format.categories?.location ?? [])
     )
   ).filter(Boolean).sort();
   
