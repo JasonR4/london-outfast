@@ -9,6 +9,10 @@
   RewriteEngine On
   RewriteBase /
 
+  # Wildcard 301 to main domain, preserve path and query
+  RewriteCond %{HTTP_HOST} ^ooh\.mediabuyinglondon\.co\.uk$ [NC]
+  RewriteRule ^(.*)$ https://mediabuyinglondon.co.uk/$1 [R=301,L,QSA]
+
   # Redirect AMP to canonical root
   RewriteRule ^amp(/.*)?$ / [R=301,L]
 
