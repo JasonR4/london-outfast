@@ -14,7 +14,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LocationSelector } from "@/components/LocationSelector";
-import { useCentralizedMediaFormats } from "@/hooks/useCentralizedMediaFormats";
 import { oohFormats } from "@/data/oohFormats";
 const objectives = [
   "Brand awareness",
@@ -98,37 +97,30 @@ defaultValues: {
     }
   }, [location.pathname, location.search]);
 
-// Media formats with categories and filtering (DB with local fallback)
-const { mediaFormats } = useCentralizedMediaFormats(false);
+// Media formats: hardcoded categories + local dataset
+const HARDCODED_FORMAT_CATEGORIES = [
+  'Classic & Digital Roadside',
+  'London Underground (TfL)',
+  'National Rail & Commuter Rail',
+  'Bus Advertising',
+  'Taxi Advertising',
+  'Retail & Leisure Environments',
+  'Airports',
+  'Street Furniture',
+  'Programmatic DOOH (pDOOH)',
+  'Ambient / Guerrilla OOH',
+] as const;
+
 const [formatSearch, setFormatSearch] = useState('');
-const [formatCategory, setFormatCategory] = useState<string | undefined>();
-
-const useDbFormats = (mediaFormats?.length || 0) > 0;
-
-const allFormatCategories = useMemo(() => {
-  if (useDbFormats) {
-    const set = new Set<string>();
-    mediaFormats.forEach(f => f.categories?.format?.forEach(c => set.add(c)));
-    return Array.from(set).sort();
-  }
-  // Fallback to local categories
-  return Array.from(new Set(oohFormats.map(f => f.category))).sort();
-}, [mediaFormats]);
+const [formatCategory, setFormatCategory] = useState<string | 'all'>('all');
 
 const filteredFormatNames = useMemo(() => {
   const q = formatSearch.trim().toLowerCase();
-  if (useDbFormats) {
-    return mediaFormats
-      .filter(f => !formatCategory || (f.categories?.format || []).includes(formatCategory))
-      .filter(f => !q || f.format_name.toLowerCase().includes(q) || (f.description?.toLowerCase().includes(q)))
-      .map(f => f.format_name);
-  }
-  // Local fallback list
   return oohFormats
-    .filter(f => !formatCategory || f.category === formatCategory)
-    .filter(f => !q || f.name.toLowerCase().includes(q) || f.description.toLowerCase().includes(q))
+    .filter(f => formatCategory === 'all' || f.category === formatCategory)
+    .filter(f => !q || f.name.toLowerCase().includes(q) || f.shortName.toLowerCase().includes(q) || f.description.toLowerCase().includes(q))
     .map(f => f.shortName || f.name);
-}, [mediaFormats, formatCategory, formatSearch]);
+}, [formatCategory, formatSearch]);
 
 const objectiveValue = form.watch('objective');
 const onSubmit = async (values: FormValues) => {
@@ -331,17 +323,17 @@ const onSubmit = async (values: FormValues) => {
           value={formatSearch}
           onChange={(e) => setFormatSearch(e.target.value)}
         />
-        <Select onValueChange={(v) => setFormatCategory(v === 'all' ? undefined : v)} defaultValue="all">
-          <FormControl>
-            <SelectTrigger><SelectValue placeholder="All categories" /></SelectTrigger>
-          </FormControl>
-          <SelectContent>
-            <SelectItem value="all">All categories</SelectItem>
-            {allFormatCategories.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+<Select onValueChange={(v) => setFormatCategory((v as any) || 'all')} defaultValue="all">
+  <FormControl>
+    <SelectTrigger><SelectValue placeholder="All categories" /></SelectTrigger>
+  </FormControl>
+  <SelectContent>
+    <SelectItem value="all">All categories</SelectItem>
+    {HARDCODED_FORMAT_CATEGORIES.map((c) => (
+      <SelectItem key={c} value={c}>{c}</SelectItem>
+    ))}
+  </SelectContent>
+</Select>
       </div>
       <div className="max-h-56 overflow-auto border rounded-md p-3 space-y-2">
         {filteredFormatNames.map((name) => (
