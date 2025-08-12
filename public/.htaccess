@@ -12,8 +12,8 @@
   # Redirect AMP to canonical root
   RewriteRule ^amp(/.*)?$ / [R=301,L]
 
-  # Legacy redirect for old /lander path
-  RewriteRule ^lander/?$ / [R=301,L]
+  # Legacy removed page: return 410 Gone to avoid soft 404
+  RewriteRule ^lander/?$ - [G=410,L]
 
   # Serve existing files/directories as-is
   RewriteCond %{REQUEST_FILENAME} -f [OR]
