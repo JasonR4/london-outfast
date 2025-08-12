@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useMediaFormats } from "@/hooks/useMediaFormats";
+import { useCentralizedMediaFormats } from "@/hooks/useCentralizedMediaFormats";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,23 +12,36 @@ const FormatDirectory = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const { mediaFormats, loading, refetch } = useMediaFormats();
+  const { mediaFormats, loading, refetch } = useCentralizedMediaFormats();
   
   useEffect(() => {
     refetch();
   }, []);
   
-  // Get unique dimensions as categories
-  const categories = [...new Set(mediaFormats.map(format => format.dimensions || 'Various Sizes'))];
+  // Get unique format categories from CMS categories
+  const categories = Array.from(
+    new Set(
+      mediaFormats.flatMap((format) => format.categories?.format ?? [])
+    )
+  ).filter(Boolean).sort();
   
-  const filteredFormats = mediaFormats.filter(format => {
-    const matchesSearch = format.format_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (format.description && format.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const formatCategory = format.dimensions || 'Various Sizes';
-    const matchesCategory = selectedCategory === "all" || formatCategory === selectedCategory;
+  const filteredFormats = mediaFormats.filter((format) => {
+    const q = searchTerm.toLowerCase();
+    const nameMatch = format.format_name.toLowerCase().includes(q);
+    const descMatch = (format.description || '').toLowerCase().includes(q);
+    const categoryTexts = [
+      ...(format.categories?.format ?? []),
+      ...(format.categories?.location ?? []),
+    ].map((c) => c.toLowerCase());
+    const categorySearchMatch = q ? categoryTexts.some((c) => c.includes(q)) : true;
+    const matchesSearch = nameMatch || descMatch || categorySearchMatch;
+
+    const matchesCategory =
+      selectedCategory === 'all' || (format.categories?.format ?? []).includes(selectedCategory);
+
     return matchesSearch && matchesCategory;
   });
-
+  
   const handleFormatClick = (slug: string) => {
     navigate(`/outdoor-media/${slug}`);
   };
@@ -75,9 +88,9 @@ const FormatDirectory = () => {
               <SelectTrigger>
                 <SelectValue placeholder="Filter by category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-50">
                 <SelectItem value="all">All Categories</SelectItem>
-                {categories.map(category => (
+                {categories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
                   </SelectItem>
