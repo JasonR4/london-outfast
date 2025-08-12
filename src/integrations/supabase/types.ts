@@ -298,6 +298,84 @@ export type Database = {
         }
         Relationships: []
       }
+      brief_requests: {
+        Row: {
+          budget_band: string
+          company: string
+          created_at: string
+          creative_status: string
+          email: string
+          firstname: string
+          formats: string[] | null
+          id: string
+          jobtitle: string | null
+          lastname: string
+          mbl: boolean | null
+          notes: string | null
+          objective: string
+          phone: string
+          source_path: string | null
+          start_month: string | null
+          target_areas: string[] | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          website: string | null
+        }
+        Insert: {
+          budget_band: string
+          company: string
+          created_at?: string
+          creative_status: string
+          email: string
+          firstname: string
+          formats?: string[] | null
+          id?: string
+          jobtitle?: string | null
+          lastname: string
+          mbl?: boolean | null
+          notes?: string | null
+          objective: string
+          phone: string
+          source_path?: string | null
+          start_month?: string | null
+          target_areas?: string[] | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          website?: string | null
+        }
+        Update: {
+          budget_band?: string
+          company?: string
+          created_at?: string
+          creative_status?: string
+          email?: string
+          firstname?: string
+          formats?: string[] | null
+          id?: string
+          jobtitle?: string | null
+          lastname?: string
+          mbl?: boolean | null
+          notes?: string | null
+          objective?: string
+          phone?: string
+          source_path?: string | null
+          start_month?: string | null
+          target_areas?: string[] | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       content_pages: {
         Row: {
           content: Json
