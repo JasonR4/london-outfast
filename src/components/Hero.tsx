@@ -28,7 +28,7 @@ const Hero = () => {
   }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden mb-16 md:mb-24">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -60,7 +60,7 @@ const Hero = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg" 
-              className="text-lg px-8 py-6 shadow-glow"
+              className="text-lg px-8 py-6 w-full sm:w-auto shadow-glow"
               onClick={() => navigate('/quote')}
               data-cta="hero_quote"
             >
@@ -69,7 +69,7 @@ const Hero = () => {
             <Button 
               variant="outline" 
               size="lg" 
-              className="text-lg px-8 py-6"
+              className="text-lg px-8 py-6 w-full sm:w-auto"
               onClick={() => navigate('/configurator')}
               data-cta="hero_configurator"
             >
@@ -78,7 +78,7 @@ const Hero = () => {
             <Button 
               variant="ghost" 
               size="lg" 
-              className="text-lg px-8 py-6 text-accent hover:text-accent-foreground"
+              className="text-lg px-8 py-6 w-full sm:w-auto text-accent hover:text-accent-foreground"
               onClick={() => navigate('/outdoor-media')}
               data-cta="hero_browse"
             >
@@ -87,7 +87,7 @@ const Hero = () => {
             <Button 
               variant="accent"
               size="lg"
-              className="text-lg px-8 py-6 shadow-glow"
+              className="text-lg px-8 py-6 w-full sm:w-auto shadow-glow"
               onClick={() => navigate('/brief')}
               data-cta="hero_specialist"
               aria-label="Talk to an OOH specialist now"
@@ -97,7 +97,7 @@ const Hero = () => {
           </div>
           
           <div className="text-center">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-2">
               Choose your path: Direct quote • Smart recommendations • Browse options • Talk to a specialist
             </p>
           </div>
