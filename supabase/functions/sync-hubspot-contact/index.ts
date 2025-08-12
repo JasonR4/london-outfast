@@ -36,6 +36,58 @@ async function createNoteForContact(apiKey: string, contactId: string, noteBody:
   }
 }
 
+// Resolve HubSpot owner by email
+async function getOwnerIdByEmail(apiKey: string, email: string): Promise<string | null> {
+  try {
+    const resp = await fetch(`https://api.hubapi.com/crm/v3/owners/?email=${encodeURIComponent(email)}`, {
+      headers: { 'Authorization': `Bearer ${apiKey}` }
+    });
+    if (!resp.ok) return null;
+    const json: any = await resp.json();
+    const owner = Array.isArray(json?.results)
+      ? json.results.find((o: any) => (o?.email || '').toLowerCase() === email.toLowerCase())
+      : null;
+    return owner?.id ? String(owner.id) : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+async function createTaskForContact(apiKey: string, contactId: string, subject: string, body: string, ownerEmail = 'shane@r4advertising.agency') {
+  try {
+    const ownerId = await getOwnerIdByEmail(apiKey, ownerEmail);
+    const due = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // +2h
+    const createResp = await fetch('https://api.hubapi.com/crm/v3/objects/tasks', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        properties: {
+          hs_task_subject: subject,
+          hs_task_body: body,
+          hs_task_status: 'NOT_STARTED',
+          hs_task_priority: 'HIGH',
+          hs_timestamp: due,
+          ...(ownerId ? { hubspot_owner_id: ownerId } : {}),
+        }
+      })
+    });
+    if (!createResp.ok) {
+      console.error('Failed to create HubSpot task:', await createResp.text());
+      return;
+    }
+    const created: any = await createResp.json();
+    const taskId = created?.id;
+    if (!taskId) return;
+    // Associate task -> contact
+    await fetch(`https://api.hubapi.com/crm/v4/objects/tasks/${taskId}/associations/contacts/${contactId}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify([{ associationType: 'task_to_contact' }])
+    });
+  } catch (e) {
+    console.error('Error creating HubSpot task:', e);
+  }
+}
 
 interface ContactFormData {
   firstName: string;
@@ -257,6 +309,8 @@ const handleQuoteSubmission = async (formData: QuoteFormData, hubspotApiKey: str
     // Format quote details based on submission type
     let quoteTitle = "";
     let quoteNotes = "";
+    let taskSubject = "";
+    let taskBody = "";
     
     switch (formData.submissionType) {
       case 'format_quote':
@@ -272,6 +326,8 @@ Campaign Details:
 ${formData.quoteDetails.additionalDetails || 'No additional details provided'}
 
 Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`;
+        taskSubject = `Work on brief: ${formData.company || formData.firstName} — Format Quote`;
+        taskBody = quoteNotes;
         break;
         
       case 'configurator_quote':
@@ -293,6 +349,8 @@ Additional Requirements:
 ${formData.quoteDetails.additionalDetails || 'None specified'}
 
 Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`;
+        taskSubject = `Work on brief: ${formData.company || formData.firstName} — Configurator`;
+        taskBody = quoteNotes;
         break;
         
       case 'general_quote':
@@ -314,69 +372,47 @@ Additional Details:
 ${formData.quoteDetails.additionalDetails || 'None provided'}
 
 Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`;
+        taskSubject = `Work on brief: ${formData.company || formData.firstName} — General Quote`;
+        taskBody = quoteNotes;
         break;
     }
 
-// Prepare contact properties for HubSpot (only standard fields)
-const contactProperties: any = {
-  firstname: formData.firstName,
-  lastname: formData.lastName,
-  email: formData.email,
-  hs_lead_status: "NEW",
-  lifecyclestage: "lead",
-};
+    // Prepare contact properties for HubSpot (only standard fields)
+    const contactProperties: any = {
+      firstname: formData.firstName,
+      lastname: formData.lastName,
+      email: formData.email,
+      hs_lead_status: "NEW",
+      lifecyclestage: "lead",
+    };
 
     // Add optional fields if provided
-    if (formData.phone) {
-      contactProperties.phone = formData.phone;
-    }
-    if (formData.website) {
-      contactProperties.website = formData.website;
-    }
-    if (formData.company) {
-      contactProperties.company = formData.company;
-    }
-
-// (No custom properties to avoid 400 errors on unknown fields)
+    if (formData.phone) { contactProperties.phone = formData.phone; }
+    if (formData.website) { contactProperties.website = formData.website; }
+    if (formData.company) { contactProperties.company = formData.company; }
 
     // Create or update contact in HubSpot
     const hubspotResponse = await fetch(
       "https://api.hubapi.com/crm/v3/objects/contacts",
       {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${hubspotApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          properties: contactProperties
-        }),
+        headers: { "Authorization": `Bearer ${hubspotApiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ properties: contactProperties }),
       }
     );
 
     if (!hubspotResponse.ok) {
       const errorText = await hubspotResponse.text();
       console.error("HubSpot API error:", errorText);
-      
       // If contact already exists, try to update instead
       if (hubspotResponse.status === 409) {
-        // Search for existing contact by email
         const searchResponse = await fetch(
           `https://api.hubapi.com/crm/v3/objects/contacts/search`,
           {
             method: "POST",
-            headers: {
-              "Authorization": `Bearer ${hubspotApiKey}`,
-              "Content-Type": "application/json",
-            },
+            headers: { "Authorization": `Bearer ${hubspotApiKey}", "Content-Type": "application/json" },
             body: JSON.stringify({
-              filterGroups: [{
-                filters: [{
-                  propertyName: "email",
-                  operator: "EQ",
-                  value: formData.email
-                }]
-              }]
+              filterGroups: [{ filters: [{ propertyName: "email", operator: "EQ", value: formData.email }]}]
             }),
           }
         );
@@ -385,24 +421,19 @@ const contactProperties: any = {
           const searchResult = await searchResponse.json();
           if (searchResult.results && searchResult.results.length > 0) {
             const contactId = searchResult.results[0].id;
-            
-            // Update existing contact
             const updateResponse = await fetch(
               `https://api.hubapi.com/crm/v3/objects/contacts/${contactId}`,
               {
                 method: "PATCH",
-                headers: {
-                  "Authorization": `Bearer ${hubspotApiKey}`,
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  properties: contactProperties
-                }),
+                headers: { "Authorization": `Bearer ${hubspotApiKey}", "Content-Type": "application/json" },
+                body: JSON.stringify({ properties: contactProperties }),
               }
             );
 
             if (updateResponse.ok) {
               const result = await updateResponse.json();
+              // Create task for Shane
+              await createTaskForContact(hubspotApiKey, result.id, taskSubject, taskBody);
               return new Response(JSON.stringify({ 
                 success: true, 
                 action: "updated",
@@ -415,12 +446,13 @@ const contactProperties: any = {
           }
         }
       }
-      
       throw new Error(`HubSpot API error: ${hubspotResponse.status} - ${errorText}`);
     }
 
     const result = await hubspotResponse.json();
     console.log("Quote synced to HubSpot:", result.id);
+    // Create task for Shane
+    await createTaskForContact(hubspotApiKey, result.id, taskSubject, taskBody);
 
     return new Response(JSON.stringify({ 
       success: true, 

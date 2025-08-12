@@ -166,6 +166,58 @@ async function attachHubSpotNote(contactId: string, payload: BriefPayload) {
   })
 }
 
+async function getOwnerIdByEmail(email: string): Promise<string | null> {
+  if (!HUBSPOT_TOKEN) return null
+  try {
+    const resp = await fetch(`${HS_BASE}/crm/v3/owners/?email=${encodeURIComponent(email)}`, {
+      headers: { 'Authorization': `Bearer ${HUBSPOT_TOKEN}` }
+    })
+    if (!resp.ok) return null
+    const json: any = await resp.json()
+    const owner = Array.isArray(json?.results)
+      ? json.results.find((o: any) => (o?.email || '').toLowerCase() === email.toLowerCase())
+      : null
+    return owner?.id ? String(owner.id) : null
+  } catch (_) { return null }
+}
+
+async function createHubSpotTask(contactId: string, payload: BriefPayload) {
+  if (!HUBSPOT_TOKEN) return
+  try {
+    const ownerEmail = 'shane@r4advertising.agency'
+    const ownerId = await getOwnerIdByEmail(ownerEmail)
+    const due = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
+    const subject = `Work on brief: ${payload.company} — ${payload.budget_band}`
+    const body = `Objective: ${payload.objective}
+Formats: ${(payload.formats || []).join(', ') || '-'}
+Areas: ${(payload.target_areas || []).join(', ') || '-'}
+Start: ${payload.start_month || '-'} | Creative: ${payload.creative_status}
+Notes: ${payload.notes || '-'}`
+    const createResp = await fetch(`${HS_BASE}/crm/v3/objects/tasks`, {
+      method: 'POST', headers: { 'Authorization': `Bearer ${HUBSPOT_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ properties: {
+        hs_task_subject: subject,
+        hs_task_body: body,
+        hs_task_status: 'NOT_STARTED',
+        hs_task_priority: 'HIGH',
+        hs_timestamp: due,
+        ...(ownerId ? { hubspot_owner_id: ownerId } : {}),
+      }})
+    })
+    if (!createResp.ok) {
+      console.error('Task create failed:', await createResp.text())
+      return
+    }
+    const created: any = await createResp.json()
+    const taskId = created?.id
+    if (!taskId) return
+    await fetch(`${HS_BASE}/crm/v4/objects/tasks/${taskId}/associations/contacts/${contactId}`, {
+      method: 'PUT', headers: { 'Authorization': `Bearer ${HUBSPOT_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify([{ associationType: 'task_to_contact' }])
+    })
+  } catch (e) { console.error('Error creating task:', e) }
+}
+
 async function sendInternalEmail(payload: BriefPayload) {
   const INTERNAL_EMAILS = (Deno.env.get('INTERNAL_EMAILS') || 'matt@r4advertising.agency,shane@r4advertising.agency')
     .split(',')
@@ -293,13 +345,16 @@ Deno.serve(async (req) => {
       if (!(syncRes.data as any)?.success) {
         console.warn('sync-hubspot-contact returned non-success, falling back', syncRes.data)
         const contactId = await upsertHubSpotContact(body)
-        if (contactId) await attachHubSpotNote(contactId, body)
+        if (contactId) { await attachHubSpotNote(contactId, body); await createHubSpotTask(contactId, body); }
+      } else {
+        const cid = (syncRes.data as any)?.contactId as string | undefined
+        if (cid) { try { await createHubSpotTask(cid, body) } catch (e) { console.error('create task after sync failed', e) } }
       }
     } catch (e) {
       console.error('HubSpot sync via function failed, falling back to direct', e)
       try {
         const contactId = await upsertHubSpotContact(body)
-        if (contactId) await attachHubSpotNote(contactId, body)
+        if (contactId) { await attachHubSpotNote(contactId, body); await createHubSpotTask(contactId, body); }
       } catch (inner) {
         console.error('HubSpot direct fallback failed', inner)
       }
