@@ -270,12 +270,39 @@ Deno.serve(async (req) => {
       })
     }
 
-    // HubSpot: upsert + note (best-effort)
+    // HubSpot: use central sync function first, fallback to direct API (best-effort)
     try {
-      const contactId = await upsertHubSpotContact(body)
-      if (contactId) await attachHubSpotNote(contactId, body)
+      const syncPayload = {
+        submissionType: 'general_quote',
+        firstName: body.firstname,
+        lastName: body.lastname,
+        email: body.email,
+        phone: body.phone,
+        website: body.website || '',
+        company: body.company || '',
+        quoteDetails: {
+          selectedFormats: body.formats || [],
+          selectedLocations: body.target_areas || [],
+          budgetRange: body.budget_band,
+          campaignObjective: body.objective,
+          timeline: body.start_month || '',
+          additionalDetails: `Creative: ${body.creative_status}${body.notes ? `\nNotes: ${body.notes}` : ''}`,
+        },
+      }
+      const syncRes = await supabase.functions.invoke('sync-hubspot-contact', { body: syncPayload })
+      if (!(syncRes.data as any)?.success) {
+        console.warn('sync-hubspot-contact returned non-success, falling back', syncRes.data)
+        const contactId = await upsertHubSpotContact(body)
+        if (contactId) await attachHubSpotNote(contactId, body)
+      }
     } catch (e) {
-      console.error('HubSpot error', e)
+      console.error('HubSpot sync via function failed, falling back to direct', e)
+      try {
+        const contactId = await upsertHubSpotContact(body)
+        if (contactId) await attachHubSpotNote(contactId, body)
+      } catch (inner) {
+        console.error('HubSpot direct fallback failed', inner)
+      }
     }
 
     // Emails (best-effort)

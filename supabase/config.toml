@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.submit-brief]
 verify_jwt = false
+
+[functions.sync-hubspot-contact]
+verify_jwt = false
