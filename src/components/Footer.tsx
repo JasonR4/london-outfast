@@ -36,14 +36,12 @@ const Footer = () => {
             </div>
             
             <div className="space-y-3">
-              {(navigation?.phone || footer.company?.phone) && (
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary">📞</span>
-                  </div>
-                  <span className="font-medium">{navigation?.phone || footer.company?.phone}</span>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-primary">📞</span>
                 </div>
-              )}
+                <a href="tel:+442045243019" className="font-medium hover:text-primary transition-colors">+44 204 524 3019</a>
+              </div>
               {footer.company?.email && (
                 <div className="flex items-center gap-3 text-sm">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
