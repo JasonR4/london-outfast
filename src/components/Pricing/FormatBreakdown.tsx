@@ -59,10 +59,16 @@ const secondaryPct =
 
       <div className="space-y-1 text-sm">
         {(() => {
-          const pennies = (n: number) => Math.round((n ?? 0) * 100);
-          const hasDiscount =
-            pennies(media.before) !== pennies(media.after) &&
-            pennies(media.after) > 0;
+          const toCents = (n: number) => Math.round((n ?? 0) * 100);
+          const EPS_CENTS = 100; // treat < £1 as rounding noise
+          const beforeC = toCents(media.before);
+          const afterC = toCents(media.after);
+          const discountC = Math.max(0, beforeC - afterC);
+          const hasDiscount = afterC > 0 && discountC >= EPS_CENTS;
+
+          const mediaBeforeDisplay = beforeC / 100;
+          const mediaAfterDisplay = afterC / 100;
+          const discountDisplay = discountC / 100;
 
           return (
             <>
@@ -70,14 +76,12 @@ const secondaryPct =
 
               {hasDiscount ? (
                 <>
-                  <div>Media (before discount): {formatGBP(media.before)}</div>
-                  <div className="text-emerald-400">
-                    💰 Volume discount (10% for 3+ in-charge periods): -{formatGBP(media.discount)}
-                  </div>
-                  <div className="font-semibold">Media (after discount): {formatGBP(media.after)}</div>
+                  <div>Media (before discount): {formatGBP(mediaBeforeDisplay)}</div>
+                  <div className="text-emerald-400">💰 Volume discount: -{formatGBP(discountDisplay)}</div>
+                  <div className="font-semibold">Media (after discount): {formatGBP(mediaAfterDisplay)}</div>
                 </>
               ) : (
-                <div>Media: {formatGBP(media.before)}</div>
+                <div>Media: {formatGBP(mediaBeforeDisplay)}</div>
               )}
 
               {production > 0 && <div>Production: {formatGBP(production)}</div>}

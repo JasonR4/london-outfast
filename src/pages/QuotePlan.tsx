@@ -328,10 +328,43 @@ export default function QuotePlan() {
                             </div>
                              <div className="space-y-2">
                                <div className="text-sm text-muted-foreground">
-                                 <div className="flex justify-between">
-                                   <span>Campaign Cost ({item.quantity} × {item.selected_periods.length} period{item.selected_periods.length !== 1 ? 's' : ''}):</span>
-                                   <span className="font-medium text-foreground">{formatCurrency(item.base_cost)}</span>
-                                 </div>
+                                  {(() => {
+                                    const mediaAfter = Number(item.base_cost || 0);
+                                    const mediaBefore = mediaAfter + Number(item.discount_amount || 0);
+
+                                    const toCents = (n: number) => Math.round((n ?? 0) * 100);
+                                    const EPS_CENTS = 100; // treat < £1 as rounding noise
+                                    const beforeC = toCents(mediaBefore);
+                                    const afterC = toCents(mediaAfter);
+                                    const discountC = Math.max(0, beforeC - afterC);
+                                    const hasDiscount = afterC > 0 && discountC >= EPS_CENTS;
+
+                                    const mediaBeforeDisplay = beforeC / 100;
+                                    const mediaAfterDisplay = afterC / 100;
+                                    const discountDisplay = discountC / 100;
+
+                                    return hasDiscount ? (
+                                      <>
+                                        <div className="flex justify-between">
+                                          <span>Media (before discount):</span>
+                                          <span className="font-medium text-foreground">{formatCurrency(mediaBeforeDisplay)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-emerald-600">
+                                          <span>💰 Volume discount:</span>
+                                          <span className="font-medium text-foreground">-{formatCurrency(discountDisplay)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span>Media (after discount):</span>
+                                          <span className="font-medium text-foreground">{formatCurrency(mediaAfterDisplay)}</span>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <div className="flex justify-between">
+                                        <span>Media:</span>
+                                        <span className="font-medium text-foreground">{formatCurrency(mediaBeforeDisplay)}</span>
+                                      </div>
+                                    );
+                                  })()}
                                   {(item.production_cost || 0) > 0 && (
                                     <div className="flex justify-between">
                                       <span>Production Cost ({item.quantity} unit{item.quantity !== 1 ? 's' : ''}):</span>
