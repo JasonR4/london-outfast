@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import heroImage from "@/assets/london-hero.jpg";
+
 import { updateMetaTags } from "@/utils/seo";
 
 const PAGE_TITLE = "About Media Buying London — Cutting Through the Dark Arts of OOH";
@@ -17,17 +17,7 @@ const About: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      <header className="relative overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src={heroImage}
-            alt="London skyline backdrop for OOH advertising"
-            className="h-full w-full object-cover"
-            loading="eager"
-            fetchPriority="high"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/70 to-background" />
-        </div>
+      <header className="relative overflow-hidden bg-gradient-to-b from-muted/30 via-background to-background">
         <div className="relative max-w-5xl mx-auto px-4 pt-28 pb-16 md:pt-36 md:pb-24 text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
             About Media Buying London — Cutting Through the Dark Arts of OOH
