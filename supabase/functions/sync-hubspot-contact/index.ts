@@ -6,6 +6,37 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+async function createNoteForContact(apiKey: string, contactId: string, noteBody: string, title?: string) {
+  try {
+    const body = title ? `# ${title}\n\n${noteBody}` : noteBody;
+    const resp = await fetch('https://api.hubapi.com/crm/v3/objects/notes', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        properties: { hs_note_body: body },
+        associations: [
+          {
+            to: { id: contactId },
+            types: [
+              { associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 202 }
+            ]
+          }
+        ]
+      }),
+    });
+    if (!resp.ok) {
+      const t = await resp.text();
+      console.error('HubSpot note creation failed:', t);
+    }
+  } catch (e) {
+    console.error('Error creating HubSpot note:', e);
+  }
+}
+
+
 interface ContactFormData {
   firstName: string;
   lastName: string;
@@ -88,15 +119,14 @@ ${formData.message}
 Urgency: ${formData.urgency}
 Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`;
 
-    // Prepare contact properties for HubSpot
-    const contactProperties: any = {
-      firstname: formData.firstName,
-      lastname: formData.lastName,
-      email: formData.email,
-      hs_lead_status: "NEW",
-      lifecyclestage: "lead",
-      notes: notes
-    };
+// Prepare contact properties for HubSpot (only standard fields)
+const contactProperties: any = {
+  firstname: formData.firstName,
+  lastname: formData.lastName,
+  email: formData.email,
+  hs_lead_status: "NEW",
+  lifecyclestage: "lead",
+};
 
     // Add optional fields if provided
     if (formData.phone) {
@@ -109,9 +139,7 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
       contactProperties.company = formData.company;
     }
 
-    // Add custom properties for OOH campaign data
-    contactProperties.campaign_urgency = formData.urgency;
-    contactProperties.lead_source = "Contact Page - OOH MBL";
+// (No custom properties to avoid 400 errors on unknown fields)
 
     // Create or update contact in HubSpot
     const hubspotResponse = await fetch(
@@ -175,17 +203,19 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
               }
             );
 
-            if (updateResponse.ok) {
-              const result = await updateResponse.json();
-              return new Response(JSON.stringify({ 
-                success: true, 
-                action: "updated",
-                contactId: result.id 
-              }), {
-                status: 200,
-                headers: { "Content-Type": "application/json", ...corsHeaders },
-              });
-            }
+if (updateResponse.ok) {
+  const result = await updateResponse.json();
+  // Create a note with the details (non-blocking)
+  await createNoteForContact(hubspotApiKey, result.id, notes, 'Contact enquiry - OOH MBL');
+  return new Response(JSON.stringify({ 
+    success: true, 
+    action: "updated",
+    contactId: result.id 
+  }), {
+    status: 200,
+    headers: { "Content-Type": "application/json", ...corsHeaders },
+  });
+}
           }
         }
       }
@@ -193,17 +223,20 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
       throw new Error(`HubSpot API error: ${hubspotResponse.status} - ${errorText}`);
     }
 
-    const result = await hubspotResponse.json();
-    console.log("Contact synced to HubSpot:", result.id);
+const result = await hubspotResponse.json();
+console.log("Contact synced to HubSpot:", result.id);
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      action: "created",
-      contactId: result.id 
-    }), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+// Create a note with the details (non-blocking)
+await createNoteForContact(hubspotApiKey, result.id, notes, 'Contact enquiry - OOH MBL');
+
+return new Response(JSON.stringify({ 
+  success: true, 
+  action: "created",
+  contactId: result.id 
+}), {
+  status: 200,
+  headers: { "Content-Type": "application/json", ...corsHeaders },
+});
   } catch (error: any) {
     console.error("Error in contact submission:", error);
     return new Response(
@@ -284,15 +317,14 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
         break;
     }
 
-    // Prepare contact properties for HubSpot
-    const contactProperties: any = {
-      firstname: formData.firstName,
-      lastname: formData.lastName,
-      email: formData.email,
-      hs_lead_status: "NEW",
-      lifecyclestage: "lead",
-      notes: quoteNotes
-    };
+// Prepare contact properties for HubSpot (only standard fields)
+const contactProperties: any = {
+  firstname: formData.firstName,
+  lastname: formData.lastName,
+  email: formData.email,
+  hs_lead_status: "NEW",
+  lifecyclestage: "lead",
+};
 
     // Add optional fields if provided
     if (formData.phone) {
@@ -305,14 +337,7 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
       contactProperties.company = formData.company;
     }
 
-    // Add custom properties for OOH quote data
-    contactProperties.lead_source = quoteTitle;
-    if (formData.quoteDetails.budgetRange) {
-      contactProperties.campaign_budget = formData.quoteDetails.budgetRange;
-    }
-    if (formData.quoteDetails.campaignObjective) {
-      contactProperties.campaign_objective = formData.quoteDetails.campaignObjective;
-    }
+// (No custom properties to avoid 400 errors on unknown fields)
 
     // Create or update contact in HubSpot
     const hubspotResponse = await fetch(
