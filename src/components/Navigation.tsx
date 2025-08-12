@@ -154,6 +154,16 @@ const Navigation = () => {
                 </Link>
               );
             })}
+            {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
+              <Link
+                to={'/brief'}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive('/brief') ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                Brief
+              </Link>
+            )}
             {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
               <Link
                 to={'/blog'}
@@ -257,6 +267,17 @@ const Navigation = () => {
                     </Link>
                   );
                 })}
+                {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
+                  <Link
+                    to={'/brief'}
+                    onClick={() => setIsOpen(false)}
+                    className={`text-left text-lg font-medium transition-colors hover:text-primary ${
+                      isActive('/brief') ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Brief
+                  </Link>
+                )}
                 {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
                   <Link
                     to={'/blog'}

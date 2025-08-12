@@ -37,6 +37,8 @@ import { updateMetaTags } from "@/utils/seo";
 import EmailTest from "./pages/EmailTest";
 import NoInspect from "@/components/security/NoInspect";
 import HtmlSitemap from "./pages/HtmlSitemap";
+import Brief from "./pages/Brief";
+import ThankYou from "./pages/ThankYou";
 
 const queryClient = new QueryClient();
 
@@ -84,6 +86,8 @@ const App = () => {
               <Route path="/about" element={<About />} />
               <Route path="/faqs" element={<FAQs />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/brief" element={<Brief />} />
+              <Route path="/thank-you" element={<ThankYou />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/auth" element={<Auth />} />

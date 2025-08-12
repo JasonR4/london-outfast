@@ -25,3 +25,4 @@ export async function sendEmail(params: SendEmailParams) {
   if (error) throw error;
   return data;
 }
+
