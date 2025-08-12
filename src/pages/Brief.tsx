@@ -117,6 +117,9 @@ const filteredFormatNames = useMemo(() => {
 const objectiveValue = form.watch('objective');
 const onSubmit = async (values: FormValues) => {
   try {
+    // Immediate feedback while the Edge Function runs
+    toast({ title: 'Submitting brief', description: 'Hang tight — this takes a few seconds.' });
+
     const objectiveFinal = values.objective === 'Other' && values.objective_other?.trim()
       ? `Other: ${values.objective_other.trim()}`
       : values.objective;
@@ -390,10 +393,12 @@ const onSubmit = async (values: FormValues) => {
                         </FormItem>
                       )} />
 
-                      <div className="sm:col-span-2 flex justify-between">
-                        <Button type="button" variant="outline" onClick={() => setStep(1)}>Back</Button>
-                        <Button type="submit">Send brief</Button>
-                      </div>
+<div className="sm:col-span-2 flex justify-between">
+  <Button type="button" variant="outline" onClick={() => setStep(1)} disabled={form.formState.isSubmitting}>Back</Button>
+  <Button type="submit" disabled={form.formState.isSubmitting} aria-busy={form.formState.isSubmitting}>
+    {form.formState.isSubmitting ? 'Sending…' : 'Send brief'}
+  </Button>
+</div>
                     </div>
                   )}
                 </form>
