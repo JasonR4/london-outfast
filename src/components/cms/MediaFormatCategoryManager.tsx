@@ -16,6 +16,31 @@ import { supabase } from '@/integrations/supabase/client';
 const LOCATION_CATEGORIES = ['Transport', 'Retail', 'Rail', 'Supermarket', 'Roadside', 'London Underground'];
 const FORMAT_CATEGORIES = ['Digital', 'Paper & Paste', 'Backlight', 'Illuminated', 'Premium', 'HD', 'Vynl', 'WRB'];
 
+
+// Heuristic classifier to suggest categories from format text
+const classifyFormatFromText = (format: MediaFormat) => {
+  const text = `${format.format_name} ${format.description ?? ''} ${format.dimensions ?? ''}`.toLowerCase();
+  const loc = new Set<string>();
+  const typ = new Set<string>();
+
+  // Location signals
+  if (/(underground|tube|lt panel|cross track|escalator|dep|xtp)/.test(text)) loc.add('London Underground').add('Transport');
+  if (/(bus|adshel|streetliner|mega rear|t-side|superside|interior)/.test(text)) loc.add('Transport');
+  if (/(billboard|phone box|roadside)/.test(text)) loc.add('Roadside');
+  if (/rail/.test(text)) { loc.add('Rail'); loc.add('Transport'); }
+  if (/supermarket/.test(text)) loc.add('Supermarket');
+  if (/retail/.test(text)) loc.add('Retail');
+
+  // Format type signals
+  if (/(digital|d48|adshel live|xtp|dep)/.test(text)) typ.add('Digital');
+  if (!/(digital|d48|adshel live|xtp|dep)/.test(text) && /(sheet|poster)/.test(text)) typ.add('Paper & Paste');
+
+  return {
+    location: Array.from(loc),
+    format: Array.from(typ)
+  };
+};
+
 export function MediaFormatCategoryManager() {
   const { 
     mediaFormats, 
@@ -33,7 +58,8 @@ export function MediaFormatCategoryManager() {
   const [newDescription, setNewDescription] = useState<string>('');
   const [editingDimensions, setEditingDimensions] = useState<string | null>(null);
   const [newDimensions, setNewDimensions] = useState<string>('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   // Handle errors from the hook
   useEffect(() => {
@@ -69,6 +95,28 @@ export function MediaFormatCategoryManager() {
     } catch (error) {
       console.error('Error saving categories:', error);
       toast.error('Failed to save categories');
+    }
+  };
+
+  const handleAutoPopulate = async () => {
+    try {
+      setBulkLoading(true);
+      let updated = 0;
+      for (const f of mediaFormats) {
+        const hasAny = (f.categories?.location?.length || 0) + (f.categories?.format?.length || 0) > 0;
+        if (hasAny) continue; // only populate empty ones
+        const cats = classifyFormatFromText(f);
+        if (cats.location.length || cats.format.length) {
+          await updateFormat(f.id, { categories: cats });
+          updated++;
+        }
+      }
+      toast.success(`Auto-populated categories for ${updated} formats`);
+    } catch (e) {
+      console.error('Auto-populate failed', e);
+      toast.error('Auto-populate failed');
+    } finally {
+      setBulkLoading(false);
     }
   };
 
@@ -230,14 +278,21 @@ export function MediaFormatCategoryManager() {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Tags className="w-5 h-5" />
-            Media Formats & Categories
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Click on format names, descriptions, or dimensions to edit them. Use the pencil icon to manage categories. This is the source of truth for all format data across the site.
-          </p>
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Tags className="w-5 h-5" />
+              Media Formats & Categories
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Click on format names, descriptions, or dimensions to edit them. Use the pencil icon to manage categories. This is the source of truth for all format data across the site.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleAutoPopulate} disabled={bulkLoading}>
+              {bulkLoading ? 'Populating…' : 'Auto-populate categories'}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { User, Session } from '@supabase/supabase-js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator, ClipboardList, BarChart3, BookOpen, PenTool } from 'lucide-react';
+import { LogOut, FileText, Image, Users, Settings, Globe, Search, ArrowLeft, Scale, Building, Home, Calculator, ClipboardList, BarChart3, BookOpen, PenTool, Tags } from 'lucide-react';
 
 // Lazy load CMS components for better performance
 const ContentEditor = lazy(() => import('@/components/cms/ContentEditor').then(m => ({ default: m.ContentEditor })));
@@ -22,6 +22,7 @@ const RateCardManager = lazy(() => import('@/components/cms/RateCardManager').th
 const QuoteManager = lazy(() => import('@/components/cms/QuoteManager').then(m => ({ default: m.QuoteManager })));
 const BlogManager = lazy(() => import('@/components/cms/BlogManager').then(m => ({ default: m.BlogManager })));
 const AnalyticsManager = lazy(() => import('@/components/cms/AnalyticsManager').then(m => ({ default: m.AnalyticsManager })));
+const MediaFormatCategoryManager = lazy(() => import('@/components/cms/MediaFormatCategoryManager').then(m => ({ default: m.MediaFormatCategoryManager })));
 
 const CMS = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -214,6 +215,10 @@ const CMS = () => {
                 <Calculator className="w-4 h-4" />
                 Rates
               </TabsTrigger>
+              <TabsTrigger value="formats" className="flex items-center gap-2 whitespace-nowrap shrink-0">
+                <Tags className="w-4 h-4" />
+                Formats
+              </TabsTrigger>
               <TabsTrigger value="seo" className="flex items-center gap-2 whitespace-nowrap shrink-0">
                 <Search className="w-4 h-4" />
                 SEO
@@ -327,6 +332,19 @@ const CMS = () => {
             <Suspense fallback={<div className="flex items-center justify-center py-8">Loading rate cards...</div>}>
               <RateCardManager />
             </Suspense>
+          </TabsContent>
+
+          <TabsContent value="formats">
+            <Card>
+              <CardHeader>
+                <CardTitle>Formats & Categories</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Suspense fallback={<div className="flex items-center justify-center py-8">Loading formats...</div>}>
+                  <MediaFormatCategoryManager />
+                </Suspense>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="seo">
