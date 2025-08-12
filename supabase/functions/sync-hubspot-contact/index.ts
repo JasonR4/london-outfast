@@ -410,7 +410,7 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
           `https://api.hubapi.com/crm/v3/objects/contacts/search`,
           {
             method: "POST",
-            headers: { "Authorization": `Bearer ${hubspotApiKey}", "Content-Type": "application/json" },
+            headers: { "Authorization": `Bearer ${hubspotApiKey}`, "Content-Type": "application/json" },
             body: JSON.stringify({
               filterGroups: [{ filters: [{ propertyName: "email", operator: "EQ", value: formData.email }]}]
             }),
@@ -425,7 +425,7 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
               `https://api.hubapi.com/crm/v3/objects/contacts/${contactId}`,
               {
                 method: "PATCH",
-                headers: { "Authorization": `Bearer ${hubspotApiKey}", "Content-Type": "application/json" },
+                headers: { "Authorization": `Bearer ${hubspotApiKey}`, "Content-Type": "application/json" },
                 body: JSON.stringify({ properties: contactProperties }),
               }
             );
