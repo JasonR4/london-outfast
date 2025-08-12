@@ -62,6 +62,7 @@ const Hero = () => {
               size="lg" 
               className="text-lg px-8 py-6 shadow-glow"
               onClick={() => navigate('/quote')}
+              data-cta="hero_quote"
             >
               I Know What I Want
             </Button>
@@ -70,6 +71,7 @@ const Hero = () => {
               size="lg" 
               className="text-lg px-8 py-6"
               onClick={() => navigate('/configurator')}
+              data-cta="hero_configurator"
             >
               I Need Guidance
             </Button>
@@ -78,14 +80,25 @@ const Hero = () => {
               size="lg" 
               className="text-lg px-8 py-6 text-accent hover:text-accent-foreground"
               onClick={() => navigate('/outdoor-media')}
+              data-cta="hero_browse"
             >
               I'm Just Exploring
+            </Button>
+            <Button 
+              variant="accent"
+              size="lg"
+              className="text-lg px-8 py-6 shadow-glow"
+              onClick={() => navigate('/brief')}
+              data-cta="hero_specialist"
+              aria-label="Talk to an OOH specialist now"
+            >
+              Talk to an OOH Specialist
             </Button>
           </div>
           
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              Choose your path: Direct quote • Smart recommendations • Browse options
+              Choose your path: Direct quote • Smart recommendations • Browse options • Talk to a specialist
             </p>
           </div>
         </div>
