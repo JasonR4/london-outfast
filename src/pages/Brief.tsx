@@ -39,16 +39,16 @@ const schema = z.object({
   email: z.string().email("Invalid email"),
   phone: z.string().min(6, "Required").regex(/^[+0-9().\-\s]+$/, "Use a valid phone number"),
   company: z.string().min(1, "Required"),
-  website: z.string().optional(),
-  jobtitle: z.string().optional(),
+  website: z.string().min(1, "Required"),
+  jobtitle: z.string().min(1, "Required"),
   budget_band: z.string().min(1, "Required"),
   objective: z.enum(objectives),
   objective_other: z.string().optional(),
-  target_areas: z.array(z.string()).optional(),
-  formats: z.array(z.string()).optional(),
-  start_month: z.string().optional(), // YYYY-MM
+  target_areas: z.array(z.string()).min(1, "Select at least one area"),
+  formats: z.array(z.string()).min(1, "Select at least one format"),
+  start_month: z.string().min(1, "Required"), // YYYY-MM
   creative_status: z.enum(creativeStatuses),
-  notes: z.string().optional(),
+  notes: z.string().min(1, "Required"),
   consent: z.boolean().refine(v => v, { message: "Consent is required" }),
   hp: z.string().optional(),
 }).superRefine((val, ctx) => {
@@ -126,8 +126,12 @@ const objectiveValue = form.watch('objective');
 const onSubmit = async (values: FormValues) => {
   try {
     // Immediate feedback while the Edge Function runs
-    toast({ title: 'Submitting brief', description: 'Hang tight — this takes a few seconds.' });
-
+    const firstName = (values.firstname || '').trim() || 'there';
+    toast({
+      title: 'Submitting brief',
+      description: `Hang tight, ${firstName} — this takes a few seconds.`,
+      duration: 7000,
+    });
     const objectiveFinal = values.objective === 'Other' && values.objective_other?.trim()
       ? `Other: ${values.objective_other.trim()}`
       : values.objective;
@@ -188,7 +192,7 @@ const onSubmit = async (values: FormValues) => {
                 <form onSubmit={form.handleSubmit(onSubmit, () => {
                   toast({
                     title: 'Please complete required fields',
-                    description: 'Check contact info, budget, objective, creative status, and consent.',
+                    description: 'Check all fields: contact details, budget, objective (and details), target areas, formats, start month, creative status, notes, and consent.',
                     variant: 'destructive' as any,
                   });
                 })} className="space-y-8">
@@ -234,7 +238,7 @@ const onSubmit = async (values: FormValues) => {
                       )} />
                       <FormField control={form.control} name="website" render={({ field }) => (
                         <FormItem className="sm:col-span-2">
-                          <FormLabel>Website (optional)</FormLabel>
+                          <FormLabel>Website</FormLabel>
                           <FormControl><Input type="url" autoComplete="url" placeholder="https://... or company.com" {...field} /></FormControl>
                           <FormDescription>We’ll validate the domain automatically.</FormDescription>
                           <FormMessage />
@@ -242,7 +246,7 @@ const onSubmit = async (values: FormValues) => {
                       )} />
                       <FormField control={form.control} name="jobtitle" render={({ field }) => (
                         <FormItem className="sm:col-span-2">
-                          <FormLabel>Role/Title (optional)</FormLabel>
+                          <FormLabel>Role/Title</FormLabel>
                           <FormControl><Input autoComplete="organization-title" placeholder="Marketing Manager" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
@@ -304,18 +308,19 @@ const onSubmit = async (values: FormValues) => {
       selectedLocations={form.watch('target_areas') || []}
       onSelectionChange={(locs) => form.setValue('target_areas', locs)}
       title="London Areas"
-      description="Select any specific London areas (optional)."
+      description="Select your London areas."
       showSelectedSummary
       maxHeight="320px"
     />
-    <FormDescription>Select any specific London areas (optional).</FormDescription>
+    <FormDescription>Select your London areas.</FormDescription>
+    <FormMessage />
   </FormItem>
 )} />
 
 {/* Preferred formats with search and category */}
 <FormField control={form.control} name="formats" render={() => (
   <FormItem className="sm:col-span-2">
-    <FormLabel>Preferred formats (optional)</FormLabel>
+    <FormLabel>Preferred formats</FormLabel>
     <div className="grid gap-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Input
@@ -323,17 +328,17 @@ const onSubmit = async (values: FormValues) => {
           value={formatSearch}
           onChange={(e) => setFormatSearch(e.target.value)}
         />
-<Select onValueChange={(v) => setFormatCategory((v as any) || 'all')} defaultValue="all">
-  <FormControl>
-    <SelectTrigger><SelectValue placeholder="All categories" /></SelectTrigger>
-  </FormControl>
-  <SelectContent>
-    <SelectItem value="all">All categories</SelectItem>
-    {HARDCODED_FORMAT_CATEGORIES.map((c) => (
-      <SelectItem key={c} value={c}>{c}</SelectItem>
-    ))}
-  </SelectContent>
-</Select>
+        <Select onValueChange={(v) => setFormatCategory((v as any) || 'all')} defaultValue="all">
+          <FormControl>
+            <SelectTrigger><SelectValue placeholder="All categories" /></SelectTrigger>
+          </FormControl>
+          <SelectContent>
+            <SelectItem value="all">All categories</SelectItem>
+            {HARDCODED_FORMAT_CATEGORIES.map((c) => (
+              <SelectItem key={c} value={c}>{c}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="max-h-56 overflow-auto border rounded-md p-3 space-y-2">
         {filteredFormatNames.map((name) => (
@@ -354,6 +359,7 @@ const onSubmit = async (values: FormValues) => {
         )}
       </div>
     </div>
+    <FormMessage />
   </FormItem>
 )} />
 
