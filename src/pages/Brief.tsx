@@ -48,7 +48,17 @@ export default function Brief() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
+    shouldUnregister: false,
     defaultValues: {
+      firstname: '',
+      lastname: '',
+      email: '',
+      phone: '',
+      company: '',
+      website: '',
+      jobtitle: '',
+      notes: '',
+      start_month: '',
       target_areas: [],
       formats: [],
       consent: false,
@@ -116,7 +126,13 @@ export default function Brief() {
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <form onSubmit={form.handleSubmit(onSubmit, () => {
+                  toast({
+                    title: 'Please complete required fields',
+                    description: 'Check contact info, budget, objective, creative status, and consent.',
+                    variant: 'destructive' as any,
+                  });
+                })} className="space-y-8">
                   {/* Honeypot */}
                   <input type="text" className="hidden" tabIndex={-1} autoComplete="off" {...form.register('hp')} />
 
