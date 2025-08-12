@@ -58,17 +58,34 @@ const secondaryPct =
       </div>
 
       <div className="space-y-1 text-sm">
-        <div>Media rate (per in-charge): {formatGBP(media.rate)}</div>
-        <div>Media (before discount): {formatGBP(media.before)}</div>
-        {media.showDiscount && (
-          <div className="text-emerald-400">
-            💰 Volume discount (10% for 3+ in-charge periods): -{formatGBP(media.discount)}
-          </div>
-        )}
-        <div>Media (after discount): {formatGBP(media.after)}</div>
-        <div>Production: {formatGBP(production)}</div>
-        <div>Creative: {formatGBP(creative)}</div>
-        <div className="mt-2 font-semibold">Subtotal (ex VAT): {formatGBP(subtotalExVat)}</div>
+        {(() => {
+          const pennies = (n: number) => Math.round((n ?? 0) * 100);
+          const hasDiscount =
+            pennies(media.before) !== pennies(media.after) &&
+            pennies(media.after) > 0;
+
+          return (
+            <>
+              <div>Media rate (per in-charge): {formatGBP(media.rate)}</div>
+
+              {hasDiscount ? (
+                <>
+                  <div>Media (before discount): {formatGBP(media.before)}</div>
+                  <div className="text-emerald-400">
+                    💰 Volume discount (10% for 3+ in-charge periods): -{formatGBP(media.discount)}
+                  </div>
+                  <div className="font-semibold">Media (after discount): {formatGBP(media.after)}</div>
+                </>
+              ) : (
+                <div>Media: {formatGBP(media.before)}</div>
+              )}
+
+              {production > 0 && <div>Production: {formatGBP(production)}</div>}
+              {creative > 0 && <div>Creative: {formatGBP(creative)}</div>}
+              <div className="mt-2 font-semibold">Subtotal (ex VAT): {formatGBP(subtotalExVat)}</div>
+            </>
+          );
+        })()}
       </div>
     </div>
   );

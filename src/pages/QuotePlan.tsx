@@ -332,16 +332,18 @@ export default function QuotePlan() {
                                    <span>Campaign Cost ({item.quantity} × {item.selected_periods.length} period{item.selected_periods.length !== 1 ? 's' : ''}):</span>
                                    <span className="font-medium text-foreground">{formatCurrency(item.base_cost)}</span>
                                  </div>
-                                 <div className="flex justify-between">
-                                   <span>Production Cost ({item.quantity} unit{item.quantity !== 1 ? 's' : ''}):</span>
-                                   <span className="font-medium text-foreground">{formatCurrency(item.production_cost || 0)}</span>
-                                 </div>
-                                 {item.creative_cost > 0 && (
-                                   <div className="flex justify-between">
-                                     <span>Creative Assets:</span>
-                                     <span className="font-medium text-foreground">{formatCurrency(item.creative_cost)}</span>
-                                   </div>
-                                 )}
+                                  {(item.production_cost || 0) > 0 && (
+                                    <div className="flex justify-between">
+                                      <span>Production Cost ({item.quantity} unit{item.quantity !== 1 ? 's' : ''}):</span>
+                                      <span className="font-medium text-foreground">{formatCurrency(item.production_cost || 0)}</span>
+                                    </div>
+                                  )}
+                                  {(item.creative_cost || 0) > 0 && (
+                                    <div className="flex justify-between">
+                                      <span>Creative Assets:</span>
+                                      <span className="font-medium text-foreground">{formatCurrency(item.creative_cost)}</span>
+                                    </div>
+                                  )}
                                </div>
                              </div>
                           </div>
