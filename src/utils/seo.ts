@@ -109,9 +109,7 @@ export const updateMetaTags = (title: string, description: string, url?: string,
     metaKeywords.setAttribute('content', seoData.keywords.join(', '));
   }
 
-  // Update canonical URL — force .co.uk domain at render time and ignore CMS .com canonicals
-  const isHomepage = typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '');
-
+  // Update canonical URL globally — always force .co.uk and fix homepage to '/'
   const toCoUkCanonical = (input: string) => {
     try {
       const base = 'https://mediabuyinglondon.co.uk';
@@ -128,18 +126,21 @@ export const updateMetaTags = (title: string, description: string, url?: string,
     }
   };
 
-  if (!isHomepage) {
-    let canonical = document.querySelector('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonical);
-    }
-
-    const candidate = url || seoData?.canonical_url || (typeof window !== 'undefined' ? window.location.href : 'https://mediabuyinglondon.co.uk');
-    const desiredCanonical = toCoUkCanonical(candidate);
-    canonical.setAttribute('href', desiredCanonical);
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonical);
   }
+
+  const base = 'https://mediabuyinglondon.co.uk';
+  const path = typeof window !== 'undefined' ? (window.location.pathname || '/') : '/';
+  const candidate = url || (typeof window !== 'undefined' ? window.location.href : base);
+  let desiredCanonical = toCoUkCanonical(candidate);
+  if (path === '/' || path === '') {
+    desiredCanonical = `${base}/`;
+  }
+  canonical.setAttribute('href', desiredCanonical);
 
   // Update Open Graph tags
   const ogTitle = document.querySelector('meta[property="og:title"]') || createMetaTag('property', 'og:title');
