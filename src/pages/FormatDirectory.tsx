@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCentralizedMediaFormats } from "@/hooks/useCentralizedMediaFormats";
+import { useMediaFormatsContext } from "@/components/providers/MediaFormatsProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,19 +14,27 @@ const FormatDirectory = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const { mediaFormats, loading, refetch } = useCentralizedMediaFormats();
+  const { mediaFormats: ctxFormats, service } = useMediaFormatsContext();
+
+  const combinedFormats = mediaFormats.length ? mediaFormats : ctxFormats;
   
   useEffect(() => {
     refetch();
+    if (combinedFormats.length === 0) {
+      // Trigger a service refresh as a fallback
+      service.fetchFormats(false).catch(() => {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   // Get unique format categories from CMS categories
   const categories = Array.from(
     new Set(
-      mediaFormats.flatMap((format) => format.categories?.format ?? [])
+      combinedFormats.flatMap((format) => format.categories?.format ?? [])
     )
   ).filter(Boolean).sort();
   
-  const filteredFormats = mediaFormats.filter((format) => {
+  const filteredFormats = combinedFormats.filter((format) => {
     const q = searchTerm.toLowerCase();
     const nameMatch = format.format_name.toLowerCase().includes(q);
     const descMatch = (format.description || '').toLowerCase().includes(q);
@@ -101,7 +110,7 @@ const FormatDirectory = () => {
           
           <div className="text-center">
             <p className="text-muted-foreground">
-              Showing {filteredFormats.length} of {mediaFormats.length} formats
+              Showing {filteredFormats.length} of {combinedFormats.length} formats
             </p>
           </div>
         </div>
@@ -178,7 +187,7 @@ const FormatDirectory = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
             <Card>
               <CardContent className="pt-6">
-                <div className="text-3xl font-bold text-primary mb-2">{mediaFormats.length}+</div>
+                <div className="text-3xl font-bold text-primary mb-2">{combinedFormats.length}+</div>
                 <h3 className="font-semibold">Format Types</h3>
                 <p className="text-sm text-muted-foreground">Available across London</p>
               </CardContent>
