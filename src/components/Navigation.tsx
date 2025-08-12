@@ -161,7 +161,7 @@ const Navigation = () => {
                   isActive('/brief') ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
-                Brief
+                Speak with an OOH specialist
               </Link>
             )}
             {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
@@ -275,7 +275,7 @@ const Navigation = () => {
                       isActive('/brief') ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
-                    Brief
+                    Speak with an OOH specialist
                   </Link>
                 )}
                 {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (

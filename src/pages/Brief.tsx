@@ -24,7 +24,7 @@ const schema = z.object({
   firstname: z.string().min(1, "Required"),
   lastname: z.string().min(1, "Required"),
   email: z.string().email("Invalid email"),
-  phone: z.string().min(6, "Required"),
+  phone: z.string().min(6, "Required").regex(/^[+0-9().\-\s]+$/, "Use a valid phone number"),
   company: z.string().min(1, "Required"),
   website: z.string().optional(),
   jobtitle: z.string().optional(),
@@ -93,7 +93,16 @@ export default function Brief() {
       const { data, error } = await supabase.functions.invoke('submit-brief', { body: payload });
       if (error || !data?.ok) throw new Error(error?.message || data?.error || 'Failed to submit');
       toast({ title: 'Brief sent', description: 'We’ll call you shortly.' });
-      navigate(`/thank-you?brief=1&budget=${encodeURIComponent(values.budget_band)}`);
+      const thankYouUrl = `/thank-you?brief=1`
+        + `&firstname=${encodeURIComponent(values.firstname)}`
+        + `&budget=${encodeURIComponent(values.budget_band)}`
+        + `&objective=${encodeURIComponent(values.objective)}`
+        + `&target_areas=${encodeURIComponent((values.target_areas || []).join(','))}`
+        + `&formats=${encodeURIComponent((values.formats || []).join(','))}`
+        + `&start_month=${encodeURIComponent(values.start_month || '')}`
+        + `&creative_status=${encodeURIComponent(values.creative_status)}`
+        + (values.notes ? `&notes=${encodeURIComponent(values.notes)}` : '');
+      navigate(thankYouUrl);
     } catch (e: any) {
       toast({ title: 'Submission failed', description: e.message || 'Please try again.', variant: 'destructive' as any });
     }
@@ -141,42 +150,42 @@ export default function Brief() {
                       <FormField control={form.control} name="firstname" render={({ field }) => (
                         <FormItem>
                           <FormLabel>First name</FormLabel>
-                          <FormControl><Input placeholder="Jane" {...field} /></FormControl>
+                          <FormControl><Input autoComplete="given-name" placeholder="Jane" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
                       <FormField control={form.control} name="lastname" render={({ field }) => (
                         <FormItem>
                           <FormLabel>Last name</FormLabel>
-                          <FormControl><Input placeholder="Doe" {...field} /></FormControl>
+                          <FormControl><Input autoComplete="family-name" placeholder="Doe" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
                       <FormField control={form.control} name="email" render={({ field }) => (
                         <FormItem className="sm:col-span-2">
                           <FormLabel>Work email</FormLabel>
-                          <FormControl><Input type="email" placeholder="name@company.com" {...field} /></FormControl>
+                          <FormControl><Input type="email" autoComplete="email" placeholder="name@company.com" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
                       <FormField control={form.control} name="phone" render={({ field }) => (
                         <FormItem>
                           <FormLabel>Phone</FormLabel>
-                          <FormControl><Input placeholder="07..." {...field} /></FormControl>
+                          <FormControl><Input type="tel" inputMode="tel" autoComplete="tel" placeholder="07..." {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
                       <FormField control={form.control} name="company" render={({ field }) => (
                         <FormItem>
                           <FormLabel>Company</FormLabel>
-                          <FormControl><Input placeholder="Acme Ltd" {...field} /></FormControl>
+                          <FormControl><Input autoComplete="organization" placeholder="Acme Ltd" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
                       <FormField control={form.control} name="website" render={({ field }) => (
                         <FormItem className="sm:col-span-2">
                           <FormLabel>Website (optional)</FormLabel>
-                          <FormControl><Input placeholder="https://... or company.com" {...field} /></FormControl>
+                          <FormControl><Input type="url" autoComplete="url" placeholder="https://... or company.com" {...field} /></FormControl>
                           <FormDescription>We’ll validate the domain automatically.</FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -184,7 +193,7 @@ export default function Brief() {
                       <FormField control={form.control} name="jobtitle" render={({ field }) => (
                         <FormItem className="sm:col-span-2">
                           <FormLabel>Role/Title (optional)</FormLabel>
-                          <FormControl><Input placeholder="Marketing Manager" {...field} /></FormControl>
+                          <FormControl><Input autoComplete="organization-title" placeholder="Marketing Manager" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
