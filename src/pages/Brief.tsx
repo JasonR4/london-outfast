@@ -5,8 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { londonAreas } from "@/data/londonAreas";
-import { oohFormats } from "@/data/oohFormats";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,11 +13,26 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-const budgetBands = ["<£5k", "£5–15k", "£15–50k", "£50–150k", "£150k+"] as const;
-const objectives = ["Awareness", "Store Traffic", "Launch", "Performance"] as const;
+import { LocationSelector } from "@/components/LocationSelector";
+import { useCentralizedMediaFormats } from "@/hooks/useCentralizedMediaFormats";
+const objectives = [
+  "Brand awareness",
+  "Store visits",
+  "Lead generation",
+  "Website traffic",
+  "App installs",
+  "Product launch",
+  "Event promotion",
+  "Recruitment",
+  "Geo domination",
+  "Retargeting",
+  "Seasonal",
+  "PR launch",
+  "Directional",
+  "Education",
+  "Other",
+] as const;
 const creativeStatuses = ["Ready", "Need design", "Unsure"] as const;
-
 const schema = z.object({
   firstname: z.string().min(1, "Required"),
   lastname: z.string().min(1, "Required"),
@@ -28,8 +41,9 @@ const schema = z.object({
   company: z.string().min(1, "Required"),
   website: z.string().optional(),
   jobtitle: z.string().optional(),
-  budget_band: z.enum(budgetBands),
+  budget_band: z.string().min(1, "Required"),
   objective: z.enum(objectives),
+  objective_other: z.string().optional(),
   target_areas: z.array(z.string()).optional(),
   formats: z.array(z.string()).optional(),
   start_month: z.string().optional(), // YYYY-MM
@@ -37,6 +51,10 @@ const schema = z.object({
   notes: z.string().optional(),
   consent: z.boolean().refine(v => v, { message: "Consent is required" }),
   hp: z.string().optional(),
+}).superRefine((val, ctx) => {
+  if (val.objective === "Other" && (!val.objective_other || !val.objective_other.trim())) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["objective_other"], message: "Please specify your objective" });
+  }
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -49,20 +67,21 @@ export default function Brief() {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     shouldUnregister: false,
-    defaultValues: {
-      firstname: '',
-      lastname: '',
-      email: '',
-      phone: '',
-      company: '',
-      website: '',
-      jobtitle: '',
-      notes: '',
-      start_month: '',
-      target_areas: [],
-      formats: [],
-      consent: false,
-    }
+defaultValues: {
+  firstname: '',
+  lastname: '',
+  email: '',
+  phone: '',
+  company: '',
+  website: '',
+  jobtitle: '',
+  notes: '',
+  start_month: '',
+  target_areas: [],
+  formats: [],
+  objective_other: '',
+  consent: false,
+}
   });
 
   // Extract UTM and source_path
@@ -78,35 +97,55 @@ export default function Brief() {
     }
   }, [location.pathname, location.search]);
 
-  const areaOptions = useMemo(() => londonAreas.flatMap(z => z.areas), []);
-  const formatOptions = useMemo(() => oohFormats.map(f => f.shortName || f.name), []);
+// Media formats with categories and filtering
+const { mediaFormats } = useCentralizedMediaFormats(false);
+const allFormatCategories = useMemo(() => {
+  const set = new Set<string>();
+  mediaFormats.forEach(f => f.categories?.format?.forEach(c => set.add(c)));
+  return Array.from(set).sort();
+}, [mediaFormats]);
+const [formatSearch, setFormatSearch] = useState('');
+const [formatCategory, setFormatCategory] = useState<string | undefined>();
+const filteredFormatNames = useMemo(() => {
+  const q = formatSearch.trim().toLowerCase();
+  return mediaFormats
+    .filter(f => !formatCategory || (f.categories?.format || []).includes(formatCategory))
+    .filter(f => !q || f.format_name.toLowerCase().includes(q) || (f.description?.toLowerCase().includes(q)))
+    .map(f => f.format_name);
+}, [mediaFormats, formatCategory, formatSearch]);
 
-  const onSubmit = async (values: FormValues) => {
-    try {
-      const payload = {
-        ...values,
-        ...utm,
-        mbl: true,
-        // normalise month to YYYY-MM where possible
-        start_month: values.start_month ? `${values.start_month}` : undefined,
-      };
-      const { data, error } = await supabase.functions.invoke('submit-brief', { body: payload });
-      if (error || !data?.ok) throw new Error(error?.message || data?.error || 'Failed to submit');
-      toast({ title: 'Brief sent', description: 'We’ll call you shortly.' });
-      const thankYouUrl = `/thank-you?brief=1`
-        + `&firstname=${encodeURIComponent(values.firstname)}`
-        + `&budget=${encodeURIComponent(values.budget_band)}`
-        + `&objective=${encodeURIComponent(values.objective)}`
-        + `&target_areas=${encodeURIComponent((values.target_areas || []).join(','))}`
-        + `&formats=${encodeURIComponent((values.formats || []).join(','))}`
-        + `&start_month=${encodeURIComponent(values.start_month || '')}`
-        + `&creative_status=${encodeURIComponent(values.creative_status)}`
-        + (values.notes ? `&notes=${encodeURIComponent(values.notes)}` : '');
-      navigate(thankYouUrl);
-    } catch (e: any) {
-      toast({ title: 'Submission failed', description: e.message || 'Please try again.', variant: 'destructive' as any });
-    }
+const objectiveValue = form.watch('objective');
+const onSubmit = async (values: FormValues) => {
+  try {
+    const objectiveFinal = values.objective === 'Other' && values.objective_other?.trim()
+      ? `Other: ${values.objective_other.trim()}`
+      : values.objective;
+    const { objective_other, ...rest } = values as any;
+    const payload = {
+      ...rest,
+      objective: objectiveFinal,
+      ...utm,
+      mbl: true,
+      // normalise month to YYYY-MM where possible
+      start_month: values.start_month ? `${values.start_month}` : undefined,
+    };
+    const { data, error } = await supabase.functions.invoke('submit-brief', { body: payload });
+    if (error || !data?.ok) throw new Error(error?.message || data?.error || 'Failed to submit');
+    toast({ title: 'Brief sent', description: 'We’ll call you shortly.' });
+    const thankYouUrl = `/thank-you?brief=1`
+      + `&firstname=${encodeURIComponent(values.firstname)}`
+      + `&budget=${encodeURIComponent(values.budget_band)}`
+      + `&objective=${encodeURIComponent(objectiveFinal)}`
+      + `&target_areas=${encodeURIComponent((values.target_areas || []).join(','))}`
+      + `&formats=${encodeURIComponent((values.formats || []).join(','))}`
+      + `&start_month=${encodeURIComponent(values.start_month || '')}`
+      + `&creative_status=${encodeURIComponent(values.creative_status)}`
+      + (values.notes ? `&notes=${encodeURIComponent(values.notes)}` : '');
+    navigate(thankYouUrl);
+  } catch (e: any) {
+    toast({ title: 'Submission failed', description: e.message || 'Please try again.', variant: 'destructive' as any });
   }
+}
 
   useEffect(() => { document.title = 'Talk to a Specialist | Media Buying London' }, []);
 
@@ -206,80 +245,106 @@ export default function Brief() {
 
                   {step === 2 && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField control={form.control} name="budget_band" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Budget band</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger><SelectValue placeholder="Select budget" /></SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {budgetBands.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
+<FormField control={form.control} name="budget_band" render={({ field }) => (
+  <FormItem>
+    <FormLabel>Budget</FormLabel>
+    <FormControl>
+      <Input
+        placeholder="Enter amount e.g. 15000"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        {...field}
+      />
+    </FormControl>
+    <FormDescription>Numbers only; we’ll interpret this as GBP.</FormDescription>
+    <FormMessage />
+  </FormItem>
+)} />
 
-                      <FormField control={form.control} name="objective" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Primary objective</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger><SelectValue placeholder="Select objective" /></SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {objectives.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
+<FormField control={form.control} name="objective" render={({ field }) => (
+  <FormItem>
+    <FormLabel>Primary objective</FormLabel>
+    <Select onValueChange={field.onChange} defaultValue={field.value}>
+      <FormControl>
+        <SelectTrigger><SelectValue placeholder="Select objective" /></SelectTrigger>
+      </FormControl>
+      <SelectContent>
+        {objectives.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+      </SelectContent>
+    </Select>
+    <FormMessage />
+  </FormItem>
+)} />
+{objectiveValue === 'Other' && (
+  <FormField control={form.control} name="objective_other" render={({ field }) => (
+    <FormItem>
+      <FormLabel>Specify objective</FormLabel>
+      <FormControl><Input placeholder="Type your objective" {...field} /></FormControl>
+      <FormMessage />
+    </FormItem>
+  )} />
+)}
 
-                      {/* Target areas multi-select */}
-                      <FormField control={form.control} name="target_areas" render={() => (
-                        <FormItem className="sm:col-span-2">
-                          <FormLabel>Target areas</FormLabel>
-                          <div className="max-h-48 overflow-auto border rounded-md p-3 space-y-2">
-                            {areaOptions.map(a => (
-                              <label key={a} className="flex items-center gap-2 text-sm">
-                                <Checkbox
-                                  checked={form.getValues('target_areas')?.includes(a) || false}
-                                  onCheckedChange={(checked) => {
-                                    const current = new Set(form.getValues('target_areas') || [])
-                                    if (checked) current.add(a); else current.delete(a);
-                                    form.setValue('target_areas', Array.from(current))
-                                  }}
-                                />
-                                <span>{a}</span>
-                              </label>
-                            ))}
-                          </div>
-                          <FormDescription>Select any specific London areas (optional).</FormDescription>
-                        </FormItem>
-                      )} />
+{/* Target areas with search and zones */}
+<FormField control={form.control} name="target_areas" render={() => (
+  <FormItem className="sm:col-span-2">
+    <FormLabel>Target areas</FormLabel>
+    <LocationSelector
+      selectedLocations={form.watch('target_areas') || []}
+      onSelectionChange={(locs) => form.setValue('target_areas', locs)}
+      title="London Areas"
+      description="Select any specific London areas (optional)."
+      showSelectedSummary
+      maxHeight="320px"
+    />
+    <FormDescription>Select any specific London areas (optional).</FormDescription>
+  </FormItem>
+)} />
 
-                      {/* Preferred formats multi-select */}
-                      <FormField control={form.control} name="formats" render={() => (
-                        <FormItem className="sm:col-span-2">
-                          <FormLabel>Preferred formats (optional)</FormLabel>
-                          <div className="max-h-48 overflow-auto border rounded-md p-3 space-y-2">
-                            {formatOptions.map(f => (
-                              <label key={f} className="flex items-center gap-2 text-sm">
-                                <Checkbox
-                                  checked={form.getValues('formats')?.includes(f) || false}
-                                  onCheckedChange={(checked) => {
-                                    const current = new Set(form.getValues('formats') || [])
-                                    if (checked) current.add(f); else current.delete(f);
-                                    form.setValue('formats', Array.from(current))
-                                  }}
-                                />
-                                <span>{f}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </FormItem>
-                      )} />
+{/* Preferred formats with search and category */}
+<FormField control={form.control} name="formats" render={() => (
+  <FormItem className="sm:col-span-2">
+    <FormLabel>Preferred formats (optional)</FormLabel>
+    <div className="grid gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Input
+          placeholder="Search formats..."
+          value={formatSearch}
+          onChange={(e) => setFormatSearch(e.target.value)}
+        />
+        <Select onValueChange={(v) => setFormatCategory(v === 'all' ? undefined : v)} defaultValue="all">
+          <FormControl>
+            <SelectTrigger><SelectValue placeholder="All categories" /></SelectTrigger>
+          </FormControl>
+          <SelectContent>
+            <SelectItem value="all">All categories</SelectItem>
+            {allFormatCategories.map((c) => (
+              <SelectItem key={c} value={c}>{c}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="max-h-56 overflow-auto border rounded-md p-3 space-y-2">
+        {filteredFormatNames.map((name) => (
+          <label key={name} className="flex items-center gap-2 text-sm">
+            <Checkbox
+              checked={form.getValues('formats')?.includes(name) || false}
+              onCheckedChange={(checked) => {
+                const current = new Set(form.getValues('formats') || [])
+                if (checked) current.add(name); else current.delete(name);
+                form.setValue('formats', Array.from(current))
+              }}
+            />
+            <span>{name}</span>
+          </label>
+        ))}
+        {filteredFormatNames.length === 0 && (
+          <p className="text-sm text-muted-foreground">No formats found.</p>
+        )}
+      </div>
+    </div>
+  </FormItem>
+)} />
 
                       <FormField control={form.control} name="start_month" render={({ field }) => (
                         <FormItem>
