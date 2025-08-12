@@ -322,47 +322,50 @@ Deno.serve(async (req) => {
       })
     }
 
-    // HubSpot: use central sync function first, fallback to direct API (best-effort)
-    try {
-      const syncPayload = {
-        submissionType: 'general_quote',
-        firstName: body.firstname,
-        lastName: body.lastname,
-        email: body.email,
-        phone: body.phone,
-        website: body.website || '',
-        company: body.company || '',
-        quoteDetails: {
-          selectedFormats: body.formats || [],
-          selectedLocations: body.target_areas || [],
-          budgetRange: body.budget_band,
-          campaignObjective: body.objective,
-          timeline: body.start_month || '',
-          additionalDetails: `Creative: ${body.creative_status}${body.notes ? `\nNotes: ${body.notes}` : ''}`,
-        },
-      }
-      const syncRes = await supabase.functions.invoke('sync-hubspot-contact', { body: syncPayload })
-      if (!(syncRes.data as any)?.success) {
-        console.warn('sync-hubspot-contact returned non-success, falling back', syncRes.data)
-        const contactId = await upsertHubSpotContact(body)
-        if (contactId) { await attachHubSpotNote(contactId, body); await createHubSpotTask(contactId, body); }
-      } else {
-        const cid = (syncRes.data as any)?.contactId as string | undefined
-        if (cid) { try { await createHubSpotTask(cid, body) } catch (e) { console.error('create task after sync failed', e) } }
-      }
-    } catch (e) {
-      console.error('HubSpot sync via function failed, falling back to direct', e)
+    // Kick off background processing (HubSpot sync + emails) without blocking the response
+    EdgeRuntime.waitUntil((async () => {
+      // HubSpot: use central sync function first, fallback to direct API (best-effort)
       try {
-        const contactId = await upsertHubSpotContact(body)
-        if (contactId) { await attachHubSpotNote(contactId, body); await createHubSpotTask(contactId, body); }
-      } catch (inner) {
-        console.error('HubSpot direct fallback failed', inner)
+        const syncPayload = {
+          submissionType: 'general_quote',
+          firstName: body.firstname,
+          lastName: body.lastname,
+          email: body.email,
+          phone: body.phone,
+          website: body.website || '',
+          company: body.company || '',
+          quoteDetails: {
+            selectedFormats: body.formats || [],
+            selectedLocations: body.target_areas || [],
+            budgetRange: body.budget_band,
+            campaignObjective: body.objective,
+            timeline: body.start_month || '',
+            additionalDetails: `Creative: ${body.creative_status}${body.notes ? `\nNotes: ${body.notes}` : ''}`,
+          },
+        }
+        const syncRes = await supabase.functions.invoke('sync-hubspot-contact', { body: syncPayload })
+        if (!(syncRes.data as any)?.success) {
+          console.warn('sync-hubspot-contact returned non-success, falling back', syncRes.data)
+          const contactId = await upsertHubSpotContact(body)
+          if (contactId) { await attachHubSpotNote(contactId, body); await createHubSpotTask(contactId, body); }
+        } else {
+          const cid = (syncRes.data as any)?.contactId as string | undefined
+          if (cid) { try { await createHubSpotTask(cid, body) } catch (e) { console.error('create task after sync failed', e) } }
+        }
+      } catch (e) {
+        console.error('HubSpot sync via function failed, falling back to direct', e)
+        try {
+          const contactId = await upsertHubSpotContact(body)
+          if (contactId) { await attachHubSpotNote(contactId, body); await createHubSpotTask(contactId, body); }
+        } catch (inner) {
+          console.error('HubSpot direct fallback failed', inner)
+        }
       }
-    }
 
-    // Emails (best-effort)
-    try { await sendInternalEmail(body) } catch (e) { console.error('Internal email error', e) }
-    try { await sendClientConfirmation(body) } catch (e) { console.error('Client email error', e) }
+      // Emails (best-effort)
+      try { await sendInternalEmail(body) } catch (e) { console.error('Internal email error', e) }
+      try { await sendClientConfirmation(body) } catch (e) { console.error('Client email error', e) }
+    })());
 
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
