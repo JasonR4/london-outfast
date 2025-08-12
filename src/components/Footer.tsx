@@ -31,7 +31,7 @@ const Footer = () => {
                 {footer.company?.name || 'Media Buying London'}
               </h3>
               <p className="text-muted-foreground leading-relaxed mb-6 max-w-sm">
-                Media Buying London — London’s fastest OOH buying specialists. 450+ years’ combined experience. Transparent pricing. No commitment deals.
+                Media Buying London — London’s fastest OOH buying specialists. 450+ years’ combined experience. Transparent pricing.
               </p>
             </div>
             
