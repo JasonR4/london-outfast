@@ -31,7 +31,7 @@ const Footer = () => {
                 {footer.company?.name || 'Media Buying London'}
               </h3>
               <p className="text-muted-foreground leading-relaxed mb-6 max-w-sm">
-                Media Buying London — London’s fastest OOH buying specialists. 450+ years’ combined experience. Transparent pricing.
+                Media Buying London is a London-based out-of-home advertising specialist,  specialising in fast, price-guaranteed media buying across The London Underground, roadside, retail, supermarkets, and borough-targeted formats
               </p>
             </div>
             
