@@ -90,6 +90,12 @@ const Footer = () => {
                   What is Media Buying in London?
                 </Link>
                 <Link 
+                  to="/ooh-advertising-london"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
+                >
+                  OOH Advertising London
+                </Link>
+                <Link 
                   to="/corporate-investment"
                   className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
                 >

@@ -13,6 +13,7 @@ export const generateSitemapUrls = async () => {
     `${baseUrl}/`,
     `${baseUrl}/quote`,
     `${baseUrl}/outdoor-media`,
+    `${baseUrl}/ooh-advertising-london`,
     ...(mediaFormats || []).map(format => `${baseUrl}/outdoor-media/${format.format_slug}`)
   ];
   return urls;
