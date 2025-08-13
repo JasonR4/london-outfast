@@ -20,7 +20,7 @@ export const useFeatureFlags = () => {
     
     // For now, set default flags
     setFlags({
-      gated_quotes: true // Enable quote gating by default
+      gated_quotes: false // TEMP OFF to restore planner immediately
     });
     
     setLoading(false);
