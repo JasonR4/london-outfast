@@ -39,22 +39,6 @@ export const getSEODataForPage = async (pageSlug: string) => {
 };
 
 export const generateStructuredData = (format?: any, seoData?: any) => {
-  const baseStructuredData = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "Media Buying London",
-    "description": "London's fastest out-of-home media buying specialists. Unbeaten on price, unmatched on speed.",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "London",
-      "addressCountry": "GB"
-    },
-    "telephone": "+442045243019",
-    "url": "https://mediabuyinglondon.co.uk",
-    "areaServed": "London",
-    "serviceType": "Out-of-Home Media Buying"
-  };
-
   const websiteData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -63,27 +47,61 @@ export const generateStructuredData = (format?: any, seoData?: any) => {
     "url": "https://mediabuyinglondon.co.uk"
   };
 
-  // Use CMS SEO data if available; always include WebSite schema
-  if (seoData?.schema_markup) {
-    return [websiteData, seoData.schema_markup];
-  }
+  // Core business entities: Organization + LocalBusiness represented as AdvertisingAgency
+  const organizationData = {
+    "@context": "https://schema.org",
+    "@type": ["Organization", "AdvertisingAgency"],
+    "name": "Media Buying London",
+    "url": "https://mediabuyinglondon.co.uk",
+    "areaServed": "London, UK",
+    "description": "Media Buying London is a specialist OOH media buying agency offering same-day quotes and unbeatable rates across Tube, roadside, bus, and borough-targeted advertising.",
+    "knowsAbout": [
+      "Out-of-home advertising London",
+      "Media planning services",
+      "Tube advertising London",
+      "Digital OOH"
+    ]
+  } as const;
 
+  const localBusinessData = {
+    "@context": "https://schema.org",
+    "@type": ["LocalBusiness", "AdvertisingAgency"],
+    "name": "Media Buying London",
+    "url": "https://mediabuyinglondon.co.uk",
+    "areaServed": "London, UK",
+    "description": "Media Buying London is a specialist OOH media buying agency offering same-day quotes and unbeatable rates across Tube, roadside, bus, and borough-targeted advertising.",
+    "knowsAbout": [
+      "Out-of-home advertising London",
+      "Media planning services",
+      "Tube advertising London",
+      "Digital OOH"
+    ]
+  } as const;
+
+  const nodes: any[] = [websiteData, organizationData, localBusinessData];
+
+  // If a specific format is present, include a Service node scoped to that format
   if (format) {
-    const serviceData = {
-      ...baseStructuredData,
-      "@type": ["LocalBusiness", "Service"],
+    nodes.push({
+      "@context": "https://schema.org",
+      "@type": "Service",
       "name": `${format.name} in London | Media Buying London`,
-      "description": format.metaDescription,
-      "offers": {
-        "@type": "Offer",
-        "description": `${format.name} advertising in London`,
-        "areaServed": "London"
+      "description": format.metaDescription || `${format.name} advertising in London`,
+      "areaServed": "London, UK",
+      "provider": {
+        "@type": "AdvertisingAgency",
+        "name": "Media Buying London",
+        "url": "https://mediabuyinglondon.co.uk"
       }
-    };
-    return [websiteData, serviceData];
+    });
   }
 
-  return [websiteData, baseStructuredData];
+  // If CMS provides additional schema, append it (do not replace base nodes)
+  if (seoData?.schema_markup) {
+    nodes.push(seoData.schema_markup);
+  }
+
+  return nodes;
 };
 
 export const updateMetaTags = (title: string, description: string, url?: string, seoData?: any) => {
