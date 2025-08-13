@@ -1166,221 +1166,6 @@ const FormatPage = () => {
               </div>
             </div>
           </section>
-                let pricing = {
-                  mediaPrice: 0,
-                  productionCost: 0,
-                  creativeCost: 0,
-                  totalCost: 0,
-                  mediaDiscount: 0,
-                  qualifiesVolume: false,
-                  mediaAfterDiscount: 0
-                };
-
-                if (isAuthenticated && selectedAreas.length > 0 && !rateLoading) {
-                  const representativeArea = selectedAreas[0];
-                  const availableLocations = getAvailableLocations();
-                  const matchingLocation = availableLocations.find(loc => 
-                    selectedAreas.some(area => 
-                      loc?.toLowerCase().includes(area?.toLowerCase() || '') || 
-                      area?.toLowerCase().includes(loc?.toLowerCase() || '')
-                    )
-                  ) || availableLocations[0];
-                  
-                  const locationForPricing = matchingLocation || representativeArea;
-                  
-                  let priceCalculation = null;
-                  if (isDateSpecific && selectedPeriods.length > 0) {
-                    priceCalculation = calculatePrice(locationForPricing, selectedPeriods);
-                  } else if (!isDateSpecific && selectedStartDate && selectedEndDate) {
-                    const diffTime = Math.abs(selectedEndDate.getTime() - selectedStartDate.getTime());
-                    const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
-                    const pseudoPeriods = Array.from({ length: diffWeeks }, (_, i) => i + 1);
-                    priceCalculation = calculatePrice(locationForPricing, pseudoPeriods);
-                  }
-                  
-                  if (priceCalculation) {
-                    const units = quantity;
-                    const uniquePeriods = [...new Set(selectedPeriods)].length;
-                    const saleRate = priceCalculation.basePrice;
-                    const qualifiesVolume = uniquePeriods >= 3;
-                    const mediaCost = saleRate * units * uniquePeriods;
-                    const mediaDiscount = qualifiesVolume ? mediaCost * 0.10 : 0;
-                    const mediaAfterDiscount = mediaCost - mediaDiscount;
-                    const productionCostCalc = calculateProductionCost(quantity, selectedPeriods, format.category);
-                    const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
-                    const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
-                    
-                    pricing = {
-                      mediaPrice: mediaCost,
-                      productionCost: productionTotal,
-                      creativeCost: creativeTotal,
-                      totalCost: mediaAfterDiscount + productionTotal + creativeTotal,
-                      mediaDiscount,
-                      qualifiesVolume,
-                      mediaAfterDiscount
-                    };
-                  }
-                }
-
-                return (
-                  <GatedCostPanel
-                    isAuthenticated={isAuthenticated}
-                    pricing={pricing}
-                    formatName={format?.format_name}
-                    className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-2"
-                  />
-                );
-              })()}
-                  {selectedAreas.length > 0 && !rateLoading ? (
-                    <>
-                      {(() => {
-                        // Use the first selected area for pricing calculation as a representative area
-                        const representativeArea = selectedAreas[0];
-                        const availableLocations = getAvailableLocations();
-                        const matchingLocation = availableLocations.find(loc => 
-                          selectedAreas.some(area => 
-                            loc?.toLowerCase().includes(area?.toLowerCase() || '') || 
-                            area?.toLowerCase().includes(loc?.toLowerCase() || '')
-                          )
-                        ) || availableLocations[0]; // Fallback to first available location
-                        
-                        const locationForPricing = matchingLocation || representativeArea;
-                        
-                        // Calculate pricing based on format type
-                        let priceCalculation = null;
-                        if (isDateSpecific && selectedPeriods.length > 0) {
-                          // isDateSpecific = true means use standard incharge periods
-                          priceCalculation = calculatePrice(locationForPricing, selectedPeriods);
-                        } else if (!isDateSpecific && selectedStartDate && selectedEndDate) {
-                          // isDateSpecific = false means use custom date range
-                          const diffTime = Math.abs(selectedEndDate.getTime() - selectedStartDate.getTime());
-                          const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
-                          const pseudoPeriods = Array.from({ length: diffWeeks }, (_, i) => i + 1);
-                          priceCalculation = calculatePrice(locationForPricing, pseudoPeriods);
-                        }
-                        
-                         if (priceCalculation) {
-                           // Standardized calculation inputs
-                           const units = quantity;
-                           const uniquePeriods = [...new Set(selectedPeriods)].length;
-                           const saleRate = priceCalculation.basePrice; // Use the rate from price calculation
-
-                           // Volume discount eligibility: 10% for 3+ in-charge periods
-                           const qualifiesVolume = uniquePeriods >= 3;
-
-                           // Media cost calculation
-                           const mediaCost = saleRate * units * uniquePeriods;
-                           const mediaDiscount = qualifiesVolume ? mediaCost * 0.10 : 0;
-                           const showDiscount = qualifiesVolume && mediaCost > 0;
-                           const mediaAfterDiscount = mediaCost - mediaDiscount;
-
-                           // Production costs are always calculated
-                           const productionCostCalc = calculateProductionCost(quantity, selectedPeriods, format.category);
-                           const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
-                           
-                           const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
-                           const grandTotal = mediaAfterDiscount + productionTotal + creativeTotal;
-                          
-                          return (
-                            <div className="space-y-3">
-                              
-                              {/* Standardized Media Cost Breakdown */}
-                               <div className="space-y-1 mb-4">
-                                <div className="flex justify-between">
-                                   <span>Media rate (per in-charge)</span>
-                                   <span>{formatCurrency(saleRate)}</span>
-                                 </div>
-                                 <div className="flex justify-between">
-                                   <span>Media (before discount)</span>
-                                   <span>{formatCurrency(mediaCost)}</span>
-                                 </div>
-
-                                {showDiscount && (
-                                  <>
-                                    <div className="flex justify-between text-green-600">
-                                      <span>💰 Volume discount (10% for 3+ in-charge periods)</span>
-                                      <span>−{formatCurrency(mediaDiscount)}</span>
-                                    </div>
-                                    <div className="text-xs opacity-70">
-                                      That's −{formatCurrency(mediaDiscount / (units * uniquePeriods))} per unit per period ({units * uniquePeriods} in-charges).
-                                    </div>
-                                  </>
-                                )}
-
-                                <div className="flex justify-between font-medium">
-                                  <span>Media (after discount)</span>
-                                  <span>{formatCurrency(mediaAfterDiscount)}</span>
-                                </div>
-                              </div>
-                              
-                              {/* Production + Creative + Totals */}
-                              <div className="mt-3 space-y-2">
-                                <div className="flex justify-between">
-                                  <span>Total Production Cost</span>
-                                  <span>{formatCurrency(productionTotal)}</span>
-                                </div>
-                                {creativeTotal > 0 && (
-                                  <div className="flex justify-between">
-                                    <span>Total Creative Cost</span>
-                                    <span>{formatCurrency(creativeTotal)}</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              <hr className="my-2 opacity-20" />
-
-                              <div className="space-y-2">
-                                <div className="flex justify-between">
-                                  <span>Subtotal (exc VAT)</span>
-                                  <span>{formatCurrency(grandTotal)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>VAT (20%)</span>
-                                  <span>{formatCurrency(grandTotal * 0.20)}</span>
-                                </div>
-                                <div className="flex justify-between font-semibold">
-                                  <span>Total inc VAT</span>
-                                  <span>{formatCurrency(grandTotal * 1.20)} inc VAT</span>
-                                </div>
-                              </div>
-
-                              <Button 
-                                onClick={async () => {
-                                  if (!isAuthenticated) {
-                                    trackRateGateCTAClicked('add_to_plan');
-                                    const planDraft = {
-                                      formats: [formatSlug],
-                                      sitesSelected: quantity,
-                                      periods: selectedPeriods,
-                                      locations: selectedAreas,
-                                      lastStep: 'costs'
-                                    };
-                                    await requireAuth(
-                                      window.location.pathname + '#action=build',
-                                      () => handleBuildPlan(),
-                                      planDraft
-                                    );
-                                  } else {
-                                    handleBuildPlan();
-                                  }
-                                }}
-                                size="lg" 
-                                className="w-full mt-4 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg font-semibold text-lg"
-                              >
-                                Build My Plan
-                              </Button>
-                            </div>
-                  );
-                }
-              })()}
-              {!isAuthenticated && selectedAreas.length > 0 && !rateLoading && (
-                <div className="text-center text-muted-foreground">
-                  <p>Select location areas above to see pricing estimate</p>
-                </div>
-              )}
-
-            </div>
-          </section>
 
           {/* Who Uses This Format */}
           <section className="py-20 px-4">
@@ -1402,6 +1187,8 @@ const FormatPage = () => {
               </div>
             </div>
           </section>
+        </>
+      )}
         </>
       )}
 
@@ -1459,24 +1246,13 @@ const FormatPage = () => {
         <CreativeUpsellModal
           isOpen={showCreativeUpsellModal}
           onClose={() => setShowCreativeUpsellModal(false)}
-          currentSites={quantity}
-          currentCreatives={creativeAssets}
-          efficiency={creativeEfficiency}
-          status={creativeStatus}
-          options={generateCreativeUpsellOptions()}
-          onSelectOption={(option) => {
-            if (option.type === 'sites') {
-              setQuantity(option.suggestedValue);
-            } else if (option.type === 'creatives') {
-              setCreativeAssets(option.suggestedValue);
-            }
+          currentAssets={creativeAssets}
+          recommendedAssets={Math.ceil(quantity * 1.2)}
+          costPerAsset={85}
+          onUpgrade={(newAssetCount) => {
+            setCreativeAssets(newAssetCount);
             setShowCreativeUpsellModal(false);
-            toast.success(`Creative strategy optimized! Updated to ${option.suggestedValue} ${option.type}.`);
+            toast.success(`Creative assets upgraded to ${newAssetCount}!`);
           }}
         />
       )}
-    </>
-  );
-};
-
-export default FormatPage;
