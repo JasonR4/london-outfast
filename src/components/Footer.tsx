@@ -89,6 +89,12 @@ const Footer = () => {
                 >
                   What is Media Buying in London?
                 </Link>
+                <Link 
+                  to="/corporate-investment"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
+                >
+                  Corporate Investment
+                </Link>
                 {footer.links.company.map((link: any, index: number) => (
                   <Link 
                     key={index}
