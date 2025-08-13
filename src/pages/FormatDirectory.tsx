@@ -144,42 +144,6 @@ const FormatDirectory = () => {
         </div>
       </section>
 
-      {/* Search and Filter */}
-      <section className="py-12 px-4 bg-muted/20">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-4 mb-8">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search formats, categories, or descriptions..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
-              <SelectContent className="z-50">
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="text-center">
-            <p className="text-muted-foreground">
-              Showing {filteredFormats.length} of {combinedFormats.length} formats
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* Why Use This Tool Section */}
       <section className="py-16">
         <div className="container px-4 sm:px-6 lg:px-8">
@@ -289,9 +253,46 @@ const FormatDirectory = () => {
         </div>
       </section>
 
+      {/* Search and Filter */}
+      <section className="py-12 px-4 bg-muted/20">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-4 mb-8">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search formats, categories, or descriptions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent className="z-50">
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="text-center">
+            <p className="text-muted-foreground">
+              Showing {filteredFormats.length} of {combinedFormats.length} formats
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Format Grid */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-12">Available OOH Formats</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredFormats.map((format) => (
               <Card key={format.id} className="group hover:shadow-lg transition-all duration-300 cursor-pointer" onClick={() => handleFormatClick(format.format_slug)}>
