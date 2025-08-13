@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { submitDraftQuote, SubmitContact } from '@/lib/submitQuote';
 import { useQuotes } from '@/hooks/useQuotes';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { trackPlanSubmitted, trackBriefCtaClicked } from '@/utils/analytics';
 
 type Props = {

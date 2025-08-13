@@ -103,13 +103,23 @@ const pushDL = (event: string, params?: Dict) => {
   } catch {}
 };
 
+const log = (name: string, params?: Dict) => {
+  try {
+    if ((g().MBL_DEBUG_EVENTS as boolean)) {
+      console.log(`📈 [MBL] ${name}`, params || {});
+    }
+  } catch {}
+};
+
 const ga = (name: string, params?: Dict) => {
   try { g().gtag?.('event', name, params); } catch {}
   pushDL(name, params);
+  log(name, params);
 };
 
 const pixel = (name: string, params?: Dict) => {
   try { g().fbq?.('track', name, params); } catch {}
+  log(`fbq:${name}`, params);
 };
 
 /** COMMON PARAMS you can pass everywhere */

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useHomepageContent } from "@/hooks/useHomepageContent";
+import { trackAccountCtaClicked } from "@/utils/analytics";
 
 const CTA = () => {
   const navigate = useNavigate();
@@ -31,7 +32,10 @@ const CTA = () => {
             <Button 
               size="lg" 
               className="text-lg px-8 py-6 shadow-glow"
-              onClick={() => navigate('/quote')}
+              onClick={() => {
+                trackAccountCtaClicked({ location: "London" });
+                navigate('/quote');
+              }}
             >
               I Know What I Want
             </Button>

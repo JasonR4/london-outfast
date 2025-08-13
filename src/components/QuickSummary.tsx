@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 import { formatCurrency } from "@/utils/money";
 import { countPrintRuns } from "@/lib/pricingMath";
 import { usePlanDraft } from "@/state/plan";
+import { trackSummaryViewed } from "@/utils/analytics";
 
 export default function QuickSummary() {
   const { items } = usePlanDraft() as any;
@@ -82,6 +83,19 @@ export default function QuickSummary() {
 
   // Derive mediaBefore from after + discount so we can show both
   const mediaBeforeDiscount = mediaAfterDiscount + volumeDiscount;
+
+  // Track summary viewed when component mounts with data
+  useEffect(() => {
+    if (formatCount > 0 && estimate > 0) {
+      trackSummaryViewed({
+        plan_value: estimate,
+        formats_count: formatCount,
+        sites_selected: sites,
+        periods_count: uniquePeriods.length,
+        location: "London"
+      });
+    }
+  }, [formatCount, estimate, sites, uniquePeriods.length]);
 
   return (
     <TooltipProvider>

@@ -10,6 +10,7 @@ import useGlobalSettings from '@/hooks/useGlobalSettings';
 import { useQuotes } from '@/hooks/useQuotes';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
+import { trackBriefCtaClicked } from '@/utils/analytics';
 
 const Navigation = () => {
   const navigate = useNavigate();
@@ -160,6 +161,7 @@ const Navigation = () => {
                 className={`text-sm font-medium transition-colors hover:text-primary ${
                   isActive('/brief') ? 'text-primary' : 'text-muted-foreground'
                 }`}
+                onClick={() => trackBriefCtaClicked({ location: "London" })}
               >
                 Talk to a specialist
               </Link>
@@ -270,7 +272,10 @@ const Navigation = () => {
                 {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
                   <Link
                     to={'/brief'}
-                    onClick={() => setIsOpen(false)}
+                    onClick={() => {
+                      trackBriefCtaClicked({ location: "London" });
+                      setIsOpen(false);
+                    }}
                     className={`text-left text-lg font-medium transition-colors hover:text-primary ${
                       isActive('/brief') ? 'text-primary' : 'text-muted-foreground'
                     }`}
