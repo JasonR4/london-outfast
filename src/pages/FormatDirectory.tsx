@@ -19,10 +19,19 @@ const FormatDirectory = () => {
 
   const combinedFormats = mediaFormats.length ? mediaFormats : ctxFormats;
   
+  console.log('🔍 FormatDirectory Debug:', {
+    mediaFormats: mediaFormats.length,
+    ctxFormats: ctxFormats.length, 
+    combinedFormats: combinedFormats.length,
+    loading
+  });
+  
   useEffect(() => {
+    console.log('🔍 Triggering refetch...');
     refetch();
     if (combinedFormats.length === 0) {
       // Trigger a service refresh as a fallback
+      console.log('🔍 Service fallback fetch...');
       service.fetchFormats(false).catch(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
