@@ -614,6 +614,30 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_commitments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          investor_email: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          investor_email?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          investor_email?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       media_format_categories: {
         Row: {
           category_name: string
