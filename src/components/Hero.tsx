@@ -28,10 +28,10 @@ const Hero = () => {
   }
 
   const ctas = (content?.ctas as any) ?? [
-    { key: 'quote', heading: 'I know what I want', description: 'Get your OOH campaign booked today.', label: 'Get My Quote', route: '/quote', variant: 'default' },
-    { key: 'configurator', heading: 'I need guidance', description: 'Answer a few quick questions and we’ll recommend the right formats, locations, and budget split.', label: 'Use the Configurator', route: '/configurator', variant: 'outline' },
-    { key: 'browse', heading: 'I’m just exploring', description: 'Browse London’s OOH environments, formats, and placement opportunities.', label: 'Explore Outdoor Media', route: '/outdoor-media', variant: 'ghost' },
-    { key: 'specialist', heading: 'Talk to an OOH specialist', description: 'Discuss your brief directly with a senior MBL media buying specialist.', label: 'Send My Brief', route: '/brief', variant: 'accent' },
+    { key: 'quote', heading: 'Get My Quote', description: 'Get your OOH campaign booked today.', label: 'Get My Quote', route: 'https://mediabuyinglondon.co.uk/quote', variant: 'default' },
+    { key: 'configurator', heading: 'Use the Configurator', description: 'Answer a few quick questions and we’ll recommend the right formats, locations, and budget split.', label: 'Use the Configurator', route: 'https://mediabuyinglondon.co.uk/configurator', variant: 'secondary' },
+    { key: 'browse', heading: 'Explore Outdoor Media', description: 'Browse London’s OOH environments, formats, and placement opportunities.', label: 'Explore Outdoor Media', route: 'https://mediabuyinglondon.co.uk/outdoor-media', variant: 'outline' },
+    { key: 'specialist', heading: 'Send My Brief', description: 'Discuss your brief directly with a senior MBL media buying specialist.', label: 'Send My Brief', route: 'https://mediabuyinglondon.co.uk/brief', variant: 'accent' },
   ];
 
   return (
@@ -65,17 +65,19 @@ const Hero = () => {
         )}
         
         
-          <div className="mt-8">
+          <div className="mt-10">
             <div className="grid gap-6 sm:grid-cols-2">
               {ctas.map((cta) => (
-                <div key={cta.key} className="flex flex-col items-center text-center gap-2">
-                  <p className="text-sm font-medium">{cta.heading}</p>
-                  <p className="text-sm text-muted-foreground">{cta.description}</p>
+                <div key={cta.key} className="flex flex-col items-center text-center">
+                  <div className="space-y-1">
+                    <p className="text-lg md:text-xl font-semibold">{cta.heading}</p>
+                    <p className="text-sm leading-snug text-muted-foreground">{cta.description}</p>
+                  </div>
                   <Button
                     variant={cta.variant as any}
                     size="lg"
-                    className="text-lg px-8 py-6 w-full sm:w-auto"
-                    onClick={() => navigate(cta.route)}
+                    className="mt-3 w-full sm:w-auto text-base md:text-lg px-6 py-5"
+                    onClick={() => (cta.route?.startsWith('http') ? (window.location.href = cta.route) : navigate(cta.route))}
                     data-cta={`hero_${cta.key}`}
                     aria-label={`${cta.heading} - ${cta.label}`}
                   >
