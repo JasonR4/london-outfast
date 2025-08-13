@@ -19,7 +19,6 @@ import FormatDirectory from "./pages/FormatDirectory";
 import Auth from "./pages/Auth";
 import CMS from "./pages/CMS";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import AuthGuard from "@/components/AuthGuard";
 import About from "./pages/About";
 import FAQs from "./pages/FAQs";
 import LegalPage from "./pages/LegalPage";
@@ -84,11 +83,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/quote" element={<Quote />} />
-              <Route path="/quote-plan" element={
-                <AuthGuard source="summary_guard">
-                  <QuotePlan />
-                </AuthGuard>
-              } />
+              <Route path="/quote-plan" element={<QuotePlan />} />
               <Route path="/quote-submitted" element={<QuoteSubmitted />} />
               <Route path="/create-account" element={<CreateAccount />} />
               <Route path="/account-created" element={<AccountCreated />} />
