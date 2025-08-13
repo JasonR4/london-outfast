@@ -191,6 +191,34 @@ const WhatIsMediaBuying = () => {
         </div>
 
         {/* CTA Section */}
+        <section className="hero-cta">
+          <div className="hero-cta__grid">
+            {/* 1) Primary */}
+            <Link to="/quote" className="cta-card cta--quote">
+              <h3>Get My Quote</h3>
+              <p>Get your OOH campaign booked today.</p>
+            </Link>
+
+            {/* 2) Configurator */}
+            <Link to="/configurator" className="cta-card cta--config">
+              <h3>Use the Configurator</h3>
+              <p>Answer a few quick questions and we'll recommend formats, locations, and budget split.</p>
+            </Link>
+
+            {/* 3) Explore formats */}
+            <Link to="/outdoor-media" className="cta-card cta--explore">
+              <h3>Explore Outdoor Media</h3>
+              <p>Browse London's OOH environments, formats, and placement opportunities.</p>
+            </Link>
+
+            {/* 4) Talk to specialist */}
+            <Link to="/brief" className="cta-card cta--brief">
+              <h3>Send My Brief</h3>
+              <p>Discuss your brief directly with a senior MBL media buying specialist.</p>
+            </Link>
+          </div>
+        </section>
+
         <CTA />
       </main>
     </>
