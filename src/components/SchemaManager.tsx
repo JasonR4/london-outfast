@@ -2,29 +2,30 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useGlobalSettings } from '@/hooks/useGlobalSettings';
+import { usePageSchema } from '@/hooks/usePageSchema';
 
-interface SchemaManagerProps {
-  pageData?: {
-    seo?: {
-      canonical?: string;
-    };
-    schema?: {
-      faq_enabled?: boolean;
-      faq_items?: Array<{ question: string; answer: string; }>;
-      breadcrumb?: Array<{ name: string; url: string; }>;
-    };
-  };
-}
-
-export const SchemaManager = ({ pageData }: SchemaManagerProps) => {
+export const SchemaManager = () => {
   const location = useLocation();
   const { footer } = useGlobalSettings();
+  
+  // Extract page key from pathname
+  const getPageKey = (pathname: string) => {
+    if (pathname === '/') return null; // Homepage handled separately
+    if (pathname === '/outdoor-media') return 'outdoor_media';
+    if (pathname === '/london-ooh-specialists') return 'london_ooh_specialists';
+    return null;
+  };
+
+  const pageKey = getPageKey(location.pathname);
+  const { pageData } = usePageSchema(pageKey || '');
 
   const autoCanonicalFromSlug = () => {
     return `https://mediabuyinglondon.co.uk${location.pathname}`;
   };
 
-  const canonicalUrl = pageData?.seo?.canonical || autoCanonicalFromSlug();
+  const canonicalUrl = pageData?.seo?.canonical ? 
+    `https://mediabuyinglondon.co.uk${pageData.seo.canonical}` : 
+    autoCanonicalFromSlug();
 
   // Generate Organization schema for homepage
   const generateOrganizationSchema = () => {
