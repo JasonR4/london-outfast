@@ -367,9 +367,17 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
           .order('period_number', { ascending: true });
         
         if (error) throw error;
-        setInchargePeriods(data || []);
+        
+        // Transform the data to match expected format
+        const transformedData = (data || []).map(period => ({
+          ...period,
+          label: `Period ${period.period_number}: ${new Date(period.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${new Date(period.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
+        }));
+        
+        setInchargePeriods(transformedData);
       } catch (error) {
         console.error('Error fetching incharge periods:', error);
+        setInchargePeriods([]);
       }
     };
 
