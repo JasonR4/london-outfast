@@ -68,10 +68,10 @@ const FormatDirectory = () => {
             OOH FORMAT DIRECTORY
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent">
-            London OOH Formats & Rates
+            Outdoor Media Buying & Advertising in London
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Explore all available Out-of-Home advertising formats across London. From digital billboards to underground panels, find the perfect format for your campaign.
+            We specialise in outdoor media buying across every major format in London. Whether you need roadside billboards, transport ads, or street-level visibility, our team secures prime placements at the best rates. This page is your gateway to fast quotes, full campaign planning, and direct access to London's most effective OOH inventory.
           </p>
           <Button onClick={handleGetQuote} size="lg" className="bg-gradient-primary hover:opacity-90">
             Get Custom Quote for Any Format
