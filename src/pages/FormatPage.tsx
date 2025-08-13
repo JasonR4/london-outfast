@@ -54,6 +54,16 @@ const FormatPage = () => {
   const [showUpsellModal, setShowUpsellModal] = useState(false);
   const [upsellContext, setUpsellContext] = useState<{ zoneName?: string; requiredCapacity: number } | null>(null);
   const [showCreativeUpsellModal, setShowCreativeUpsellModal] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const user = await getCurrentUser();
+      setIsAuthenticated(!!user);
+    };
+    checkAuth();
+  }, []);
   
   // Helper function to check if periods are consecutive
   const arePeriodsConsecutive = (periods: number[]) => {
@@ -1109,8 +1119,53 @@ const FormatPage = () => {
               </div>
 
               {/* Cost Output Box - Now Gated */}
-              {(() => {
-                // Calculate pricing for gated panel
+              <FormatPricingSection
+                isAuthenticated={isAuthenticated}
+                format={format}
+                quantity={quantity}
+                selectedAreas={selectedAreas}
+                selectedPeriods={selectedPeriods}
+                isDateSpecific={isDateSpecific}
+                selectedStartDate={selectedStartDate}
+                selectedEndDate={selectedEndDate}
+                needsCreative={needsCreative}
+                creativeAssets={creativeAssets}
+                rateLoading={rateLoading}
+                getAvailableLocations={getAvailableLocations}
+                calculatePrice={calculatePrice}
+                calculateProductionCost={calculateProductionCost}
+              />
+
+              {/* Build My Plan Button - Gated */}
+              <div className="w-full mt-4">
+                <Button 
+                  onClick={async () => {
+                    if (!isAuthenticated) {
+                      trackRateGateCTAClicked('add_to_plan');
+                      const planDraft = {
+                        formats: [formatSlug],
+                        sitesSelected: quantity,
+                        periods: selectedPeriods,
+                        locations: selectedAreas,
+                        lastStep: 'costs'
+                      };
+                      await requireAuth(
+                        `${window.location.pathname}#action=build`,
+                        () => handleBuildPlan(),
+                        planDraft
+                      );
+                    } else {
+                      handleBuildPlan();
+                    }
+                  }}
+                  size="lg" 
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg font-semibold text-lg"
+                >
+                  Build My Plan
+                </Button>
+              </div>
+            </div>
+          </section>
                 let pricing = {
                   mediaPrice: 0,
                   productionCost: 0,
