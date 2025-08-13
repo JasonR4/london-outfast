@@ -15,6 +15,7 @@ import { formatCurrency } from '@/utils/money';
 import { countPrintRuns } from '@/utils/periods';
 import { enrichQuoteItem, groupByFormat, type QuoteItem } from '@/utils/quote';
 import PlanBreakdown from '@/components/PlanBreakdown';
+import { trackSummaryViewed, trackAccountCtaClicked, trackBriefCtaClicked } from '@/utils/analytics';
 
 export default function QuotePlan() {
   const { currentQuote, loading, removeQuoteItem, fetchCurrentQuote, recalculateDiscounts } = useQuotes();
@@ -52,6 +53,33 @@ export default function QuotePlan() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Track summary viewed when component mounts and quote loads
+  useEffect(() => {
+    if (currentQuote && currentQuote.quote_items?.length) {
+      const planItems: QuoteItem[] = currentQuote.quote_items?.map(item => ({
+        formatName: item.format_name,
+        sites: item.quantity,
+        selectedPeriods: item.selected_periods,
+        saleRate: item.base_cost / item.selected_periods.length / item.quantity,
+        productionCost: item.production_cost || 0,
+        creativeCost: item.creative_cost || 0,
+      })) || [];
+
+      const enrichedItems = planItems.map(enrichQuoteItem);
+      const totalSites = enrichedItems.reduce((acc, it) => acc + it.sites, 0);
+      const totalUniquePeriods = new Set(enrichedItems.flatMap(it => it.selectedPeriods)).size;
+      const subtotalExVat = enrichedItems.reduce((acc, it) => acc + it.subtotal, 0);
+
+      trackSummaryViewed({
+        plan_value: subtotalExVat,
+        formats_count: new Set(enrichedItems.map(it => it.formatName)).size,
+        sites_selected: totalSites,
+        periods_count: totalUniquePeriods,
+        location: "London" // Default location for this app
+      });
+    }
+  }, [currentQuote]);
 
   const fetchUserProfile = async (userId: string) => {
     const { data, error } = await supabase

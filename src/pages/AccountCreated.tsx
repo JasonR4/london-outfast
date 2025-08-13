@@ -3,10 +3,34 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Mail, ArrowRight, Clock } from 'lucide-react';
+import { trackAccountCreated } from '@/utils/analytics';
 
 export default function AccountCreated() {
   useEffect(() => {
     document.title = 'Account Created - Media Buying London';
+    
+    // Track account creation completion
+    try {
+      const submittedQuoteDetails = localStorage.getItem('submitted_quote_details');
+      if (submittedQuoteDetails) {
+        const details = JSON.parse(submittedQuoteDetails);
+        trackAccountCreated({
+          plan_value: details.total_cost || 0,
+          formats_count: details.quote_items?.length || 0,
+          location: "London"
+        });
+      } else {
+        // Fallback tracking without quote details
+        trackAccountCreated({
+          location: "London"
+        });
+      }
+    } catch {
+      // Safe fallback
+      trackAccountCreated({
+        location: "London"
+      });
+    }
   }, []);
 
   return (

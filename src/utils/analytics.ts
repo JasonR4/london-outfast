@@ -92,6 +92,58 @@ export const trackQuoteSubmission = (quoteData: {
   }
 };
 
+// Lightweight analytics helpers (GA4 + Pixel; dataLayer fallback)
+type Dict = Record<string, any>;
+const g = () => (typeof window !== 'undefined' ? (window as any) : {});
+
+const pushDL = (event: string, params?: Dict) => {
+  try {
+    g().dataLayer = g().dataLayer || [];
+    g().dataLayer.push({ event, ...params });
+  } catch {}
+};
+
+const ga = (name: string, params?: Dict) => {
+  try { g().gtag?.('event', name, params); } catch {}
+  pushDL(name, params);
+};
+
+const pixel = (name: string, params?: Dict) => {
+  try { g().fbq?.('track', name, params); } catch {}
+};
+
+/** COMMON PARAMS you can pass everywhere */
+export type PlanMeta = {
+  plan_value?: number;           // subtotal ex VAT
+  formats_count?: number;
+  sites_selected?: number;
+  periods_count?: number;
+  location?: string;             // e.g. "Central London"
+  format_slug?: string;          // e.g. "16-sheet-corridor-panels"
+};
+
+export const trackSummaryViewed = (meta: PlanMeta = {}) => {
+  ga('summary_viewed', meta);
+};
+
+export const trackAccountCtaClicked = (meta: PlanMeta = {}) => {
+  ga('account_cta_clicked', meta);
+};
+
+export const trackBriefCtaClicked = (meta: PlanMeta = {}) => {
+  ga('brief_cta_clicked', meta);
+};
+
+export const trackAccountCreated = (meta: PlanMeta = {}) => {
+  ga('account_created', meta);
+  pixel('CompleteRegistration');
+};
+
+export const trackPlanSubmitted = (planId: string, meta: PlanMeta = {}) => {
+  ga('plan_submitted', { plan_id: planId, ...meta, value: meta.plan_value });
+  pixel('Lead', { value: meta.plan_value || 0, currency: 'GBP' });
+};
+
 // Track other key actions
 export const trackQuoteItemAdded = (itemData: {
   formatName: string;

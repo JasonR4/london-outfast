@@ -9,6 +9,7 @@ import { CheckCircle, Zap, FileText, BarChart3, Calendar, Camera, Palette, Shiel
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/utils/money';
+import { trackAccountCreated } from '@/utils/analytics';
 
 export default function CreateAccount() {
   const navigate = useNavigate();
@@ -132,6 +133,15 @@ export default function CreateAccount() {
           }
         }
         
+        // Track account creation before cleanup
+        if (quoteDetails) {
+          trackAccountCreated({
+            plan_value: quoteDetails.total_cost || 0,
+            formats_count: quoteDetails.quote_items?.length || 0,
+            location: "London"
+          });
+        }
+
         // Clean up quote data
         localStorage.removeItem('submitted_quote_data');
         localStorage.removeItem('submitted_quote_details');

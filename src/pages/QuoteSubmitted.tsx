@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, ArrowRight, Phone, Mail } from 'lucide-react';
+import { trackAccountCtaClicked, trackBriefCtaClicked } from '@/utils/analytics';
 
 export default function QuoteSubmitted() {
   const navigate = useNavigate();
@@ -47,18 +48,22 @@ export default function QuoteSubmitted() {
                     <p className="text-muted-foreground mb-6 text-lg leading-relaxed">
                       Unlock premium access to manage your campaigns, track delivery, and access exclusive features designed for professional media buyers.
                     </p>
-                    <Button 
-                      size="lg" 
-                      className="bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all duration-300 hover:scale-105"
-                      onClick={() => {
-                        // Get the most recent submitted quote data from session storage
-                        const sessionId = localStorage.getItem('quote_session_id_submitted') || localStorage.getItem('quote_session_id');
-                        navigate(`/create-account${sessionId ? `?quote=${sessionId}` : ''}`);
-                      }}
-                    >
-                      Create Account Now
-                      <ArrowRight className="h-5 w-5 ml-2" />
-                    </Button>
+                     <Button 
+                       size="lg" 
+                       className="bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all duration-300 hover:scale-105"
+                       onClick={() => {
+                         // Track create account button click
+                         trackAccountCtaClicked({
+                           location: "London"
+                         });
+                         // Get the most recent submitted quote data from session storage
+                         const sessionId = localStorage.getItem('quote_session_id_submitted') || localStorage.getItem('quote_session_id');
+                         navigate(`/create-account${sessionId ? `?quote=${sessionId}` : ''}`);
+                       }}
+                     >
+                       Create Account Now
+                       <ArrowRight className="h-5 w-5 ml-2" />
+                     </Button>
                   </div>
                 </div>
               </div>
@@ -166,6 +171,10 @@ export default function QuoteSubmitted() {
               size="lg" 
               className="bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all duration-300 hover:scale-105"
               onClick={() => {
+                // Track create account button click
+                trackAccountCtaClicked({
+                  location: "London"
+                });
                 // Get the most recent submitted quote data from session storage
                 const sessionId = localStorage.getItem('quote_session_id_submitted') || localStorage.getItem('quote_session_id');
                 navigate(`/create-account${sessionId ? `?quote=${sessionId}` : ''}`);
@@ -175,9 +184,19 @@ export default function QuoteSubmitted() {
               <ArrowRight className="h-5 w-5 ml-2" />
             </Button>
             
-            <Button asChild variant="outline" size="lg" className="border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105">
-              <Link to="/">
-                Back to Homepage
+            <Button 
+              asChild 
+              variant="outline" 
+              size="lg" 
+              className="border-2 hover:bg-muted/50 transition-all duration-300 hover:scale-105"
+              onClick={() => {
+                trackBriefCtaClicked({
+                  location: "London"
+                });
+              }}
+            >
+              <Link to="/brief">
+                Send Brief Without Account
               </Link>
             </Button>
           </div>

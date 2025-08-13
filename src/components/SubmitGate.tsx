@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { submitDraftQuote, SubmitContact } from '@/lib/submitQuote';
 import { useQuotes } from '@/hooks/useQuotes';
 import { toast } from '@/components/ui/use-toast';
+import { trackPlanSubmitted, trackBriefCtaClicked } from '@/utils/analytics';
 
 type Props = {
   source: 'smart-quote' | 'outdoor-media' | 'configurator';
@@ -87,10 +88,21 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
       const quoteSessionId = getCurrentQuoteSessionId();
 
       // Persist in DB quotes table via existing hook with minimal account details
-      await submitQuoteDb({
+      const result = await submitQuoteDb({
         contact_name: `${user?.user_metadata?.first_name || ''} ${user?.user_metadata?.last_name || ''}`.trim() || (user?.email || ''),
         contact_email: user?.email || '',
       });
+
+      // Track plan submission
+      if (result && quoteSessionId) {
+        try {
+          trackPlanSubmitted(quoteSessionId, {
+            plan_value: 0, // Will be populated by backend analytics
+            formats_count: 0,
+            location: "London"
+          });
+        } catch {}
+      }
 
       // Kick off side-effects without blocking (pdf, hubspot, versioning)
       Promise.allSettled([
@@ -126,7 +138,19 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
       // Persist for /create-account prefill
       try { localStorage.setItem('submitted_quote_data', JSON.stringify(contact)); } catch {}
       const quoteSessionId = getCurrentQuoteSessionId();
-      await submitQuoteDb(mapToDbContact(contact)); // updates quotes table with guest details
+      const result = await submitQuoteDb(mapToDbContact(contact)); // updates quotes table with guest details
+
+      // Track plan submission
+      if (result && quoteSessionId) {
+        try {
+          trackPlanSubmitted(quoteSessionId, {
+            plan_value: 0, // Will be populated by backend analytics
+            formats_count: 0,
+            location: "London"
+          });
+        } catch {}
+      }
+
       Promise.allSettled([
         submitDraftQuote({ quoteSessionId, contact, source })
       ]);
