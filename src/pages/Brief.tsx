@@ -15,6 +15,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LocationSelector } from "@/components/LocationSelector";
 import { oohFormats } from "@/data/oohFormats";
+import { trackBriefFormSubmitted } from "@/utils/analytics";
 const objectives = [
   "Brand awareness",
   "Store visits",
@@ -146,6 +147,13 @@ const onSubmit = async (values: FormValues) => {
     };
     const { data, error } = await supabase.functions.invoke('submit-brief', { body: payload });
     if (error || !data?.ok) throw new Error(error?.message || data?.error || 'Failed to submit');
+    
+    // Track brief form submission
+    trackBriefFormSubmitted({
+      plan_value: 3000, // Default value as specified
+      formats_count: values.formats?.length || 0,
+      location: "London"
+    });
     toast({ title: 'Brief sent', description: 'We’ll call you shortly.' });
     const thankYouUrl = `/thank-you?brief=1`
       + `&firstname=${encodeURIComponent(values.firstname)}`

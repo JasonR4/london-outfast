@@ -154,6 +154,11 @@ export const trackPlanSubmitted = (planId: string, meta: PlanMeta = {}) => {
   pixel('Lead', { value: meta.plan_value || 0, currency: 'GBP' });
 };
 
+export const trackBriefFormSubmitted = (meta: PlanMeta = {}) => {
+  ga('brief_form_submitted', { ...meta, value: meta.plan_value });
+  pixel('Lead', { value: meta.plan_value || 0, currency: 'GBP' });
+};
+
 // Track other key actions
 export const trackQuoteItemAdded = (itemData: {
   formatName: string;
