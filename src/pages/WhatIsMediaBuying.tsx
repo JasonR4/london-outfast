@@ -17,7 +17,7 @@ const WhatIsMediaBuying = () => {
         <meta property="og:image" content="/og/og-media-buying-london.jpg" />
         <meta property="og:url" content="https://mediabuyinglondon.co.uk/what-is-media-buying-in-london" />
         <script type="application/ld+json">
-          {JSON.stringify({
+          {`{
             "@context": "https://schema.org",
             "@type": "Article",
             "headline": "Media Buying in London: The Complete Guide by Media Buying London",
@@ -25,13 +25,13 @@ const WhatIsMediaBuying = () => {
               "@type": "Organization",
               "name": "Media Buying London"
             },
-            "datePublished": new Date().toISOString(),
+            "datePublished": "2024-08-13T09:00:00Z",
             "articleSection": "Out-of-Home Advertising",
             "publisher": {
               "@type": "Organization",
               "name": "Media Buying London"
             }
-          })}
+          }`}
         </script>
       </Helmet>
 
