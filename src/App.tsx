@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { MediaFormatsProvider } from "@/components/providers/MediaFormatsProvider";
+import { SchemaManager } from "@/components/SchemaManager";
 
 import Navigation from "@/components/Navigation";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -74,6 +75,7 @@ const App = () => {
           <BrowserRouter>
           <ScrollToTop />
           <RouterAnalytics />
+          <SchemaManager />
           <NoInspect />
           <div className="min-h-screen bg-background">
             <AnalyticsScripts />
