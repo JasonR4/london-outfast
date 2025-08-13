@@ -14,8 +14,8 @@ const Hero = () => {
     const loadHomepageSEO = async () => {
       const seoData = await getSEODataForPage('/');
       
-      const title = seoData?.meta_title || "London's Fastest OOH Media Buying Specialists | Media Buying London";
-      const description = seoData?.meta_description || "London's fastest out-of-home media buying specialists. Unbeaten on price, unmatched on speed. Get your campaign live in 48 hours.";
+      const title = seoData?.meta_title || "London’s Fastest Out-of-Home Media Buying Specialists | Media Buying London";
+      const description = seoData?.meta_description || "TfL, Roadside, Bus, Taxi, Rail, Retail & Leisure, Airports, Street Furniture, pDOOH, Ambient — best locations, best rates, same-day quotes.";
       
       updateMetaTags(title, description, 'https://mediabuyinglondon.co.uk', seoData);
     };
@@ -26,6 +26,13 @@ const Hero = () => {
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
+
+  const ctas = (content?.ctas as any) ?? [
+    { key: 'quote', heading: 'I know what I want', description: 'Get your OOH campaign booked today.', label: 'Get My Quote', route: '/quote', variant: 'default' },
+    { key: 'configurator', heading: 'I need guidance', description: 'Answer a few quick questions and we’ll recommend the right formats, locations, and budget split.', label: 'Use the Configurator', route: '/configurator', variant: 'outline' },
+    { key: 'browse', heading: 'I’m just exploring', description: 'Browse London’s OOH environments, formats, and placement opportunities.', label: 'Explore Outdoor Media', route: '/outdoor-media', variant: 'ghost' },
+    { key: 'specialist', heading: 'Talk to an OOH specialist', description: 'Discuss your brief directly with a senior MBL media buying specialist.', label: 'Send My Brief', route: '/brief', variant: 'accent' },
+  ];
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden mb-16 md:mb-24">
@@ -44,64 +51,40 @@ const Hero = () => {
         </Badge>
         
         <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent leading-tight">
-          {content?.title || "MEDIA BUYING LONDON"}
+          {content?.title || "London’s Fastest Out-of-Home Media Buying Specialists"}
         </h1>
         
         <p className="text-2xl md:text-3xl font-semibold mb-4 text-foreground">
-          {content?.subtitle || "London's Fastest, Leanest OOH Media Buying Specialists"}
+          {content?.subtitle || "From London Underground (TfL) to Classic & Digital Roadside, Bus, Taxi, National Rail, Retail & Leisure, Airports, Street Furniture, Programmatic DOOH, and Ambient OOH — we secure the best locations, the best rates, and deliver same-day quotes."}
         </p>
         
-        <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed">
-          {content?.description || "We don't build brands — we get them seen. From 6-sheets to Digital 48s, we buy media that gets noticed. Fast turnarounds, insider rates, zero delay."}
-        </p>
+        {(content?.description && String(content.description).trim() !== "") && (
+          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed">
+            {content.description}
+          </p>
+        )}
         
         
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="text-lg px-8 py-6 w-full sm:w-auto shadow-glow"
-              onClick={() => navigate('/quote')}
-              data-cta="hero_quote"
-            >
-              I Know What I Want
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="text-lg px-8 py-6 w-full sm:w-auto"
-              onClick={() => navigate('/configurator')}
-              data-cta="hero_configurator"
-            >
-              I Need Guidance
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="lg" 
-              className="text-lg px-8 py-6 w-full sm:w-auto text-accent hover:text-accent-foreground"
-              onClick={() => navigate('/outdoor-media')}
-              data-cta="hero_browse"
-            >
-              I'm Just Exploring
-            </Button>
-            <Button 
-              variant="accent"
-              size="lg"
-              className="text-lg px-8 py-6 w-full sm:w-auto shadow-glow"
-              onClick={() => navigate('/brief')}
-              data-cta="hero_specialist"
-              aria-label="Talk to an OOH specialist now"
-            >
-              Talk to an OOH Specialist
-            </Button>
+          <div className="mt-8">
+            <div className="grid gap-6 sm:grid-cols-2">
+              {ctas.map((cta) => (
+                <div key={cta.key} className="flex flex-col items-center text-center gap-2">
+                  <p className="text-sm font-medium">{cta.heading}</p>
+                  <p className="text-sm text-muted-foreground">{cta.description}</p>
+                  <Button
+                    variant={cta.variant as any}
+                    size="lg"
+                    className="text-lg px-8 py-6 w-full sm:w-auto"
+                    onClick={() => navigate(cta.route)}
+                    data-cta={`hero_${cta.key}`}
+                    aria-label={`${cta.heading} - ${cta.label}`}
+                  >
+                    {cta.label}
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
-          
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground mt-2">
-              Choose your path: Direct quote • Smart recommendations • Browse options • Talk to a specialist
-            </p>
-          </div>
-        </div>
       </div>
       
       {/* Scroll Indicator */}
