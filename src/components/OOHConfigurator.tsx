@@ -361,18 +361,19 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
   useEffect(() => {
     const fetchInchargePeriods = async () => {
       try {
-        console.log('Fetching incharge periods...');
+        console.log('🔍 Fetching incharge periods...');
         const { data, error } = await supabase
           .from('incharge_periods')
           .select('*')
           .order('period_number', { ascending: true });
         
         if (error) {
-          console.error('Supabase error fetching periods:', error);
+          console.error('❌ Supabase error fetching periods:', error);
           throw error;
         }
         
-        console.log('Raw incharge periods data:', data);
+        console.log('✅ Raw incharge periods data:', data?.length || 0, 'periods found');
+        console.log('📋 Periods:', data);
         
         // Transform the data to match expected format
         const transformedData = (data || []).map(period => ({
@@ -380,10 +381,10 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
           label: `Period ${period.period_number}: ${new Date(period.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${new Date(period.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
         }));
         
-        console.log('Transformed periods data:', transformedData);
+        console.log('🔄 Transformed periods for UI:', transformedData.length, 'periods ready');
         setInchargePeriods(transformedData);
       } catch (error) {
-        console.error('Error fetching incharge periods:', error);
+        console.error('💥 Error fetching incharge periods:', error);
         setInchargePeriods([]);
       }
     };
@@ -1309,41 +1310,39 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
               maxHeight="300px"
             />
           ) : currentQuestion.type === 'periods' ? (
-            (() => {
-              console.log('Rendering periods question. Available periods:', inchargePeriods.length, inchargePeriods);
-              return (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">Select multiple periods for your campaign</p>
-                  <div className="grid gap-2 max-h-64 overflow-y-auto">
-                    {inchargePeriods.length > 0 ? inchargePeriods.map((period) => (
-                      <div key={period.id} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50">
-                    <Checkbox
-                      id={`period-${period.id}`}
-                      checked={selectedValues.includes(period.period_number)}
-                      onCheckedChange={(checked) => {
-                        const newValues = checked 
-                          ? [...selectedValues, period.period_number]
-                          : selectedValues.filter(v => v !== period.period_number);
-                        setSelectedValues(newValues);
-                      }}
-                    />
-                    <label htmlFor={`period-${period.id}`} className="flex-1 cursor-pointer">
-                      <div className="font-medium">Period {period.period_number}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(period.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - {' '}
-                        {new Date(period.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </div>
-                    </label>
-                  </div>
-                )) : (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">Select multiple periods for your campaign</p>
+              <div className="grid gap-2 max-h-64 overflow-y-auto">
+                {inchargePeriods.length > 0 ? inchargePeriods.map((period) => {
+                  console.log('🔍 Rendering period:', period.period_number, period.label);
+                  return (
+                    <div key={period.id} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50">
+                      <Checkbox
+                        id={`period-${period.id}`}
+                        checked={selectedValues.includes(period.period_number)}
+                        onCheckedChange={(checked) => {
+                          const newValues = checked 
+                            ? [...selectedValues, period.period_number]
+                            : selectedValues.filter(v => v !== period.period_number);
+                          setSelectedValues(newValues);
+                        }}
+                      />
+                      <label htmlFor={`period-${period.id}`} className="flex-1 cursor-pointer">
+                        <div className="font-medium">Period {period.period_number}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {new Date(period.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - {' '}
+                          {new Date(period.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </div>
+                      </label>
+                    </div>
+                  );
+                }) : (
                   <div className="text-center py-4 text-muted-foreground">
-                    Loading periods...
-                   </div>
-                 )}
-               </div>
-             </div>
-               );
-             })()
+                    Loading periods... ({inchargePeriods.length} found)
+                  </div>
+                )}
+              </div>
+            </div>
           ) : currentQuestion.type === 'budget_input' ? (
             <div className="space-y-3">
               <Input
