@@ -4,8 +4,10 @@ import useGlobalSettings from '@/hooks/useGlobalSettings';
 import IndustriesDropdown from './IndustriesDropdown';
 
 const Footer = () => {
-  
+  console.log('🦶 Footer component rendered');
   const { navigation, footer, loading } = useGlobalSettings();
+
+  console.log('🦶 Footer state:', { loading, hasFooter: !!footer });
 
   if (loading || !footer) {
     return (
