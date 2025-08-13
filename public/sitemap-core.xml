@@ -1,111 +1,144 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage -->
   <url>
     <loc>https://mediabuyinglondon.co.uk/</loc>
-    <lastmod>2025-08-12</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+  
+  <!-- AMP Homepage -->
   <url>
     <loc>https://mediabuyinglondon.co.uk/amp/</loc>
-    <lastmod>2025-08-12</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
+  
+  <!-- High Priority Pages -->
   <url>
     <loc>https://mediabuyinglondon.co.uk/quote</loc>
-    <lastmod>2025-08-12</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
-    <loc>https://mediabuyinglondon.co.uk/configurator</loc>
-    <lastmod>2025-08-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://mediabuyinglondon.co.uk/brief</loc>
-    <lastmod>2025-08-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
+  
   <url>
     <loc>https://mediabuyinglondon.co.uk/outdoor-media</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
-  <url>
-    <loc>https://mediabuyinglondon.co.uk/industries</loc>
-    <lastmod>2025-08-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://mediabuyinglondon.co.uk/blog</loc>
-    <lastmod>2025-08-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://mediabuyinglondon.co.uk/what-is-media-buying-in-london</loc>
-    <lastmod>2025-08-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://mediabuyinglondon.co.uk/corporate-investment</loc>
-    <lastmod>2025-08-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
+  
+  <!-- NEW: London OOH Specialists page -->
   <url>
     <loc>https://mediabuyinglondon.co.uk/london-ooh-specialists</loc>
     <lastmod>2025-08-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+  
+  <!-- Main Service Pages -->
+  <url>
+    <loc>https://mediabuyinglondon.co.uk/configurator</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://mediabuyinglondon.co.uk/industries</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://mediabuyinglondon.co.uk/brief</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://mediabuyinglondon.co.uk/corporate-investment</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Content Pages -->
+  <url>
+    <loc>https://mediabuyinglondon.co.uk/blog</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://mediabuyinglondon.co.uk/what-is-media-buying-in-london</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Information Pages -->
   <url>
     <loc>https://mediabuyinglondon.co.uk/about</loc>
-    <lastmod>2025-08-12</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.6</priority>
   </url>
-  <url>
-    <loc>https://mediabuyinglondon.co.uk/faqs</loc>
-    <lastmod>2025-08-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
-  </url>
+  
   <url>
     <loc>https://mediabuyinglondon.co.uk/contact</loc>
-    <lastmod>2025-08-12</lastmod>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://mediabuyinglondon.co.uk/faqs</loc>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
+  
+  <!-- Utility Pages -->
+  <url>
+    <loc>https://mediabuyinglondon.co.uk/sitemap</loc>
+    <lastmod>2025-08-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  
+  <!-- Legal Pages -->
   <url>
     <loc>https://mediabuyinglondon.co.uk/privacy-policy</loc>
-    <lastmod>2025-08-12</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
+    <priority>0.3</priority>
   </url>
+  
   <url>
     <loc>https://mediabuyinglondon.co.uk/terms-of-service</loc>
-    <lastmod>2025-08-12</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
+    <priority>0.3</priority>
   </url>
+  
   <url>
     <loc>https://mediabuyinglondon.co.uk/cookie-policy</loc>
-    <lastmod>2025-08-12</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
+    <priority>0.3</priority>
   </url>
+  
   <url>
     <loc>https://mediabuyinglondon.co.uk/disclaimer</loc>
-    <lastmod>2025-08-12</lastmod>
+    <lastmod>2025-08-13</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
+    <priority>0.3</priority>
   </url>
 </urlset>
