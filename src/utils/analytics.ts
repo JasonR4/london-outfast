@@ -94,6 +94,16 @@ export const trackQuoteSubmission = (quoteData: {
 
 // Lightweight analytics helpers (GA4 + Pixel; dataLayer fallback)
 type Dict = Record<string, any>;
+export type PlanMeta = {
+  plan_value?: number;      // numeric budget or quote total (ex VAT)
+  formats_count?: number;
+  sites_selected?: number;
+  periods_count?: number;
+  location?: string;
+  format_slug?: string;
+};
+
+const CURRENCY = 'GBP';
 const g = () => (typeof window !== 'undefined' ? (window as any) : {});
 
 const pushDL = (event: string, params?: Dict) => {
@@ -112,7 +122,7 @@ const log = (name: string, params?: Dict) => {
 };
 
 const ga = (name: string, params?: Dict) => {
-  try { g().gtag?.('event', name, params); } catch {}
+  try { g().gtag?.('event', name, { debug_mode: true, ...params }); } catch {}
   pushDL(name, params);
   log(name, params);
 };
@@ -122,14 +132,18 @@ const pixel = (name: string, params?: Dict) => {
   log(`fbq:${name}`, params);
 };
 
-/** COMMON PARAMS you can pass everywhere */
-export type PlanMeta = {
-  plan_value?: number;           // subtotal ex VAT
-  formats_count?: number;
-  sites_selected?: number;
-  periods_count?: number;
-  location?: string;             // e.g. "Central London"
-  format_slug?: string;          // e.g. "16-sheet-corridor-panels"
+// Shadow purchase sender to populate GA4 revenue consistently
+const sendPurchase = (transactionId: string, value: number, extra: Record<string, any> = {}) => {
+  try {
+    g().gtag?.('event', 'purchase', {
+      transaction_id: transactionId,
+      value,
+      currency: CURRENCY,
+      items: [{ item_id: 'lead_submit', item_name: 'Lead Submission', quantity: 1 }],
+      debug_mode: true,
+      ...extra,
+    });
+  } catch {}
 };
 
 export const trackSummaryViewed = (meta: PlanMeta = {}) => {
@@ -149,14 +163,22 @@ export const trackAccountCreated = (meta: PlanMeta = {}) => {
   pixel('CompleteRegistration');
 };
 
+// UPDATED: plan submit uses real numeric value and sends purchase
 export const trackPlanSubmitted = (planId: string, meta: PlanMeta = {}) => {
-  ga('plan_submitted', { plan_id: planId, ...meta, value: meta.plan_value });
-  pixel('Lead', { value: meta.plan_value || 0, currency: 'GBP' });
+  const value = Number(meta.plan_value) || 0;
+  const payload = { ...meta, value, currency: CURRENCY };
+  ga('plan_submitted', payload);
+  pixel('Lead', { value, currency: CURRENCY });
+  sendPurchase(`plan_${planId}`, value, { format_slug: meta.format_slug });
 };
 
+// UPDATED: brief form submit uses real numeric value and sends purchase
 export const trackBriefFormSubmitted = (meta: PlanMeta = {}) => {
-  ga('brief_form_submitted', { ...meta, value: meta.plan_value });
-  pixel('Lead', { value: meta.plan_value || 0, currency: 'GBP' });
+  const value = Number(meta.plan_value) || 0;
+  const payload = { ...meta, value, currency: CURRENCY };
+  ga('brief_form_submitted', payload);
+  pixel('Lead', { value, currency: CURRENCY });
+  sendPurchase(`brief_${Date.now()}`, value, { format_slug: meta.format_slug });
 };
 
 // Track other key actions

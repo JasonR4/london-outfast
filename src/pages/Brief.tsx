@@ -148,9 +148,14 @@ const onSubmit = async (values: FormValues) => {
     const { data, error } = await supabase.functions.invoke('submit-brief', { body: payload });
     if (error || !data?.ok) throw new Error(error?.message || data?.error || 'Failed to submit');
     
-    // Track brief form submission
+    // Track brief form submission with numeric budget
+    const toNumber = (v: any) => {
+      const n = typeof v === 'number' ? v : parseFloat(String(v).replace(/[^\d.]/g, ''));
+      return isNaN(n) ? 0 : n;
+    };
+    const budget = toNumber(values?.budget_band) || 3000; // Default if no budget provided
     trackBriefFormSubmitted({
-      plan_value: 3000, // Default value as specified
+      plan_value: budget,
       formats_count: values.formats?.length || 0,
       location: "London"
     });
