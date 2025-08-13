@@ -103,71 +103,58 @@ export default function ClientPortal() {
 
   const linkPendingQuote = async (userId: string) => {
     try {
-      // COMPREHENSIVE APPROACH: Get ALL quotes for this user that need to be submitted
-      
-      // 1. Find any quotes already linked to this user that are still draft
-      const { data: userDraftQuotes, error: userError } = await supabase
-        .from('quotes')
-        .select('id, status, user_session_id, total_cost')
-        .eq('user_id', userId)
-        .eq('status', 'draft');
-
-      // 2. Find any unlinked quotes that might belong to this user
-      const { data: unlinkedQuotes, error: unlinkedError } = await supabase
-        .from('quotes')
-        .select('id, status, user_session_id, total_cost')
-        .is('user_id', null)
-        .in('status', ['draft', 'submitted']);
-
-      if (userError || unlinkedError) {
-        console.error('Error fetching quotes:', userError || unlinkedError);
+      // Get the specific quote session that was submitted
+      const submittedSessionId = localStorage.getItem('quote_session_id_submitted');
+      if (!submittedSessionId) {
+        console.log('No submitted session ID found');
         return;
       }
 
-      let quotesToUpdate = userDraftQuotes || [];
-      let quotesToLink = unlinkedQuotes || [];
+      // Find and link only the specific quote that was just submitted
+      const { data: targetQuote, error: fetchError } = await supabase
+        .from('quotes')
+        .select('id, status, user_session_id, total_cost')
+        .eq('user_session_id', submittedSessionId)
+        .maybeSingle();
 
-      console.log('User draft quotes to submit:', quotesToUpdate);
-      console.log('Unlinked quotes to link:', quotesToLink);
-
-      // Update user's draft quotes to submitted
-      if (quotesToUpdate.length > 0) {
-        for (const quote of quotesToUpdate) {
-          await supabase
-            .from('quotes')
-            .update({ status: 'submitted' })
-            .eq('id', quote.id);
-        }
+      if (fetchError) {
+        console.error('Error fetching target quote:', fetchError);
+        toast.error('Failed to submit quote');
+        return;
       }
 
-      // Link unlinked quotes to user and submit them
-      if (quotesToLink.length > 0) {
-        for (const quote of quotesToLink) {
-          await supabase
-            .from('quotes')
-            .update({ 
-              user_id: userId,
-              status: 'submitted'
-            })
-            .eq('id', quote.id);
-        }
+      if (!targetQuote) {
+        console.log('No quote found for session:', submittedSessionId);
+        toast.error('Failed to submit quote');
+        return;
       }
 
-      const totalQuotes = quotesToUpdate.length + quotesToLink.length;
+      // Update only this specific quote
+      const { error: updateError } = await supabase
+        .from('quotes')
+        .update({ 
+          user_id: userId,
+          status: 'submitted'
+        })
+        .eq('id', targetQuote.id);
+
+      if (updateError) {
+        console.error('Error updating quote:', updateError);
+        toast.error('Failed to submit quote');
+        return;
+      }
+
+      // Clean up localStorage
+      localStorage.removeItem('quote_session_id_submitted');
+      localStorage.removeItem('quote_session_id');
       
-      if (totalQuotes > 0) {
-        // Clean up localStorage
-        localStorage.removeItem('pending_quote_link');
-        localStorage.removeItem('quote_session_id');
-        localStorage.removeItem('quote_session_id_submitted');
-        
-        toast.success(`${totalQuotes} quote${totalQuotes > 1 ? 's have' : ' has'} been submitted to your account!`);
-        
-        // Refresh quotes after linking
-        fetchUserQuotes(userId);
-      }
+      toast.success('Quote submitted successfully!');
+      
+      // Refresh quotes after linking
+      fetchUserQuotes(userId);
     } catch (err) {
-      console.error('Error linking quotes:', err);
+      console.error('Error linking quote:', err);
+      toast.error('Failed to submit quote');
     }
   };
 
