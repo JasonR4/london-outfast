@@ -65,28 +65,65 @@ const Hero = () => {
         )}
         
         
-          <div className="mt-10">
-            <div className="grid gap-6 sm:grid-cols-2">
-              {ctas.map((cta) => (
-                <div key={cta.key} className="flex flex-col items-center text-center">
-                  <div className="space-y-1">
-                    <p className="text-lg md:text-xl font-semibold">{cta.heading}</p>
-                    <p className="text-sm leading-snug text-muted-foreground">{cta.description}</p>
-                  </div>
-                  <Button
-                    variant={cta.variant as any}
-                    size="lg"
-                    className="mt-3 w-full sm:w-auto text-base md:text-lg px-6 py-5"
-                    onClick={() => (cta.route?.startsWith('http') ? (window.location.href = cta.route) : navigate(cta.route))}
-                    data-cta={`hero_${cta.key}`}
-                    aria-label={`${cta.heading} - ${cta.label}`}
-                  >
-                    {cta.label}
-                  </Button>
-                </div>
-              ))}
+          <section className="hero-cta mt-10">
+            <div className="hero-cta__grid">
+              <a 
+                href="/quote" 
+                className="cta-card cta--quote"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/quote');
+                }}
+                data-cta="hero_quote"
+                aria-label="Get My Quote - Get your OOH campaign booked today"
+              >
+                <h3>Get My Quote</h3>
+                <p>Get your OOH campaign booked today.</p>
+              </a>
+
+              <a 
+                href="/configurator" 
+                className="cta-card cta--config"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/configurator');
+                }}
+                data-cta="hero_configurator"
+                aria-label="Use the Configurator - Answer questions for recommendations"
+              >
+                <h3>Use the Configurator</h3>
+                <p>Answer a few quick questions and we'll recommend formats, locations, and budget split.</p>
+              </a>
+
+              <a 
+                href="/outdoor-media" 
+                className="cta-card cta--explore"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/outdoor-media');
+                }}
+                data-cta="hero_browse"
+                aria-label="Explore Outdoor Media - Browse London's OOH opportunities"
+              >
+                <h3>Explore Outdoor Media</h3>
+                <p>Browse London's OOH environments, formats, and placement opportunities.</p>
+              </a>
+
+              <a 
+                href="/brief" 
+                className="cta-card cta--brief"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/brief');
+                }}
+                data-cta="hero_specialist"
+                aria-label="Send My Brief - Discuss with a specialist"
+              >
+                <h3>Send My Brief</h3>
+                <p>Discuss your brief directly with a senior MBL media buying specialist.</p>
+              </a>
             </div>
-          </div>
+          </section>
       </div>
       
       {/* Scroll Indicator */}

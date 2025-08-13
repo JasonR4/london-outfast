@@ -301,4 +301,139 @@ All colors MUST be HSL.
   .blog-content td {
     color: hsl(var(--muted-foreground));
   }
+
+  /* ===== MBL Hero CTA Block ===== */
+  .hero-cta {
+    --mbl-red-1: #FF4D4D;  /* top */
+    --mbl-red-2: #C00000;  /* bottom */
+    --mbl-navy-1:#122B54;
+    --mbl-navy-2:#0B1B3A;
+    --mbl-blue-1:#3581FF;
+    --mbl-blue-2:#1A55CC;
+    --mbl-ink:#0B0D14;
+    --mbl-panel:#0F1220;
+    --mbl-text:#ffffff;
+    --mbl-muted: rgba(255,255,255,.82);
+    --mbl-border: rgba(255,255,255,.16);
+    --mbl-border-strong: rgba(255,255,255,.22);
+    --mbl-shadow: 0 10px 30px rgba(0,0,0,.35);
+
+    position: relative;
+    padding: 28px 16px 8px;
+    background:
+      radial-gradient(900px 600px at 0% 0%, rgba(74, 111, 255, .25), transparent 60%),
+      radial-gradient(800px 500px at 100% 10%, rgba(255, 77, 77, .18), transparent 65%),
+      linear-gradient(180deg, #0A0C16 0%, #090B13 100%);
+    border-radius: 12px;
+    margin-top: 2rem;
+  }
+
+  .hero-cta__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  /* Desktop → two by two */
+  @media (min-width: 860px) {
+    .hero-cta__grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* Cards behave like rich buttons */
+  .cta-card {
+    display: grid;
+    align-content: center;
+    min-height: 112px;
+    padding: 22px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--mbl-text);
+    background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00));
+    border: 1px solid var(--mbl-border);
+    box-shadow: var(--mbl-shadow);
+    outline: none;
+    transition:
+      transform .18s ease,
+      box-shadow .18s ease,
+      border-color .18s ease,
+      background .18s ease;
+  }
+  .cta-card h3 {
+    margin: 0 0 6px 0;
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: .2px;
+  }
+  .cta-card p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--mbl-muted);
+  }
+
+  /* Hover / focus */
+  .cta-card:hover,
+  .cta-card:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 36px rgba(0,0,0,.45);
+    border-color: var(--mbl-border-strong);
+  }
+
+  /* 1) Primary (dominant) */
+  .cta--quote {
+    background: linear-gradient(180deg, var(--mbl-red-1), var(--mbl-red-2));
+    border-color: rgba(255,255,255,.22);
+  }
+  .cta--quote:hover,
+  .cta--quote:focus-visible {
+    background: linear-gradient(180deg, #ff6666, #a80000);
+  }
+
+  /* 2) Configurator (navy) */
+  .cta--config {
+    background: linear-gradient(180deg, var(--mbl-navy-1), var(--mbl-navy-2));
+    border-color: rgba(255,255,255,.28);
+  }
+  .cta--config:hover,
+  .cta--config:focus-visible {
+    background: linear-gradient(180deg, #16396b, #0a1731);
+  }
+
+  /* 3) Explore (neutral / outlined) */
+  .cta--explore {
+    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.00));
+    border-color: rgba(255,255,255,.28);
+  }
+  .cta--explore:hover,
+  .cta--explore:focus-visible {
+    background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+  }
+
+  /* 4) Brief (brand blue) */
+  .cta--brief {
+    background: linear-gradient(180deg, var(--mbl-blue-1), var(--mbl-blue-2));
+    border-color: rgba(255,255,255,.22);
+  }
+  .cta--brief:hover,
+  .cta--brief:focus-visible {
+    background: linear-gradient(180deg, #4c91ff, #1749a8);
+  }
+
+  /* Make the primary visually dominant */
+  @media (min-width: 860px) {
+    .cta--quote { min-height: 132px; }
+  }
+
+  /* Accessibility niceties */
+  .cta-card:focus-visible { box-shadow: 0 0 0 3px rgba(255,255,255,.18), var(--mbl-shadow); }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .cta-card { transition: none; }
+    .cta-card:hover,
+    .cta-card:focus-visible { transform: none; }
+  }
 }
