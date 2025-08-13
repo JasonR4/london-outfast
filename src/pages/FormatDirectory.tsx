@@ -17,23 +17,31 @@ const FormatDirectory = () => {
   const { mediaFormats, loading, refetch } = useCentralizedMediaFormats();
   const { mediaFormats: ctxFormats, service } = useMediaFormatsContext();
 
+  // Robust format loading with multiple fallbacks
   const combinedFormats = mediaFormats.length ? mediaFormats : ctxFormats;
   
-  console.log('🔍 FormatDirectory Debug:', {
-    mediaFormats: mediaFormats.length,
-    ctxFormats: ctxFormats.length, 
-    combinedFormats: combinedFormats.length,
-    loading
-  });
-  
   useEffect(() => {
-    console.log('🔍 Triggering refetch...');
-    refetch();
-    if (combinedFormats.length === 0) {
-      // Trigger a service refresh as a fallback
-      console.log('🔍 Service fallback fetch...');
-      service.fetchFormats(false).catch(() => {});
-    }
+    let mounted = true;
+    
+    const loadFormats = async () => {
+      try {
+        await refetch();
+        
+        // If still no formats after refetch, try service directly
+        if (mounted && combinedFormats.length === 0) {
+          await service.fetchFormats(false);
+        }
+      } catch (error) {
+        console.error('Format loading error:', error);
+        // Silent fallback - component will show "no formats" state
+      }
+    };
+    
+    loadFormats();
+    
+    return () => {
+      mounted = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
@@ -168,11 +176,24 @@ const FormatDirectory = () => {
         </div>
       </section>
 
+      {/* Loading State */}
+      {loading && combinedFormats.length === 0 && (
+        <section className="py-20 px-4">
+          <div className="max-w-6xl mx-auto text-center">
+            <div className="space-y-4">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="text-muted-foreground">Loading outdoor media formats...</p>
+            </div>
+          </div>
+        </section>
+      )}
+      
       {/* Format Grid */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredFormats.map((format) => (
+      {!loading || combinedFormats.length > 0 ? (
+        <section className="py-20 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredFormats.map((format) => (
               <Card key={format.id} className="group hover:shadow-lg transition-all duration-300 cursor-pointer" onClick={() => handleFormatClick(format.format_slug)}>
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
@@ -217,21 +238,29 @@ const FormatDirectory = () => {
                 </CardContent>
               </Card>
             ))}
-          </div>
-          
-          {filteredFormats.length === 0 && (
-            <div className="text-center py-12">
-              <h3 className="text-lg font-semibold mb-2">No formats found</h3>
-              <p className="text-muted-foreground mb-4">
-                Try adjusting your search terms or filter criteria
-              </p>
-              <Button onClick={() => { setSearchTerm(""); setSelectedCategory("all"); }}>
-                Clear Filters
-              </Button>
             </div>
-          )}
-        </div>
-      </section>
+            
+            {filteredFormats.length === 0 && !loading && (
+              <div className="text-center py-12">
+                <h3 className="text-lg font-semibold mb-2">
+                  {combinedFormats.length === 0 ? 'No formats available' : 'No formats found'}
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  {combinedFormats.length === 0 
+                    ? 'Please check back later or contact support.' 
+                    : 'Try adjusting your search terms or filter criteria'
+                  }
+                </p>
+                {combinedFormats.length > 0 && (
+                  <Button onClick={() => { setSearchTerm(""); setSelectedCategory("all"); }}>
+                    Clear Filters
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
 
       {/* How It Works */}
       <section className="py-20 px-4 bg-muted/20">
