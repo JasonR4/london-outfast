@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowRight, Search } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 const FormatDirectory = () => {
   const navigate = useNavigate();
@@ -61,6 +62,13 @@ const FormatDirectory = () => {
 
   return (
     <>
+      <Helmet>
+        <title>Outdoor Media Buying London | OOH Advertising Quotes & Campaign Planning</title>
+        <meta name="description" content="Outdoor media buying in London with instant quotes and a dedicated client portal. Access all OOH channels and receive a full media schedule with precise locations." />
+        <link rel="canonical" href="/outdoor-media" />
+        <meta name="robots" content="index,follow" />
+      </Helmet>
+      
       {/* Hero Section */}
       <section className="py-24 px-4 bg-gradient-to-br from-background via-muted/20 to-accent/10">
         <div className="max-w-6xl mx-auto text-center">
@@ -68,13 +76,48 @@ const FormatDirectory = () => {
             OOH FORMAT DIRECTORY
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent">
-            Outdoor Media Buying & Advertising in London
+            Outdoor Media Buying in London – Quote & Campaign Planning
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            We specialise in outdoor media buying across every major format in London. Whether you need roadside billboards, transport ads, or street-level visibility, our team secures prime placements at the best rates. This page is your gateway to fast quotes, full campaign planning, and direct access to London's most effective OOH inventory.
+            Outdoor media buying in London requires speed, precision, and clear campaign planning. This quoting hub provides instant access to rates and availability across every major OOH format — from high-impact roadside billboards to targeted street-level displays. Once confirmed, campaigns are delivered with detailed media schedules, precise site locations, and full transparency through the client portal.
           </p>
+          <div className="space-y-6 mb-8">
+            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto text-left">
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Key Benefits</h3>
+                <ol className="space-y-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">1</span>
+                    <span><strong>One-Stop Access</strong> – All major London OOH formats and locations in one place.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">2</span>
+                    <span><strong>Instant Quotes</strong> – Get rates fast without multiple supplier calls.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">3</span>
+                    <span><strong>Competitive Pricing</strong> – Direct buying power means cost savings on premium placements.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">4</span>
+                    <span><strong>Campaign Support</strong> – From quote to live campaign tracking, every detail is handled.</span>
+                  </li>
+                </ol>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Available Channels</h3>
+                <ul className="space-y-2 text-muted-foreground">
+                  <li><strong>Billboards (48-Sheet & Digital-48)</strong> – Dominant roadside coverage.</li>
+                  <li><strong>Premium Digital Screens</strong> – High-footfall retail and leisure sites.</li>
+                  <li><strong>Street-Level Panels</strong> – Target pedestrians in key boroughs.</li>
+                  <li><strong>Building Wraps & Landmarks</strong> – Large-format visibility in high-traffic areas.</li>
+                  <li><strong>Special Builds & Experiential</strong> – Creative installations for maximum impact.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
           <Button onClick={handleGetQuote} size="lg" className="bg-gradient-primary hover:opacity-90">
-            Get Custom Quote for Any Format
+            Request a Quote Now
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
@@ -181,6 +224,80 @@ const FormatDirectory = () => {
         </div>
       </section>
 
+      {/* How It Works */}
+      <section className="py-20 px-4 bg-muted/20">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">How It Works</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              From initial quote to campaign delivery, our streamlined process ensures precision and transparency at every step.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <div className="bg-primary/10 text-primary rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mx-auto mb-4">1</div>
+                <h3 className="font-semibold mb-2">Select Your Formats</h3>
+                <p className="text-sm text-muted-foreground">Choose preferred channels and locations from the quoting tool.</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <div className="bg-primary/10 text-primary rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mx-auto mb-4">2</div>
+                <h3 className="font-semibold mb-2">Submit Your Campaign Brief</h3>
+                <p className="text-sm text-muted-foreground">Provide objectives, timelines, and budget.</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <div className="bg-primary/10 text-primary rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mx-auto mb-4">3</div>
+                <h3 className="font-semibold mb-2">Receive a Full Media Schedule</h3>
+                <p className="text-sm text-muted-foreground">Delivered via the client portal with precise site addresses, format specifications, and campaign details.</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <div className="bg-primary/10 text-primary rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mx-auto mb-4">4</div>
+                <h3 className="font-semibold mb-2">Approve & Launch</h3>
+                <p className="text-sm text-muted-foreground">Confirm your plan and track delivery progress through the portal.</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Campaign Examples */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Campaign Examples</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              See how our clients leverage London's outdoor media landscape for maximum impact.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="font-semibold text-lg mb-3">Citywide Retail Awareness</h3>
+                <p className="text-muted-foreground">Multi-channel OOH blitz combining billboards, digital screens, and street furniture for comprehensive market coverage and brand visibility.</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="font-semibold text-lg mb-3">Borough-Specific Targeting</h3>
+                <p className="text-muted-foreground">Outdoor media mix focused on high-footfall commercial zones to reach specific demographics in targeted London areas.</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Quick Stats */}
       <section className="py-20 px-4 bg-muted/20">
         <div className="max-w-6xl mx-auto">
@@ -221,14 +338,14 @@ const FormatDirectory = () => {
       <section className="py-20 px-4 bg-gradient-to-br from-primary/10 via-accent/10 to-background">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">
-            Need Help Choosing the Right Format?
+            Request Your Outdoor Media Quote
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Our OOH experts can recommend the perfect format mix for your campaign objectives and budget
+            Start planning today. Whether you're running a single-site campaign or a multi-format takeover, the quoting hub and client portal deliver the speed, clarity, and precision needed to make it happen.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button onClick={handleGetQuote} size="lg" className="bg-gradient-primary hover:opacity-90">
-              GET EXPERT CONSULTATION
+              Request a Quote Now
             </Button>
             <Button variant="outline" size="lg" onClick={() => window.location.href = "tel:+442045243019"}>
               CALL: +44 204 524 3019
