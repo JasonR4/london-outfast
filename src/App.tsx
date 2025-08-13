@@ -20,6 +20,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import About from "./pages/About";
 import FAQs from "./pages/FAQs";
 import LegalPage from "./pages/LegalPage";
+import WhatIsMediaBuying from "./pages/WhatIsMediaBuying";
 import NotFound from "./pages/NotFound";
 import IndustryPage from "./pages/IndustryPage";
 import Industries from "./pages/Industries";
@@ -87,6 +88,7 @@ const App = () => {
               <Route path="/outdoor-media/industries/:industrySlug" element={<IndustryPage />} />
               <Route path="/industries" element={<Industries />} />
               <Route path="/industries/:industrySlug" element={<IndustryPage />} />
+              <Route path="/what-is-media-buying-in-london" element={<WhatIsMediaBuying />} />
               <Route path="/about" element={<About />} />
               <Route path="/faqs" element={<FAQs />} />
               <Route path="/contact" element={<Contact />} />
