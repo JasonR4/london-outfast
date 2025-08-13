@@ -42,6 +42,7 @@ import HtmlSitemap from "./pages/HtmlSitemap";
 import Brief from "./pages/Brief";
 import ThankYou from "./pages/ThankYou";
 import CorporateInvestment from "./pages/CorporateInvestment";
+import LondonOOHSpecialists from "./pages/LondonOOHSpecialists";
 
 const queryClient = new QueryClient();
 
@@ -103,6 +104,7 @@ const App = () => {
               <Route path="/email-test" element={<EmailTest />} />
               <Route path="/cms" element={<ProtectedRoute><CMS /></ProtectedRoute>} />
               <Route path="/corporate-investment" element={<CorporateInvestment />} />
+              <Route path="/london-ooh-specialists" element={<LondonOOHSpecialists />} />
               <Route path="/sitemap" element={<HtmlSitemap />} />
               <Route path="/sitemap-html" element={<HtmlSitemap />} />
               {/* Legal Pages */}
