@@ -36,7 +36,7 @@ export default function CorporateInvestment() {
           </div>
           <div className="relative max-w-6xl mx-auto px-4 py-24 md:py-32 text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">Invest in the Future of Out-of-Home Media Buying</h1>
-            <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">London proven, global cities in development. Funding closes <span className="font-semibold">31 October 2025</span>.</p>
+            <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">London proven, global cities in development. Live date <span className="font-semibold">21 August 2025</span>. Funding closes <span className="font-semibold">31 October 2025</span>.</p>
             <div className="mt-8 flex flex-wrap gap-4 justify-center">
               <a href="#invest" className="inline-flex items-center rounded-md bg-secondary text-secondary-foreground px-6 py-3 font-semibold hover:bg-secondary/90 transition-colors">Speak to Our Corporate Investment Team</a>
             </div>
