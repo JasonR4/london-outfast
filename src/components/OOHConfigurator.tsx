@@ -1297,7 +1297,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">Select multiple periods for your campaign</p>
               <div className="grid gap-2 max-h-64 overflow-y-auto">
-                {inchargePeriods.map((period) => (
+                {inchargePeriods.length > 0 ? inchargePeriods.map((period) => (
                   <div key={period.id} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50">
                     <Checkbox
                       id={`period-${period.id}`}
@@ -1317,7 +1317,11 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                       </div>
                     </label>
                   </div>
-                ))}
+                )) : (
+                  <div className="text-center py-4 text-muted-foreground">
+                    Loading periods...
+                  </div>
+                )}
               </div>
             </div>
           ) : currentQuestion.type === 'budget_input' ? (
