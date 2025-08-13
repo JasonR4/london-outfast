@@ -146,3 +146,88 @@ export const trackPageView = (pagePath: string, pageTitle?: string) => {
     console.error('❌ Analytics tracking error:', error);
   }
 };
+
+// NEW: Quote gating analytics events
+export const trackRateGateViewed = (page: string, format?: string) => {
+  try {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'rate_gate_viewed', {
+        event_category: 'gating',
+        event_label: page,
+        custom_parameters: {
+          format: format || 'unknown'
+        }
+      });
+    }
+  } catch (error) {
+    console.error('❌ Analytics tracking error:', error);
+  }
+};
+
+export const trackRateGateCTAClicked = (source: 'costs_card' | 'add_to_plan' | 'summary_guard', page?: string) => {
+  try {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'rate_gate_cta_clicked', {
+        event_category: 'gating',
+        event_label: source,
+        custom_parameters: {
+          page: page || window.location.pathname
+        }
+      });
+    }
+  } catch (error) {
+    console.error('❌ Analytics tracking error:', error);
+  }
+};
+
+export const trackAccountCreatedFromGate = (planDraft?: any) => {
+  try {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'account_created_from_gate', {
+        event_category: 'conversion',
+        event_label: 'gated_signup',
+        custom_parameters: {
+          had_plan_draft: !!planDraft,
+          formats_count: planDraft?.formats?.length || 0,
+          sites_selected: planDraft?.sitesSelected || 0
+        }
+      });
+    }
+    
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'CompleteRegistration');
+    }
+  } catch (error) {
+    console.error('❌ Analytics tracking error:', error);
+  }
+};
+
+export const trackPriceRevealed = (page: string, format?: string) => {
+  try {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'price_revealed', {
+        event_category: 'gating',
+        event_label: page,
+        custom_parameters: {
+          format: format || 'unknown'
+        }
+      });
+    }
+  } catch (error) {
+    console.error('❌ Analytics tracking error:', error);
+  }
+};
+
+export const trackPlanSubmitted = (planId: string, totalValue: number) => {
+  try {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'plan_submitted', {
+        event_category: 'conversion',
+        event_label: planId,
+        value: totalValue
+      });
+    }
+  } catch (error) {
+    console.error('❌ Analytics tracking error:', error);
+  }
+};

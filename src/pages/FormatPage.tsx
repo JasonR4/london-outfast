@@ -1108,12 +1108,74 @@ const FormatPage = () => {
                 </Card>
               </div>
 
-              {/* Cost Output Box */}
-              <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-2">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl text-center">Estimated Campaign Costs</CardTitle>
-                </CardHeader>
-                <CardContent>
+              {/* Cost Output Box - Now Gated */}
+              {(() => {
+                // Calculate pricing for gated panel
+                let pricing = {
+                  mediaPrice: 0,
+                  productionCost: 0,
+                  creativeCost: 0,
+                  totalCost: 0,
+                  mediaDiscount: 0,
+                  qualifiesVolume: false,
+                  mediaAfterDiscount: 0
+                };
+
+                if (isAuthenticated && selectedAreas.length > 0 && !rateLoading) {
+                  const representativeArea = selectedAreas[0];
+                  const availableLocations = getAvailableLocations();
+                  const matchingLocation = availableLocations.find(loc => 
+                    selectedAreas.some(area => 
+                      loc?.toLowerCase().includes(area?.toLowerCase() || '') || 
+                      area?.toLowerCase().includes(loc?.toLowerCase() || '')
+                    )
+                  ) || availableLocations[0];
+                  
+                  const locationForPricing = matchingLocation || representativeArea;
+                  
+                  let priceCalculation = null;
+                  if (isDateSpecific && selectedPeriods.length > 0) {
+                    priceCalculation = calculatePrice(locationForPricing, selectedPeriods);
+                  } else if (!isDateSpecific && selectedStartDate && selectedEndDate) {
+                    const diffTime = Math.abs(selectedEndDate.getTime() - selectedStartDate.getTime());
+                    const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+                    const pseudoPeriods = Array.from({ length: diffWeeks }, (_, i) => i + 1);
+                    priceCalculation = calculatePrice(locationForPricing, pseudoPeriods);
+                  }
+                  
+                  if (priceCalculation) {
+                    const units = quantity;
+                    const uniquePeriods = [...new Set(selectedPeriods)].length;
+                    const saleRate = priceCalculation.basePrice;
+                    const qualifiesVolume = uniquePeriods >= 3;
+                    const mediaCost = saleRate * units * uniquePeriods;
+                    const mediaDiscount = qualifiesVolume ? mediaCost * 0.10 : 0;
+                    const mediaAfterDiscount = mediaCost - mediaDiscount;
+                    const productionCostCalc = calculateProductionCost(quantity, selectedPeriods, format.category);
+                    const productionTotal = productionCostCalc ? productionCostCalc.totalCost : 0;
+                    const creativeTotal = needsCreative ? creativeAssets * 85 : 0;
+                    
+                    pricing = {
+                      mediaPrice: mediaCost,
+                      productionCost: productionTotal,
+                      creativeCost: creativeTotal,
+                      totalCost: mediaAfterDiscount + productionTotal + creativeTotal,
+                      mediaDiscount,
+                      qualifiesVolume,
+                      mediaAfterDiscount
+                    };
+                  }
+                }
+
+                return (
+                  <GatedCostPanel
+                    isAuthenticated={isAuthenticated}
+                    pricing={pricing}
+                    formatName={format?.format_name}
+                    className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-2"
+                  />
+                );
+              })()}
                   {selectedAreas.length > 0 && !rateLoading ? (
                     <>
                       {(() => {
@@ -1227,26 +1289,40 @@ const FormatPage = () => {
                                 </div>
                               </div>
 
-                              <Button onClick={handleBuildPlan} size="lg" className="w-full mt-4 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg font-semibold text-lg">
+                              <Button 
+                                onClick={async () => {
+                                  if (!isAuthenticated) {
+                                    trackRateGateCTAClicked('add_to_plan');
+                                    const planDraft = {
+                                      formats: [formatSlug],
+                                      sitesSelected: quantity,
+                                      periods: selectedPeriods,
+                                      locations: selectedAreas,
+                                      lastStep: 'costs'
+                                    };
+                                    await requireAuth(
+                                      window.location.pathname + '#action=build',
+                                      () => handleBuildPlan(),
+                                      planDraft
+                                    );
+                                  } else {
+                                    handleBuildPlan();
+                                  }
+                                }}
+                                size="lg" 
+                                className="w-full mt-4 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg font-semibold text-lg"
+                              >
                                 Build My Plan
                               </Button>
                             </div>
-                          );
-                        }
-                        return (
-                          <div className="text-center text-muted-foreground">
-                            <p>Unable to calculate pricing for selected areas</p>
-                          </div>
-                        );
-                      })()}
-                    </>
-                  ) : (
-                    <div className="text-center text-muted-foreground">
-                      <p>Select location areas above to see pricing estimate</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                  );
+                }
+              })()}
+              {!isAuthenticated && selectedAreas.length > 0 && !rateLoading && (
+                <div className="text-center text-muted-foreground">
+                  <p>Select location areas above to see pricing estimate</p>
+                </div>
+              )}
 
             </div>
           </section>
