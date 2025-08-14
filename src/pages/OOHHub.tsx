@@ -154,7 +154,7 @@ const OOHHub = () => {
   const retailEnvironments = [
     {
       title: "Shopping Mall Advertising",
-      slug: "retail-shopping-mall",
+      slug: "ooh/shopping-mall-advertising",
       description: "High-footfall indoor digital and static panels.",
       icon: ShoppingBag
     },
