@@ -438,6 +438,12 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
     if (formData.phone) { contactProperties.phone = formData.phone; }
     if (formData.website) { contactProperties.website = formData.website; }
     if (formData.company) { contactProperties.company = formData.company; }
+    
+    // Add event revenue if totalCost is available (like GA4 tracking)
+    if (formData.quoteDetails.totalCost && formData.quoteDetails.totalCost > 0) {
+      contactProperties.total_revenue = formData.quoteDetails.totalCost;
+      contactProperties.last_deal_amount = formData.quoteDetails.totalCost;
+    }
 
     // Create or update contact in HubSpot
     const hubspotResponse = await fetch(
