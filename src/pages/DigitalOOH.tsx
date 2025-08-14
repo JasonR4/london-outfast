@@ -20,6 +20,117 @@ import {
 } from 'lucide-react';
 
 const DigitalOOH = () => {
+  useEffect(() => {
+    // Add FAQ Schema
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Digital Out-of-Home advertising?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Digital Out-of-Home (DOOH) uses dynamic, high-resolution screens across London — including roadside billboards, Adshel Live bus shelters, and Underground/rail inventory — to deliver data-driven, real-time campaigns."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why choose Digital OOH over static formats?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Digital OOH enables dayparting, weather/event triggers, fast creative swaps and programmatic buying. It offers flexibility and contextual relevance that static formats can't match."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can you run programmatic DOOH campaigns?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. We activate programmatic DOOH with audience targeting and live triggers (time, location, weather), with transparent reporting and optimisation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does Digital OOH cost in London?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pricing varies by format, location and duration. We provide transparent proposals showing the media owner rate and our commission separately."
+          }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
+    // Add Service Schema
+    const serviceScript = document.createElement('script');
+    serviceScript.type = 'application/ld+json';
+    serviceScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "AdvertisingService",
+      "name": "Digital OOH London",
+      "serviceType": "Digital Out-of-Home Advertising",
+      "category": "Out-of-Home Advertising",
+      "provider": {
+        "@type": "Organization",
+        "name": "Media Buying London",
+        "url": "https://mediabuyinglondon.co.uk",
+        "logo": "https://mediabuyinglondon.co.uk/favicon.png"
+      },
+      "areaServed": {
+        "@type": "AdministrativeArea",
+        "name": "Greater London"
+      },
+      "audience": {
+        "@type": "BusinessAudience",
+        "audienceType": "Brands, agencies and in-house teams"
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Digital OOH Formats",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Digital 48 Sheet (D48)" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Mega 6 Roadside" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Adshel Live Digital Bus Shelters" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Digital Escalator Panels (DEPs)" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Shopping Centre Digital Screens" } }
+        ]
+      },
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "GBP",
+        "availability": "https://schema.org/InStock"
+      }
+    });
+    document.head.appendChild(serviceScript);
+
+    // Add Breadcrumb Schema
+    const breadcrumbScript = document.createElement('script');
+    breadcrumbScript.type = 'application/ld+json';
+    breadcrumbScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://mediabuyinglondon.co.uk/" },
+        { "@type": "ListItem", "position": 2, "name": "OOH", "item": "https://mediabuyinglondon.co.uk/ooh" },
+        { "@type": "ListItem", "position": 3, "name": "Digital OOH London", "item": "https://mediabuyinglondon.co.uk/ooh/digital-ooh" }
+      ]
+    });
+    document.head.appendChild(breadcrumbScript);
+
+    return () => {
+      // Clean up scripts
+      const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+      scripts.forEach(script => {
+        if (script.textContent?.includes('Digital OOH') || script.textContent?.includes('DOOH')) {
+          document.head.removeChild(script);
+        }
+      });
+    };
+  }, []);
+
   return (
     <>
       <Helmet>
