@@ -8,42 +8,112 @@ import { ArrowRight, MapPin, TrendingUp, Clock, CheckCircle, Users, Eye, Target 
 const LondonUndergroundAdvertising = () => {
   useEffect(() => {
     // Add FAQ Schema
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify({
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "FAQPage",
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "How much does Tube advertising cost?",
+          "name": "What Underground formats are available?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "A single 6-sheet can start from £250–£500 per 2 weeks; full takeovers run into six figures. Digital formats carry a premium."
+            "text": "We offer 6 Sheet LT Panels, 16 Sheet Corridor Panels, Digital Escalator Panels (DEPs), Cross Track Projections (XTPs), and full station takeovers."
           }
         },
         {
           "@type": "Question",
-          "name": "How long should my campaign run?",
+          "name": "How much does London Underground advertising cost?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Most Underground campaigns run in 2-week cycles; digital can run shorter bursts."
+            "text": "Costs vary by format, location, and duration. We provide transparent rate checks showing the actual media owner rate plus our commission."
           }
         },
         {
           "@type": "Question",
-          "name": "Do you handle creative approvals?",
+          "name": "Can we target specific lines or stations?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, we manage TfL's approval process, ensuring your creative meets all technical and compliance requirements."
+            "text": "Yes. We can plan campaigns by station, line, or audience segment using Experian Mosaic and Route data to maximise efficiency."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you manage production and approvals?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. We handle artwork specs, production, and TfL approvals for all Underground formats."
           }
         }
       ]
     });
-    document.head.appendChild(script);
+    document.head.appendChild(faqScript);
+
+    // Add Service Schema
+    const serviceScript = document.createElement('script');
+    serviceScript.type = 'application/ld+json';
+    serviceScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "AdvertisingService",
+      "name": "London Underground Advertising",
+      "serviceType": "Transport and Station Advertising",
+      "category": "Out-of-Home Advertising",
+      "provider": {
+        "@type": "Organization",
+        "name": "Media Buying London",
+        "url": "https://mediabuyinglondon.co.uk",
+        "logo": "https://mediabuyinglondon.co.uk/favicon.png"
+      },
+      "areaServed": {
+        "@type": "AdministrativeArea",
+        "name": "Greater London"
+      },
+      "audience": {
+        "@type": "BusinessAudience",
+        "audienceType": "Brands, agencies and in-house teams"
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Underground Formats",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "6 Sheet LT Panel" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "16 Sheet Corridor Panel" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Digital Escalator Panel" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Cross Track Projection" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Full Station Takeover" } }
+        ]
+      },
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "GBP",
+        "availability": "https://schema.org/InStock"
+      }
+    });
+    document.head.appendChild(serviceScript);
+
+    // Add Breadcrumb Schema
+    const breadcrumbScript = document.createElement('script');
+    breadcrumbScript.type = 'application/ld+json';
+    breadcrumbScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://mediabuyinglondon.co.uk/" },
+        { "@type": "ListItem", "position": 2, "name": "OOH", "item": "https://mediabuyinglondon.co.uk/ooh" },
+        { "@type": "ListItem", "position": 3, "name": "Underground Advertising", "item": "https://mediabuyinglondon.co.uk/ooh/london-underground" }
+      ]
+    });
+    document.head.appendChild(breadcrumbScript);
 
     return () => {
-      document.head.removeChild(script);
+      // Clean up scripts
+      const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+      scripts.forEach(script => {
+        if (script.textContent?.includes('Underground') || script.textContent?.includes('underground')) {
+          document.head.removeChild(script);
+        }
+      });
     };
   }, []);
 

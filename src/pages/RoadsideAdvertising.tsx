@@ -8,42 +8,111 @@ import { ArrowRight, MapPin, TrendingUp, Clock, CheckCircle } from "lucide-react
 const RoadsideAdvertising = () => {
   useEffect(() => {
     // Add FAQ Schema
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify({
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "FAQPage",
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "How much does roadside advertising cost?",
+          "name": "What roadside formats are available in London?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Rates vary by size, location and duration. Digital typically carries a premium; static 48-sheets offer strong CPMs. Request a transparent proposal for exact costs."
+            "text": "We offer 48 Sheet, 96 Sheet, Digital 48 Sheet (D48), Mega 6, and other premium roadside billboards. All are positioned for maximum visibility across major commuter routes and high-traffic locations."
           }
         },
         {
           "@type": "Question",
-          "name": "Can you run local and national?",
+          "name": "How much does roadside billboard advertising cost?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes — we book anything from a single borough to nationwide roadside networks."
+            "text": "Costs depend on format, location, and campaign length. We provide transparent rate checks showing the exact media owner cost plus our commission, so you can see exactly where your budget goes."
           }
         },
         {
           "@type": "Question",
-          "name": "Do you offer creative and production?",
+          "name": "Can we target specific boroughs or roads?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes — full creative services and print/production, including copy testing for distance and readability."
+            "text": "Yes. We use Experian Mosaic, Route, and location analyst tools to pinpoint the highest-value locations based on your audience."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you handle creative and installation?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. We provide full artwork management, production, and installation according to media owner specifications."
           }
         }
       ]
     });
-    document.head.appendChild(script);
+    document.head.appendChild(faqScript);
+
+    // Add Service Schema
+    const serviceScript = document.createElement('script');
+    serviceScript.type = 'application/ld+json';
+    serviceScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "AdvertisingService",
+      "name": "Roadside Advertising London",
+      "serviceType": "Billboard and Roadside Advertising",
+      "category": "Out-of-Home Advertising",
+      "provider": {
+        "@type": "Organization",
+        "name": "Media Buying London",
+        "url": "https://mediabuyinglondon.co.uk",
+        "logo": "https://mediabuyinglondon.co.uk/favicon.png"
+      },
+      "areaServed": {
+        "@type": "AdministrativeArea",
+        "name": "Greater London"
+      },
+      "audience": {
+        "@type": "BusinessAudience",
+        "audienceType": "Brands, agencies and in-house teams"
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Roadside Formats",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "48 Sheet Billboard" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "96 Sheet Billboard" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Digital 48 Sheet" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Mega 6" } }
+        ]
+      },
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "GBP",
+        "availability": "https://schema.org/InStock"
+      }
+    });
+    document.head.appendChild(serviceScript);
+
+    // Add Breadcrumb Schema
+    const breadcrumbScript = document.createElement('script');
+    breadcrumbScript.type = 'application/ld+json';
+    breadcrumbScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://mediabuyinglondon.co.uk/" },
+        { "@type": "ListItem", "position": 2, "name": "OOH", "item": "https://mediabuyinglondon.co.uk/ooh" },
+        { "@type": "ListItem", "position": 3, "name": "Roadside Advertising", "item": "https://mediabuyinglondon.co.uk/ooh/roadside-billboards" }
+      ]
+    });
+    document.head.appendChild(breadcrumbScript);
 
     return () => {
-      document.head.removeChild(script);
+      // Clean up scripts
+      const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+      scripts.forEach(script => {
+        if (script.textContent?.includes('roadside') || script.textContent?.includes('Roadside')) {
+          document.head.removeChild(script);
+        }
+      });
     };
   }, []);
 
