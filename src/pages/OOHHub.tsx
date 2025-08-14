@@ -112,7 +112,7 @@ const OOHHub = () => {
     },
     {
       title: "Bike Hire Dock Advertising",
-      slug: "transport-hubs",
+      slug: "bike-hire-dock-advertising",
       description: "Impact in busy urban areas with dock branding and panels.",
       icon: Target
     }
