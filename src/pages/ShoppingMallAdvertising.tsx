@@ -227,27 +227,15 @@ const ShoppingMallAdvertising = () => {
         {/* CTA Section */}
         <section className="py-16 bg-muted/50">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold text-foreground mb-6">Smart Quote Builder</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-6">Ready to Launch Your Shopping Mall Campaign?</h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Search formats, configure your campaign, and get real-time pricing.
+              Get expert advice and competitive pricing for London's premium retail environments.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
-                <Link to="/brief">
-                  Search Formats <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/brief">
-                  Configure
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/brief">
-                  Pricing
-                </Link>
-              </Button>
-            </div>
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
+              <Link to="/brief">
+                Send us your shopping mall brief <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
           </div>
         </section>
 
