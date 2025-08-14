@@ -74,7 +74,8 @@ serve(async (req) => {
         phone: payload.contact.phone,
         website: payload.contact.website,
         company: payload.contact.company,
-        submissionType: payload.source === 'configurator' ? 'configurator_quote' : 'format_quote',
+        submissionType: payload.source === 'configurator' ? 'configurator_quote' : 
+                       payload.source === 'smart-quote' ? 'general_quote' : 'format_quote',
         quoteDetails: {
           additionalDetails: payload.contact.notes,
           totalCost: quoteData?.total_inc_vat || quoteData?.total_cost,
