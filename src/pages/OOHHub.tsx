@@ -165,8 +165,8 @@ const OOHHub = () => {
       icon: ShoppingBag
     },
     {
-      title: "Leisure Venue Advertising",
-      slug: "cinema-advertising",
+      title: "Stadium Advertising",
+      slug: "ooh/stadium-advertising-london",
       description: "Cinemas, gyms, and sports venues targeting engaged audiences.",
       icon: Building
     }
