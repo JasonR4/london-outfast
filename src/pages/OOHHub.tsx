@@ -82,19 +82,19 @@ const OOHHub = () => {
   const transportEnvironments = [
     {
       title: "London Underground Advertising",
-      slug: "london-underground",
+      slug: "ooh/london-underground",
       description: "Target commuters and tourists with high-impact panels, digital escalators, and cross-track projections.",
       icon: Train
     },
     {
       title: "Rail Advertising London",
-      slug: "rail-advertising-london",
+      slug: "ooh/rail-advertising-london",
       description: "Reach millions of passengers on trains, platforms, and station concourses.",
       icon: Train
     },
     {
       title: "Bus Advertising",
-      slug: "bus-advertising",
+      slug: "ooh/bus-advertising",
       description: "Supersides, rears, T-sides, and full wraps delivering street-level visibility.",
       icon: Bus
     },
@@ -121,13 +121,13 @@ const OOHHub = () => {
   const roadsideEnvironments = [
     {
       title: "Roadside Advertising",
-      slug: "roadside-advertising",
+      slug: "ooh/roadside-billboards",
       description: "M6, M25, and other key routes with high-frequency, long-dwell exposure.",
       icon: MapPin
     },
     {
       title: "Digital OOH",
-      slug: "digital-ooh",
+      slug: "ooh/digital-ooh",
       description: "Digital and static roadside screens in key city locations.",
       icon: Monitor
     },
