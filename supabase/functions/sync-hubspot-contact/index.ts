@@ -93,15 +93,35 @@ async function createDealForContact(apiKey: string, contactId: string, dealName:
   try {
     const dealProps: any = {
       dealname: dealName,
-      amount: Math.round(amount), // HubSpot expects integers for amount in cents
+      amount: Math.round(amount), // HubSpot expects integers for amount
       dealstage: pipelineStage,
       hubspot_owner_id: await getOwnerIdByEmail(apiKey, 'matt@r4advertising.agency') || undefined,
       closedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 days
     };
 
-    // Add context as description if provided
+    // Add enhanced context as description with quote item details
     if (dealContext) {
-      dealProps.description = dealContext;
+      let enhancedDescription = dealContext;
+      
+      // Add quote items summary to deal description
+      if (quoteItems && quoteItems.length > 0) {
+        enhancedDescription += '\n\n--- QUOTE ITEMS ---\n';
+        quoteItems.forEach((item, index) => {
+          enhancedDescription += `${index + 1}. ${item.formatName || 'OOH Format'}\n`;
+          if (item.selectedAreas?.length) {
+            enhancedDescription += `   Locations: ${item.selectedAreas.join(', ')}\n`;
+          }
+          if (item.quantity) {
+            enhancedDescription += `   Quantity: ${item.quantity}\n`;
+          }
+          if (item.totalCost) {
+            enhancedDescription += `   Cost: £${item.totalCost}\n`;
+          }
+          enhancedDescription += '\n';
+        });
+      }
+      
+      dealProps.description = enhancedDescription;
     }
 
     const dealResponse = await fetch('https://api.hubapi.com/crm/v3/objects/deals', {
@@ -124,20 +144,42 @@ async function createDealForContact(apiKey: string, contactId: string, dealName:
     const dealResult = await dealResponse.json();
     const dealId = dealResult.id;
 
-    // Associate deal with contact
+    // Associate deal with contact using v3 API with proper association types
     console.log(`Associating deal ${dealId} with contact ${contactId}`);
-    const associationResponse = await fetch(`https://api.hubapi.com/crm/v4/objects/deals/${dealId}/associations/contacts/${contactId}`, {
-      method: 'PUT',
+    const associationResponse = await fetch(`https://api.hubapi.com/crm/v3/associations/deals/contacts/batch/create`, {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify([{ associationType: 'deal_to_contact' }])
+      body: JSON.stringify({
+        inputs: [{
+          from: { id: dealId },
+          to: { id: contactId },
+          type: 'deal_to_contact'
+        }]
+      })
     });
 
     if (!associationResponse.ok) {
       const associationError = await associationResponse.text();
       console.error('Failed to associate deal with contact:', associationError);
+      
+      // Try alternative association method
+      const altResponse = await fetch(`https://api.hubapi.com/crm/v4/objects/deals/${dealId}/associations/contacts/${contactId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify([{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 }])
+      });
+      
+      if (altResponse.ok) {
+        console.log(`Successfully associated deal ${dealId} with contact ${contactId} using alternative method`);
+      } else {
+        console.error('Alternative association also failed:', await altResponse.text());
+      }
     } else {
       console.log(`Successfully associated deal ${dealId} with contact ${contactId}`);
     }
