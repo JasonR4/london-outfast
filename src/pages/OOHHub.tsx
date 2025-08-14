@@ -143,12 +143,6 @@ const OOHHub = () => {
       description: "Localised, repeat-impact branding for community and event campaigns.",
       icon: MapPin
     },
-    {
-      title: "Streetliner Advertising",
-      slug: "ooh/streetliner-advertising",
-      description: "Roadside banners and creative formats along busy streets.",
-      icon: Target
-    }
   ];
 
   const retailEnvironments = [
