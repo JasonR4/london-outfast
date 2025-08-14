@@ -120,16 +120,22 @@ const OOHHub = () => {
 
   const roadsideEnvironments = [
     {
-      title: "Motorway Billboard Advertising",
-      slug: "roadside-billboards",
+      title: "Roadside Advertising",
+      slug: "roadside-advertising",
       description: "M6, M25, and other key routes with high-frequency, long-dwell exposure.",
       icon: MapPin
     },
     {
-      title: "Urban Roadside Advertising",
+      title: "Digital OOH",
       slug: "digital-ooh",
       description: "Digital and static roadside screens in key city locations.",
       icon: Monitor
+    },
+    {
+      title: "OOH Advertising London",
+      slug: "ooh-advertising-london",
+      description: "Comprehensive guide to Out-of-Home advertising across London.",
+      icon: Target
     },
     {
       title: "Lamp Post Banner Advertising",
@@ -224,7 +230,7 @@ const OOHHub = () => {
                   <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-200" />
                 </div>
                 <CardTitle className="text-lg leading-tight group-hover:text-primary transition-colors">
-                  <Link to={`/ooh/${env.slug}`} className="stretched-link">
+                  <Link to={`/${env.slug}`} className="stretched-link">
                     {env.title}
                   </Link>
                 </CardTitle>
