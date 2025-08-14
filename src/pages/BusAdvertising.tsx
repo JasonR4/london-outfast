@@ -73,7 +73,7 @@ const BusAdvertising = () => {
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
         
         {/* Hero Section */}
-        <div className="relative overflow-hidden bg-gradient-hero">
+        <div className="relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
           <div className="relative max-w-7xl mx-auto px-6 py-24">
             <div className="text-center">
@@ -82,7 +82,7 @@ const BusAdvertising = () => {
                 London Bus Advertising
               </Badge>
               
-              <h1 className="text-4xl md:text-6xl font-bold mb-8 bg-gradient-hero bg-clip-text text-transparent leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent leading-tight">
                 Bus Advertising London
               </h1>
               

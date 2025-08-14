@@ -93,7 +93,7 @@ const OOHHub = () => {
       icon: Train
     },
     {
-      title: "Bus & Coach Advertising",
+      title: "Bus Advertising",
       slug: "bus-advertising",
       description: "Supersides, rears, T-sides, and full wraps delivering street-level visibility.",
       icon: Bus
