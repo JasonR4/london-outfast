@@ -190,7 +190,7 @@ const OOHHub = () => {
     },
     {
       title: "Experiential & Sampling Activations",
-      slug: "experiential-sampling",
+      slug: "ooh/experiential-sampling-london",
       description: "Pop-ups, sampling, and live brand experiences.",
       icon: Users
     },
