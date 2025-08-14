@@ -160,7 +160,7 @@ const OOHHub = () => {
     },
     {
       title: "Supermarket Advertising",
-      slug: "retail-shopping-mall",
+      slug: "ooh/supermarket-advertising",
       description: "In-store, trolley, and car park panels for shopper influence.",
       icon: ShoppingBag
     },
