@@ -133,7 +133,7 @@ const OOHHub = () => {
     },
     {
       title: "OOH Advertising London",
-      slug: "ooh-advertising-london",
+      slug: "ooh/ooh-advertising-london",
       description: "Comprehensive guide to Out-of-Home advertising across London.",
       icon: Target
     },
