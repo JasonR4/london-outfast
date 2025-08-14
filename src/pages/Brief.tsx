@@ -150,11 +150,23 @@ const onSubmit = async (values: FormValues) => {
     if (error || !data?.ok) throw new Error(error?.message || data?.error || 'Failed to submit');
     
     // Track brief form submission with numeric budget
-    const toNumber = (v: any) => {
-      const n = typeof v === 'number' ? v : parseFloat(String(v).replace(/[^\d.]/g, ''));
-      return isNaN(n) ? 0 : n;
+    const extractBudgetValue = (budgetString: string | number): number => {
+      if (typeof budgetString === 'number') return budgetString;
+      
+      // Convert string like "£10,000-£20,000" or "£15,000+" to numeric value
+      const str = String(budgetString || '');
+      
+      // Extract all numbers from the string (handles £10,000-£20,000)
+      const numbers = str.match(/[\d,]+/g)?.map(n => parseFloat(n.replace(/,/g, ''))) || [];
+      
+      if (numbers.length === 0) return 5000; // Default if no numbers found
+      if (numbers.length === 1) return numbers[0]; // Single value like "£15,000+"
+      
+      // For ranges like "£10,000-£20,000", use the midpoint
+      return Math.round((Math.min(...numbers) + Math.max(...numbers)) / 2);
     };
-    const budget = toNumber(values?.budget_band) || 3000; // Default if no budget provided
+    
+    const budget = extractBudgetValue(values?.budget_band);
     trackBriefFormSubmitted({
       plan_value: budget,
       formats_count: values.formats?.length || 0,
