@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +21,126 @@ import {
 
 const LondonUndergroundAdvertising = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Add FAQ Schema
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What London Underground formats are available?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Key formats include 6 Sheet Underground panels, 16 Sheet corridor panels, Digital Escalator Panels (DEP), Cross Track Projections (XTP), full station takeovers, train wraps and in-carriage panels."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does London Underground advertising cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Costs depend on format, station, line, seasonality and duration. We provide transparent proposals showing the media owner rate and our commission separately."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can we target specific lines or stations?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. We plan by station, line and journey stage using Route data, Experian Mosaic and location analytics to match audience and objectives."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you handle TfL approvals, production and installation?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. We manage artwork specs, TfL approvals, print and installation across static and digital formats."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do you measure performance?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We supply proof of posting and post-campaign summaries. Where required, we model reach and frequency using industry datasets and can align to retail or site uplift."
+          }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
+    // Add Service Schema
+    const serviceScript = document.createElement('script');
+    serviceScript.type = 'application/ld+json';
+    serviceScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "AdvertisingService",
+      "name": "London Underground Advertising",
+      "serviceType": "Transport and Station Advertising",
+      "category": "Out-of-Home Advertising",
+      "provider": {
+        "@type": "Organization",
+        "name": "Media Buying London",
+        "url": "https://mediabuyinglondon.co.uk",
+        "logo": "https://mediabuyinglondon.co.uk/favicon.png"
+      },
+      "areaServed": {
+        "@type": "AdministrativeArea",
+        "name": "Greater London"
+      },
+      "audience": {
+        "@type": "BusinessAudience",
+        "audienceType": "Brands, agencies and in-house teams"
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "London Underground Formats",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "6 Sheet Underground Panel (LT Panel)" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "16 Sheet Corridor Panel" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Digital Escalator Panel (DEP)" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Cross Track Projection (XTP)" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Full Station Takeover" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Train Wraps & In-Carriage Panels" } }
+        ]
+      },
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "GBP",
+        "availability": "https://schema.org/InStock"
+      }
+    });
+    document.head.appendChild(serviceScript);
+
+    // Add Breadcrumb Schema
+    const breadcrumbScript = document.createElement('script');
+    breadcrumbScript.type = 'application/ld+json';
+    breadcrumbScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://mediabuyinglondon.co.uk/" },
+        { "@type": "ListItem", "position": 2, "name": "OOH", "item": "https://mediabuyinglondon.co.uk/ooh" },
+        { "@type": "ListItem", "position": 3, "name": "London Underground Advertising", "item": "https://mediabuyinglondon.co.uk/ooh/london-underground" }
+      ]
+    });
+    document.head.appendChild(breadcrumbScript);
+
+    return () => {
+      // Clean up scripts
+      const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+      scripts.forEach(script => {
+        if (script.textContent?.includes('London Underground') || script.textContent?.includes('Underground Advertising')) {
+          document.head.removeChild(script);
+        }
+      });
+    };
+  }, []);
 
   return (
     <>
