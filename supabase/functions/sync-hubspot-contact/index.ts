@@ -144,44 +144,65 @@ async function createDealForContact(apiKey: string, contactId: string, dealName:
     const dealResult = await dealResponse.json();
     const dealId = dealResult.id;
 
-    // Associate deal with contact using v3 API with proper association types
-    console.log(`Associating deal ${dealId} with contact ${contactId}`);
-    const associationResponse = await fetch(`https://api.hubapi.com/crm/v3/associations/deals/contacts/batch/create`, {
-      method: 'POST',
+    // CRITICAL: Associate deal with contact - this MUST work
+    console.log(`🔗 CRITICAL: Associating deal ${dealId} with contact ${contactId}`);
+    
+    // Method 1: Create association during deal creation
+    const dealWithAssociation = await fetch(`https://api.hubapi.com/crm/v3/objects/deals`, {
+      method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        inputs: [{
-          from: { id: dealId },
+        properties: {},
+        associations: [{
           to: { id: contactId },
-          type: 'deal_to_contact'
+          types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 }]
         }]
       })
     });
 
-    if (!associationResponse.ok) {
-      const associationError = await associationResponse.text();
-      console.error('Failed to associate deal with contact:', associationError);
+    // Method 2: Direct v4 association (most reliable)
+    const directAssociation = await fetch(`https://api.hubapi.com/crm/v4/objects/deals/${dealId}/associations/contacts/${contactId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify([{ 
+        associationCategory: 'HUBSPOT_DEFINED', 
+        associationTypeId: 3 
+      }])
+    });
+
+    if (directAssociation.ok) {
+      console.log(`✅ SUCCESS: Deal ${dealId} associated with contact ${contactId}`);
+    } else {
+      const error = await directAssociation.text();
+      console.error(`❌ CRITICAL FAILURE: Deal-Contact association failed: ${error}`);
       
-      // Try alternative association method
-      const altResponse = await fetch(`https://api.hubapi.com/crm/v4/objects/deals/${dealId}/associations/contacts/${contactId}`, {
-        method: 'PUT',
+      // Method 3: Legacy association as fallback
+      const legacyAssociation = await fetch(`https://api.hubapi.com/crm/v3/associations/deals/contacts/batch/create`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify([{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 }])
+        body: JSON.stringify({
+          inputs: [{
+            from: { id: dealId },
+            to: { id: contactId },
+            type: 'deal_to_contact'
+          }]
+        })
       });
       
-      if (altResponse.ok) {
-        console.log(`Successfully associated deal ${dealId} with contact ${contactId} using alternative method`);
+      if (legacyAssociation.ok) {
+        console.log(`✅ SUCCESS: Legacy association worked for deal ${dealId}`);
       } else {
-        console.error('Alternative association also failed:', await altResponse.text());
+        console.error(`❌ ALL ASSOCIATION METHODS FAILED:`, await legacyAssociation.text());
       }
-    } else {
-      console.log(`Successfully associated deal ${dealId} with contact ${contactId}`);
     }
 
     // Create line items for quote items if provided
