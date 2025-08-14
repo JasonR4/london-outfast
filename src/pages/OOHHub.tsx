@@ -175,7 +175,7 @@ const OOHHub = () => {
     },
     {
       title: "Street Furniture Advertising",
-      slug: "street-furniture",
+      slug: "ooh/street-furniture",
       description: "Phone kiosks, recycling bins, benches, and other public fixtures.",
       icon: Building
     }
