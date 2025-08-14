@@ -440,9 +440,13 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
     if (formData.company) { contactProperties.company = formData.company; }
     
     // Add event revenue if totalCost is available (like GA4 tracking)
+    console.log('Checking totalCost for deal creation:', formData.quoteDetails.totalCost);
     if (formData.quoteDetails.totalCost && formData.quoteDetails.totalCost > 0) {
+      console.log('Adding revenue properties:', formData.quoteDetails.totalCost);
       contactProperties.total_revenue = formData.quoteDetails.totalCost;
       contactProperties.last_deal_amount = formData.quoteDetails.totalCost;
+    } else {
+      console.log('No totalCost available for deal creation');
     }
 
     // Create or update contact in HubSpot
@@ -488,13 +492,17 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
               const result = await updateResponse.json();
               
               // Create deal if totalCost is available
+              console.log('Contact updated - checking for deal creation. totalCost:', formData.quoteDetails.totalCost);
               if (formData.quoteDetails.totalCost && formData.quoteDetails.totalCost > 0) {
+                console.log('Creating deal for updated contact with amount:', formData.quoteDetails.totalCost);
                 await createDealForContact(
                   hubspotApiKey, 
                   result.id, 
                   quoteTitle, 
                   formData.quoteDetails.totalCost
                 );
+              } else {
+                console.log('No deal created - totalCost not available or zero');
               }
               
               // Create task for Shane
@@ -518,13 +526,17 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
     console.log("Quote synced to HubSpot:", result.id);
     
     // Create deal if totalCost is available
+    console.log('New contact created - checking for deal creation. totalCost:', formData.quoteDetails.totalCost);
     if (formData.quoteDetails.totalCost && formData.quoteDetails.totalCost > 0) {
+      console.log('Creating deal for new contact with amount:', formData.quoteDetails.totalCost);
       await createDealForContact(
         hubspotApiKey, 
         result.id, 
         quoteTitle, 
         formData.quoteDetails.totalCost
       );
+    } else {
+      console.log('No deal created - totalCost not available or zero');
     }
     
     // Create task for Shane
