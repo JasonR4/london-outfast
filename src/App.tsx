@@ -47,8 +47,6 @@ import CorporateInvestment from "./pages/CorporateInvestment";
 import LondonOOHSpecialists from "./pages/LondonOOHSpecialists";
 import OOHAdvertisingLondon from "./pages/OOHAdvertisingLondon";
 import OOHHub from "./pages/OOHHub";
-import RoadsideAdvertising from "./pages/RoadsideAdvertising";
-import LondonUndergroundAdvertising from "./pages/LondonUndergroundAdvertising";
 
 const queryClient = new QueryClient();
 
@@ -113,8 +111,6 @@ const App = () => {
               <Route path="/cms" element={<ProtectedRoute><CMS /></ProtectedRoute>} />
               <Route path="/corporate-investment" element={<CorporateInvestment />} />
               <Route path="/ooh" element={<OOHHub />} />
-              <Route path="/ooh/roadside-billboards" element={<RoadsideAdvertising />} />
-              <Route path="/ooh/london-underground" element={<LondonUndergroundAdvertising />} />
               <Route path="/london-ooh-specialists" element={<LondonOOHSpecialists />} />
               <Route path="/ooh-advertising-london" element={<OOHAdvertisingLondon />} />
               <Route path="/sitemap" element={<HtmlSitemap />} />
