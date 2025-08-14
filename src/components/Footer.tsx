@@ -84,6 +84,12 @@ const Footer = () => {
               <h4 className="text-lg font-bold mb-6 text-foreground">Company</h4>
               <div className="space-y-3">
                 <Link 
+                  to="/ooh"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
+                >
+                  OOH Environments Hub
+                </Link>
+                <Link 
                   to="/what-is-media-buying-in-london"
                   className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
                 >
