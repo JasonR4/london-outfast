@@ -179,24 +179,53 @@ export const useQuotes = () => {
         return currentQuote.id;
       }
 
+      console.log('🔍 No current quote found, creating new one...');
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('👤 Current user:', user?.email || 'anonymous');
+
+      const quoteData: any = {
+        user_session_id: sessionId,
+        status: 'draft'
+      };
+
+      // If user is authenticated, include user_id
+      if (user) {
+        quoteData.user_id = user.id;
+      }
+
+      console.log('💾 Creating quote with data:', quoteData);
+
       const { data, error } = await supabase
         .from('quotes')
-        .insert({
-          user_session_id: sessionId,
-          status: 'draft'
-        })
+        .insert(quoteData)
         .select()
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database error creating quote:', error);
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      if (!data) {
+        throw new Error('No data returned from quote creation');
+      }
+
+      console.log('✅ Created new quote:', data);
 
       const newQuote = { ...data, quote_items: [] };
       setCurrentQuote(newQuote);
       return data.id;
     } catch (err: any) {
-      console.error('Error creating quote:', err);
+      console.error('💥 Error creating quote:', err);
       setError(err.message);
-      toast.error('Failed to create quote');
+      
+      // More specific error message
+      const errorMessage = err.message.includes('Load failed')
+        ? 'Network connection error - please check your internet and try again'
+        : `Unable to create quote: ${err.message}`;
+        
+      toast.error(errorMessage);
       return null;
     }
   };
@@ -206,10 +235,13 @@ export const useQuotes = () => {
     try {
       console.log('🎯 addQuoteItem called with:', item);
       
+      // First try to fetch/restore current quote
+      await fetchCurrentQuote();
+      
       const quoteId = await createOrGetQuote();
       if (!quoteId) {
         console.error('❌ Failed to get quote ID');
-        return false;
+        throw new Error('Unable to create or access quote. Please try refreshing the page.');
       }
       
       console.log('✅ Got quote ID:', quoteId);
@@ -236,7 +268,7 @@ export const useQuotes = () => {
 
       if (error) {
         console.error('❌ Error inserting quote item:', error);
-        throw error;
+        throw new Error(`Failed to save item: ${error.message}`);
       }
       
       console.log('✅ Quote item inserted successfully:', data);
@@ -261,7 +293,13 @@ export const useQuotes = () => {
     } catch (err: any) {
       console.error('💥 Error adding quote item:', err);
       setError(err.message);
-      toast.error('Failed to add to plan: ' + err.message);
+      
+      // Provide more specific error messages
+      const errorMessage = err.message.includes('Load failed') 
+        ? 'Network error - please check your connection and try again'
+        : err.message || 'Failed to add item to plan';
+        
+      toast.error(errorMessage);
       return false;
     }
   };

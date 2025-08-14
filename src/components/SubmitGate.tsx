@@ -212,8 +212,11 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
     try {
       // Keep their draft session so we can link it post-login
       const sid = getCurrentQuoteSessionId();
-      if (sid) localStorage.setItem('quote_session_id_pre_auth', sid);
-      nav('/auth?next=/client-portal');
+      if (sid) {
+        console.log('🔄 Storing session ID for post-auth linking:', sid);
+        localStorage.setItem('quote_session_id_pre_auth', sid);
+      }
+      nav('/auth?next=/configurator'); // Go back to configurator after login
     } finally {
       setLoading(false);
     }
