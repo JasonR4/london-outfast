@@ -51,6 +51,7 @@ import RoadsideAdvertising from "./pages/RoadsideAdvertising";
 import BusAdvertising from "./pages/BusAdvertising";
 import DigitalOOH from "./pages/DigitalOOH";
 import LondonUndergroundAdvertising from "./pages/LondonUndergroundAdvertising";
+import RailAdvertisingLondon from "./pages/RailAdvertisingLondon";
 
 const queryClient = new QueryClient();
 
@@ -119,6 +120,7 @@ const App = () => {
               <Route path="/ooh/bus-advertising" element={<BusAdvertising />} />
               <Route path="/ooh/digital-ooh" element={<DigitalOOH />} />
               <Route path="/ooh/london-underground" element={<LondonUndergroundAdvertising />} />
+              <Route path="/ooh/rail-advertising-london" element={<RailAdvertisingLondon />} />
               <Route path="/london-ooh-specialists" element={<LondonOOHSpecialists />} />
               <Route path="/ooh-advertising-london" element={<OOHAdvertisingLondon />} />
               <Route path="/sitemap" element={<HtmlSitemap />} />
