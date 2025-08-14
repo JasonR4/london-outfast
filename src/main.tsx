@@ -1,9 +1,9 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-// Test HubSpot connection immediately on app load
-import('./utils/testHubSpotConnection.ts').then(() => {
-  console.log('🔍 HubSpot connection test initiated!');
-}).catch(console.error);
+// MANUAL HUBSPOT TEST - EXECUTING NOW
+import('./utils/manualHubSpotTest.ts').then(() => {
+  console.log('🚀 Manual HubSpot tests executed!');
+});
 
 createRoot(document.getElementById("root")!).render(<App />);
