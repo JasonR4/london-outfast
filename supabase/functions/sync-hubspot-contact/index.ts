@@ -125,7 +125,8 @@ async function createDealForContact(apiKey: string, contactId: string, dealName:
     const dealId = dealResult.id;
 
     // Associate deal with contact
-    await fetch(`https://api.hubapi.com/crm/v4/objects/deals/${dealId}/associations/contacts/${contactId}`, {
+    console.log(`Associating deal ${dealId} with contact ${contactId}`);
+    const associationResponse = await fetch(`https://api.hubapi.com/crm/v4/objects/deals/${dealId}/associations/contacts/${contactId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -133,6 +134,13 @@ async function createDealForContact(apiKey: string, contactId: string, dealName:
       },
       body: JSON.stringify([{ associationType: 'deal_to_contact' }])
     });
+
+    if (!associationResponse.ok) {
+      const associationError = await associationResponse.text();
+      console.error('Failed to associate deal with contact:', associationError);
+    } else {
+      console.log(`Successfully associated deal ${dealId} with contact ${contactId}`);
+    }
 
     // Create line items for quote items if provided
     if (quoteItems && quoteItems.length > 0) {
