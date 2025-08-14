@@ -100,6 +100,18 @@ serve(async (req) => {
       // Don't fail the whole submission if HubSpot sync fails
     }
 
+    // Log analytics data for client-side tracking
+    if (quoteData) {
+      console.log('📊 Analytics data available for tracking:', {
+        quoteId: quoteData.id || payload.quoteSessionId,
+        totalValue: quoteData.total_inc_vat || quoteData.total_cost || 0,
+        itemCount: quoteData.quote_items?.length || 0,
+        contactEmail: payload.contact.email,
+        contactCompany: payload.contact.company,
+        source: payload.source
+      });
+    }
+
     const response = {
       status: "ok",
       received: {

@@ -26,6 +26,7 @@ import { CreativeUpsellModal } from '@/components/CreativeUpsellModal';
 import { useCreativeCapacity } from '@/hooks/useCreativeCapacity';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
+import { trackQuoteItemAdded } from '@/utils/analytics';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -429,6 +430,23 @@ const FormatPage = () => {
     const success = await addQuoteItem(quoteItem);
     
     if (success) {
+      // Track analytics for quote item added
+      try {
+        trackQuoteItemAdded({
+          formatName: format.name,
+          quantity,
+          value: grandTotal
+        });
+        console.log('📊 Analytics: Quote item tracked from outdoor-media', {
+          formatName: format.name,
+          quantity,
+          value: grandTotal,
+          source: 'outdoor-media'
+        });
+      } catch (trackingError) {
+        console.error('📊 Analytics tracking error (non-blocking):', trackingError);
+      }
+      
       navigate('/quote-plan');
     }
   };
