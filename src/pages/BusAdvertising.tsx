@@ -146,38 +146,37 @@ const BusAdvertising = () => {
         <link rel="canonical" href={`${window.location.origin}/ooh/bus-advertising`} />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="min-h-screen bg-background">
         
         {/* Hero Section */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
+        <div className="relative overflow-hidden bg-black">
           <div className="relative max-w-7xl mx-auto px-6 py-24">
             <div className="text-center">
-              <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
+              <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium bg-red-600/20 text-red-400 border-red-600/30">
                 <Bus className="w-4 h-4 mr-2" />
                 London Bus Advertising
               </Badge>
               
-              <h1 className="text-4xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold mb-8 text-red-500 leading-tight">
                 Bus Advertising London
               </h1>
               
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-12 leading-relaxed">
-                With over <strong className="text-foreground">6.8 million daily public transport users</strong> and <strong className="text-foreground">8,600 buses</strong> operating on London's streets, bus advertising remains one of the most visible and versatile OOH formats in the capital. From mega rears dominating commuter traffic to full-length streetliners gliding through Oxford Street, bus ads offer unmatched reach, frequency, and city-wide coverage.
+              <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto mb-12 leading-relaxed">
+                With over <strong className="text-red-400">6.8 million daily public transport users</strong> and <strong className="text-red-400">8,600 buses</strong> operating on London's streets, bus advertising remains one of the most visible and versatile OOH formats in the capital. From mega rears dominating commuter traffic to full-length streetliners gliding through Oxford Street, bus ads offer unmatched reach, frequency, and city-wide coverage.
               </p>
 
-              <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-12">
+              <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-12">
                 At Media Buying London, we plan, price-check, and deliver bus campaigns using Experian Mosaic audience profiling, Route travel data, and real-time rate intelligence — so you get maximum impact at transparent, unmarked rates.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button asChild size="lg" className="px-8 py-6 text-lg">
+                <Button asChild size="lg" className="px-8 py-6 text-lg bg-red-600 hover:bg-red-700 text-white">
                   <Link to="/brief">
                     Start Your Bus Campaign
                     <ChevronRight className="w-5 h-5 ml-2" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="px-8 py-6 text-lg">
+                <Button asChild variant="outline" size="lg" className="px-8 py-6 text-lg border-red-600/50 text-red-400 hover:bg-red-600/10">
                   <Link to="/client-portal">
                     Access Client Portal
                   </Link>
