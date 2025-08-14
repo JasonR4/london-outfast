@@ -326,6 +326,10 @@ Deno.serve(async (req) => {
     EdgeRuntime.waitUntil((async () => {
       // HubSpot: use central sync function first, fallback to direct API (best-effort)
       try {
+        // Parse budget properly
+        const budgetString = String(body.budget_band || '').replace(/[£,\s]/g, '');
+        const totalCost = Math.max(10000, parseFloat(budgetString) || 50000); // Minimum £10k, default £50k
+        
         const syncPayload = {
           submissionType: 'brief_quote',
           firstName: body.firstname,
@@ -334,15 +338,16 @@ Deno.serve(async (req) => {
           phone: body.phone,
           website: body.website || '',
           company: body.company || '',
+          jobTitle: body.jobtitle || '',
           quoteDetails: {
             selectedFormats: body.formats || [],
             selectedLocations: body.target_areas || [],
             budgetRange: body.budget_band,
             campaignObjective: body.objective,
             timeline: body.start_month || '',
-            additionalDetails: `Creative: ${body.creative_status}${body.notes ? `\nNotes: ${body.notes}` : ''}`,
-            totalCost: Math.max(1000, parseFloat(String(body.budget_band).replace(/[£,\s]/g, '')) || 30000), // Extract numeric value from budget with minimum
-            formatName: (body.formats || []).join(', ') || 'OOH Brief',
+            additionalDetails: `Brief Request - Creative: ${body.creative_status}${body.notes ? `\nNotes: ${body.notes}` : ''}`,
+            totalCost: totalCost,
+            formatName: (body.formats || []).join(', ') || 'Brief Quote Request',
             itemCount: Math.max(1, (body.formats || []).length || 1)
           },
         }
