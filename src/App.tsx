@@ -41,6 +41,7 @@ import EmailTest from "./pages/EmailTest";
 import NoInspect from "@/components/security/NoInspect";
 import HtmlSitemap from "./pages/HtmlSitemap";
 import Brief from "./pages/Brief";
+import HowWeWork from "./pages/HowWeWork";
 import ThankYou from "./pages/ThankYou";
 import CorporateInvestment from "./pages/CorporateInvestment";
 import LondonOOHSpecialists from "./pages/LondonOOHSpecialists";
@@ -100,6 +101,7 @@ const App = () => {
               <Route path="/faqs" element={<FAQs />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/brief" element={<Brief />} />
+              <Route path="/how-we-work" element={<HowWeWork />} />
               <Route path="/thank-you" element={<ThankYou />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
