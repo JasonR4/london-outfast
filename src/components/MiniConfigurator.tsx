@@ -6,11 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CheckCircle2, MapPin, Calendar, Palette, Info, Trash2 } from "lucide-react";
 import { LocationSelector } from "@/components/LocationSelector";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatCurrency } from "@/utils/money";
-import { countPrintRuns } from "@/utils/periods";
+import { usePlanDraft } from '@/state/plan';
+import { formatCurrency } from '@/utils/money';
+import { getRateCard, type RateCardResponse } from '@/services/rateCard';
+import { countPrintRuns } from '@/lib/pricingMath';
 import { Skeleton } from "@/components/ui/skeleton";
-import { getRateCard, type RateCardResponse } from "@/services/rateCard";
-import { usePlanDraft } from "@/state/plan";
 
 interface MiniConfiguratorProps {
   format: {
@@ -93,15 +93,16 @@ export const MiniConfigurator = ({ format }: MiniConfiguratorProps) => {
     const productionRate = rateCardData.productionRatePerUnit || 0;
     const creativeRate = rateCardData.creativeUnit || 85;
     
-    // Volume discount: 10% for 3+ periods
+    // Volume discount: 10% for 3+ periods - consistent with all rate card calculations
     const qualifiesVolume = uniquePeriods.length >= 3;
-    const mediaCost = saleRate * inCharges;
+    const mediaCost = saleRate * quantity * uniquePeriods.length; // Rate per incharge × sites × periods
     const discountAmount = qualifiesVolume ? mediaCost * 0.10 : 0;
     const mediaAfterDiscount = mediaCost - discountAmount;
 
-    // Production cost (per period × site)
-    const periodsCount = uniquePeriods.length;
-    const productionCost = productionRate * quantity * periodsCount;
+    // Production cost (based on print runs, not periods - consistent with useRateCards)
+    const printRuns = countPrintRuns(selectedPeriods);
+    const productionUnits = quantity * printRuns;
+    const productionCost = productionRate * productionUnits;
 
     // Creative cost
     const creativeCost = creativeRate * creativeAssets;

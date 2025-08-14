@@ -344,11 +344,16 @@ export class MediaPlanGenerator {
         const discountMultiplier = 1 - (discount / 100);
         const finalRate = adjustedRate * discountMultiplier;
         
-        // Calculate how many units we can afford for media spend (70% of budget)
+        // Use standardized pricing calculation from pricingMath
         const mediaBudget = budget * 0.7;
         const costPerUnit = finalRate * periodsCount;
-        optimalQuantity = Math.max(1, Math.floor(mediaBudget / costPerUnit));
-        baseCost = costPerUnit * optimalQuantity;
+        
+        // Additional discount for 3+ periods if not already applied (consistent with other calculations)
+        const additionalDiscountMultiplier = periodsCount >= 3 && discount === 0 ? 0.9 : 1.0; // 10% discount
+        const discountedCostPerUnit = costPerUnit * additionalDiscountMultiplier;
+        
+        optimalQuantity = Math.max(1, Math.floor(mediaBudget / discountedCostPerUnit));
+        baseCost = discountedCostPerUnit * optimalQuantity;
       } else {
         // Fallback calculation if no rate cards
         baseCost = budget * 0.7;
@@ -431,18 +436,24 @@ export class MediaPlanGenerator {
     maxBudget: number
   ): Promise<number> {
     try {
+      // Import print runs calculation for consistency from standardized location
+      const { countPrintRuns } = await import('@/lib/pricingMath');
+      const selectedPeriods = this.getSelectedPeriodsFromAnswers();
+      const printRuns = countPrintRuns(selectedPeriods);
+      const productionUnits = quantity * printRuns;
+
       const { data: productionTiers } = await supabase
         .from('production_cost_tiers')
         .select('*')
         .eq('media_format_id', mediaFormatId)
         .eq('is_active', true)
-        .lte('min_quantity', quantity)
-        .or(`max_quantity.is.null,max_quantity.gte.${quantity}`)
+        .lte('min_quantity', productionUnits)
+        .or(`max_quantity.is.null,max_quantity.gte.${productionUnits}`)
         .order('cost_per_unit', { ascending: true })
         .limit(1);
 
       if (productionTiers && productionTiers.length > 0) {
-        const cost = productionTiers[0].cost_per_unit * quantity;
+        const cost = productionTiers[0].cost_per_unit * productionUnits;
         return Math.min(cost, maxBudget);
       }
 
