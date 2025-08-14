@@ -1,112 +1,116 @@
+// IMMEDIATE EXECUTION OF ALL HUBSPOT TESTS
 import { supabase } from '@/integrations/supabase/client';
 
-// Trigger HubSpot tests immediately
-async function triggerHubSpotTests() {
-  console.log('🚀 Starting HubSpot route tests...');
-  
-  // Test 1: Brief Route
-  console.log('📝 Testing Brief Route...');
-  try {
-    const { data: briefData, error: briefError } = await supabase.functions.invoke('submit-brief', {
-      body: {
-        firstname: 'Test',
-        lastname: 'Brief Route LIVE',
-        email: 'test.brief.live.now@example.com',
+console.log('🚀 EXECUTING ALL HUBSPOT TESTS NOW...');
+console.log('=====================================================');
+
+const timestamp = Date.now();
+
+// Test 1: Brief Route - Should create Contact + Deal + Task with [brief] prefix
+console.log('📝 Test 1: BRIEF SUBMISSION...');
+supabase.functions.invoke('submit-brief', {
+  body: {
+    firstname: 'John',
+    lastname: 'Smith',
+    email: `john.smith.${timestamp}@testcompany.com`,
+    phone: '+442045243019',
+    company: 'Brief Test Company',
+    website: 'https://brieftest.com',
+    jobtitle: 'Marketing Director',
+    budget_band: '£30,000+',
+    objective: 'Brand awareness campaign',
+    target_areas: ['Westminster', 'Camden', 'Islington'],
+    formats: ['48-sheet', '6-sheet', 'digital-48-sheet'],
+    start_month: '2025-03-01',
+    creative_status: 'Ready to proceed',
+    notes: `Test submission ${timestamp}: Brief route should create contact + deal + task`,
+    mbl: true,
+    source_path: `/brief?test=${timestamp}`
+  }
+}).then(({ data, error }) => {
+  console.log('📝 BRIEF RESULT:', error ? `❌ ERROR: ${error.message}` : `✅ SUCCESS: ${JSON.stringify(data)}`);
+});
+
+// Test 2: Format Pages Route - Should create Contact + Deal + Task with [outdoor-media] prefix
+setTimeout(() => {
+  console.log('🏢 Test 2: FORMAT PAGES (outdoor-media)...');
+  supabase.functions.invoke('submit-quote', {
+    body: {
+      quoteSessionId: `format-test-${timestamp}`,
+      contact: {
+        firstName: 'Jane',
+        lastName: 'Wilson',
+        email: `jane.wilson.${timestamp}@formattest.com`,
         phone: '+442045243019',
-        company: 'Test Company Brief LIVE',
-        website: 'https://test-brief-live.com',
-        jobtitle: 'Marketing Manager',
-        budget_band: '15000',
-        objective: 'Brand awareness',
-        target_areas: ['Westminster', 'Camden'],
-        formats: ['48-sheet', '6-sheet'],
-        start_month: '2025-03-01',
-        creative_status: 'Ready',
-        notes: 'LIVE TEST NOW: Brief route HubSpot integration - [brief] route',
-        mbl: true,
-        source_path: '/brief?test=live-now'
-      }
-    });
+        company: 'Format Pages Test Ltd',
+        website: 'https://formattest.com',
+        notes: `Test submission ${timestamp}: Format pages route should create contact + deal + task`
+      },
+      source: 'outdoor-media'
+    }
+  }).then(({ data, error }) => {
+    console.log('🏢 FORMAT PAGES RESULT:', error ? `❌ ERROR: ${error.message}` : `✅ SUCCESS: ${JSON.stringify(data)}`);
+  });
+}, 1000);
+
+// Test 3: Configurator Route - Should create Contact + Deal + Task with [configurator] prefix
+setTimeout(() => {
+  console.log('⚙️ Test 3: CONFIGURATOR...');
+  supabase.functions.invoke('submit-quote', {
+    body: {
+      quoteSessionId: `config-test-${timestamp}`,
+      contact: {
+        firstName: 'Mike',
+        lastName: 'Johnson',
+        email: `mike.johnson.${timestamp}@configtest.com`,
+        phone: '+442045243019',
+        company: 'Configurator Test Group',
+        website: 'https://configtest.com',
+        notes: `Test submission ${timestamp}: Configurator route should create contact + deal + task`
+      },
+      source: 'configurator'
+    }
+  }).then(({ data, error }) => {
+    console.log('⚙️ CONFIGURATOR RESULT:', error ? `❌ ERROR: ${error.message}` : `✅ SUCCESS: ${JSON.stringify(data)}`);
+  });
+}, 2000);
+
+// Test 4: Smart Quote Route - Should create Contact + Deal + Task with [smart-quote] prefix
+setTimeout(() => {
+  console.log('🧠 Test 4: SMART QUOTE...');
+  supabase.functions.invoke('submit-quote', {
+    body: {
+      quoteSessionId: `smart-test-${timestamp}`,
+      contact: {
+        firstName: 'Sarah',
+        lastName: 'Davis',
+        email: `sarah.davis.${timestamp}@smarttest.com`,
+        phone: '+442045243019',
+        company: 'Smart Quote Solutions',
+        website: 'https://smarttest.com',
+        notes: `Test submission ${timestamp}: Smart quote route should create contact + deal + task`
+      },
+      source: 'smart-quote'
+    }
+  }).then(({ data, error }) => {
+    console.log('🧠 SMART QUOTE RESULT:', error ? `❌ ERROR: ${error.message}` : `✅ SUCCESS: ${JSON.stringify(data)}`);
     
-    console.log('✅ Brief route result:', briefError ? briefError : briefData);
-  } catch (e) {
-    console.error('❌ Brief route error:', e);
-  }
+    // Final summary after all tests
+    setTimeout(() => {
+      console.log('=====================================================');
+      console.log('🎯 ALL 4 HUBSPOT TESTS COMPLETED!');
+      console.log('📊 EXPECTED RESULTS IN HUBSPOT:');
+      console.log('');
+      console.log('📝 BRIEF: John Smith + Deal "[brief] Brief Quote Request" + Task');
+      console.log('🏢 FORMAT: Jane Wilson + Deal "[outdoor-media] Format Quote" + Task');
+      console.log('⚙️ CONFIG: Mike Johnson + Deal "[configurator] Configurator Quote" + Task');
+      console.log('🧠 SMART: Sarah Davis + Deal "[smart-quote] General Quote" + Task');
+      console.log('');
+      console.log('💡 All tasks assigned to Matt @ r4advertising.agency');
+      console.log('🔍 Search HubSpot for timestamp:', timestamp);
+      console.log('=====================================================');
+    }, 1000);
+  });
+}, 3000);
 
-  // Test 2: Format Route (outdoor-media)
-  console.log('🏢 Testing Format Route...');
-  try {
-    const { data: formatData, error: formatError } = await supabase.functions.invoke('submit-quote', {
-      body: {
-        quoteSessionId: 'test-format-session-001',
-        contact: {
-          firstName: 'Test',
-          lastName: 'Format Route LIVE',
-          email: 'test.format.live.now@example.com',
-          phone: '+442045243019',
-          company: 'Test Company Format LIVE',
-          website: 'https://test-format-live.com',
-          notes: 'LIVE TEST NOW: Format route HubSpot integration - [outdoor-media] route'
-        },
-        source: 'outdoor-media'
-      }
-    });
-    
-    console.log('✅ Format route result:', formatError ? formatError : formatData);
-  } catch (e) {
-    console.error('❌ Format route error:', e);
-  }
-
-  // Test 3: Configurator Route
-  console.log('⚙️ Testing Configurator Route...');
-  try {
-    const { data: configData, error: configError } = await supabase.functions.invoke('submit-quote', {
-      body: {
-        quoteSessionId: 'test-config-session-002',
-        contact: {
-          firstName: 'Test',
-          lastName: 'Configurator Route LIVE',
-          email: 'test.config.live.now@example.com',
-          phone: '+442045243019',
-          company: 'Test Company Configurator LIVE',
-          website: 'https://test-config-live.com',
-          notes: 'LIVE TEST NOW: Configurator route HubSpot integration - [configurator] route'
-        },
-        source: 'configurator'
-      }
-    });
-    
-    console.log('✅ Configurator route result:', configError ? configError : configData);
-  } catch (e) {
-    console.error('❌ Configurator route error:', e);
-  }
-
-  // Test 4: Smart Quote Route
-  console.log('🧠 Testing Smart Quote Route...');
-  try {
-    const { data: smartData, error: smartError } = await supabase.functions.invoke('submit-quote', {
-      body: {
-        quoteSessionId: 'test-smart-session-003',
-        contact: {
-          firstName: 'Test',
-          lastName: 'Smart Quote Route LIVE',
-          email: 'test.smart.live.now@example.com',
-          phone: '+442045243019',
-          company: 'Test Company Smart Quote LIVE',
-          website: 'https://test-smart-live.com',
-          notes: 'LIVE TEST NOW: Smart quote route HubSpot integration - [smart-quote] route'
-        },
-        source: 'smart-quote'
-      }
-    });
-    
-    console.log('✅ Smart quote route result:', smartError ? smartError : smartData);
-  } catch (e) {
-    console.error('❌ Smart quote route error:', e);
-  }
-
-  console.log('🎯 All HubSpot route tests completed!');
-}
-
-// Execute the tests
-triggerHubSpotTests();
+console.log(`🔍 Test timestamp: ${timestamp}`);
