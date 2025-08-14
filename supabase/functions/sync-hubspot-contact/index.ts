@@ -89,7 +89,7 @@ async function createTaskForContact(apiKey: string, contactId: string, subject: 
   }
 }
 
-async function createDealForContact(apiKey: string, contactId: string, dealName: string, amount: number, pipelineStage = "appointmentscheduled"): Promise<string | null> {
+async function createDealForContact(apiKey: string, contactId: string, dealName: string, amount: number, pipelineStage = "appointmentscheduled", dealContext?: string, quoteItems?: any[]): Promise<string | null> {
   try {
     const dealProps: any = {
       dealname: dealName,
@@ -98,6 +98,11 @@ async function createDealForContact(apiKey: string, contactId: string, dealName:
       hubspot_owner_id: await getOwnerIdByEmail(apiKey, 'shane@r4advertising.agency') || undefined,
       closedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 days
     };
+
+    // Add context as description if provided
+    if (dealContext) {
+      dealProps.description = dealContext;
+    }
 
     const dealResponse = await fetch('https://api.hubapi.com/crm/v3/objects/deals', {
       method: 'POST',
@@ -129,11 +134,85 @@ async function createDealForContact(apiKey: string, contactId: string, dealName:
       body: JSON.stringify([{ associationType: 'deal_to_contact' }])
     });
 
+    // Create line items for quote items if provided
+    if (quoteItems && quoteItems.length > 0) {
+      await createLineItemsForDeal(apiKey, dealId, quoteItems);
+    }
+
     console.log(`Created HubSpot deal: ${dealId} with amount: £${amount}`);
     return dealId;
   } catch (error) {
     console.error('Error creating HubSpot deal:', error);
     return null;
+  }
+}
+
+async function createLineItemsForDeal(apiKey: string, dealId: string, quoteItems: any[]) {
+  try {
+    for (const item of quoteItems) {
+      // Create product first (if it doesn't exist)
+      const productResponse = await fetch('https://api.hubapi.com/crm/v3/objects/products', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          properties: {
+            name: item.formatName || 'OOH Media Format',
+            description: `${item.formatName} - ${item.selectedAreas?.join(', ') || 'Various locations'}`,
+            price: Math.round((item.totalCost || 0) * 100), // Convert to cents
+          }
+        }),
+      });
+
+      let productId;
+      if (productResponse.ok) {
+        const productResult = await productResponse.json();
+        productId = productResult.id;
+      } else {
+        // If product creation fails, skip line item creation for this item
+        console.error('Failed to create product for line item:', await productResponse.text());
+        continue;
+      }
+
+      // Create line item
+      const lineItemResponse = await fetch('https://api.hubapi.com/crm/v3/objects/line_items', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          properties: {
+            name: item.formatName || 'OOH Media Format',
+            price: Math.round((item.totalCost || 0) * 100), // Convert to cents
+            quantity: item.quantity || 1,
+            hs_product_id: productId,
+          }
+        }),
+      });
+
+      if (lineItemResponse.ok) {
+        const lineItemResult = await lineItemResponse.json();
+        
+        // Associate line item with deal
+        await fetch(`https://api.hubapi.com/crm/v4/objects/line_items/${lineItemResult.id}/associations/deals/${dealId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify([{ associationType: 'line_item_to_deal' }])
+        });
+        
+        console.log(`Created line item: ${lineItemResult.id} for deal: ${dealId}`);
+      } else {
+        console.error('Failed to create line item:', await lineItemResponse.text());
+      }
+    }
+  } catch (error) {
+    console.error('Error creating line items for deal:', error);
   }
 }
 
@@ -495,11 +574,23 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
               console.log('Contact updated - checking for deal creation. totalCost:', formData.quoteDetails.totalCost);
               if (formData.quoteDetails.totalCost && formData.quoteDetails.totalCost > 0) {
                 console.log('Creating deal for updated contact with amount:', formData.quoteDetails.totalCost);
+                
+                // Prepare quote items for line items
+                const quoteItems = [{
+                  formatName: formData.quoteDetails.formatName,
+                  selectedAreas: formData.quoteDetails.selectedLocations,
+                  totalCost: formData.quoteDetails.totalCost,
+                  quantity: formData.quoteDetails.itemCount || 1
+                }];
+                
                 await createDealForContact(
                   hubspotApiKey, 
                   result.id, 
                   quoteTitle, 
-                  formData.quoteDetails.totalCost
+                  formData.quoteDetails.totalCost,
+                  "appointmentscheduled",
+                  quoteNotes,
+                  quoteItems
                 );
               } else {
                 console.log('No deal created - totalCost not available or zero');
@@ -529,11 +620,23 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
     console.log('New contact created - checking for deal creation. totalCost:', formData.quoteDetails.totalCost);
     if (formData.quoteDetails.totalCost && formData.quoteDetails.totalCost > 0) {
       console.log('Creating deal for new contact with amount:', formData.quoteDetails.totalCost);
+      
+      // Prepare quote items for line items
+      const quoteItems = [{
+        formatName: formData.quoteDetails.formatName,
+        selectedAreas: formData.quoteDetails.selectedLocations,
+        totalCost: formData.quoteDetails.totalCost,
+        quantity: formData.quoteDetails.itemCount || 1
+      }];
+      
       await createDealForContact(
         hubspotApiKey, 
         result.id, 
         quoteTitle, 
-        formData.quoteDetails.totalCost
+        formData.quoteDetails.totalCost,
+        "appointmentscheduled",
+        quoteNotes,
+        quoteItems
       );
     } else {
       console.log('No deal created - totalCost not available or zero');
