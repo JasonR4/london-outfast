@@ -62,6 +62,7 @@ import StadiumAdvertising from "./pages/StadiumAdvertising";
 import CityPosters from "./pages/CityPosters";
 import StreetFurniture from "./pages/StreetFurniture";
 import ProjectionMappingAdvertising from "./pages/ProjectionMappingAdvertising";
+import ExperientialSampling from "./pages/ExperientialSampling";
 
 const queryClient = new QueryClient();
 
@@ -136,6 +137,7 @@ const App = () => {
               <Route path="/ooh/city-posters-london" element={<CityPosters />} />
               <Route path="/ooh/street-furniture" element={<StreetFurniture />} />
               <Route path="/ooh/projection-mapping-advertising" element={<ProjectionMappingAdvertising />} />
+              <Route path="/ooh/experiential-sampling-london" element={<ExperientialSampling />} />
               <Route path="/ooh/roadside-billboards" element={<RoadsideAdvertising />} />
               <Route path="/ooh/bus-advertising" element={<BusAdvertising />} />
               <Route path="/ooh/digital-ooh" element={<DigitalOOH />} />
