@@ -26,17 +26,31 @@
   
   <url>
     <loc>https://mediabuyinglondon.co.uk/outdoor-media</loc>
-    <lastmod>2025-08-13</lastmod>
+    <lastmod>2025-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   
-  <!-- NEW: London OOH Specialists page -->
   <url>
-    <loc>https://mediabuyinglondon.co.uk/london-ooh-specialists</loc>
-    <lastmod>2025-08-13</lastmod>
+    <loc>https://mediabuyinglondon.co.uk/ooh</loc>
+    <lastmod>2025-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+  </url>
+  
+  <!-- OOH Specialist Pages -->
+  <url>
+    <loc>https://mediabuyinglondon.co.uk/london-ooh-specialists</loc>
+    <lastmod>2025-08-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://mediabuyinglondon.co.uk/ooh-advertising-london</loc>
+    <lastmod>2025-08-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   
   <!-- Main Service Pages -->
