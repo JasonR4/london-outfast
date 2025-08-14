@@ -251,27 +251,6 @@ const ShoppingMallAdvertising = () => {
           </div>
         </section>
 
-        {/* Internal Links */}
-        <section className="py-12 bg-background">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <h3 className="text-xl font-semibold text-foreground mb-6">Related Services</h3>
-              <div className="flex flex-wrap gap-4">
-                <Button variant="link" className="text-primary p-0 h-auto">
-                  Retail & Shopping Mall Advertising London
-                </Button>
-                <span className="text-muted-foreground">•</span>
-                <Button variant="link" className="text-primary p-0 h-auto">
-                  Digital OOH London
-                </Button>
-                <span className="text-muted-foreground">•</span>
-                <Button variant="link" className="text-primary p-0 h-auto">
-                  Experiential & Sampling Advertising London
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* FAQs */}
         <section className="py-16 bg-muted/50">
