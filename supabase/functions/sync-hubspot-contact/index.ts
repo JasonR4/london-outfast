@@ -242,7 +242,7 @@ interface QuoteFormData {
   phone?: string;
   website?: string;
   company?: string;
-  submissionType: 'format_quote' | 'configurator_quote' | 'general_quote';
+  submissionType: 'format_quote' | 'configurator_quote' | 'general_quote' | 'brief_quote';
   quoteDetails: {
     selectedFormats?: string[];
     selectedLocations?: string[];
@@ -489,7 +489,7 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
         break;
         
       case 'general_quote':
-        quoteTitle = "[smart-quote] General Quote Request - OOH MBL";
+        quoteTitle = "[brief] Brief Quote Request - OOH MBL";
         quoteNotes = `General Quote Request - OOH MBL
 
 Selected Formats (${formData.quoteDetails.selectedFormats?.length || 0}):
@@ -508,6 +508,28 @@ ${formData.quoteDetails.additionalDetails || 'None provided'}
 
 Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`;
         taskSubject = `Work on brief: ${formData.company || formData.firstName} — General Quote`;
+        taskBody = quoteNotes;
+        break;
+        
+      case 'brief_quote':
+        quoteTitle = "[brief] Brief Quote Request - OOH MBL";
+        quoteNotes = `Brief Quote Request - OOH MBL
+
+Selected Formats (${formData.quoteDetails.selectedFormats?.length || 0}):
+${formData.quoteDetails.selectedFormats?.map(format => `• ${format}`).join('\n') || 'No formats selected'}
+
+Campaign Information:
+• Budget Range: ${formData.quoteDetails.budgetRange || 'Not specified'}
+• Objective: ${formData.quoteDetails.campaignObjective || 'Not specified'}
+• Timeline: ${formData.quoteDetails.timeline || 'Not specified'}
+
+${formData.quoteDetails.selectedLocations?.length ? `Target Locations: ${formData.quoteDetails.selectedLocations.join(', ')}` : ''}
+
+Additional Details:
+${formData.quoteDetails.additionalDetails || 'None provided'}
+
+Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`;
+        taskSubject = `Work on brief: ${formData.company || formData.firstName} — Brief Request`;
         taskBody = quoteNotes;
         break;
     }

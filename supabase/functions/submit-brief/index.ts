@@ -327,7 +327,7 @@ Deno.serve(async (req) => {
       // HubSpot: use central sync function first, fallback to direct API (best-effort)
       try {
         const syncPayload = {
-          submissionType: 'general_quote',
+          submissionType: 'brief_quote',
           firstName: body.firstname,
           lastName: body.lastname,
           email: body.email,
@@ -341,6 +341,9 @@ Deno.serve(async (req) => {
             campaignObjective: body.objective,
             timeline: body.start_month || '',
             additionalDetails: `Creative: ${body.creative_status}${body.notes ? `\nNotes: ${body.notes}` : ''}`,
+            totalCost: parseFloat(String(body.budget_band).replace(/[^\d.]/g, '')) || 0, // Extract numeric value from budget
+            formatName: (body.formats || []).join(', '),
+            itemCount: (body.formats || []).length
           },
         }
         const syncRes = await supabase.functions.invoke('sync-hubspot-contact', { body: syncPayload })
