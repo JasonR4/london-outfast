@@ -449,7 +449,7 @@ const handleQuoteSubmission = async (formData: QuoteFormData, hubspotApiKey: str
     
     switch (formData.submissionType) {
       case 'format_quote':
-        quoteTitle = `Format Quote - OOH MBL - ${formData.quoteDetails.formatName || 'Custom Format'}`;
+        quoteTitle = `[outdoor-media] Format Quote - OOH MBL - ${formData.quoteDetails.formatName || 'Custom Format'}`;
         quoteNotes = `Format Page Quote - OOH MBL
 
 Format: ${formData.quoteDetails.formatName || 'Custom Format'}
@@ -466,7 +466,7 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
         break;
         
       case 'configurator_quote':
-        quoteTitle = "Configurator Quote - OOH MBL";
+        quoteTitle = "[configurator] Configurator Quote - OOH MBL";
         quoteNotes = `Configurator Quote - OOH MBL
 
 Recommended Formats (${formData.quoteDetails.selectedFormats?.length || 0}):
@@ -489,7 +489,7 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
         break;
         
       case 'general_quote':
-        quoteTitle = "General Quote Request - OOH MBL";
+        quoteTitle = "[smart-quote] General Quote Request - OOH MBL";
         quoteNotes = `General Quote Request - OOH MBL
 
 Selected Formats (${formData.quoteDetails.selectedFormats?.length || 0}):
