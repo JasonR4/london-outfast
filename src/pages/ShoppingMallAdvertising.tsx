@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -231,14 +232,20 @@ const ShoppingMallAdvertising = () => {
               Search formats, configure your campaign, and get real-time pricing.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                Search Formats <ArrowRight className="ml-2 h-5 w-5" />
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
+                <Link to="/brief">
+                  Search Formats <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
               </Button>
-              <Button size="lg" variant="outline">
-                Configure
+              <Button size="lg" variant="outline" asChild>
+                <Link to="/brief">
+                  Configure
+                </Link>
               </Button>
-              <Button size="lg" variant="outline">
-                Pricing
+              <Button size="lg" variant="outline" asChild>
+                <Link to="/brief">
+                  Pricing
+                </Link>
               </Button>
             </div>
           </div>
