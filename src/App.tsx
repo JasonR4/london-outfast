@@ -118,8 +118,8 @@ const App = () => {
               <Route path="/cms" element={<ProtectedRoute><CMS /></ProtectedRoute>} />
               <Route path="/corporate-investment" element={<CorporateInvestment />} />
               <Route path="/ooh" element={<OOHHub />} />
-              <Route path="/taxi-advertising" element={<TaxiAdvertising />} />
-              <Route path="/airport-advertising" element={<AirportAdvertising />} />
+              <Route path="/ooh/taxi-advertising" element={<TaxiAdvertising />} />
+              <Route path="/ooh/airport-advertising" element={<AirportAdvertising />} />
               <Route path="/ooh/roadside-billboards" element={<RoadsideAdvertising />} />
               <Route path="/ooh/bus-advertising" element={<BusAdvertising />} />
               <Route path="/ooh/digital-ooh" element={<DigitalOOH />} />

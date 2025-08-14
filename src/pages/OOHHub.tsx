@@ -100,13 +100,13 @@ const OOHHub = () => {
     },
     {
       title: "Taxi Advertising",
-      slug: "taxi-advertising",
+      slug: "ooh/taxi-advertising",
       description: "Full liveries, supersides, and tip-seat ads for premium urban reach.",
       icon: Car
     },
     {
       title: "Airport Advertising",
-      slug: "airport-advertising",
+      slug: "ooh/airport-advertising",
       description: "Target high-value travellers in terminals, baggage halls, and walkways.",
       icon: Plane
     },
