@@ -72,17 +72,29 @@ export const trackQuoteSubmission = (quoteData: {
         transaction_id: quoteData.quoteId
       });
 
-      // Track as purchase for ecommerce revenue tracking
+      // Track as purchase for ecommerce revenue tracking (GA4 Enhanced Ecommerce)
       window.gtag('event', 'purchase', {
         transaction_id: quoteData.quoteId,
         value: quoteData.totalValue,
         currency: 'GBP',
+        coupon: '',
+        shipping: 0,
+        tax: quoteData.totalValue * 0.2, // 20% VAT
         items: [{
           item_id: 'quote_submission',
-          item_name: 'Quote Submission',
-          quantity: 1,
-          price: quoteData.totalValue
+          item_name: 'OOH Quote Submission',
+          category: 'Quote',
+          quantity: quoteData.itemCount || 1,
+          price: quoteData.totalValue / (quoteData.itemCount || 1)
         }]
+      });
+
+      // Also send as a custom conversion for Google Ads 
+      window.gtag('event', 'conversion', {
+        send_to: 'G-FNYQ5VFL2F/quote_submission',
+        value: quoteData.totalValue,
+        currency: 'GBP',
+        transaction_id: quoteData.quoteId
       });
 
       console.log('📊 Analytics: Quote submission tracked as lead', quoteData);

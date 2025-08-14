@@ -24,7 +24,11 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-FNYQ5VFL2F');
+      gtag('config', 'G-FNYQ5VFL2F', {
+        enhanced_ecommerce: true,
+        custom_map: {'custom_parameter_1': 'quote_value'},
+        allow_enhanced_conversions: true
+      });
     </script>
     
     <!-- SEO Meta Tags -->
