@@ -89,6 +89,54 @@ async function createTaskForContact(apiKey: string, contactId: string, subject: 
   }
 }
 
+async function createDealForContact(apiKey: string, contactId: string, dealName: string, amount: number, pipelineStage = "appointmentscheduled"): Promise<string | null> {
+  try {
+    const dealProps: any = {
+      dealname: dealName,
+      amount: Math.round(amount), // HubSpot expects integers for amount in cents
+      dealstage: pipelineStage,
+      hubspot_owner_id: await getOwnerIdByEmail(apiKey, 'shane@r4advertising.agency') || undefined,
+      closedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 days
+    };
+
+    const dealResponse = await fetch('https://api.hubapi.com/crm/v3/objects/deals', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        properties: dealProps
+      }),
+    });
+
+    if (!dealResponse.ok) {
+      const errorText = await dealResponse.text();
+      console.error('HubSpot deal creation failed:', errorText);
+      return null;
+    }
+
+    const dealResult = await dealResponse.json();
+    const dealId = dealResult.id;
+
+    // Associate deal with contact
+    await fetch(`https://api.hubapi.com/crm/v4/objects/deals/${dealId}/associations/contacts/${contactId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify([{ associationType: 'deal_to_contact' }])
+    });
+
+    console.log(`Created HubSpot deal: ${dealId} with amount: £${amount}`);
+    return dealId;
+  } catch (error) {
+    console.error('Error creating HubSpot deal:', error);
+    return null;
+  }
+}
+
 interface ContactFormData {
   firstName: string;
   lastName: string;
@@ -432,6 +480,17 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
 
             if (updateResponse.ok) {
               const result = await updateResponse.json();
+              
+              // Create deal if totalCost is available
+              if (formData.quoteDetails.totalCost && formData.quoteDetails.totalCost > 0) {
+                await createDealForContact(
+                  hubspotApiKey, 
+                  result.id, 
+                  quoteTitle, 
+                  formData.quoteDetails.totalCost
+                );
+              }
+              
               // Create task for Shane
               await createTaskForContact(hubspotApiKey, result.id, taskSubject, taskBody);
               return new Response(JSON.stringify({ 
@@ -451,6 +510,17 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
 
     const result = await hubspotResponse.json();
     console.log("Quote synced to HubSpot:", result.id);
+    
+    // Create deal if totalCost is available
+    if (formData.quoteDetails.totalCost && formData.quoteDetails.totalCost > 0) {
+      await createDealForContact(
+        hubspotApiKey, 
+        result.id, 
+        quoteTitle, 
+        formData.quoteDetails.totalCost
+      );
+    }
+    
     // Create task for Shane
     await createTaskForContact(hubspotApiKey, result.id, taskSubject, taskBody);
 
