@@ -661,13 +661,16 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
               if (formData.quoteDetails.totalCost && formData.quoteDetails.totalCost > 0) {
                 console.log('Creating deal for updated contact with amount:', formData.quoteDetails.totalCost);
                 
-                // Prepare quote items for line items
+                // CRITICAL: Prepare quote items properly for line items
+                console.log('🔧 DEBUG: Creating quote items from formData:', formData.quoteDetails);
                 const quoteItems = [{
-                  formatName: formData.quoteDetails.formatName,
-                  selectedAreas: formData.quoteDetails.selectedLocations,
-                  totalCost: formData.quoteDetails.totalCost,
-                  quantity: formData.quoteDetails.itemCount || 1
+                  formatName: formData.quoteDetails.formatName || '48-Sheet Billboard',
+                  selectedAreas: formData.quoteDetails.selectedLocations || ['London'],
+                  totalCost: formData.quoteDetails.totalCost || 0,
+                  quantity: formData.quoteDetails.itemCount || 1,
+                  description: `${formData.quoteDetails.formatName} - ${formData.quoteDetails.selectedLocations?.join(', ') || 'Various locations'}`
                 }];
+                console.log('🔧 DEBUG: Quote items prepared for line item creation:', quoteItems);
                 
                 await createDealForContact(
                   hubspotApiKey, 
