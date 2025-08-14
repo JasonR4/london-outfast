@@ -10,8 +10,8 @@ const timestamp = Date.now();
 console.log('📝 Testing Route 1: BRIEF SUBMISSION...');
 supabase.functions.invoke('submit-brief', {
   body: {
-    firstname: 'Route Test',
-    lastname: 'Brief Complete',
+    firstname: 'John',
+    lastname: 'Smith',
     email: `route.test.brief.${timestamp}@example.com`,
     phone: '+442045243019',
     company: 'Brief Route Test Company',
@@ -38,8 +38,8 @@ setTimeout(() => {
     body: {
       quoteSessionId: 'test-format-session-001',
       contact: {
-        firstName: 'Route Test',
-        lastName: 'Format Pages',
+        firstName: 'Jane',
+        lastName: 'Wilson',
         email: `route.test.format.${timestamp}@example.com`,
         phone: '+442045243019',
         company: 'Format Pages Test Company',
@@ -60,8 +60,8 @@ setTimeout(() => {
     body: {
       quoteSessionId: 'test-config-session-002',
       contact: {
-        firstName: 'Route Test',
-        lastName: 'Configurator',
+        firstName: 'Mike',
+        lastName: 'Johnson',
         email: `route.test.config.${timestamp}@example.com`,
         phone: '+442045243019',
         company: 'Configurator Test Company',
@@ -82,8 +82,8 @@ setTimeout(() => {
     body: {
       quoteSessionId: 'test-smart-session-003',
       contact: {
-        firstName: 'Route Test',
-        lastName: 'Smart Quote',
+        firstName: 'Sarah',
+        lastName: 'Davis',
         email: `route.test.smart.${timestamp}@example.com`,
         phone: '+442045243019',
         company: 'Smart Quote Test Company',
@@ -100,7 +100,7 @@ setTimeout(() => {
       console.log('=====================================================');
       console.log('🎯 ALL 4 ROUTE TESTS COMPLETED!');
       console.log('📊 EXPECTED RESULTS IN HUBSPOT:');
-      console.log('   📝 Brief: Contact + Task (no deal)');
+      console.log('   📝 Brief: Contact + Deal + Task with [brief] prefix');
       console.log('   🏢 Format: Contact + Deal + Task with [outdoor-media] prefix');
       console.log('   ⚙️ Config: Contact + Deal + Task with [configurator] prefix');
       console.log('   🧠 Smart: Contact + Deal + Task with [smart-quote] prefix');

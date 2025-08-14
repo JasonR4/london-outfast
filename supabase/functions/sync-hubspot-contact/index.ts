@@ -548,15 +548,8 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
     if (formData.website) { contactProperties.website = formData.website; }
     if (formData.company) { contactProperties.company = formData.company; }
     
-    // Add event revenue if totalCost is available (like GA4 tracking)
+    // Remove the problematic revenue properties that don't exist in HubSpot
     console.log('Checking totalCost for deal creation:', formData.quoteDetails.totalCost);
-    if (formData.quoteDetails.totalCost && formData.quoteDetails.totalCost > 0) {
-      console.log('Adding revenue properties:', formData.quoteDetails.totalCost);
-      contactProperties.total_revenue = formData.quoteDetails.totalCost;
-      contactProperties.last_deal_amount = formData.quoteDetails.totalCost;
-    } else {
-      console.log('No totalCost available for deal creation');
-    }
 
     // Create or update contact in HubSpot
     const hubspotResponse = await fetch(
