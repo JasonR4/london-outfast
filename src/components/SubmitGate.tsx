@@ -20,7 +20,7 @@ const panel =
 
 export const SubmitGate: React.FC<Props> = ({ source, className }) => {
   const nav = useNavigate();
-  const { submitQuote: submitQuoteDb } = useQuotes();
+  const { submitQuote: submitQuoteDb, currentQuote } = useQuotes();
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'guest' | 'signin' | 'authed'>('guest');
   const [toastShown, setToastShown] = useState(false);
@@ -97,8 +97,10 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
       if (result && quoteSessionId) {
         try {
           trackPlanSubmitted(quoteSessionId, {
-            plan_value: 0, // Will be populated by backend analytics
-            formats_count: 0,
+            plan_value: currentQuote?.total_cost || 0,
+            formats_count: currentQuote?.quote_items?.length || 0,
+            sites_selected: currentQuote?.quote_items?.reduce((total, item) => total + item.selected_areas.length, 0) || 0,
+            periods_count: currentQuote?.quote_items?.reduce((total, item) => total + item.selected_periods.length, 0) || 0,
             location: "London"
           });
         } catch {}
@@ -144,8 +146,10 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
       if (result && quoteSessionId) {
         try {
           trackPlanSubmitted(quoteSessionId, {
-            plan_value: 0, // Will be populated by backend analytics
-            formats_count: 0,
+            plan_value: currentQuote?.total_cost || 0,
+            formats_count: currentQuote?.quote_items?.length || 0,
+            sites_selected: currentQuote?.quote_items?.reduce((total, item) => total + item.selected_areas.length, 0) || 0,
+            periods_count: currentQuote?.quote_items?.reduce((total, item) => total + item.selected_periods.length, 0) || 0,
             location: "London"
           });
         } catch {}
