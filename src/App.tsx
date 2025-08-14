@@ -56,6 +56,7 @@ import TaxiAdvertising from "./pages/TaxiAdvertising";
 import AirportAdvertising from "./pages/AirportAdvertising";
 import BikeHireDockAdvertising from "./pages/BikeHireDockAdvertising";
 import LampPostBannerAdvertising from "./pages/LampPostBannerAdvertising";
+import ShoppingMallAdvertising from "./pages/ShoppingMallAdvertising";
 
 const queryClient = new QueryClient();
 
@@ -124,6 +125,7 @@ const App = () => {
               <Route path="/ooh/airport-advertising" element={<AirportAdvertising />} />
               <Route path="/ooh/bike-hire-dock-advertising" element={<BikeHireDockAdvertising />} />
               <Route path="/ooh/lamp-post-banner-advertising" element={<LampPostBannerAdvertising />} />
+              <Route path="/ooh/shopping-mall-advertising" element={<ShoppingMallAdvertising />} />
               <Route path="/ooh/roadside-billboards" element={<RoadsideAdvertising />} />
               <Route path="/ooh/bus-advertising" element={<BusAdvertising />} />
               <Route path="/ooh/digital-ooh" element={<DigitalOOH />} />
