@@ -17,6 +17,7 @@ const HtmlSitemap = () => {
     { path: "/configurator", label: "OOH Configurator" },
     { path: "/outdoor-media", label: "Formats Directory" },
     { path: "/industries", label: "Industries" },
+    { path: "/how-we-work", label: "How We Work" },
     { path: "/about", label: "About" },
     { path: "/faqs", label: "FAQs" },
     { path: "/contact", label: "Contact" },
