@@ -490,7 +490,7 @@ export const useQuotes = () => {
           website: contactDetails.website,
           notes: contactDetails.additional_requirements
         },
-        source: 'outdoor-media' as const
+        source: 'smart-quote' as const
       };
 
       console.log('📤 Calling submit-quote edge function with:', submitPayload);
