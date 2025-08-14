@@ -22,6 +22,7 @@ const RateCardManager = lazy(() => import('@/components/cms/RateCardManager').th
 const QuoteManager = lazy(() => import('@/components/cms/QuoteManager').then(m => ({ default: m.QuoteManager })));
 const BlogManager = lazy(() => import('@/components/cms/BlogManager').then(m => ({ default: m.BlogManager })));
 const AnalyticsManager = lazy(() => import('@/components/cms/AnalyticsManager').then(m => ({ default: m.AnalyticsManager })));
+const AnalyticsSetup = lazy(() => import('@/components/AnalyticsSetup').then(m => ({ default: m.AnalyticsSetup })));
 const MediaFormatCategoryManager = lazy(() => import('@/components/cms/MediaFormatCategoryManager').then(m => ({ default: m.MediaFormatCategoryManager })));
 
 const CMS = () => {

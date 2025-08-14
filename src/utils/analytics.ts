@@ -65,12 +65,24 @@ export const trackQuoteSubmission = (quoteData: {
         ...campaign
       });
 
-      // Also track as a conversion (for Google Ads if configured)
+      // Also track as a conversion with proper revenue
       window.gtag('event', 'conversion', {
-        send_to: 'GA_MEASUREMENT_ID/quote_submission', // You'll need to replace with your actual Google Analytics ID
         value: quoteData.totalValue,
         currency: 'GBP',
         transaction_id: quoteData.quoteId
+      });
+
+      // Track as purchase for ecommerce revenue tracking
+      window.gtag('event', 'purchase', {
+        transaction_id: quoteData.quoteId,
+        value: quoteData.totalValue,
+        currency: 'GBP',
+        items: [{
+          item_id: 'quote_submission',
+          item_name: 'Quote Submission',
+          quantity: 1,
+          price: quoteData.totalValue
+        }]
       });
 
       console.log('📊 Analytics: Quote submission tracked as lead', quoteData);

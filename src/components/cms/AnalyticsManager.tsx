@@ -7,10 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Plus, Edit, Code, BarChart3, Eye } from 'lucide-react';
+import { Trash2, Plus, Edit, Code, BarChart3, Eye, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AnalyticsSetup } from '@/components/AnalyticsSetup';
 
 interface AnalyticsCode {
   id: string;
@@ -369,21 +371,18 @@ export function AnalyticsManager() {
 
       <div className="grid gap-4">
         {analyticsCodes.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center py-8">
-                <Code className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No tracking codes yet</h3>
-                <p className="text-muted-foreground mb-4">
-                  Add your first tracking code to start monitoring your website analytics
-                </p>
-                <Button onClick={openNewDialog} className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Add Tracking Code
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Revenue tracking not configured!</strong> Without analytics tracking codes, 
+                revenue data won't appear in your analytics dashboards. Add Google Analytics to start 
+                tracking quote submission revenue.
+              </AlertDescription>
+            </Alert>
+            
+            <AnalyticsSetup />
+          </div>
         ) : (
           analyticsCodes.map((code) => (
             <Card key={code.id}>
