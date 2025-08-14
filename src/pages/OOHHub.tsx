@@ -168,8 +168,8 @@ const OOHHub = () => {
 
   const streetEnvironments = [
     {
-      title: "Fly Posting & Wildposting",
-      slug: "guerilla-wildposting",
+      title: "City Posters",
+      slug: "ooh/city-posters-london",
       description: "Cultural, urban, and guerrilla marketing placements.",
       icon: Target
     },
