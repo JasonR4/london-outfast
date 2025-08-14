@@ -125,6 +125,7 @@ const filteredFormatNames = useMemo(() => {
 
 const objectiveValue = form.watch('objective');
 const onSubmit = async (values: FormValues) => {
+  console.log('🔥 Form submission started with values:', values);
   try {
     // Immediate feedback while the Edge Function runs
     const firstName = (values.firstname || '').trim() || 'there';
