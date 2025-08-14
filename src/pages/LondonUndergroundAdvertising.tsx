@@ -155,17 +155,17 @@ const LondonUndergroundAdvertising = () => {
 
       <main className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-r from-primary via-primary-foreground to-primary/90 py-24">
+        <section className="relative overflow-hidden bg-black py-24">
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center">
-              <Badge variant="secondary" className="mb-6 text-sm font-medium">
+              <Badge variant="secondary" className="mb-6 text-sm font-medium bg-red-600/20 text-red-400 border-red-600/30">
                 <Train className="w-4 h-4 mr-2" />
                 London Underground Advertising
               </Badge>
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold text-red-500 mb-6 leading-tight">
                 Command attention inside one of the world's busiest and most iconic transport networks.
               </h1>
-              <p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
                 The London Underground moves more than 4 million passengers every day across 270+ stations, making it one of the most valuable out-of-home advertising environments in the UK.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -173,7 +173,7 @@ const LondonUndergroundAdvertising = () => {
                   size="lg" 
                   variant="secondary"
                   onClick={() => navigate('/quote')}
-                  className="text-lg px-8 py-6"
+                  className="text-lg px-8 py-6 bg-red-600 hover:bg-red-700 text-white"
                 >
                   Get Underground Quote
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -182,7 +182,7 @@ const LondonUndergroundAdvertising = () => {
                   size="lg" 
                   variant="outline"
                   onClick={() => navigate('/configurator')}
-                  className="text-lg px-8 py-6 border-white/20 text-white hover:bg-white/10"
+                  className="text-lg px-8 py-6 border-red-600/50 text-red-400 hover:bg-red-600/10"
                 >
                   Plan Campaign
                 </Button>
