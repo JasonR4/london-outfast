@@ -153,16 +153,16 @@ const ExperientialSampling = () => {
 
       <main className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-br from-background via-background to-background/80 py-24">
+        <section className="relative bg-gradient-to-br from-background via-background to-background/80 py-16 sm:py-20 md:py-24">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 sm:mb-6 leading-tight px-2">
                 Experiential & Sampling Activations London
               </h1>
-              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+              <p className="text-lg sm:text-xl text-muted-foreground mb-6 sm:mb-8 leading-relaxed px-2">
                 Bring your brand off the screen and into the real world. Experiential and sampling activations in London turn everyday spaces into live, interactive brand experiences — where consumers don't just see your campaign, they taste it, touch it, try it, and share it.
               </p>
-              <p className="text-lg text-muted-foreground mb-12">
+              <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-12 px-2">
                 From busy commuter hubs to iconic cultural locations, our activations stop people in their tracks and create moments they'll remember — and post about — long after the event.
               </p>
             </div>
@@ -182,16 +182,16 @@ const ExperientialSampling = () => {
         </section>
 
         {/* London Activation Hotspots */}
-        <section className="py-16">
+        <section className="py-12 sm:py-16">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-foreground mb-12 text-center">London Activation Hotspots</h2>
-            <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-8 sm:mb-12 text-center px-2">London Activation Hotspots</h2>
+            <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 max-w-6xl mx-auto">
               {activationHotspots.map((hotspot, index) => (
-                <Card key={index} className="bg-card border-border">
-                  <CardContent className="p-6">
-                    <hotspot.icon className="h-8 w-8 text-primary mb-4" />
-                    <h3 className="text-xl font-semibold text-foreground mb-3">{hotspot.title}</h3>
-                    <p className="text-muted-foreground">{hotspot.description}</p>
+                <Card key={index} className="bg-card border-border hover:shadow-lg transition-shadow">
+                  <CardContent className="p-4 sm:p-6">
+                    <hotspot.icon className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-3 sm:mb-4" />
+                    <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 sm:mb-3">{hotspot.title}</h3>
+                    <p className="text-muted-foreground text-sm sm:text-base">{hotspot.description}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -200,15 +200,15 @@ const ExperientialSampling = () => {
         </section>
 
         {/* Why Choose Section */}
-        <section className="py-16 bg-muted/50">
+        <section className="py-12 sm:py-16 bg-muted/50">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-foreground mb-12 text-center">Why Brands Choose Experiential & Sampling in London</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-8 sm:mb-12 text-center px-2">Why Brands Choose Experiential & Sampling in London</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-6xl mx-auto">
               {benefits.map((benefit, index) => (
                 <div key={index} className="text-center">
-                  <benefit.icon className="h-12 w-12 text-primary mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-foreground mb-3">{benefit.title}</h3>
-                  <p className="text-muted-foreground">{benefit.description}</p>
+                  <benefit.icon className="h-10 w-10 sm:h-12 sm:w-12 text-primary mx-auto mb-3 sm:mb-4" />
+                  <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 sm:mb-3 px-2">{benefit.title}</h3>
+                  <p className="text-muted-foreground text-sm sm:text-base px-2">{benefit.description}</p>
                 </div>
               ))}
             </div>
@@ -231,17 +231,19 @@ const ExperientialSampling = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 bg-muted/50">
+        <section className="py-12 sm:py-16 bg-muted/50">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold text-foreground mb-6">Ready to Create Your Brand Experience?</h2>
-            <p className="text-xl text-muted-foreground mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 sm:mb-6 px-2">Ready to Create Your Brand Experience?</h2>
+            <p className="text-lg sm:text-xl text-muted-foreground mb-6 sm:mb-8 px-2">
               Get expert advice and competitive pricing for London's most engaging experiential activations.
             </p>
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
-              <Link to="/brief">
-                Send us your experiential brief <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
+            <div className="px-4">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto" asChild>
+                <Link to="/brief">
+                  Send us your experiential brief <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </section>
 
