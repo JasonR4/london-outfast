@@ -230,13 +230,19 @@ async function createLineItemsForDeal(apiKey: string, dealId: string, quoteItems
     for (const item of quoteItems) {
       console.log(`📦 Processing line item:`, item);
       
-      // Extract item details with fallbacks
+      // Extract item details with CORRECT field names from submit-quote
       const itemName = item.formatName || item.format_name || 'OOH Media Format';
-      const itemPrice = item.totalCost || item.total_cost || 0;
+      const itemPrice = item.totalCost || item.total_cost || item.total_inc_vat || 0;
       const itemQuantity = item.quantity || 1;
       const itemLocations = item.selectedAreas || item.selected_areas || [];
       
-      console.log(`📦 Line item details: ${itemName}, £${itemPrice}, Qty: ${itemQuantity}`);
+      console.log(`📦 Line item details: ${itemName}, £${itemPrice}, Qty: ${itemQuantity}, Locations: [${itemLocations.join(', ')}]`);
+
+      // Validate we have minimum required data
+      if (!itemName || !itemPrice || itemPrice <= 0) {
+        console.error(`❌ Skipping invalid line item - missing name or price:`, { itemName, itemPrice });
+        continue;
+      }
 
       // Skip creating products for now - create line items directly
       const lineItemResponse = await fetch('https://api.hubapi.com/crm/v3/objects/line_items', {

@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-// DIRECT BROWSER TEST - SINGLE EXECUTION
-import('./utils/directBrowserTest.ts');
+// MANUAL TEST INSTRUCTIONS - NO AUTO EXECUTION
+import('./utils/manualTestInstructions.ts');
 
 createRoot(document.getElementById("root")!).render(<App />);
