@@ -63,7 +63,8 @@ const handler = async (req: Request): Promise<Response> => {
               lifecyclestage: 'opportunity',
               mbl_investor: 'true',
               investor_ticket_size: ticket,
-              investor_types: investor_type.join(', ')
+              investor_types: investor_type.join(', '),
+              notes: 'Investor opportunity - submitted via corporate investment page'
             }
           })
         });
@@ -81,7 +82,8 @@ const handler = async (req: Request): Promise<Response> => {
               dealname: `Investor – ${first_name} ${last_name}`,
               amount: ticket,
               dealstage: 'appointmentscheduled',
-              pipeline: 'default'
+              pipeline: 'default',
+              notes: 'Investor opportunity - submitted via corporate investment page'
             }
           })
         });
