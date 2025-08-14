@@ -53,7 +53,7 @@ async function getOwnerIdByEmail(apiKey: string, email: string): Promise<string 
   }
 }
 
-async function createTaskForContact(apiKey: string, contactId: string, subject: string, body: string, ownerEmail = 'shane@r4advertising.agency') {
+async function createTaskForContact(apiKey: string, contactId: string, subject: string, body: string, ownerEmail = 'matt@r4advertising.agency') {
   try {
     const ownerId = await getOwnerIdByEmail(apiKey, ownerEmail);
     const due = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // +2h
@@ -95,7 +95,7 @@ async function createDealForContact(apiKey: string, contactId: string, dealName:
       dealname: dealName,
       amount: Math.round(amount), // HubSpot expects integers for amount in cents
       dealstage: pipelineStage,
-      hubspot_owner_id: await getOwnerIdByEmail(apiKey, 'shane@r4advertising.agency') || undefined,
+      hubspot_owner_id: await getOwnerIdByEmail(apiKey, 'matt@r4advertising.agency') || undefined,
       closedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 days
     };
 

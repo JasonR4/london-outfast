@@ -184,7 +184,7 @@ async function getOwnerIdByEmail(email: string): Promise<string | null> {
 async function createHubSpotTask(contactId: string, payload: BriefPayload) {
   if (!HUBSPOT_TOKEN) return
   try {
-    const ownerEmail = 'shane@r4advertising.agency'
+    const ownerEmail = 'matt@r4advertising.agency'
     const ownerId = await getOwnerIdByEmail(ownerEmail)
     const due = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
     const subject = `Work on brief: ${payload.company} — ${payload.budget_band}`
