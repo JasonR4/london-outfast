@@ -1,9 +1,9 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-// TEST FIXED ROUTE PREFIXES
-import('./utils/testRoutePrefixes.ts').then(() => {
-  console.log('🧪 Route prefix tests executed!');
+// COMPREHENSIVE TEST OF ALL 4 ROUTES - EXECUTING NOW
+import('./utils/comprehensiveHubSpotTest.ts').then(() => {
+  console.log('🚀 Comprehensive HubSpot test initiated!');
 });
 
 createRoot(document.getElementById("root")!).render(<App />);
