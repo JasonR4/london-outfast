@@ -174,12 +174,6 @@ const OOHHub = () => {
 
   const streetEnvironments = [
     {
-      title: "Street Poster Advertising",
-      slug: "residential-local-area",
-      description: "Affordable local reach for community and grassroots marketing.",
-      icon: MapPin
-    },
-    {
       title: "Fly Posting & Wildposting",
       slug: "guerilla-wildposting",
       description: "Cultural, urban, and guerrilla marketing placements.",
