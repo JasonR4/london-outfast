@@ -200,12 +200,6 @@ const OOHHub = () => {
       description: "Pop-ups, sampling, and live brand experiences.",
       icon: Users
     },
-    {
-      title: "Event Venue Advertising",
-      slug: "event-stadium-advertising",
-      description: "In and around major events, from concerts to sports fixtures.",
-      icon: Building
-    }
   ];
 
   const EnvironmentGrid = ({ title, environments, bgColor }: { title: string, environments: any[], bgColor: string }) => (
