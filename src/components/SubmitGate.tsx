@@ -82,10 +82,13 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
   }, []);
 
   async function handleAuthedSubmit() {
+    if (loading) return; // Prevent double submission
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const quoteSessionId = getCurrentQuoteSessionId();
+
+      console.log('🔍 Starting authenticated submission:', { userId: user?.id, quoteSessionId });
 
       // Persist in DB quotes table via existing hook with minimal account details
       const result = await submitQuoteDb({
@@ -93,6 +96,8 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
         contact_email: user?.email || '',
       });
 
+      console.log('✅ submitQuoteDb result:', result);
+
       // Track plan submission
       if (result && quoteSessionId) {
         try {
@@ -103,26 +108,38 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
             periods_count: currentQuote?.quote_items?.reduce((total, item) => total + item.selected_periods.length, 0) || 0,
             location: "London"
           });
-        } catch {}
+        } catch (trackingError) {
+          console.error('📊 Tracking error (non-blocking):', trackingError);
+        }
       }
 
       // Kick off side-effects without blocking (pdf, hubspot, versioning)
-      Promise.allSettled([
-        submitDraftQuote({
-          quoteSessionId,
-          contact: {
-            firstName: user?.user_metadata?.first_name || '',
-            lastName: user?.user_metadata?.last_name || '',
-            email: user?.email || '',
-          },
-          source,
-        })
-      ]);
-      if (!toastShown) { toast({ title: 'Plan submitted! Redirecting…' }); setToastShown(true); }
+      // Don't await this to prevent showing errors from side effects
+      submitDraftQuote({
+        quoteSessionId,
+        contact: {
+          firstName: user?.user_metadata?.first_name || '',
+          lastName: user?.user_metadata?.last_name || '',
+          email: user?.email || '',
+        },
+        source,
+      }).catch(sideEffectError => {
+        console.error('📎 Side effect error (non-blocking):', sideEffectError);
+        // Don't show toast for side effect failures - main submission succeeded
+      });
+
+      if (!toastShown) { 
+        toast({ title: 'Plan submitted! Redirecting…' }); 
+        setToastShown(true); 
+      }
       nav('/client-portal');
     } catch (e) {
-      console.error(e);
-      alert('There was a problem submitting your quote. Please try again.');
+      console.error('❌ Authenticated submission error:', e);
+      toast({ 
+        title: 'Submission failed', 
+        description: 'There was a problem submitting your quote. Please try again.',
+        variant: 'destructive' 
+      });
     } finally {
       setLoading(false);
     }
@@ -130,17 +147,21 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
 
   async function handleGuestSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (loading) return;
+    if (loading) return; // Prevent double submission
     if (!contact.firstName || !contact.lastName || !contact.email) {
       alert('Please complete first name, last name, and email.');
       return;
     }
     setLoading(true);
     try {
+      console.log('🔍 Starting guest submission:', { contact });
+      
       // Persist for /create-account prefill
       try { localStorage.setItem('submitted_quote_data', JSON.stringify(contact)); } catch {}
       const quoteSessionId = getCurrentQuoteSessionId();
       const result = await submitQuoteDb(mapToDbContact(contact)); // updates quotes table with guest details
+
+      console.log('✅ submitQuoteDb result:', result);
 
       // Track plan submission
       if (result && quoteSessionId) {
@@ -152,21 +173,34 @@ export const SubmitGate: React.FC<Props> = ({ source, className }) => {
             periods_count: currentQuote?.quote_items?.reduce((total, item) => total + item.selected_periods.length, 0) || 0,
             location: "London"
           });
-        } catch {}
+        } catch (trackingError) {
+          console.error('📊 Tracking error (non-blocking):', trackingError);
+        }
       }
 
-      Promise.allSettled([
-        submitDraftQuote({ quoteSessionId, contact, source })
-      ]);
-      if (!toastShown) { toast({ title: 'Plan submitted! Redirecting…' }); setToastShown(true); }
+      // Side effects without blocking - don't await to prevent errors from affecting user flow
+      submitDraftQuote({ quoteSessionId, contact, source }).catch(sideEffectError => {
+        console.error('📎 Side effect error (non-blocking):', sideEffectError);
+        // Don't show toast for side effect failures - main submission succeeded
+      });
+
+      if (!toastShown) { 
+        toast({ title: 'Plan submitted! Redirecting…' }); 
+        setToastShown(true); 
+      }
+      
       // Ensure the current quote session persists post-submit
       if (quoteSessionId) {
         try { localStorage.setItem('quote_session_id', quoteSessionId); } catch {}
       }
       nav('/quote-submitted'); // always the same for guests
     } catch (e) {
-      console.error(e);
-      alert('There was a problem submitting your quote. Please try again.');
+      console.error('❌ Guest submission error:', e);
+      toast({ 
+        title: 'Submission failed', 
+        description: 'There was a problem submitting your quote. Please try again.',
+        variant: 'destructive' 
+      });
     } finally {
       setLoading(false);
     }
