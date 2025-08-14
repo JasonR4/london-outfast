@@ -341,9 +341,9 @@ Deno.serve(async (req) => {
             campaignObjective: body.objective,
             timeline: body.start_month || '',
             additionalDetails: `Creative: ${body.creative_status}${body.notes ? `\nNotes: ${body.notes}` : ''}`,
-            totalCost: parseFloat(String(body.budget_band).replace(/[^\d.]/g, '')) || 0, // Extract numeric value from budget
-            formatName: (body.formats || []).join(', '),
-            itemCount: (body.formats || []).length
+            totalCost: Math.max(1000, parseFloat(String(body.budget_band).replace(/[£,\s]/g, '')) || 30000), // Extract numeric value from budget with minimum
+            formatName: (body.formats || []).join(', ') || 'OOH Brief',
+            itemCount: Math.max(1, (body.formats || []).length || 1)
           },
         }
         const syncRes = await supabase.functions.invoke('sync-hubspot-contact', { body: syncPayload })

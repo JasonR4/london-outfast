@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-// MANUAL TEST INSTRUCTIONS - NO AUTO EXECUTION
-import('./utils/manualTestInstructions.ts');
+// CHECK BRIEF FIX - NO AUTO EXECUTION
+import('./utils/checkBriefFix.ts');
 
 createRoot(document.getElementById("root")!).render(<App />);
