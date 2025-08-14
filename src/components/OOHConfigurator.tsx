@@ -987,11 +987,21 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
         });
         
         // Track each item addition in analytics
-        trackQuoteItemAdded({
-          formatName: item.formatName,
-          quantity: item.recommendedQuantity,
-          value: item.totalCost
-        });
+        try {
+          trackQuoteItemAdded({
+            formatName: item.formatName,
+            quantity: item.recommendedQuantity,
+            value: item.totalCost
+          });
+          console.log('📊 Analytics: Quote item tracked from configurator media plan', {
+            formatName: item.formatName,
+            quantity: item.recommendedQuantity,
+            value: item.totalCost,
+            source: 'configurator-plan'
+          });
+        } catch (trackingError) {
+          console.error('📊 Analytics tracking error (non-blocking):', trackingError);
+        }
       }
       
       setShowMediaPlan(false);
@@ -1240,18 +1250,35 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                         throw insertError;
                       }
                       
-                      console.log('Successfully inserted item:', insertedItem);
-                     }
-                     
-                     // Refresh the current quote data to include new items
-                     console.log('Refreshing quote data...');
-                     await fetchCurrentQuote();
-                     console.log('Quote data refreshed');
-                     
-                     // Add a small delay to ensure state updates complete before navigation
-                     await new Promise(resolve => setTimeout(resolve, 100));
-                     
-                     onComplete?.();
+                       console.log('Successfully inserted item:', insertedItem);
+                       
+                       // Track analytics for quote item added
+                       try {
+                         trackQuoteItemAdded({
+                           formatName: formatInfo?.name || rec.format,
+                           quantity: rec.calculatedQuantity || 1,
+                           value: totalCost
+                         });
+                         console.log('📊 Analytics: Quote item tracked from configurator quick quote', {
+                           formatName: formatInfo?.name || rec.format,
+                           quantity: rec.calculatedQuantity || 1,
+                           value: totalCost,
+                           source: 'configurator-quick'
+                         });
+                       } catch (trackingError) {
+                         console.error('📊 Analytics tracking error (non-blocking):', trackingError);
+                       }
+                      }
+                      
+                      // Refresh the current quote data to include new items
+                      console.log('Refreshing quote data...');
+                      await fetchCurrentQuote();
+                      console.log('Quote data refreshed');
+                      
+                      // Add a small delay to ensure state updates complete before navigation
+                      await new Promise(resolve => setTimeout(resolve, 100));
+                      
+                      onComplete?.();
                    } catch (error) {
                      console.error('Error creating quote items:', error);
                    } finally {
