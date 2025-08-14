@@ -184,7 +184,7 @@ const OOHHub = () => {
   const specialistEnvironments = [
     {
       title: "Projection Mapping Advertising",
-      slug: "projection-special-builds",
+      slug: "ooh/projection-mapping-advertising",
       description: "Immersive, large-scale brand takeovers on buildings and landmarks.",
       icon: Zap
     },
