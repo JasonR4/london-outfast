@@ -478,7 +478,36 @@ export const useQuotes = () => {
         throw new Error('No quote to submit');
       }
 
-      const { error } = await supabase
+      // Use the submit-quote edge function for ALL submissions to ensure HubSpot sync with deals
+      const submitPayload = {
+        quoteSessionId: currentQuote.user_session_id,
+        contact: {
+          firstName: contactDetails.contact_name?.split(' ')[0] || '',
+          lastName: contactDetails.contact_name?.split(' ').slice(1).join(' ') || '',
+          email: contactDetails.contact_email,
+          phone: contactDetails.contact_phone,
+          company: contactDetails.contact_company,
+          website: contactDetails.website,
+          notes: contactDetails.additional_requirements
+        },
+        source: 'outdoor-media' as const
+      };
+
+      console.log('📤 Calling submit-quote edge function with:', submitPayload);
+
+      const { data, error } = await supabase.functions.invoke('submit-quote', {
+        body: submitPayload
+      });
+
+      if (error) {
+        console.error('❌ Error from submit-quote function:', error);
+        throw error;
+      }
+
+      console.log('✅ Quote submitted successfully via edge function:', data);
+      
+      // Update local quote status
+      const { error: updateError } = await supabase
         .from('quotes')
         .update({
           ...contactDetails,
@@ -486,11 +515,9 @@ export const useQuotes = () => {
         })
         .eq('id', currentQuote.id);
 
-      if (error) throw error;
-
-      // Sync to HubSpot
-      console.log('Syncing quote to HubSpot...');
-      await syncQuoteToHubSpot('format_quote', contactDetails, currentQuote);
+      if (updateError) {
+        console.warn('⚠️ Warning: Failed to update local quote status:', updateError);
+      }
 
       setCurrentQuote(prev => prev ? { ...prev, status: 'submitted', ...contactDetails } : null);
       
@@ -508,7 +535,7 @@ export const useQuotes = () => {
       // Clear current session for new quotes
       localStorage.removeItem('quote_session_id');
       
-      toast.success('Quote submitted successfully!');
+      toast.success('Quote submitted successfully and synced to HubSpot with deal!');
       return true;
     } catch (err: any) {
       console.error('Error submitting quote:', err);
