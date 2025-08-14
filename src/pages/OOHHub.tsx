@@ -139,13 +139,13 @@ const OOHHub = () => {
     },
     {
       title: "Lamp Post Banner Advertising",
-      slug: "street-furniture",
+      slug: "ooh/lamp-post-banner-advertising",
       description: "Localised, repeat-impact branding for community and event campaigns.",
       icon: MapPin
     },
     {
       title: "Streetliner Advertising",
-      slug: "motorway-service-areas",
+      slug: "ooh/streetliner-advertising",
       description: "Roadside banners and creative formats along busy streets.",
       icon: Target
     }
