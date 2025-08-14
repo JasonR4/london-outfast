@@ -19,44 +19,120 @@ import {
 const BusAdvertising = () => {
   useEffect(() => {
     // Inject FAQ Schema
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.innerHTML = JSON.stringify({
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.innerHTML = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "FAQPage",
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "How much does bus advertising cost?",
+          "name": "How much does bus advertising cost in London?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Mega rears start from ~£600–£900 per 2 weeks; full wraps and streetliners carry a higher premium."
+            "text": "Pricing varies by format (mega rear, superside, streetliner, rear panel, interior), route targeting, and duration. We provide transparent proposals showing media owner rates and our commission separately."
           }
         },
         {
           "@type": "Question",
-          "name": "How long does it take to book?",
+          "name": "Can we target specific boroughs or routes?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "We can confirm availability and pricing within hours; production & fitting typically 5–10 working days."
+            "text": "Yes. We plan by borough, route and daypart using audience, mobility and route data to match coverage to your objectives."
           }
         },
         {
           "@type": "Question",
-          "name": "Can I target specific boroughs?",
+          "name": "What lead times should we allow?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes — we can plan route-based buys focused on your audience's geography."
+            "text": "Availability and pricing can be confirmed quickly; production and fitting typically require 5–10 working days depending on format and fleet."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you handle creative and production?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. We manage artwork specs, print and fitting to operator guidelines, including copy checks for readability and compliance."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is performance reported?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We provide proof of posting and post-campaign summaries. Where required, we can model reach and frequency using industry datasets."
           }
         }
       ]
     });
-    document.head.appendChild(script);
+    document.head.appendChild(faqScript);
+
+    // Inject Service Schema
+    const serviceScript = document.createElement('script');
+    serviceScript.type = 'application/ld+json';
+    serviceScript.innerHTML = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "AdvertisingService",
+      "name": "Bus Advertising in London",
+      "serviceType": "Bus and Coach Advertising",
+      "category": "Out-of-Home Advertising",
+      "provider": {
+        "@type": "Organization",
+        "name": "Media Buying London",
+        "url": "https://mediabuyinglondon.co.uk",
+        "logo": "https://mediabuyinglondon.co.uk/favicon.png"
+      },
+      "areaServed": {
+        "@type": "AdministrativeArea",
+        "name": "Greater London"
+      },
+      "audience": {
+        "@type": "Audience",
+        "audienceType": "Business and Marketing Professionals"
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Bus Advertising Formats",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Bus Mega Rear",
+              "description": "Dominant rear coverage, highly visible to all following traffic"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Bus Streetliner",
+              "description": "Full-length side ads creating mobile billboards up to 12m long"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Bus Superside",
+              "description": "Large format side panels with excellent coverage across the TfL network"
+            }
+          }
+        ]
+      }
+    });
+    document.head.appendChild(serviceScript);
 
     return () => {
-      const existingScript = document.querySelector('script[type="application/ld+json"]');
-      if (existingScript) {
-        document.head.removeChild(existingScript);
+      const existingFaqScript = document.querySelector('script[type="application/ld+json"]');
+      if (existingFaqScript && existingFaqScript.innerHTML.includes('FAQPage')) {
+        document.head.removeChild(existingFaqScript);
+      }
+      const existingServiceScript = document.querySelector('script[type="application/ld+json"]');
+      if (existingServiceScript && existingServiceScript.innerHTML.includes('AdvertisingService')) {
+        document.head.removeChild(existingServiceScript);
       }
     };
   }, []);
