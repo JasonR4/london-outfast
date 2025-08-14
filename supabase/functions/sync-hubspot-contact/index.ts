@@ -220,34 +220,25 @@ async function createDealForContact(apiKey: string, contactId: string, dealName:
 
 async function createLineItemsForDeal(apiKey: string, dealId: string, quoteItems: any[]) {
   try {
+    console.log(`🔧 Creating line items for deal ${dealId}:`, JSON.stringify(quoteItems, null, 2));
+    
+    if (!quoteItems || quoteItems.length === 0) {
+      console.log('❌ No quote items provided for line items creation');
+      return;
+    }
+
     for (const item of quoteItems) {
-      // Create product first (if it doesn't exist)
-      const productResponse = await fetch('https://api.hubapi.com/crm/v3/objects/products', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          properties: {
-            name: item.formatName || 'OOH Media Format',
-            description: `${item.formatName} - ${item.selectedAreas?.join(', ') || 'Various locations'}`,
-            price: Math.round((item.totalCost || 0) * 100), // Convert to cents
-          }
-        }),
-      });
+      console.log(`📦 Processing line item:`, item);
+      
+      // Extract item details with fallbacks
+      const itemName = item.formatName || item.format_name || 'OOH Media Format';
+      const itemPrice = item.totalCost || item.total_cost || 0;
+      const itemQuantity = item.quantity || 1;
+      const itemLocations = item.selectedAreas || item.selected_areas || [];
+      
+      console.log(`📦 Line item details: ${itemName}, £${itemPrice}, Qty: ${itemQuantity}`);
 
-      let productId;
-      if (productResponse.ok) {
-        const productResult = await productResponse.json();
-        productId = productResult.id;
-      } else {
-        // If product creation fails, skip line item creation for this item
-        console.error('Failed to create product for line item:', await productResponse.text());
-        continue;
-      }
-
-      // Create line item
+      // Skip creating products for now - create line items directly
       const lineItemResponse = await fetch('https://api.hubapi.com/crm/v3/objects/line_items', {
         method: 'POST',
         headers: {
@@ -256,30 +247,39 @@ async function createLineItemsForDeal(apiKey: string, dealId: string, quoteItems
         },
         body: JSON.stringify({
           properties: {
-            name: item.formatName || 'OOH Media Format',
-            price: Math.round((item.totalCost || 0) * 100), // Convert to cents
-            quantity: item.quantity || 1,
-            hs_product_id: productId,
+            name: itemName,
+            description: `${itemName} - ${itemLocations.join(', ') || 'Various locations'}`,
+            price: Math.round(itemPrice * 100), // Convert to cents for HubSpot
+            quantity: itemQuantity,
+            hs_recurring_billing_period: '2', // One-time
+            hs_product_id: null // Will be created without product for now
           }
         }),
       });
 
       if (lineItemResponse.ok) {
         const lineItemResult = await lineItemResponse.json();
+        console.log(`✅ Created line item: ${lineItemResult.id} - ${itemName}`);
         
         // Associate line item with deal
-        await fetch(`https://api.hubapi.com/crm/v4/objects/line_items/${lineItemResult.id}/associations/deals/${dealId}`, {
+        const associationResponse = await fetch(`https://api.hubapi.com/crm/v4/objects/line_items/${lineItemResult.id}/associations/deals/${dealId}`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify([{ associationType: 'line_item_to_deal' }])
+          body: JSON.stringify([{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 20 }])
         });
         
-        console.log(`Created line item: ${lineItemResult.id} for deal: ${dealId}`);
+        if (associationResponse.ok) {
+          console.log(`✅ Successfully associated line item ${lineItemResult.id} with deal ${dealId}`);
+        } else {
+          const associationError = await associationResponse.text();
+          console.error(`❌ Failed to associate line item with deal:`, associationError);
+        }
       } else {
-        console.error('Failed to create line item:', await lineItemResponse.text());
+        const error = await lineItemResponse.text();
+        console.error(`❌ Failed to create line item for ${itemName}:`, error);
       }
     }
   } catch (error) {
