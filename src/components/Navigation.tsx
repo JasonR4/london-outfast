@@ -176,6 +176,16 @@ const Navigation = () => {
                 Blog
               </Link>
             )}
+            {!navigation.menu_items?.some((item: any) => item.url === '/media-buying-rates-london') && (
+              <Link
+                to={'/media-buying-rates-london'}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                Rates
+              </Link>
+            )}
             
             {/* Your Plan Button - Show if user is client or has active quote */}
             {(userProfile?.role === 'client' || (currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0)) && (
@@ -292,6 +302,17 @@ const Navigation = () => {
                     }`}
                   >
                     Blog
+                  </Link>
+                )}
+                {!navigation.menu_items?.some((item: any) => item.url === '/media-buying-rates-london') && (
+                  <Link
+                    to={'/media-buying-rates-london'}
+                    onClick={() => setIsOpen(false)}
+                    className={`text-left text-lg font-medium transition-colors hover:text-primary ${
+                      isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Rates
                   </Link>
                 )}
                 
