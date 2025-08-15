@@ -155,6 +155,16 @@ const Navigation = () => {
                 </Link>
               );
             })}
+            {!navigation.menu_items?.some((item: any) => item.url === '/media-buying-rates-london') && (
+              <Link
+                to={'/media-buying-rates-london'}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                Rates
+              </Link>
+            )}
             {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
               <Button 
                 asChild
@@ -177,16 +187,6 @@ const Navigation = () => {
                 }`}
               >
                 Blog
-              </Link>
-            )}
-            {!navigation.menu_items?.some((item: any) => item.url === '/media-buying-rates-london') && (
-              <Link
-                to={'/media-buying-rates-london'}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                Rates
               </Link>
             )}
             
@@ -282,6 +282,17 @@ const Navigation = () => {
                     </Link>
                   );
                 })}
+                {!navigation.menu_items?.some((item: any) => item.url === '/media-buying-rates-london') && (
+                  <Link
+                    to={'/media-buying-rates-london'}
+                    onClick={() => setIsOpen(false)}
+                    className={`text-left text-lg font-medium transition-colors hover:text-primary ${
+                      isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Rates
+                  </Link>
+                )}
                 {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
                   <Button 
                     asChild
@@ -307,17 +318,6 @@ const Navigation = () => {
                     }`}
                   >
                     Blog
-                  </Link>
-                )}
-                {!navigation.menu_items?.some((item: any) => item.url === '/media-buying-rates-london') && (
-                  <Link
-                    to={'/media-buying-rates-london'}
-                    onClick={() => setIsOpen(false)}
-                    className={`text-left text-lg font-medium transition-colors hover:text-primary ${
-                      isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
-                    }`}
-                  >
-                    Rates
                   </Link>
                 )}
                 
