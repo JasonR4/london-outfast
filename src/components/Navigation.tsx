@@ -163,7 +163,7 @@ const Navigation = () => {
                 }`}
                 onClick={() => trackBriefCtaClicked({ location: "London" })}
               >
-                Talk to a specialist
+                Brief Us Today
               </Link>
             )}
             {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
@@ -290,7 +290,7 @@ const Navigation = () => {
                       isActive('/brief') ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
-                    Talk to a specialist
+                    Brief Us Today
                   </Link>
                 )}
                 {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
