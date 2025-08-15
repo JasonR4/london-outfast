@@ -156,15 +156,18 @@ const Navigation = () => {
               );
             })}
             {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
-              <Link
-                to={'/brief'}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive('/brief') ? 'text-primary' : 'text-muted-foreground'
-                }`}
-                onClick={() => trackBriefCtaClicked({ location: "London" })}
+              <Button 
+                asChild
+                className="bg-london-blue hover:bg-london-blue/90 text-white"
+                size="sm"
               >
-                Brief Us Today
-              </Link>
+                <Link
+                  to={'/brief'}
+                  onClick={() => trackBriefCtaClicked({ location: "London" })}
+                >
+                  Brief Us Today
+                </Link>
+              </Button>
             )}
             {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
               <Link
@@ -280,18 +283,20 @@ const Navigation = () => {
                   );
                 })}
                 {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
-                  <Link
-                    to={'/brief'}
-                    onClick={() => {
-                      trackBriefCtaClicked({ location: "London" });
-                      setIsOpen(false);
-                    }}
-                    className={`text-left text-lg font-medium transition-colors hover:text-primary ${
-                      isActive('/brief') ? 'text-primary' : 'text-muted-foreground'
-                    }`}
+                  <Button 
+                    asChild
+                    className="bg-london-blue hover:bg-london-blue/90 text-white w-full mt-4"
                   >
-                    Brief Us Today
-                  </Link>
+                    <Link
+                      to={'/brief'}
+                      onClick={() => {
+                        trackBriefCtaClicked({ location: "London" });
+                        setIsOpen(false);
+                      }}
+                    >
+                      Brief Us Today
+                    </Link>
+                  </Button>
                 )}
                 {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
                   <Link
