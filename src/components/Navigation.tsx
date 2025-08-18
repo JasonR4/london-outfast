@@ -86,14 +86,6 @@ const Navigation = () => {
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
             <Link
-              to="/quote"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/quote') ? 'text-primary' : 'text-muted-foreground'
-              }`}
-            >
-              Get Quote
-            </Link>
-            <Link
               to="/configurator"
               className={`text-sm font-medium transition-colors hover:text-primary ${
                 isActive('/configurator') ? 'text-primary' : 'text-muted-foreground'
@@ -259,15 +251,6 @@ const Navigation = () => {
             </SheetTrigger>
             <SheetContent>
               <div className="flex flex-col space-y-4 mt-8">
-                <Link
-                  to="/quote"
-                  onClick={() => setIsOpen(false)}
-                  className={`text-left text-lg font-medium transition-colors hover:text-primary ${
-                    isActive('/quote') ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  Get Quote
-                </Link>
                 <Link
                   to="/configurator"
                   onClick={() => setIsOpen(false)}
