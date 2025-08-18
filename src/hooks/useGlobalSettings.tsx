@@ -21,8 +21,6 @@ export const useGlobalSettings = () => {
       url: '/'
     },
     menu_items: [
-      { label: 'Get Quote', url: '/quote', type: 'primary' },
-      { label: 'Configurator', url: '/configurator' },
       { label: 'Formats', url: '/outdoor-media' },
       { 
         label: 'About', 
