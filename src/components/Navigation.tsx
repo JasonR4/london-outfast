@@ -107,48 +107,6 @@ const Navigation = () => {
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
             {navigation.menu_items?.map((item: any, index: number) => {
-              // Create dropdown for specific menu items
-              const createDropdownContent = (label: string) => {
-                switch (label.toLowerCase()) {
-                  case 'about':
-                    return [
-                      { label: 'About Us', url: '/about' },
-                      { label: 'How We Work', url: '/how-we-work' },
-                      { label: 'FAQs', url: '/faqs' }
-                    ];
-                  case 'industries':
-                    return [
-                      { label: 'All Industries', url: '/industries' },
-                      { label: 'Automotive', url: '/industries/automotive' },
-                      { label: 'Fashion', url: '/industries/fashion' },
-                      { label: 'Tech', url: '/industries/tech' },
-                      { label: 'Finance', url: '/industries/finance' }
-                    ];
-                  case 'contact':
-                    return [
-                      { label: 'Contact Us', url: '/contact' },
-                      { label: 'Brief Us Today', url: '/brief' },
-                      { label: 'Phone: +44 204 524 3019', url: 'tel:+442045243019' }
-                    ];
-                  case 'blog':
-                    return [
-                      { label: 'All Posts', url: '/blog' },
-                      { label: 'Latest News', url: '/blog?category=news' },
-                      { label: 'Case Studies', url: '/blog?category=case-studies' }
-                    ];
-                  case 'how we work':
-                    return [
-                      { label: 'Our Process', url: '/how-we-work' },
-                      { label: 'Why Choose Us', url: '/about#why-choose-us' },
-                      { label: 'Get Quote', url: '/quote' }
-                    ];
-                  default:
-                    return null;
-                }
-              };
-
-              const dropdownItems = createDropdownContent(item.label);
-              
               if (item.type === 'dropdown' && item.submenu) {
                 return (
                   <DropdownMenu key={index}>
@@ -183,43 +141,6 @@ const Navigation = () => {
                           </DropdownMenuItem>
                         ))
                       })()}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                );
-              } else if (dropdownItems) {
-                // Create dropdown for standard menu items
-                return (
-                  <DropdownMenu key={index}>
-                    <DropdownMenuTrigger asChild>
-                      <button className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary ${
-                        dropdownItems.some((subItem: any) => isActive(subItem.url)) ? 'text-primary' : 'text-muted-foreground'
-                      }`}>
-                        {item.label}
-                        <ChevronDown className="h-4 w-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-background border border-border shadow-lg z-50">
-                      {dropdownItems.map((subItem: any, subIndex: number) => (
-                        <DropdownMenuItem asChild key={subIndex}>
-                          {subItem.url.startsWith('tel:') ? (
-                            <a
-                              href={subItem.url}
-                              className="cursor-pointer hover:bg-muted"
-                            >
-                              {subItem.label}
-                            </a>
-                          ) : (
-                            <Link
-                              to={subItem.url}
-                              className={`cursor-pointer hover:bg-muted ${
-                                isActive(subItem.url) ? 'bg-muted text-primary' : ''
-                              }`}
-                            >
-                              {subItem.label}
-                            </Link>
-                          )}
-                        </DropdownMenuItem>
-                      ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 );
@@ -262,44 +183,14 @@ const Navigation = () => {
               </Button>
             )}
             {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary ${
-                    isActive('/blog') ? 'text-primary' : 'text-muted-foreground'
-                  }`}>
-                    Blog
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-background border border-border shadow-lg z-50">
-                  <DropdownMenuItem asChild>
-                    <Link
-                      to="/blog"
-                      className={`cursor-pointer hover:bg-muted ${
-                        isActive('/blog') ? 'bg-muted text-primary' : ''
-                      }`}
-                    >
-                      All Posts
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      to="/blog?category=news"
-                      className="cursor-pointer hover:bg-muted"
-                    >
-                      Latest News
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      to="/blog?category=case-studies"
-                      className="cursor-pointer hover:bg-muted"
-                    >
-                      Case Studies
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Link
+                to={'/blog'}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive('/blog') ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                Blog
+              </Link>
             )}
             
             {/* Your Plan Button - Show if user is client or has active quote */}
