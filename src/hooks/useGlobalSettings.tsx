@@ -24,7 +24,7 @@ export const useGlobalSettings = () => {
         .select('*')
         .eq('is_active', true)
         .eq('setting_key', 'main_navigation')
-        .single();
+        .maybeSingle();
 
       // Query footer settings  
       const footerQuery = supabase
@@ -32,27 +32,27 @@ export const useGlobalSettings = () => {
         .select('*')
         .eq('is_active', true)
         .eq('setting_key', 'main_footer')
-        .single();
+        .maybeSingle();
 
       console.log('🔍 Executing queries...');
       
-      const [navResult, footerResult] = await Promise.all([navQuery, footerQuery]);
+      const [navResult, footerResult] = await Promise.allSettled([navQuery, footerQuery]);
 
       console.log('🔍 Navigation result:', navResult);
       console.log('🔍 Footer result:', footerResult);
 
-      if (navResult.data) {
-        console.log('✅ Setting navigation:', navResult.data.setting_value);
-        setNavigation(navResult.data.setting_value);
+      if (navResult.status === 'fulfilled' && navResult.value.data) {
+        console.log('✅ Setting navigation:', navResult.value.data.setting_value);
+        setNavigation(navResult.value.data.setting_value);
       } else {
-        console.warn('⚠️ No navigation data found');
+        console.warn('⚠️ No navigation data found or error:', navResult);
       }
 
-      if (footerResult.data) {
-        console.log('✅ Setting footer:', footerResult.data.setting_value);
-        setFooter(footerResult.data.setting_value);
+      if (footerResult.status === 'fulfilled' && footerResult.value.data) {
+        console.log('✅ Setting footer:', footerResult.value.data.setting_value);
+        setFooter(footerResult.value.data.setting_value);
       } else {
-        console.warn('⚠️ No footer data found');
+        console.warn('⚠️ No footer data found or error:', footerResult);
       }
 
       setLoading(false);
