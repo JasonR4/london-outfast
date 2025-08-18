@@ -201,23 +201,23 @@ const OOHHub = () => {
       <div className="flex items-center gap-2">
         <Badge variant="secondary" className={bgColor}>{title}</Badge>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {environments.map((env, index) => {
           const IconComponent = env.icon;
           return (
             <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/20">
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-3 px-4 sm:px-6 pt-4 sm:pt-6">
                 <div className="flex items-start justify-between">
-                  <IconComponent className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
+                  <IconComponent className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0 mt-1" />
                   <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-200" />
                 </div>
-                <CardTitle className="text-lg leading-tight group-hover:text-primary transition-colors">
+                <CardTitle className="text-base sm:text-lg leading-tight group-hover:text-primary transition-colors">
                   <Link to={`/${env.slug}`} className="stretched-link">
                     {env.title}
                   </Link>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 sm:px-6">
                 <CardDescription className="text-sm leading-relaxed">
                   {env.description}
                 </CardDescription>
@@ -241,16 +241,16 @@ const OOHHub = () => {
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/5">
-        <div className="container mx-auto px-4 py-16 max-w-6xl">
+        <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16 max-w-6xl">
           {/* Header */}
-          <div className="text-center space-y-6 mb-16">
-            <Badge variant="outline" className="text-primary border-primary/20">
+          <div className="text-center space-y-4 sm:space-y-6 mb-12 sm:mb-16 px-4">
+            <Badge variant="outline" className="text-primary border-primary/20 text-sm">
               OOH Environments
             </Badge>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent leading-tight">
               Out-of-Home (OOH) Advertising Environments
             </h1>
-            <div className="max-w-4xl mx-auto text-lg text-muted-foreground leading-relaxed space-y-4">
+            <div className="max-w-4xl mx-auto text-base sm:text-lg text-muted-foreground leading-relaxed space-y-3 sm:space-y-4">
               <p>
                 Out-of-Home (OOH) advertising is more than just billboards — it's about placing your message in the right environment, at the right time, to reach the right audience.
               </p>

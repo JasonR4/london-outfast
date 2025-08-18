@@ -239,14 +239,14 @@ const TaxiAdvertising = () => {
 
       <main className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-black py-24">
+        <section className="relative overflow-hidden bg-black py-12 sm:py-16 lg:py-24">
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center">
-              <Badge variant="secondary" className="mb-6 text-sm font-medium bg-red-600/20 text-red-400 border-red-600/30">
-                <Car className="w-4 h-4 mr-2" />
+              <Badge variant="secondary" className="mb-4 sm:mb-6 text-xs sm:text-sm font-medium bg-red-600/20 text-red-400 border-red-600/30">
+                <Car className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                 Taxi Advertising London
               </Badge>
-              <h1 className="text-4xl md:text-6xl font-bold text-red-500 mb-6 leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-red-500 mb-4 sm:mb-6 leading-tight px-2">
                 Premium mobile brand exposure across all 32 boroughs
               </h1>
               <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">

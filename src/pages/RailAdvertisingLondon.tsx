@@ -157,34 +157,34 @@ const RailAdvertisingLondon = () => {
 
       <main className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-black py-24">
+        <section className="relative overflow-hidden bg-black py-12 sm:py-16 lg:py-24">
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center">
-              <Badge variant="secondary" className="mb-6 text-sm font-medium bg-red-600/20 text-red-400 border-red-600/30">
-                <Train className="w-4 h-4 mr-2" />
+              <Badge variant="secondary" className="mb-4 sm:mb-6 text-xs sm:text-sm font-medium bg-red-600/20 text-red-400 border-red-600/30">
+                <Train className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                 Rail Advertising London
               </Badge>
-              <h1 className="text-4xl md:text-6xl font-bold text-red-500 mb-6 leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-red-500 mb-4 sm:mb-6 leading-tight px-2">
                 Target affluent commuter audiences with National Rail & Overground campaigns
               </h1>
-              <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg lg:text-xl text-gray-300 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2">
                 Rail Advertising London connects brands with high-value commuter audiences travelling into and across the capital. We plan, buy, and manage every format—from 6 Sheet panels to full station environments—backed by Route data, Experian Mosaic targeting, and transparent pricing.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
                 <Button 
                   size="lg" 
                   variant="secondary"
                   onClick={() => navigate('/quote')}
-                  className="text-lg px-8 py-6 bg-red-600 hover:bg-red-700 text-white"
+                  className="text-sm sm:text-base lg:text-lg px-6 sm:px-8 py-3 sm:py-4 lg:py-6 bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
                 >
                   Get Rail Quote
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
                 <Button 
                   size="lg" 
                   variant="outline"
-                  onClick={() => navigate('/configurator')}
-                  className="text-lg px-8 py-6 border-red-600/50 text-red-400 hover:bg-red-600/10"
+                  onClick={() => navigate('/quote')}
+                  className="text-sm sm:text-base lg:text-lg px-6 sm:px-8 py-3 sm:py-4 lg:py-6 border-red-600/50 text-red-400 hover:bg-red-600/10 w-full sm:w-auto"
                 >
                   Plan Campaign
                 </Button>

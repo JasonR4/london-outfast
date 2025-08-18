@@ -150,35 +150,35 @@ const BusAdvertising = () => {
         
         {/* Hero Section */}
         <div className="relative overflow-hidden bg-black">
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20 md:py-24">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 lg:py-24">
             <div className="text-center">
-              <Badge variant="secondary" className="mb-4 sm:mb-6 px-3 sm:px-4 py-2 text-sm font-medium bg-red-600/20 text-red-400 border-red-600/30">
-                <Bus className="w-4 h-4 mr-2" />
+              <Badge variant="secondary" className="mb-4 sm:mb-6 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-red-600/20 text-red-400 border-red-600/30">
+                <Bus className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                 London Bus Advertising
               </Badge>
               
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 sm:mb-8 text-red-500 leading-tight px-2">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 lg:mb-8 text-red-500 leading-tight px-2">
                 Bus Advertising London
               </h1>
               
-              <p className="text-lg sm:text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed px-2">
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 max-w-4xl mx-auto mb-6 sm:mb-8 lg:mb-12 leading-relaxed px-2">
                 With over <strong className="text-red-400">6.8 million daily public transport users</strong> and <strong className="text-red-400">8,600 buses</strong> operating on London's streets, bus advertising remains one of the most visible and versatile OOH formats in the capital. From mega rears dominating commuter traffic to full-length streetliners gliding through Oxford Street, bus ads offer unmatched reach, frequency, and city-wide coverage.
               </p>
 
-              <p className="text-base sm:text-lg text-gray-400 max-w-3xl mx-auto mb-8 sm:mb-12 px-2">
+              <p className="text-sm sm:text-base lg:text-lg text-gray-400 max-w-3xl mx-auto mb-6 sm:mb-8 lg:mb-12 px-2">
                 At Media Buying London, we plan, price-check, and deliver bus campaigns using Experian Mosaic audience profiling, Route travel data, and real-time rate intelligence — so you get maximum impact at transparent, unmarked rates.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
-                <Button asChild size="lg" className="px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto">
+                <Button asChild size="lg" className="px-6 sm:px-8 py-3 sm:py-4 lg:py-6 text-sm sm:text-base lg:text-lg bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto">
                   <Link to="/brief">
                     Start Your Bus Campaign
                     <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg border-red-600/50 text-red-400 hover:bg-red-600/10 w-full sm:w-auto">
-                  <Link to="/client-portal">
-                    Access Client Portal
+                <Button asChild variant="outline" size="lg" className="px-6 sm:px-8 py-3 sm:py-4 lg:py-6 text-sm sm:text-base lg:text-lg border-red-600/50 text-red-400 hover:bg-red-600/10 w-full sm:w-auto">
+                  <Link to="/brief">
+                    Plan Campaign
                   </Link>
                 </Button>
               </div>
@@ -186,7 +186,7 @@ const BusAdvertising = () => {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 space-y-12 sm:space-y-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16 space-y-8 sm:space-y-12 lg:space-y-16">
           
           {/* Why Bus Advertising Works */}
           <section>

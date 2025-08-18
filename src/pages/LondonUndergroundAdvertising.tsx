@@ -155,17 +155,17 @@ const LondonUndergroundAdvertising = () => {
 
       <main className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-black py-16 sm:py-20 md:py-24">
+        <section className="relative overflow-hidden bg-black py-12 sm:py-16 md:py-20 lg:py-24">
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center">
-              <Badge variant="secondary" className="mb-4 sm:mb-6 text-sm font-medium bg-red-600/20 text-red-400 border-red-600/30">
-                <Train className="w-4 h-4 mr-2" />
+              <Badge variant="secondary" className="mb-4 sm:mb-6 text-xs sm:text-sm font-medium bg-red-600/20 text-red-400 border-red-600/30">
+                <Train className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                 London Underground Advertising
               </Badge>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-red-500 mb-4 sm:mb-6 leading-tight px-2">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-red-500 mb-4 sm:mb-6 leading-tight px-2">
                 Command attention inside one of the world's busiest and most iconic transport networks.
               </h1>
-              <p className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2">
+              <p className="text-base sm:text-lg lg:text-xl text-gray-300 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2">
                 The London Underground moves more than 4 million passengers every day across 270+ stations, making it one of the most valuable out-of-home advertising environments in the UK.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
@@ -173,7 +173,7 @@ const LondonUndergroundAdvertising = () => {
                   size="lg" 
                   variant="secondary"
                   onClick={() => navigate('/quote')}
-                  className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
+                  className="text-sm sm:text-base lg:text-lg px-6 sm:px-8 py-3 sm:py-4 lg:py-6 bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
                 >
                   Get Underground Quote
                   <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -181,8 +181,8 @@ const LondonUndergroundAdvertising = () => {
                 <Button 
                   size="lg" 
                   variant="outline"
-                  onClick={() => navigate('/configurator')}
-                  className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 border-red-600/50 text-red-400 hover:bg-red-600/10 w-full sm:w-auto"
+                  onClick={() => navigate('/quote')}
+                  className="text-sm sm:text-base lg:text-lg px-6 sm:px-8 py-3 sm:py-4 lg:py-6 border-red-600/50 text-red-400 hover:bg-red-600/10 w-full sm:w-auto"
                 >
                   Plan Campaign
                 </Button>
@@ -192,19 +192,19 @@ const LondonUndergroundAdvertising = () => {
         </section>
 
         {/* Why Underground Works */}
-        <section className="py-16 sm:py-20 bg-muted/30">
+        <section className="py-12 sm:py-16 lg:py-20 bg-muted/30">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-12 sm:mb-16">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 px-2">
+              <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 lg:mb-6 px-2">
                   Why London Underground Advertising Works
                 </h2>
-                <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto px-2">
+                <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto px-2">
                   From high-frequency commuter corridors to tourist-heavy interchange hubs, Underground advertising delivers unmatched reach, dwell time, and audience targeting potential.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
                   <CardContent className="p-6 sm:p-8 text-center">
                     <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">

@@ -125,13 +125,13 @@ const RoadsideAdvertising = () => {
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="container mx-auto px-4 py-16">
+        <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
           {/* Header */}
-          <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
+          <div className="text-center mb-12 sm:mb-16">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent leading-tight px-2">
               Roadside Advertising in London & Across the UK
             </h1>
-            <p className="text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed px-2">
               Roadside advertising is the backbone of OOH: 24/7 visibility along high-traffic routes, commuter corridors and local high streets. We plan and buy roadside at scale—combining Experian Mosaic, Route and location analytics with rate-driven negotiations—so you get the right sites, the right audience, and transparent pricing (the rate you pay = the rate we pay).
             </p>
           </div>
