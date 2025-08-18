@@ -65,24 +65,26 @@ const Hero = () => {
         )}
         
         
-          <section className="hero-cta mt-10">
-            <div className="hero-cta__grid">
-
-
-
-              <a 
-                href="/brief" 
-                className="cta-card cta--brief"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate('/brief');
-                }}
-                data-cta="hero_specialist"
-                aria-label="Send My Brief - Discuss with a specialist"
-              >
-                <h3>Send My Brief</h3>
-                <p>Discuss your brief directly with a senior MBL media buying specialist.</p>
-              </a>
+          <section className="hero-cta mt-10 flex justify-center">
+            <div className="relative">
+              {/* Background fade for CTA */}
+              <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/95 rounded-lg"></div>
+              
+              <div className="hero-cta__grid relative z-10">
+                <a 
+                  href="/brief" 
+                  className="cta-card cta--brief"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/brief');
+                  }}
+                  data-cta="hero_specialist"
+                  aria-label="Send My Brief - Discuss with a specialist"
+                >
+                  <h3>Send My Brief</h3>
+                  <p>Discuss your brief directly with a senior MBL media buying specialist.</p>
+                </a>
+              </div>
             </div>
           </section>
       </div>
