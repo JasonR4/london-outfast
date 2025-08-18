@@ -48,7 +48,15 @@ export const useGlobalSettings = () => {
   };
 
   useEffect(() => {
-    fetchSettings();
+    // Add timeout for global settings too
+    const timeoutId = setTimeout(() => {
+      console.warn('⏰ Global settings timeout, using fallbacks');
+      setLoading(false);
+    }, 1000);
+
+    fetchSettings().finally(() => {
+      clearTimeout(timeoutId);
+    });
 
     // Subscribe to real-time changes
     const channel = supabase
@@ -68,6 +76,7 @@ export const useGlobalSettings = () => {
       .subscribe();
 
     return () => {
+      clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
   }, []);

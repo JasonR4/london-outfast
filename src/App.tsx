@@ -8,8 +8,9 @@ import { HelmetProvider } from "react-helmet-async";
 import { MediaFormatsProvider } from "@/components/providers/MediaFormatsProvider";
 import { SchemaManager } from "@/components/SchemaManager";
 
-import { SiteLayout } from "@/components/SiteLayout";
+import Navigation from "@/components/Navigation";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import Footer from "@/components/Footer";
 import { AnalyticsScripts } from "@/components/AnalyticsScripts";
 import Index from "./pages/Index";
 import Quote from "./pages/Quote";
@@ -98,8 +99,8 @@ const App = () => {
           <NoInspect />
           <div className="min-h-screen bg-background">
             <AnalyticsScripts />
-            <SiteLayout>
-              <Routes>
+            <Navigation />
+            <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/quote" element={<Quote />} />
               <Route path="/quote-plan" element={<QuotePlan />} />
@@ -160,8 +161,8 @@ const App = () => {
               <Route path="/legal/disclaimer" element={<LegalPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
-              </Routes>
-            </SiteLayout>
+            </Routes>
+            <Footer />
           </div>
         </BrowserRouter>
       </TooltipProvider>

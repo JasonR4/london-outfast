@@ -1,25 +1,25 @@
 import { Link } from "react-router-dom";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import useGlobalSettings from '@/hooks/useGlobalSettings';
 import IndustriesDropdown from './IndustriesDropdown';
 
-interface FooterProps {
-  data: {
-    company: { 
-      name: string;
-      description: string;
-      phone: string;
-      email: string;
-    };
-    links: {
-      services: Array<{ label: string; url: string }>;
-      company: Array<{ label: string; url: string }>;
-      legal: Array<{ label: string; url: string }>;
-    };
-    copyright: string;
-  };
-}
+const Footer = () => {
+  
+  const { navigation, footer, loading } = useGlobalSettings();
 
-const Footer = ({ data }: FooterProps) => {
+  if (loading || !footer) {
+    return (
+      <footer className="bg-muted/30 border-t border-border py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center text-sm text-muted-foreground">
+            <p>&copy; 2024 Media Buying London. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
   return (
     <footer className="bg-gradient-to-br from-muted/20 via-muted/30 to-muted/40 border-t border-border">
       <div className="max-w-7xl mx-auto px-6 py-16">
@@ -29,10 +29,11 @@ const Footer = ({ data }: FooterProps) => {
           <div className="lg:col-span-2">
             <div className="mb-6">
               <h3 className="text-2xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-4">
-                {data.company.name}
+                {footer.company?.name || 'Media Buying London'}
               </h3>
               <p className="text-muted-foreground leading-relaxed mb-6 max-w-sm">
-                {data.company.description}
+                <strong className="text-foreground">Media Buying London — Specialist OOH Media Buyers</strong><br />
+                Same-day quotes and unbeatable rates for London Underground (TfL), roadside billboards, buses, taxis, rail, retail & leisure, airports, street furniture, programmatic DOOH, and ambient formats. No retainers. No delays. Just the fastest route to market in London.
               </p>
             </div>
             
@@ -41,32 +42,36 @@ const Footer = ({ data }: FooterProps) => {
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <span className="text-primary">📞</span>
                 </div>
-                <a href={`tel:${data.company.phone}`} className="font-medium hover:text-primary transition-colors">{data.company.phone}</a>
+                <a href="tel:+442045243019" className="font-medium hover:text-primary transition-colors">+44 204 524 3019</a>
               </div>
-              <div className="flex items-center gap-3 text-sm">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-primary">✉️</span>
+              {footer.company?.email && (
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary">✉️</span>
+                  </div>
+                  <span className="font-medium">{footer.company.email}</span>
                 </div>
-                <span className="font-medium">{data.company.email}</span>
-              </div>
+              )}
             </div>
           </div>
 
           {/* Services Links */}
-          <div>
-            <h4 className="text-lg font-bold mb-6 text-foreground">Services</h4>
-            <div className="space-y-3">
-              {data.links.services.map((link, index) => (
-                <Link 
-                  key={index}
-                  to={link.url}
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
-                >
-                  {link.label}
-                </Link>
-              ))}
+          {footer.links?.services && (
+            <div>
+              <h4 className="text-lg font-bold mb-6 text-foreground">Services</h4>
+              <div className="space-y-3">
+                {footer.links.services.map((link: any, index: number) => (
+                  <Link 
+                    key={index}
+                    to={link.url}
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Industries Dropdown */}
           <div>
@@ -75,60 +80,64 @@ const Footer = ({ data }: FooterProps) => {
           </div>
 
           {/* Company Links */}
-          <div>
-            <h4 className="text-lg font-bold mb-6 text-foreground">Company</h4>
-            <div className="space-y-3">
-              <Link 
-                to="/ooh"
-                className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
-              >
-                OOH Environments Hub
-              </Link>
-              <Link 
-                to="/what-is-media-buying-in-london"
-                className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
-              >
-                What is Media Buying in London?
-              </Link>
-              <Link 
-                to="/ooh-advertising-london"
-                className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
-              >
-                OOH Advertising London
-              </Link>
-              <Link 
-                to="/corporate-investment"
-                className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
-              >
-                Corporate Investment
-              </Link>
-              {data.links.company.map((link, index) => (
+          {footer.links?.company && (
+            <div>
+              <h4 className="text-lg font-bold mb-6 text-foreground">Company</h4>
+              <div className="space-y-3">
                 <Link 
-                  key={index}
-                  to={link.url}
+                  to="/ooh"
                   className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
                 >
-                  {link.label}
+                  OOH Environments Hub
                 </Link>
-              ))}
+                <Link 
+                  to="/what-is-media-buying-in-london"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
+                >
+                  What is Media Buying in London?
+                </Link>
+                <Link 
+                  to="/ooh-advertising-london"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
+                >
+                  OOH Advertising London
+                </Link>
+                <Link 
+                  to="/corporate-investment"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
+                >
+                  Corporate Investment
+                </Link>
+                {footer.links.company.map((link: any, index: number) => (
+                  <Link 
+                    key={index}
+                    to={link.url}
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Legal Links */}
-          <div>
-            <h4 className="text-lg font-bold mb-6 text-foreground">Legal</h4>
-            <div className="space-y-3">
-              {data.links.legal.map((link, index) => (
-                <Link 
-                  key={index}
-                  to={link.url}
-                  className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
-                >
-                  {link.label}
-                </Link>
-              ))}
+          {footer.links?.legal && (
+            <div>
+              <h4 className="text-lg font-bold mb-6 text-foreground">Legal</h4>
+              <div className="space-y-3">
+                {footer.links.legal.map((link: any, index: number) => (
+                  <Link 
+                    key={index}
+                    to={link.url}
+                    className="block text-sm text-muted-foreground hover:text-primary transition-colors duration-200 text-left font-medium"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
 
@@ -149,11 +158,11 @@ const Footer = ({ data }: FooterProps) => {
         <div className="mt-16 pt-8 border-t border-border/50">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm text-muted-foreground">
-              {data.copyright}
+              {footer.copyright || '© 2024 Media Buying London. All rights reserved.'}
             </div>
             <div className="flex items-center gap-6">
               <Link 
-                to="/cms"
+                to={'/cms'}
                 className="text-xs text-muted-foreground hover:text-primary transition-colors duration-200 font-medium"
               >
                 Admin
