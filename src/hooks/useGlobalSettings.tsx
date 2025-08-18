@@ -99,84 +99,120 @@ export const useGlobalSettings = () => {
   const [navigation, setNavigation] = useState<any>(fallbackNavigation);
   const [footer, setFooter] = useState<any>(fallbackFooter);
   const [loading, setLoading] = useState(true);
-  const [cmsDataLoaded, setCmsDataLoaded] = useState(false);
+  const [hasCmsData, setHasCmsData] = useState(false);
 
   const fetchSettings = async () => {
     try {
       console.log('🔍 Fetching global settings...');
+      
+      // Use a simpler query that's less likely to trigger RLS issues
       const { data, error } = await supabase
         .from('global_settings')
-        .select('*')
+        .select('setting_key, setting_value')
         .eq('is_active', true)
         .in('setting_key', ['main_navigation', 'main_footer']);
 
       if (error) {
         console.error('❌ Error fetching global settings:', error);
-        setCmsDataLoaded(false);
+        // Keep fallback data
+        setHasCmsData(false);
         return;
       }
 
       console.log('📊 Global settings data:', data);
 
+      let foundNav = false;
+      let foundFooter = false;
+
       if (data && data.length > 0) {
-        data.forEach((setting: GlobalSetting) => {
+        data.forEach((setting: Pick<GlobalSetting, 'setting_key' | 'setting_value'>) => {
           if (setting.setting_key === 'main_navigation' && setting.setting_value) {
-            console.log('✅ Setting navigation from CMS:', setting.setting_value);
+            console.log('✅ Setting CMS navigation');
             setNavigation(setting.setting_value);
-            setCmsDataLoaded(true);
+            foundNav = true;
           } else if (setting.setting_key === 'main_footer' && setting.setting_value) {
-            console.log('✅ Setting footer from CMS:', setting.setting_value);
+            console.log('✅ Setting CMS footer');
             setFooter(setting.setting_value);
+            foundFooter = true;
           }
         });
-      } else {
-        console.log('📝 No CMS data found, using fallbacks');
-        setCmsDataLoaded(false);
       }
+
+      setHasCmsData(foundNav || foundFooter);
+      
+      if (!foundNav) {
+        console.log('⚠️ No CMS navigation found, using fallback');
+      }
+      if (!foundFooter) {
+        console.log('⚠️ No CMS footer found, using fallback');
+      }
+
     } catch (error) {
       console.error('❌ Error fetching global settings:', error);
-      setCmsDataLoaded(false);
+      setHasCmsData(false);
     } finally {
-      console.log('✅ Global settings loading complete');
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Add timeout for global settings too
+    let mounted = true;
+    
+    // Set a timeout to prevent hanging
     const timeoutId = setTimeout(() => {
-      console.warn('⏰ Global settings timeout, using fallbacks');
-      setLoading(false);
-    }, 1000);
+      if (mounted) {
+        console.warn('⏰ Global settings timeout, using fallbacks');
+        setLoading(false);
+      }
+    }, 2000);
 
     fetchSettings().finally(() => {
-      clearTimeout(timeoutId);
+      if (mounted) {
+        clearTimeout(timeoutId);
+      }
     });
 
-    // Subscribe to real-time changes
+    // Real-time subscription with better error handling
     const channel = supabase
-      .channel('global-settings-changes')
+      .channel('global-settings-realtime')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'global_settings'
+          table: 'global_settings',
+          filter: 'setting_key=in.(main_navigation,main_footer)'
         },
-        () => {
-          console.log('🔄 Global settings changed, refetching...');
-          fetchSettings();
+        (payload) => {
+          if (mounted) {
+            console.log('🔄 Global settings changed:', payload);
+            // Debounce refetch to avoid rapid updates
+            setTimeout(() => {
+              if (mounted && !loading) {
+                fetchSettings();
+              }
+            }, 500);
+          }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔌 Global settings subscription:', status);
+      });
 
     return () => {
+      mounted = false;
       clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
   }, []);
 
-  return { navigation, footer, loading, cmsDataLoaded, refetch: fetchSettings };
+  return { 
+    navigation, 
+    footer, 
+    loading, 
+    hasCmsData, 
+    refetch: fetchSettings 
+  };
 };
 
 export default useGlobalSettings;
