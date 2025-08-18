@@ -114,7 +114,7 @@ export const useGlobalSettings = () => {
 
       if (error) {
         console.error('❌ Error fetching global settings:', error);
-        // Keep fallback data
+        // Keep fallback data - don't change navigation/footer state
         setHasCmsData(false);
         return;
       }
@@ -126,11 +126,11 @@ export const useGlobalSettings = () => {
 
       if (data && data.length > 0) {
         data.forEach((setting: Pick<GlobalSetting, 'setting_key' | 'setting_value'>) => {
-          if (setting.setting_key === 'main_navigation' && setting.setting_value) {
+          if (setting.setting_key === 'main_navigation' && setting.setting_value && Object.keys(setting.setting_value).length > 0) {
             console.log('✅ Setting CMS navigation');
             setNavigation(setting.setting_value);
             foundNav = true;
-          } else if (setting.setting_key === 'main_footer' && setting.setting_value) {
+          } else if (setting.setting_key === 'main_footer' && setting.setting_value && Object.keys(setting.setting_value).length > 0) {
             console.log('✅ Setting CMS footer');
             setFooter(setting.setting_value);
             foundFooter = true;
@@ -141,15 +141,22 @@ export const useGlobalSettings = () => {
       setHasCmsData(foundNav || foundFooter);
       
       if (!foundNav) {
-        console.log('⚠️ No CMS navigation found, using fallback');
+        console.log('⚠️ No valid CMS navigation found, keeping fallback');
+        // Explicitly ensure fallback navigation is set
+        setNavigation(fallbackNavigation);
       }
       if (!foundFooter) {
-        console.log('⚠️ No CMS footer found, using fallback');
+        console.log('⚠️ No valid CMS footer found, keeping fallback');
+        // Explicitly ensure fallback footer is set
+        setFooter(fallbackFooter);
       }
 
     } catch (error) {
       console.error('❌ Error fetching global settings:', error);
       setHasCmsData(false);
+      // Ensure fallbacks are set on error
+      setNavigation(fallbackNavigation);
+      setFooter(fallbackFooter);
     } finally {
       setLoading(false);
     }
