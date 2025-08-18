@@ -19,9 +19,6 @@ const Navigation = () => {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const { navigation, loading } = useGlobalSettings();
-  
-  // Debug logging
-  console.log('Navigation Debug:', { navigation, loading });
   const { currentQuote } = useQuotes();
 
   useEffect(() => {

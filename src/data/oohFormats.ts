@@ -1,4 +1,4 @@
-const billboardImage = "/images/blog/48-sheet-billboard.jpg";
+import billboardImage from "@/assets/48-sheet-billboard.jpg";
 
 export interface OOHFormat {
   id: string;
