@@ -7,6 +7,9 @@ import IndustriesDropdown from './IndustriesDropdown';
 const Footer = () => {
   
   const { navigation, footer, loading } = useGlobalSettings();
+  
+  // Debug logging
+  console.log('Footer Debug:', { footer, loading });
 
   if (loading || !footer) {
     return (

@@ -57,8 +57,10 @@ const BlogPost: React.FC = () => {
         </header>
 
         <section className="max-w-4xl mx-auto px-4 py-12">
-          <div className="prose prose-lg prose-invert max-w-none blog-content">
-            {post.content?.text ? (
+          <div className="prose prose-lg max-w-none blog-content">
+            {post.content?.html ? (
+              <div dangerouslySetInnerHTML={{ __html: post.content.html }} />
+            ) : post.content?.text ? (
               <div dangerouslySetInnerHTML={{ __html: post.content.text }} />
             ) : post.body_html ? (
               <div dangerouslySetInnerHTML={{ __html: post.body_html }} />
