@@ -10,9 +10,57 @@ interface GlobalSetting {
 }
 
 export const useGlobalSettings = () => {
-  const [navigation, setNavigation] = useState<any>(null);
+  const [navigation, setNavigation] = useState<any>({
+    logo: {
+      text: 'Media Buying London',
+      url: '/'
+    },
+    menu_items: [
+      { label: 'Get Quote', url: '/quote' },
+      { label: 'Configurator', url: '/configurator' },
+      {
+        label: 'Formats',
+        type: 'dropdown',
+        submenu: [
+          { label: 'Digital OOH', url: '/digital-ooh' },
+          { label: 'Billboard Advertising', url: '/ooh/roadside-billboards' },
+          { label: 'Bus Advertising', url: '/bus-advertising' },
+          { label: 'Underground Advertising', url: '/london-underground-advertising' },
+          { label: 'Rail Advertising', url: '/rail-advertising-london' },
+          { label: 'Street Furniture', url: '/street-furniture' },
+          { label: 'Taxi Advertising', url: '/taxi-advertising' },
+          { label: 'Airport Advertising', url: '/airport-advertising' },
+          { label: 'Shopping Mall Advertising', url: '/shopping-mall-advertising' },
+          { label: 'Stadium Advertising', url: '/stadium-advertising' },
+          { label: 'Supermarket Advertising', url: '/supermarket-advertising' },
+          { label: 'Bike Hire Dock Advertising', url: '/bike-hire-dock-advertising' },
+          { label: 'Lamp Post Banner Advertising', url: '/lamp-post-banner-advertising' },
+          { label: 'City Posters', url: '/city-posters' },
+          { label: 'Projection Mapping Advertising', url: '/projection-mapping-advertising' },
+          { label: 'Experiential Sampling', url: '/experiential-sampling' }
+        ]
+      },
+      {
+        label: 'Industries',
+        type: 'dropdown',
+        submenu: [
+          { label: 'All Industries', url: '/industries' }
+        ]
+      },
+      {
+        label: 'About',
+        type: 'dropdown',
+        submenu: [
+          { label: 'How We Work', url: '/how-we-work' },
+          { label: 'About Us', url: '/about' },
+          { label: 'FAQs', url: '/faqs' }
+        ]
+      },
+      { label: 'Contact', url: '/contact' }
+    ]
+  });
   const [footer, setFooter] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchSettings = async () => {
     try {
