@@ -36,16 +36,8 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden mb-16 md:mb-24">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${content?.background_image || londonHero})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/95" />
-      </div>
-      
       {/* Content */}
-      <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
+      <div className="max-w-6xl mx-auto px-4 text-center">
         <Badge variant="secondary" className="mb-6 text-lg px-6 py-2">
           Buy smarter. Plan faster.
         </Badge>
