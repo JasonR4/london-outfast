@@ -1318,10 +1318,6 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
-      user_has_cms_role: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
     }
     Enums: {
       [_ in never]: never

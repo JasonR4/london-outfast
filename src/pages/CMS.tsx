@@ -112,7 +112,7 @@ const CMS = () => {
   }
 
 
-  // Check if user has admin/editor access - simplified check
+  // Check if user has admin/editor access
   if (userProfile && !['super_admin', 'admin', 'editor'].includes(userProfile.role)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
