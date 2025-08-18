@@ -10,9 +10,48 @@ interface GlobalSetting {
 }
 
 export const useGlobalSettings = () => {
-  const [navigation, setNavigation] = useState<any>(null);
-  const [footer, setFooter] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [navigation, setNavigation] = useState<any>({
+    logo: { text: 'Media Buying London', url: '/' },
+    menu_items: [
+      { label: 'Services', type: 'dropdown', submenu: [
+        { label: 'London Underground Advertising', url: '/london-underground-advertising' },
+        { label: 'Bus Advertising', url: '/bus-advertising' },
+        { label: 'Taxi Advertising', url: '/taxi-advertising' },
+        { label: 'Roadside Advertising', url: '/ooh/roadside-billboards' },
+        { label: 'Rail Advertising London', url: '/rail-advertising-london' },
+        { label: 'Digital OOH', url: '/digital-ooh' },
+        { label: 'Street Furniture', url: '/street-furniture' },
+        { label: 'Airport Advertising', url: '/airport-advertising' }
+      ]},
+      { label: 'About', type: 'dropdown', submenu: [
+        { label: 'How We Work', url: '/how-we-work' },
+        { label: 'About Us', url: '/about' },
+        { label: 'Contact', url: '/contact' }
+      ]},
+      { label: 'Industries', url: '/industries' }
+    ]
+  });
+  const [footer, setFooter] = useState<any>({
+    company: { name: 'Media Buying London', email: 'hello@mediabuyinglondon.com' },
+    links: {
+      services: [
+        { label: 'London Underground Advertising', url: '/london-underground-advertising' },
+        { label: 'Bus Advertising', url: '/bus-advertising' },
+        { label: 'Taxi Advertising', url: '/taxi-advertising' },
+        { label: 'Roadside Advertising', url: '/ooh/roadside-billboards' }
+      ],
+      company: [
+        { label: 'How We Work', url: '/how-we-work' },
+        { label: 'About Us', url: '/about' }
+      ],
+      legal: [
+        { label: 'Privacy Policy', url: '/privacy-policy' },
+        { label: 'Terms of Service', url: '/terms-of-service' }
+      ]
+    },
+    copyright: '© 2024 Media Buying London. All rights reserved.'
+  });
+  const [loading, setLoading] = useState(false);
 
   const fetchSettings = async () => {
     try {
