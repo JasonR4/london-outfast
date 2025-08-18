@@ -74,7 +74,22 @@ const Navigation = () => {
     setIsOpen(false);
   };
 
-  // Always render navigation - no loading check
+  if (loading || !navigation) {
+    return (
+      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <Link 
+              to="/"
+              className="font-bold text-xl bg-gradient-hero bg-clip-text text-transparent"
+            >
+              Media Buying London
+            </Link>
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
