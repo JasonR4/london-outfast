@@ -1,6 +1,7 @@
 // Single source of truth for global nav/footer
-// 1) Tries your production JSON endpoint (or Supabase/cms table if you use that)
-// 2) Throws on error (no auto-fallback menus)
+// Uses your existing Supabase global_settings data
+
+import { supabase } from '@/integrations/supabase/client';
 
 export type NavItem = { label: string; href: string; children?: NavItem[] };
 export type FooterLink = { label: string; href: string };
@@ -10,30 +11,54 @@ export type SiteSettings = {
   updatedAt: string;
 };
 
-// ---- Choose ONE of these implementations ----
-
-// A) If you already expose global settings as JSON on prod:
-const PROD_SETTINGS_URL =
-  'https://mediabuyinglondon.co.uk/api/global-settings.json';
-
-// B) OR if you store in Supabase (uncomment and configure):
-// import { createClient } from '@supabase/supabase-js';
-// const supabase = createClient(import.meta.env.VITE_SUPABASE_URL!, import.meta.env.VITE_SUPABASE_ANON_KEY!);
-
 export async function fetchSiteSettings(): Promise<SiteSettings> {
-  // A) Fetch from your prod JSON (recommended to keep preview in sync)
-  const res = await fetch(PROD_SETTINGS_URL, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`Settings fetch failed ${res.status}`);
-  const json = (await res.json()) as SiteSettings;
+  // Fetch from Supabase global_settings (your existing working system)
+  const { data: settings, error } = await supabase
+    .from('global_settings')
+    .select('*')
+    .in('setting_key', ['main_navigation', 'main_footer'])
+    .eq('is_active', true);
 
-  // Sanity checks (stop Lovable from rendering its own nav)
-  if (!json?.header?.nav?.length) throw new Error('Missing header.nav');
-  if (!json?.footer?.columns?.length) throw new Error('Missing footer.columns');
+  if (error) throw new Error(`Settings fetch failed: ${error.message}`);
+  if (!settings || settings.length === 0) throw new Error('No settings found');
 
-  return json;
+  const navSetting = settings.find(s => s.setting_key === 'main_navigation');
+  const footerSetting = settings.find(s => s.setting_key === 'main_footer');
 
-  // B) Supabase example:
-  // const { data, error } = await supabase.from('global_settings').select('*').single();
-  // if (error) throw error;
-  // return data as SiteSettings;
+  if (!navSetting || !footerSetting) throw new Error('Missing nav or footer settings');
+
+  // Transform your existing Supabase data to the expected format
+  const navData = navSetting.setting_value as any;
+  const nav: NavItem[] = navData.menu_items.map((item: any) => ({
+    label: item.label,
+    href: item.url,
+    children: undefined // Add dropdown logic here if needed
+  }));
+
+  const footerData = footerSetting.setting_value as any;
+  const columns = [
+    {
+      title: "Services",
+      links: footerData.links.services.map((link: any) => ({ label: link.label, href: link.url }))
+    },
+    {
+      title: "Company", 
+      links: footerData.links.company.map((link: any) => ({ label: link.label, href: link.url }))
+    },
+    {
+      title: "Legal",
+      links: footerData.links.legal.map((link: any) => ({ label: link.label, href: link.url }))
+    }
+  ];
+
+  const bottom = [
+    { label: "Client Portal", href: "/client-portal" },
+    { label: footerData.company.phone, href: `tel:${footerData.company.phone.replace(/\s/g, '')}` }
+  ];
+
+  return {
+    header: { nav },
+    footer: { columns, bottom },
+    updatedAt: navSetting.updated_at || new Date().toISOString()
+  };
 }
