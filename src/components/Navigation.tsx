@@ -110,32 +110,32 @@ const Navigation = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-background border border-border shadow-lg z-50">
                 <DropdownMenuItem asChild>
-                  <Link to="/london-underground-advertising" className="cursor-pointer hover:bg-muted">
+                  <Link to="/ooh/london-underground" className="cursor-pointer hover:bg-muted">
                     London Underground
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/roadside-advertising" className="cursor-pointer hover:bg-muted">
+                  <Link to="/ooh/roadside-billboards" className="cursor-pointer hover:bg-muted">
                     Roadside Advertising
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/bus-advertising" className="cursor-pointer hover:bg-muted">
+                  <Link to="/ooh/bus-advertising" className="cursor-pointer hover:bg-muted">
                     Bus Advertising
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/taxi-advertising" className="cursor-pointer hover:bg-muted">
+                  <Link to="/ooh/taxi-advertising" className="cursor-pointer hover:bg-muted">
                     Taxi Advertising
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/rail-advertising-london" className="cursor-pointer hover:bg-muted">
+                  <Link to="/ooh/rail-advertising-london" className="cursor-pointer hover:bg-muted">
                     Rail Advertising
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/digital-ooh" className="cursor-pointer hover:bg-muted">
+                  <Link to="/ooh/digital-ooh" className="cursor-pointer hover:bg-muted">
                     Digital OOH
                   </Link>
                 </DropdownMenuItem>
@@ -285,22 +285,22 @@ const Navigation = () => {
                     </button>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="pl-4 space-y-2 mt-2">
-                    <Link to="/london-underground-advertising" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                    <Link to="/ooh/london-underground" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
                       London Underground
                     </Link>
-                    <Link to="/roadside-advertising" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                    <Link to="/ooh/roadside-billboards" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
                       Roadside Advertising
                     </Link>
-                    <Link to="/bus-advertising" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                    <Link to="/ooh/bus-advertising" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
                       Bus Advertising
                     </Link>
-                    <Link to="/taxi-advertising" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                    <Link to="/ooh/taxi-advertising" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
                       Taxi Advertising
                     </Link>
-                    <Link to="/rail-advertising-london" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                    <Link to="/ooh/rail-advertising-london" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
                       Rail Advertising
                     </Link>
-                    <Link to="/digital-ooh" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                    <Link to="/ooh/digital-ooh" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
                       Digital OOH
                     </Link>
                   </CollapsibleContent>
