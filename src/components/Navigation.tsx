@@ -6,22 +6,31 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Badge } from "@/components/ui/badge";
 import { Menu, Phone, ChevronDown, ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";
-import useGlobalSettings from '@/hooks/useGlobalSettings';
 import { useQuotes } from '@/hooks/useQuotes';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { trackBriefCtaClicked } from '@/utils/analytics';
+import IndustriesDropdown from "./IndustriesDropdown";
 
-const Navigation = () => {
+interface NavigationProps {
+  items: {
+    logo: { text: string; url: string };
+    menu_items: Array<{
+      label: string;
+      type: 'dropdown' | 'link' | 'component';
+      url?: string;
+      component?: string;
+      submenu?: Array<{ label: string; url: string }>;
+    }>;
+  };
+}
+
+const Navigation = ({ items }: NavigationProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
-  const { navigation, loading } = useGlobalSettings();
-  
-  // Debug logging
-  console.log('Navigation Debug:', { navigation, loading });
   const { currentQuote } = useQuotes();
 
   useEffect(() => {
@@ -74,23 +83,6 @@ const Navigation = () => {
     setIsOpen(false);
   };
 
-  if (loading || !navigation) {
-    return (
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <Link 
-              to="/"
-              className="font-bold text-xl bg-gradient-hero bg-clip-text text-transparent"
-            >
-              Media Buying London
-            </Link>
-          </div>
-        </div>
-      </nav>
-    );
-  }
-
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
       <div className="max-w-6xl mx-auto px-4">
@@ -98,100 +90,72 @@ const Navigation = () => {
           
           {/* Logo */}
           <Link 
-            to={navigation.logo?.url || '/'}
+            to={items.logo.url}
             className="font-bold text-xl bg-gradient-hero bg-clip-text text-transparent"
           >
-            {navigation.logo?.text || 'Media Buying London'}
+            {items.logo.text}
           </Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
-            {navigation.menu_items?.map((item: any, index: number) => {
+            {items.menu_items?.map((item, index) => {
               if (item.type === 'dropdown' && item.submenu) {
                 return (
                   <DropdownMenu key={index}>
                     <DropdownMenuTrigger asChild>
                       <button className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary ${
-                        item.submenu.some((subItem: any) => isActive(subItem.url)) ? 'text-primary' : 'text-muted-foreground'
+                        item.submenu.some((subItem) => isActive(subItem.url)) ? 'text-primary' : 'text-muted-foreground'
                       }`}>
                         {item.label}
                         <ChevronDown className="h-4 w-4" />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="bg-background border border-border shadow-lg z-50">
-                      {(() => {
-                        const isAbout = (item.label?.toLowerCase?.() === 'about') || item.url === '/about'
-                        const enrichedSubmenu = isAbout
-                          ? (() => {
-                              const hasFAQs = item.submenu?.some((s: any) => s?.url === '/faqs' || s?.label?.toLowerCase?.().includes('faq'))
-                              return hasFAQs ? item.submenu : [...item.submenu, { label: 'FAQs', url: '/faqs' }]
-                            })()
-                          : item.submenu
-
-                        return enrichedSubmenu.map((subItem: any, subIndex: number) => (
-                          <DropdownMenuItem asChild key={subIndex}>
-                            <Link
-                              to={subItem.url}
-                              className={`cursor-pointer hover:bg-muted ${
-                                isActive(subItem.url) ? 'bg-muted text-primary' : ''
-                              }`}
-                            >
-                              {subItem.label}
-                            </Link>
-                          </DropdownMenuItem>
-                        ))
-                      })()}
+                      {item.submenu.map((subItem, subIndex) => (
+                        <DropdownMenuItem asChild key={subIndex}>
+                          <Link
+                            to={subItem.url}
+                            className={`cursor-pointer hover:bg-muted ${
+                              isActive(subItem.url) ? 'bg-muted text-primary' : ''
+                            }`}
+                          >
+                            {subItem.label}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 );
+              } else if (item.type === 'component' && item.component === 'IndustriesDropdown') {
+                return <IndustriesDropdown key={index} />;
+              } else if (item.type === 'link' && item.url) {
+                return (
+                  <Link
+                    key={index}
+                    to={item.url}
+                    className={`text-sm font-medium transition-colors hover:text-primary ${
+                      isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
               }
-              
-              return (
-                <Link
-                  key={index}
-                  to={item.url}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
+              return null;
             })}
-            {!navigation.menu_items?.some((item: any) => item.url === '/media-buying-rates-london') && (
+            
+            <Button 
+              asChild
+              className="bg-london-blue hover:bg-london-blue/90 text-white"
+              size="sm"
+            >
               <Link
-                to={'/media-buying-rates-london'}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
-                }`}
+                to="/brief"
+                onClick={() => trackBriefCtaClicked({ location: "London" })}
               >
-                Rates
+                Brief Us Today
               </Link>
-            )}
-            {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
-              <Button 
-                asChild
-                className="bg-london-blue hover:bg-london-blue/90 text-white"
-                size="sm"
-              >
-                <Link
-                  to={'/brief'}
-                  onClick={() => trackBriefCtaClicked({ location: "London" })}
-                >
-                  Brief Us Today
-                </Link>
-              </Button>
-            )}
-            {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
-              <Link
-                to={'/blog'}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive('/blog') ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                Blog
-              </Link>
-            )}
+            </Button>
             
             {/* Your Plan Button - Show if user is client or has active quote */}
             {(userProfile?.role === 'client' || (currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0)) && (
@@ -234,7 +198,7 @@ const Navigation = () => {
             </SheetTrigger>
             <SheetContent>
               <div className="flex flex-col space-y-4 mt-8">
-                {navigation.menu_items?.map((item: any, index: number) => {
+                {items.menu_items?.map((item, index) => {
                   if (item.type === 'dropdown' && item.submenu) {
                     return (
                       <Collapsible key={index}>
@@ -245,84 +209,61 @@ const Navigation = () => {
                           </button>
                         </CollapsibleTrigger>
                         <CollapsibleContent className="pl-4 space-y-2 mt-2">
-                          {(() => {
-                            const isAbout = (item.label?.toLowerCase?.() === 'about') || item.url === '/about'
-                            const enrichedSubmenu = isAbout
-                              ? (() => {
-                                  const hasFAQs = item.submenu?.some((s: any) => s?.url === '/faqs' || s?.label?.toLowerCase?.().includes('faq'))
-                                  return hasFAQs ? item.submenu : [...item.submenu, { label: 'FAQs', url: '/faqs' }]
-                                })()
-                              : item.submenu
-
-                            return enrichedSubmenu.map((subItem: any, subIndex: number) => (
-                              <Link
-                                key={subIndex}
-                                to={subItem.url}
-                                onClick={() => setIsOpen(false)}
-                                className={`block w-full text-left text-base font-medium transition-colors hover:text-primary ${
-                                  isActive(subItem.url) ? 'text-primary' : 'text-muted-foreground'
-                                }`}
-                              >
-                                {subItem.label}
-                              </Link>
-                            ))
-                          })()}
+                          {item.submenu.map((subItem, subIndex) => (
+                            <Link
+                              key={subIndex}
+                              to={subItem.url}
+                              onClick={() => setIsOpen(false)}
+                              className={`block w-full text-left text-base font-medium transition-colors hover:text-primary ${
+                                isActive(subItem.url) ? 'text-primary' : 'text-muted-foreground'
+                              }`}
+                            >
+                              {subItem.label}
+                            </Link>
+                          ))}
                         </CollapsibleContent>
                       </Collapsible>
                     );
+                  } else if (item.type === 'component' && item.component === 'IndustriesDropdown') {
+                    return (
+                      <div key={index}>
+                        <span className="text-lg font-medium text-muted-foreground">Industries</span>
+                        <div className="mt-2">
+                          <IndustriesDropdown />
+                        </div>
+                      </div>
+                    );
+                  } else if (item.type === 'link' && item.url) {
+                    return (
+                      <Link
+                        key={index}
+                        to={item.url}
+                        onClick={() => setIsOpen(false)}
+                        className={`text-left text-lg font-medium transition-colors hover:text-primary ${
+                          isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    );
                   }
-                  
-                  return (
-                    <Link
-                      key={index}
-                      to={item.url}
-                      onClick={() => setIsOpen(false)}
-                      className={`text-left text-lg font-medium transition-colors hover:text-primary ${
-                        isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  );
+                  return null;
                 })}
-                {!navigation.menu_items?.some((item: any) => item.url === '/media-buying-rates-london') && (
+                
+                <Button 
+                  asChild
+                  className="bg-london-blue hover:bg-london-blue/90 text-white w-full mt-4"
+                >
                   <Link
-                    to={'/media-buying-rates-london'}
-                    onClick={() => setIsOpen(false)}
-                    className={`text-left text-lg font-medium transition-colors hover:text-primary ${
-                      isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
-                    }`}
+                    to="/brief"
+                    onClick={() => {
+                      trackBriefCtaClicked({ location: "London" });
+                      setIsOpen(false);
+                    }}
                   >
-                    Rates
+                    Brief Us Today
                   </Link>
-                )}
-                {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
-                  <Button 
-                    asChild
-                    className="bg-london-blue hover:bg-london-blue/90 text-white w-full mt-4"
-                  >
-                    <Link
-                      to={'/brief'}
-                      onClick={() => {
-                        trackBriefCtaClicked({ location: "London" });
-                        setIsOpen(false);
-                      }}
-                    >
-                      Brief Us Today
-                    </Link>
-                  </Button>
-                )}
-                {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
-                  <Link
-                    to={'/blog'}
-                    onClick={() => setIsOpen(false)}
-                    className={`text-left text-lg font-medium transition-colors hover:text-primary ${
-                      isActive('/blog') ? 'text-primary' : 'text-muted-foreground'
-                    }`}
-                  >
-                    Blog
-                  </Link>
-                )}
+                </Button>
                 
                 {/* Mobile Your Plan Button - Show if user is client or has active quote */}
                 {(userProfile?.role === 'client' || (currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0)) && (
