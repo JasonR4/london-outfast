@@ -41,6 +41,7 @@ const Hero = () => {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${content?.background_image || londonHero})` }}
       >
+        <div className="absolute inset-0 bg-black/20" />
       </div>
       
       {/* Content */}
