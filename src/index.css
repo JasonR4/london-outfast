@@ -320,11 +320,6 @@ All colors MUST be HSL.
 
     position: relative;
     padding: 28px 16px 8px;
-    background:
-      radial-gradient(900px 600px at 0% 0%, rgba(74, 111, 255, .25), transparent 60%),
-      radial-gradient(800px 500px at 100% 10%, rgba(255, 77, 77, .18), transparent 65%),
-      linear-gradient(180deg, #0A0C16 0%, #090B13 100%);
-    border-radius: 12px;
     margin-top: 2rem;
   }
 
