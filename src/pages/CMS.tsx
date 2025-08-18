@@ -66,10 +66,8 @@ const CMS = () => {
   }, [navigate]);
 
   const fetchUserProfile = async (userId: string) => {
-    // Prevent duplicate profile fetches
-    if (userProfile) return;
-    
     try {
+      console.log('📋 Fetching user profile for:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -77,12 +75,13 @@ const CMS = () => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.error('❌ Error fetching profile:', error);
       } else {
+        console.log('✅ Profile fetched:', data);
         setUserProfile(data);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('❌ Error fetching profile:', error);
     }
   };
 
