@@ -11,17 +11,7 @@ const Footer = () => {
   // Debug logging
   console.log('Footer Debug:', { footer, loading });
 
-  if (loading || !footer) {
-    return (
-      <footer className="bg-muted/30 border-t border-border py-12 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 Media Buying London. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
-    );
-  }
+  // Always render footer - no loading check
 
   return (
     <footer className="bg-gradient-to-br from-muted/20 via-muted/30 to-muted/40 border-t border-border">
