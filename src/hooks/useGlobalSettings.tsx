@@ -10,9 +10,52 @@ interface GlobalSetting {
 }
 
 export const useGlobalSettings = () => {
-  const [navigation, setNavigation] = useState<any>(null);
-  const [footer, setFooter] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [navigation, setNavigation] = useState<any>({
+    logo: { text: 'Media Buying London', url: '/' },
+    menu_items: [
+      { label: 'Services', type: 'dropdown', submenu: [
+        { label: 'London Underground', url: '/london-underground-advertising' },
+        { label: 'Bus Advertising', url: '/bus-advertising' },
+        { label: 'Roadside Advertising', url: '/roadside-advertising' },
+        { label: 'Digital OOH', url: '/digital-ooh' },
+        { label: 'Rail Advertising', url: '/rail-advertising-london' },
+        { label: 'Taxi Advertising', url: '/taxi-advertising' }
+      ]},
+      { label: 'Industries', type: 'dropdown', submenu: [
+        { label: 'Retail', url: '/industries/retail' },
+        { label: 'Technology', url: '/industries/technology' },
+        { label: 'Finance', url: '/industries/finance' },
+        { label: 'Healthcare', url: '/industries/healthcare' }
+      ]},
+      { label: 'About', type: 'dropdown', submenu: [
+        { label: 'How We Work', url: '/how-we-work' },
+        { label: 'Contact', url: '/contact' },
+        { label: 'FAQs', url: '/faqs' }
+      ]}
+    ]
+  });
+  const [footer, setFooter] = useState<any>({
+    company: { name: 'Media Buying London', email: 'hello@mediabuyinglondon.com' },
+    links: {
+      services: [
+        { label: 'London Underground', url: '/london-underground-advertising' },
+        { label: 'Bus Advertising', url: '/bus-advertising' },
+        { label: 'Roadside Advertising', url: '/roadside-advertising' },
+        { label: 'Digital OOH', url: '/digital-ooh' }
+      ],
+      company: [
+        { label: 'About', url: '/about' },
+        { label: 'How We Work', url: '/how-we-work' },
+        { label: 'Contact', url: '/contact' }
+      ],
+      legal: [
+        { label: 'Privacy Policy', url: '/privacy' },
+        { label: 'Terms of Service', url: '/terms' }
+      ]
+    },
+    copyright: '© 2024 Media Buying London. All rights reserved.'
+  });
+  const [loading, setLoading] = useState(false);
 
   const fetchSettings = async () => {
     try {
