@@ -128,12 +128,8 @@ const CMS = () => {
     loading 
   });
 
-  // Temporarily allow access for r4advertising.agency emails while profile loads
-  const isR4Email = user?.email?.endsWith('@r4advertising.agency');
-  console.log('📧 Email check:', { email: user?.email, isR4Email });
-
-  // Check if user has admin/editor access
-  if (userProfile && !['super_admin', 'admin', 'editor'].includes(userProfile.role) && !isR4Email) {
+  // Check if user has admin/editor access (no domain restrictions)
+  if (userProfile && !['super_admin', 'admin', 'editor'].includes(userProfile.role)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="max-w-md mx-auto">
