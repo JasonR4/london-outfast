@@ -8,9 +8,8 @@ import { HelmetProvider } from "react-helmet-async";
 import { MediaFormatsProvider } from "@/components/providers/MediaFormatsProvider";
 import { SchemaManager } from "@/components/SchemaManager";
 
-import Navigation from "@/components/Navigation";
+import SiteShell from "@/components/layout/SiteShell";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import Footer from "@/components/Footer";
 import { AnalyticsScripts } from "@/components/AnalyticsScripts";
 import Index from "./pages/Index";
 import Quote from "./pages/Quote";
@@ -99,70 +98,70 @@ const App = () => {
           <NoInspect />
           <div className="min-h-screen bg-background">
             <AnalyticsScripts />
-            <Navigation />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/quote" element={<Quote />} />
-              <Route path="/quote-plan" element={<QuotePlan />} />
-              <Route path="/quote-submitted" element={<QuoteSubmitted />} />
-              <Route path="/create-account" element={<CreateAccount />} />
-              <Route path="/account-created" element={<AccountCreated />} />
-              <Route path="/client-portal" element={<ClientPortal />} />
-              <Route path="/configurator" element={<Configurator />} />
-              <Route path="/outdoor-media" element={<FormatDirectory />} />
-              <Route path="/outdoor-media/:formatSlug" element={<FormatPage />} />
-              <Route path="/outdoor-media/industries/:industrySlug" element={<IndustryPage />} />
-              <Route path="/industries" element={<Industries />} />
-              <Route path="/industries/:industrySlug" element={<IndustryPage />} />
-              <Route path="/what-is-media-buying-in-london" element={<WhatIsMediaBuying />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/faqs" element={<FAQs />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/brief" element={<Brief />} />
-              <Route path="/how-we-work" element={<HowWeWork />} />
-              <Route path="/thank-you" element={<ThankYou />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogPost />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/email-test" element={<EmailTest />} />
-              <Route path="/cms" element={<ProtectedRoute><CMS /></ProtectedRoute>} />
-              <Route path="/corporate-investment" element={<CorporateInvestment />} />
-              <Route path="/ooh" element={<OOHHub />} />
-              <Route path="/ooh/taxi-advertising" element={<TaxiAdvertising />} />
-              <Route path="/ooh/airport-advertising" element={<AirportAdvertising />} />
-              <Route path="/ooh/bike-hire-dock-advertising" element={<BikeHireDockAdvertising />} />
-              <Route path="/ooh/lamp-post-banner-advertising" element={<LampPostBannerAdvertising />} />
-              <Route path="/ooh/shopping-mall-advertising" element={<ShoppingMallAdvertising />} />
-              <Route path="/ooh/supermarket-advertising" element={<SupermarketAdvertising />} />
-              <Route path="/ooh/stadium-advertising-london" element={<StadiumAdvertising />} />
-              <Route path="/ooh/city-posters-london" element={<CityPosters />} />
-              <Route path="/ooh/street-furniture" element={<StreetFurniture />} />
-              <Route path="/ooh/projection-mapping-advertising" element={<ProjectionMappingAdvertising />} />
-              <Route path="/ooh/experiential-sampling-london" element={<ExperientialSampling />} />
-              <Route path="/ooh/roadside-billboards" element={<RoadsideAdvertising />} />
-              <Route path="/ooh/bus-advertising" element={<BusAdvertising />} />
-              <Route path="/ooh/digital-ooh" element={<DigitalOOH />} />
-              <Route path="/ooh/london-underground" element={<LondonUndergroundAdvertising />} />
-              <Route path="/ooh/rail-advertising-london" element={<RailAdvertisingLondon />} />
-              <Route path="/london-ooh-specialists" element={<LondonOOHSpecialists />} />
-              <Route path="/ooh-advertising-london" element={<OOHAdvertisingLondon />} />
-              <Route path="/media-buying-rates-london" element={<MediaBuyingRatesLondon />} />
-              <Route path="/sitemap" element={<HtmlSitemap />} />
-              <Route path="/sitemap-html" element={<HtmlSitemap />} />
-              {/* Legal Pages */}
-              <Route path="/privacy-policy" element={<LegalPage />} />
-              <Route path="/terms-of-service" element={<LegalPage />} />
-              <Route path="/cookie-policy" element={<LegalPage />} />
-              <Route path="/disclaimer" element={<LegalPage />} />
-              {/* Legal Pages with /legal/ prefix */}
-              <Route path="/legal/privacy-policy" element={<LegalPage />} />
-              <Route path="/legal/terms-of-service" element={<LegalPage />} />
-              <Route path="/legal/cookie-policy" element={<LegalPage />} />
-              <Route path="/legal/disclaimer" element={<LegalPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <Footer />
+            <SiteShell>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/quote" element={<Quote />} />
+                <Route path="/quote-plan" element={<QuotePlan />} />
+                <Route path="/quote-submitted" element={<QuoteSubmitted />} />
+                <Route path="/create-account" element={<CreateAccount />} />
+                <Route path="/account-created" element={<AccountCreated />} />
+                <Route path="/client-portal" element={<ClientPortal />} />
+                <Route path="/configurator" element={<Configurator />} />
+                <Route path="/outdoor-media" element={<FormatDirectory />} />
+                <Route path="/outdoor-media/:formatSlug" element={<FormatPage />} />
+                <Route path="/outdoor-media/industries/:industrySlug" element={<IndustryPage />} />
+                <Route path="/industries" element={<Industries />} />
+                <Route path="/industries/:industrySlug" element={<IndustryPage />} />
+                <Route path="/what-is-media-buying-in-london" element={<WhatIsMediaBuying />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/faqs" element={<FAQs />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/brief" element={<Brief />} />
+                <Route path="/how-we-work" element={<HowWeWork />} />
+                <Route path="/thank-you" element={<ThankYou />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogPost />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/email-test" element={<EmailTest />} />
+                <Route path="/cms" element={<ProtectedRoute><CMS /></ProtectedRoute>} />
+                <Route path="/corporate-investment" element={<CorporateInvestment />} />
+                <Route path="/ooh" element={<OOHHub />} />
+                <Route path="/ooh/taxi-advertising" element={<TaxiAdvertising />} />
+                <Route path="/ooh/airport-advertising" element={<AirportAdvertising />} />
+                <Route path="/ooh/bike-hire-dock-advertising" element={<BikeHireDockAdvertising />} />
+                <Route path="/ooh/lamp-post-banner-advertising" element={<LampPostBannerAdvertising />} />
+                <Route path="/ooh/shopping-mall-advertising" element={<ShoppingMallAdvertising />} />
+                <Route path="/ooh/supermarket-advertising" element={<SupermarketAdvertising />} />
+                <Route path="/ooh/stadium-advertising-london" element={<StadiumAdvertising />} />
+                <Route path="/ooh/city-posters-london" element={<CityPosters />} />
+                <Route path="/ooh/street-furniture" element={<StreetFurniture />} />
+                <Route path="/ooh/projection-mapping-advertising" element={<ProjectionMappingAdvertising />} />
+                <Route path="/ooh/experiential-sampling-london" element={<ExperientialSampling />} />
+                <Route path="/ooh/roadside-billboards" element={<RoadsideAdvertising />} />
+                <Route path="/ooh/bus-advertising" element={<BusAdvertising />} />
+                <Route path="/ooh/digital-ooh" element={<DigitalOOH />} />
+                <Route path="/ooh/london-underground" element={<LondonUndergroundAdvertising />} />
+                <Route path="/ooh/rail-advertising-london" element={<RailAdvertisingLondon />} />
+                <Route path="/london-ooh-specialists" element={<LondonOOHSpecialists />} />
+                <Route path="/ooh-advertising-london" element={<OOHAdvertisingLondon />} />
+                <Route path="/media-buying-rates-london" element={<MediaBuyingRatesLondon />} />
+                <Route path="/sitemap" element={<HtmlSitemap />} />
+                <Route path="/sitemap-html" element={<HtmlSitemap />} />
+                {/* Legal Pages */}
+                <Route path="/privacy-policy" element={<LegalPage />} />
+                <Route path="/terms-of-service" element={<LegalPage />} />
+                <Route path="/cookie-policy" element={<LegalPage />} />
+                <Route path="/disclaimer" element={<LegalPage />} />
+                {/* Legal Pages with /legal/ prefix */}
+                <Route path="/legal/privacy-policy" element={<LegalPage />} />
+                <Route path="/legal/terms-of-service" element={<LegalPage />} />
+                <Route path="/legal/cookie-policy" element={<LegalPage />} />
+                <Route path="/legal/disclaimer" element={<LegalPage />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </SiteShell>
           </div>
         </BrowserRouter>
       </TooltipProvider>

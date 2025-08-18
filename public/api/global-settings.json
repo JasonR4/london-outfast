@@ -1,0 +1,76 @@
+{
+  "header": {
+    "nav": [
+      { "label": "Get Quote", "href": "/quote" },
+      { "label": "Configurator", "href": "/configurator" },
+      { 
+        "label": "Formats", 
+        "href": "/ooh",
+        "children": [
+          { "label": "London Underground", "href": "/ooh/london-underground" },
+          { "label": "Roadside Advertising", "href": "/ooh/roadside-billboards" },
+          { "label": "Bus Advertising", "href": "/ooh/bus-advertising" },
+          { "label": "Taxi Advertising", "href": "/ooh/taxi-advertising" },
+          { "label": "Rail Advertising", "href": "/ooh/rail-advertising-london" },
+          { "label": "Digital OOH", "href": "/ooh/digital-ooh" }
+        ]
+      },
+      { 
+        "label": "Industries", 
+        "href": "/industries",
+        "children": [
+          { "label": "All Industries", "href": "/industries" }
+        ]
+      },
+      { 
+        "label": "About", 
+        "href": "/about",
+        "children": [
+          { "label": "About Us", "href": "/about" },
+          { "label": "How We Work", "href": "/how-we-work" },
+          { "label": "FAQs", "href": "/faqs" }
+        ]
+      },
+      { "label": "Contact", "href": "/contact" },
+      { "label": "Blog", "href": "/blog" },
+      { "label": "Rates", "href": "/media-buying-rates-london" }
+    ]
+  },
+  "footer": {
+    "columns": [
+      { 
+        "title": "Services", 
+        "links": [
+          { "label": "Get Quote", "href": "/quote" },
+          { "label": "Configurator", "href": "/configurator" },
+          { "label": "London Underground", "href": "/ooh/london-underground" },
+          { "label": "Bus Advertising", "href": "/ooh/bus-advertising" },
+          { "label": "Roadside Advertising", "href": "/ooh/roadside-billboards" }
+        ]
+      },
+      { 
+        "title": "Company", 
+        "links": [
+          { "label": "How We Work", "href": "/how-we-work" },
+          { "label": "About", "href": "/about" },
+          { "label": "Contact", "href": "/contact" },
+          { "label": "Blog", "href": "/blog" },
+          { "label": "FAQs", "href": "/faqs" }
+        ]
+      },
+      { 
+        "title": "Legal", 
+        "links": [
+          { "label": "Privacy Policy", "href": "/privacy-policy" },
+          { "label": "Terms & Conditions", "href": "/terms-conditions" },
+          { "label": "Cookie Policy", "href": "/cookie-policy" }
+        ]
+      }
+    ],
+    "bottom": [
+      { "label": "Client Portal", "href": "/client-portal" },
+      { "label": "+44 204 524 3019", "href": "tel:+442045243019" }
+    ]
+  },
+  "updatedAt": "2025-08-18T10:00:00Z"
+}
