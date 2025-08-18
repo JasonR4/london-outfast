@@ -67,19 +67,6 @@ const Hero = () => {
         
           <section className="hero-cta mt-10">
             <div className="hero-cta__grid">
-              <a 
-                href="/quote" 
-                className="cta-card cta--quote"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate('/quote');
-                }}
-                data-cta="hero_quote"
-                aria-label="Get My Quote - Get your OOH campaign booked today"
-              >
-                <h3>Get My Quote</h3>
-                <p>Get your OOH campaign booked today.</p>
-              </a>
 
               <a 
                 href="/configurator" 
