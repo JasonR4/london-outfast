@@ -10,8 +10,94 @@ interface GlobalSetting {
 }
 
 export const useGlobalSettings = () => {
-  const [navigation, setNavigation] = useState<any>(null);
-  const [footer, setFooter] = useState<any>(null);
+  // Fallback navigation data with How We Work under About
+  const fallbackNavigation = {
+    menu_items: [
+      {
+        label: "About",
+        type: "dropdown",
+        items: [
+          { label: "About Us", href: "/about" },
+          { label: "How We Work", href: "/how-we-work" }
+        ]
+      },
+      {
+        label: "Advertising Formats",
+        type: "dropdown", 
+        items: [
+          { label: "Format Directory", href: "/formats" },
+          { label: "Digital OOH", href: "/digital-ooh" },
+          { label: "City Posters", href: "/city-posters" },
+          { label: "Bus Advertising", href: "/bus-advertising" },
+          { label: "London Underground", href: "/london-underground-advertising" },
+          { label: "Rail Advertising", href: "/rail-advertising-london" },
+          { label: "Airport Advertising", href: "/airport-advertising" },
+          { label: "Roadside Advertising", href: "/roadside-advertising" },
+          { label: "Street Furniture", href: "/street-furniture" },
+          { label: "Taxi Advertising", href: "/taxi-advertising" },
+          { label: "Shopping Mall", href: "/shopping-mall-advertising" },
+          { label: "Stadium Advertising", href: "/stadium-advertising" },
+          { label: "Supermarket Advertising", href: "/supermarket-advertising" },
+          { label: "Lamp Post Banners", href: "/lamp-post-banner-advertising" },
+          { label: "Bike Hire Dock", href: "/bike-hire-dock-advertising" },
+          { label: "Projection Mapping", href: "/projection-mapping-advertising" },
+          { label: "Experiential Sampling", href: "/experiential-sampling" }
+        ]
+      },
+      {
+        label: "Industries",
+        type: "dropdown",
+        items: [
+          { label: "All Industries", href: "/industries" },
+          { label: "Technology", href: "/industries/technology" },
+          { label: "Fashion & Beauty", href: "/industries/fashion-beauty" },
+          { label: "Food & Beverage", href: "/industries/food-beverage" },
+          { label: "Entertainment", href: "/industries/entertainment" },
+          { label: "Healthcare", href: "/industries/healthcare" },
+          { label: "Finance", href: "/industries/finance" },
+          { label: "Education", href: "/industries/education" },
+          { label: "Automotive", href: "/industries/automotive" },
+          { label: "Travel & Tourism", href: "/industries/travel-tourism" },
+          { label: "Real Estate", href: "/industries/real-estate" }
+        ]
+      },
+      { label: "Rates", href: "/rates" },
+      { label: "Brief Us Today", href: "/quote" },
+      { label: "Blog", href: "/blog" }
+    ]
+  };
+
+  const fallbackFooter = {
+    sections: [
+      {
+        title: "Services",
+        links: [
+          { label: "OOH Advertising", href: "/ooh-advertising-london" },
+          { label: "Media Buying", href: "/what-is-media-buying" },
+          { label: "Planning Tools", href: "/configurator" }
+        ]
+      },
+      {
+        title: "Formats",
+        links: [
+          { label: "Digital OOH", href: "/digital-ooh" },
+          { label: "Bus Advertising", href: "/bus-advertising" },
+          { label: "Underground", href: "/london-underground-advertising" }
+        ]
+      },
+      {
+        title: "Company",
+        links: [
+          { label: "About", href: "/about" },
+          { label: "How We Work", href: "/how-we-work" },
+          { label: "Contact", href: "/contact" }
+        ]
+      }
+    ]
+  };
+
+  const [navigation, setNavigation] = useState<any>(fallbackNavigation);
+  const [footer, setFooter] = useState<any>(fallbackFooter);
   const [loading, setLoading] = useState(true);
 
   const fetchSettings = async () => {
