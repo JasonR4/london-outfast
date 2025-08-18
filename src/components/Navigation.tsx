@@ -6,7 +6,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Badge } from "@/components/ui/badge";
 import { Menu, Phone, ChevronDown, ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";
-import useGlobalSettings from '@/hooks/useGlobalSettings';
 import { useQuotes } from '@/hooks/useQuotes';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -18,7 +17,6 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
-  const { navigation, loading } = useGlobalSettings();
   const { currentQuote } = useQuotes();
 
   useEffect(() => {
@@ -71,22 +69,6 @@ const Navigation = () => {
     setIsOpen(false);
   };
 
-  if (loading || !navigation) {
-    return (
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <Link 
-              to="/"
-              className="font-bold text-xl bg-gradient-hero bg-clip-text text-transparent"
-            >
-              Media Buying London
-            </Link>
-          </div>
-        </div>
-      </nav>
-    );
-  }
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
@@ -95,100 +77,146 @@ const Navigation = () => {
           
           {/* Logo */}
           <Link 
-            to={navigation.logo?.url || '/'}
+            to="/"
             className="font-bold text-xl bg-gradient-hero bg-clip-text text-transparent"
           >
-            {navigation.logo?.text || 'Media Buying London'}
+            Media Buying London
           </Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
-            {navigation.menu_items?.map((item: any, index: number) => {
-              if (item.type === 'dropdown' && item.submenu) {
-                return (
-                  <DropdownMenu key={index}>
-                    <DropdownMenuTrigger asChild>
-                      <button className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary ${
-                        item.submenu.some((subItem: any) => isActive(subItem.url)) ? 'text-primary' : 'text-muted-foreground'
-                      }`}>
-                        {item.label}
-                        <ChevronDown className="h-4 w-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-background border border-border shadow-lg z-50">
-                      {(() => {
-                        const isAbout = (item.label?.toLowerCase?.() === 'about') || item.url === '/about'
-                        const enrichedSubmenu = isAbout
-                          ? (() => {
-                              const hasFAQs = item.submenu?.some((s: any) => s?.url === '/faqs' || s?.label?.toLowerCase?.().includes('faq'))
-                              return hasFAQs ? item.submenu : [...item.submenu, { label: 'FAQs', url: '/faqs' }]
-                            })()
-                          : item.submenu
-
-                        return enrichedSubmenu.map((subItem: any, subIndex: number) => (
-                          <DropdownMenuItem asChild key={subIndex}>
-                            <Link
-                              to={subItem.url}
-                              className={`cursor-pointer hover:bg-muted ${
-                                isActive(subItem.url) ? 'bg-muted text-primary' : ''
-                              }`}
-                            >
-                              {subItem.label}
-                            </Link>
-                          </DropdownMenuItem>
-                        ))
-                      })()}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                );
-              }
-              
-              return (
-                <Link
-                  key={index}
-                  to={item.url}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-            {!navigation.menu_items?.some((item: any) => item.url === '/media-buying-rates-london') && (
+            <Link
+              to="/quote"
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                isActive('/quote') ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              Get Quote
+            </Link>
+            <Link
+              to="/configurator"
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                isActive('/configurator') ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              Configurator
+            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary text-muted-foreground`}>
+                  Formats
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-background border border-border shadow-lg z-50">
+                <DropdownMenuItem asChild>
+                  <Link to="/london-underground-advertising" className="cursor-pointer hover:bg-muted">
+                    London Underground
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/roadside-advertising" className="cursor-pointer hover:bg-muted">
+                    Roadside Advertising
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/bus-advertising" className="cursor-pointer hover:bg-muted">
+                    Bus Advertising
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/taxi-advertising" className="cursor-pointer hover:bg-muted">
+                    Taxi Advertising
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/rail-advertising-london" className="cursor-pointer hover:bg-muted">
+                    Rail Advertising
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/digital-ooh" className="cursor-pointer hover:bg-muted">
+                    Digital OOH
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary text-muted-foreground`}>
+                  Industries
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-background border border-border shadow-lg z-50">
+                <DropdownMenuItem asChild>
+                  <Link to="/industries" className="cursor-pointer hover:bg-muted">
+                    All Industries
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary text-muted-foreground`}>
+                  About
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-background border border-border shadow-lg z-50">
+                <DropdownMenuItem asChild>
+                  <Link to="/about" className="cursor-pointer hover:bg-muted">
+                    About Us
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/how-we-work" className="cursor-pointer hover:bg-muted">
+                    How We Work
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/faqs" className="cursor-pointer hover:bg-muted">
+                    FAQs
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Link
+              to="/contact"
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                isActive('/contact') ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              Contact
+            </Link>
+            <Link
+              to="/blog"
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                isActive('/blog') ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              Blog
+            </Link>
+            <Link
+              to="/media-buying-rates-london"
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              Rates
+            </Link>
+            <Button 
+              asChild
+              className="bg-london-blue hover:bg-london-blue/90 text-white"
+              size="sm"
+            >
               <Link
-                to={'/media-buying-rates-london'}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
-                }`}
+                to="/brief"
+                onClick={() => trackBriefCtaClicked({ location: "London" })}
               >
-                Rates
+                Brief Us Today
               </Link>
-            )}
-            {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
-              <Button 
-                asChild
-                className="bg-london-blue hover:bg-london-blue/90 text-white"
-                size="sm"
-              >
-                <Link
-                  to={'/brief'}
-                  onClick={() => trackBriefCtaClicked({ location: "London" })}
-                >
-                  Brief Us Today
-                </Link>
-              </Button>
-            )}
-            {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
-              <Link
-                to={'/blog'}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive('/blog') ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                Blog
-              </Link>
-            )}
+            </Button>
             
             {/* Your Plan Button - Show if user is client or has active quote */}
             {(userProfile?.role === 'client' || (currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0)) && (
@@ -231,95 +259,125 @@ const Navigation = () => {
             </SheetTrigger>
             <SheetContent>
               <div className="flex flex-col space-y-4 mt-8">
-                {navigation.menu_items?.map((item: any, index: number) => {
-                  if (item.type === 'dropdown' && item.submenu) {
-                    return (
-                      <Collapsible key={index}>
-                        <CollapsibleTrigger asChild>
-                          <button className="flex items-center justify-between w-full text-left text-lg font-medium transition-colors hover:text-primary text-muted-foreground">
-                            {item.label}
-                            <ChevronDown className="h-4 w-4" />
-                          </button>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="pl-4 space-y-2 mt-2">
-                          {(() => {
-                            const isAbout = (item.label?.toLowerCase?.() === 'about') || item.url === '/about'
-                            const enrichedSubmenu = isAbout
-                              ? (() => {
-                                  const hasFAQs = item.submenu?.some((s: any) => s?.url === '/faqs' || s?.label?.toLowerCase?.().includes('faq'))
-                                  return hasFAQs ? item.submenu : [...item.submenu, { label: 'FAQs', url: '/faqs' }]
-                                })()
-                              : item.submenu
-
-                            return enrichedSubmenu.map((subItem: any, subIndex: number) => (
-                              <Link
-                                key={subIndex}
-                                to={subItem.url}
-                                onClick={() => setIsOpen(false)}
-                                className={`block w-full text-left text-base font-medium transition-colors hover:text-primary ${
-                                  isActive(subItem.url) ? 'text-primary' : 'text-muted-foreground'
-                                }`}
-                              >
-                                {subItem.label}
-                              </Link>
-                            ))
-                          })()}
-                        </CollapsibleContent>
-                      </Collapsible>
-                    );
-                  }
-                  
-                  return (
-                    <Link
-                      key={index}
-                      to={item.url}
-                      onClick={() => setIsOpen(false)}
-                      className={`text-left text-lg font-medium transition-colors hover:text-primary ${
-                        isActive(item.url) ? 'text-primary' : 'text-muted-foreground'
-                      }`}
-                    >
-                      {item.label}
+                <Link
+                  to="/quote"
+                  onClick={() => setIsOpen(false)}
+                  className={`text-left text-lg font-medium transition-colors hover:text-primary ${
+                    isActive('/quote') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Get Quote
+                </Link>
+                <Link
+                  to="/configurator"
+                  onClick={() => setIsOpen(false)}
+                  className={`text-left text-lg font-medium transition-colors hover:text-primary ${
+                    isActive('/configurator') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Configurator
+                </Link>
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <button className="flex items-center justify-between w-full text-left text-lg font-medium transition-colors hover:text-primary text-muted-foreground">
+                      Formats
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pl-4 space-y-2 mt-2">
+                    <Link to="/london-underground-advertising" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                      London Underground
                     </Link>
-                  );
-                })}
-                {!navigation.menu_items?.some((item: any) => item.url === '/media-buying-rates-london') && (
-                  <Link
-                    to={'/media-buying-rates-london'}
-                    onClick={() => setIsOpen(false)}
-                    className={`text-left text-lg font-medium transition-colors hover:text-primary ${
-                      isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
-                    }`}
-                  >
-                    Rates
-                  </Link>
-                )}
-                {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
-                  <Button 
-                    asChild
-                    className="bg-london-blue hover:bg-london-blue/90 text-white w-full mt-4"
-                  >
-                    <Link
-                      to={'/brief'}
-                      onClick={() => {
-                        trackBriefCtaClicked({ location: "London" });
-                        setIsOpen(false);
-                      }}
-                    >
-                      Brief Us Today
+                    <Link to="/roadside-advertising" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                      Roadside Advertising
                     </Link>
-                  </Button>
-                )}
-                {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
+                    <Link to="/bus-advertising" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                      Bus Advertising
+                    </Link>
+                    <Link to="/taxi-advertising" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                      Taxi Advertising
+                    </Link>
+                    <Link to="/rail-advertising-london" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                      Rail Advertising
+                    </Link>
+                    <Link to="/digital-ooh" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                      Digital OOH
+                    </Link>
+                  </CollapsibleContent>
+                </Collapsible>
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <button className="flex items-center justify-between w-full text-left text-lg font-medium transition-colors hover:text-primary text-muted-foreground">
+                      Industries
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pl-4 space-y-2 mt-2">
+                    <Link to="/industries" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                      All Industries
+                    </Link>
+                  </CollapsibleContent>
+                </Collapsible>
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <button className="flex items-center justify-between w-full text-left text-lg font-medium transition-colors hover:text-primary text-muted-foreground">
+                      About
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pl-4 space-y-2 mt-2">
+                    <Link to="/about" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                      About Us
+                    </Link>
+                    <Link to="/how-we-work" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                      How We Work
+                    </Link>
+                    <Link to="/faqs" onClick={() => setIsOpen(false)} className="block w-full text-left text-base font-medium transition-colors hover:text-primary text-muted-foreground">
+                      FAQs
+                    </Link>
+                  </CollapsibleContent>
+                </Collapsible>
+                <Link
+                  to="/contact"
+                  onClick={() => setIsOpen(false)}
+                  className={`text-left text-lg font-medium transition-colors hover:text-primary ${
+                    isActive('/contact') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Contact
+                </Link>
+                <Link
+                  to="/blog"
+                  onClick={() => setIsOpen(false)}
+                  className={`text-left text-lg font-medium transition-colors hover:text-primary ${
+                    isActive('/blog') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Blog
+                </Link>
+                <Link
+                  to="/media-buying-rates-london"
+                  onClick={() => setIsOpen(false)}
+                  className={`text-left text-lg font-medium transition-colors hover:text-primary ${
+                    isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Rates
+                </Link>
+                <Button 
+                  asChild
+                  className="bg-london-blue hover:bg-london-blue/90 text-white w-full mt-4"
+                >
                   <Link
-                    to={'/blog'}
-                    onClick={() => setIsOpen(false)}
-                    className={`text-left text-lg font-medium transition-colors hover:text-primary ${
-                      isActive('/blog') ? 'text-primary' : 'text-muted-foreground'
-                    }`}
+                    to="/brief"
+                    onClick={() => {
+                      trackBriefCtaClicked({ location: "London" });
+                      setIsOpen(false);
+                    }}
                   >
-                    Blog
+                    Brief Us Today
                   </Link>
-                )}
+                </Button>
                 
                 {/* Mobile Your Plan Button - Show if user is client or has active quote */}
                 {(userProfile?.role === 'client' || (currentQuote && currentQuote.quote_items && currentQuote.quote_items.length > 0)) && (
