@@ -42,6 +42,10 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
       links: footerData.links.services.map((link: any) => ({ label: link.label, href: link.url }))
     },
     {
+      title: "OOH Formats", 
+      links: footerData.links.formats?.map((link: any) => ({ label: link.label, href: link.url })) || []
+    },
+    {
       title: "Company", 
       links: footerData.links.company.map((link: any) => ({ label: link.label, href: link.url }))
     },
