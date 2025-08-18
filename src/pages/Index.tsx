@@ -5,8 +5,6 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 
 import PlanningTools from "@/components/PlanningTools";
 import FormatLinks from "@/components/FormatLinks";
-import CTA from "@/components/CTA";
-
 const Index = () => {
   return (
     <>
@@ -30,8 +28,6 @@ const Index = () => {
             </p>
           </div>
         </section>
-
-        <CTA />
       </div>
     </>
   );
