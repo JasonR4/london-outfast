@@ -23,26 +23,35 @@ export const useGlobalSettings = () => {
         .eq('is_active', true)
         .in('setting_key', ['main_navigation', 'main_footer']);
 
+      console.log('🔍 Raw Supabase response:', { data, error });
+
       if (error) {
         console.error('❌ Error fetching global settings:', error);
+        setLoading(false);
         return;
       }
 
       console.log('📊 Global settings data:', data);
 
-      data?.forEach((setting: GlobalSetting) => {
-        if (setting.setting_key === 'main_navigation') {
-          console.log('✅ Setting navigation:', setting.setting_value);
-          setNavigation(setting.setting_value);
-        } else if (setting.setting_key === 'main_footer') {
-          console.log('✅ Setting footer:', setting.setting_value);
-          setFooter(setting.setting_value);
-        }
-      });
+      if (data && data.length > 0) {
+        data.forEach((setting: GlobalSetting) => {
+          console.log('🔄 Processing setting:', setting.setting_key, setting.setting_value);
+          if (setting.setting_key === 'main_navigation') {
+            console.log('✅ Setting navigation:', setting.setting_value);
+            setNavigation(setting.setting_value);
+          } else if (setting.setting_key === 'main_footer') {
+            console.log('✅ Setting footer:', setting.setting_value);
+            setFooter(setting.setting_value);
+          }
+        });
+      } else {
+        console.warn('⚠️ No global settings data found');
+      }
+      
+      setLoading(false);
+      console.log('✅ Global settings loading complete');
     } catch (error) {
       console.error('❌ Error fetching global settings:', error);
-    } finally {
-      console.log('✅ Global settings loading complete');
       setLoading(false);
     }
   };
