@@ -99,6 +99,7 @@ export const useGlobalSettings = () => {
   const [navigation, setNavigation] = useState<any>(fallbackNavigation);
   const [footer, setFooter] = useState<any>(fallbackFooter);
   const [loading, setLoading] = useState(true);
+  const [cmsDataLoaded, setCmsDataLoaded] = useState(false);
 
   const fetchSettings = async () => {
     try {
@@ -111,22 +112,30 @@ export const useGlobalSettings = () => {
 
       if (error) {
         console.error('❌ Error fetching global settings:', error);
+        setCmsDataLoaded(false);
         return;
       }
 
       console.log('📊 Global settings data:', data);
 
-      data?.forEach((setting: GlobalSetting) => {
-        if (setting.setting_key === 'main_navigation') {
-          console.log('✅ Setting navigation:', setting.setting_value);
-          setNavigation(setting.setting_value);
-        } else if (setting.setting_key === 'main_footer') {
-          console.log('✅ Setting footer:', setting.setting_value);
-          setFooter(setting.setting_value);
-        }
-      });
+      if (data && data.length > 0) {
+        data.forEach((setting: GlobalSetting) => {
+          if (setting.setting_key === 'main_navigation' && setting.setting_value) {
+            console.log('✅ Setting navigation from CMS:', setting.setting_value);
+            setNavigation(setting.setting_value);
+            setCmsDataLoaded(true);
+          } else if (setting.setting_key === 'main_footer' && setting.setting_value) {
+            console.log('✅ Setting footer from CMS:', setting.setting_value);
+            setFooter(setting.setting_value);
+          }
+        });
+      } else {
+        console.log('📝 No CMS data found, using fallbacks');
+        setCmsDataLoaded(false);
+      }
     } catch (error) {
       console.error('❌ Error fetching global settings:', error);
+      setCmsDataLoaded(false);
     } finally {
       console.log('✅ Global settings loading complete');
       setLoading(false);
@@ -167,7 +176,7 @@ export const useGlobalSettings = () => {
     };
   }, []);
 
-  return { navigation, footer, loading, refetch: fetchSettings };
+  return { navigation, footer, loading, cmsDataLoaded, refetch: fetchSettings };
 };
 
 export default useGlobalSettings;
