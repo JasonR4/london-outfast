@@ -52,11 +52,9 @@ export const useGlobalSettings = () => {
     const timeoutId = setTimeout(() => {
       console.warn('⏰ Global settings timeout, using fallbacks');
       setLoading(false);
-    }, 1000);
+    }, 3000); // Increased timeout to 3 seconds
 
-    fetchSettings().finally(() => {
-      clearTimeout(timeoutId);
-    });
+    fetchSettings();
 
     // Subscribe to real-time changes
     const channel = supabase
