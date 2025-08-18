@@ -66,8 +66,10 @@ const CMS = () => {
   }, [navigate]);
 
   const fetchUserProfile = async (userId: string) => {
+    // Prevent duplicate profile fetches
+    if (userProfile) return;
+    
     try {
-      console.log('📋 Fetching user profile for:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -75,13 +77,12 @@ const CMS = () => {
         .maybeSingle();
 
       if (error) {
-        console.error('❌ Error fetching profile:', error);
+        console.error('Error fetching profile:', error);
       } else {
-        console.log('✅ Profile fetched:', data);
         setUserProfile(data);
       }
     } catch (error) {
-      console.error('❌ Error fetching profile:', error);
+      console.error('Error fetching profile:', error);
     }
   };
 
@@ -111,24 +112,7 @@ const CMS = () => {
   }
 
 
-  // Debug logging for user profile
-  console.log('🔍 CMS Access Check:', { 
-    user: user?.email, 
-    userProfile, 
-    loading,
-    role: userProfile?.role 
-  });
-
-  // Debug current auth state
-  console.log('🔍 CMS Debug:', { 
-    userEmail: user?.email,
-    userProfile,
-    hasProfile: !!userProfile,
-    role: userProfile?.role,
-    loading 
-  });
-
-  // Check if user has admin/editor access (no domain restrictions)
+  // Check if user has admin/editor access
   if (userProfile && !['super_admin', 'admin', 'editor'].includes(userProfile.role)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
