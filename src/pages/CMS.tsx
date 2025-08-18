@@ -111,6 +111,14 @@ const CMS = () => {
   }
 
 
+  // Debug logging for user profile
+  console.log('🔍 CMS Access Check:', { 
+    user: user?.email, 
+    userProfile, 
+    loading,
+    role: userProfile?.role 
+  });
+
   // Check if user has admin/editor access
   if (userProfile && !['super_admin', 'admin', 'editor'].includes(userProfile.role)) {
     return (
