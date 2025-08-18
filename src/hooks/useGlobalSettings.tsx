@@ -17,37 +17,44 @@ export const useGlobalSettings = () => {
   const fetchSettings = async () => {
     try {
       console.log('🔍 Fetching global settings...');
-      const { data, error } = await supabase
+      
+      // Query navigation settings
+      const navQuery = supabase
         .from('global_settings')
         .select('*')
         .eq('is_active', true)
-        .in('setting_key', ['main_navigation', 'main_footer']);
+        .eq('setting_key', 'main_navigation')
+        .single();
 
-      console.log('🔍 Raw Supabase response:', { data, error });
+      // Query footer settings  
+      const footerQuery = supabase
+        .from('global_settings')
+        .select('*')
+        .eq('is_active', true)
+        .eq('setting_key', 'main_footer')
+        .single();
 
-      if (error) {
-        console.error('❌ Error fetching global settings:', error);
-        setLoading(false);
-        return;
-      }
-
-      console.log('📊 Global settings data:', data);
-
-      if (data && data.length > 0) {
-        data.forEach((setting: GlobalSetting) => {
-          console.log('🔄 Processing setting:', setting.setting_key, setting.setting_value);
-          if (setting.setting_key === 'main_navigation') {
-            console.log('✅ Setting navigation:', setting.setting_value);
-            setNavigation(setting.setting_value);
-          } else if (setting.setting_key === 'main_footer') {
-            console.log('✅ Setting footer:', setting.setting_value);
-            setFooter(setting.setting_value);
-          }
-        });
-      } else {
-        console.warn('⚠️ No global settings data found');
-      }
+      console.log('🔍 Executing queries...');
       
+      const [navResult, footerResult] = await Promise.all([navQuery, footerQuery]);
+
+      console.log('🔍 Navigation result:', navResult);
+      console.log('🔍 Footer result:', footerResult);
+
+      if (navResult.data) {
+        console.log('✅ Setting navigation:', navResult.data.setting_value);
+        setNavigation(navResult.data.setting_value);
+      } else {
+        console.warn('⚠️ No navigation data found');
+      }
+
+      if (footerResult.data) {
+        console.log('✅ Setting footer:', footerResult.data.setting_value);
+        setFooter(footerResult.data.setting_value);
+      } else {
+        console.warn('⚠️ No footer data found');
+      }
+
       setLoading(false);
       console.log('✅ Global settings loading complete');
     } catch (error) {
@@ -57,12 +64,6 @@ export const useGlobalSettings = () => {
   };
 
   useEffect(() => {
-    // Add timeout for global settings too
-    const timeoutId = setTimeout(() => {
-      console.warn('⏰ Global settings timeout, using fallbacks');
-      setLoading(false);
-    }, 3000); // Increased timeout to 3 seconds
-
     fetchSettings();
 
     // Subscribe to real-time changes
@@ -83,7 +84,6 @@ export const useGlobalSettings = () => {
       .subscribe();
 
     return () => {
-      clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
   }, []);
