@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { useGlobalSettings } from '@/hooks/useGlobalSettings';
+import useGlobalSettings from '@/hooks/useGlobalSettings';
 import { usePageSchema } from '@/hooks/usePageSchema';
 
 export const SchemaManager = () => {
