@@ -69,19 +69,6 @@ const Hero = () => {
             <div className="hero-cta__grid">
 
 
-              <a 
-                href="/outdoor-media" 
-                className="cta-card cta--explore"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate('/outdoor-media');
-                }}
-                data-cta="hero_browse"
-                aria-label="Explore Outdoor Media - Browse London's OOH opportunities"
-              >
-                <h3>Explore Outdoor Media</h3>
-                <p>Browse London's OOH environments, formats, and placement opportunities.</p>
-              </a>
 
               <a 
                 href="/brief" 
