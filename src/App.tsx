@@ -140,7 +140,6 @@ const App = () => {
               <Route path="/ooh/projection-mapping-advertising" element={<ProjectionMappingAdvertising />} />
               <Route path="/ooh/experiential-sampling-london" element={<ExperientialSampling />} />
               <Route path="/ooh/roadside-billboards" element={<RoadsideAdvertising />} />
-              <Route path="/roadside-advertising" element={<RoadsideAdvertising />} />
               <Route path="/ooh/bus-advertising" element={<BusAdvertising />} />
               <Route path="/ooh/digital-ooh" element={<DigitalOOH />} />
               <Route path="/ooh/london-underground" element={<LondonUndergroundAdvertising />} />
