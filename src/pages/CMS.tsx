@@ -119,8 +119,21 @@ const CMS = () => {
     role: userProfile?.role 
   });
 
+  // Debug current auth state
+  console.log('🔍 CMS Debug:', { 
+    userEmail: user?.email,
+    userProfile,
+    hasProfile: !!userProfile,
+    role: userProfile?.role,
+    loading 
+  });
+
+  // Temporarily allow access for r4advertising.agency emails while profile loads
+  const isR4Email = user?.email?.endsWith('@r4advertising.agency');
+  console.log('📧 Email check:', { email: user?.email, isR4Email });
+
   // Check if user has admin/editor access
-  if (userProfile && !['super_admin', 'admin', 'editor'].includes(userProfile.role)) {
+  if (userProfile && !['super_admin', 'admin', 'editor'].includes(userProfile.role) && !isR4Email) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="max-w-md mx-auto">

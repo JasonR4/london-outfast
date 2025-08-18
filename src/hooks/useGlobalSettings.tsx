@@ -25,10 +25,21 @@ export const useGlobalSettings = () => {
 
       if (error) {
         console.error('❌ Error fetching global settings:', error);
+        // Set fallback data if fetch fails
+        setNavigation([]);
+        setFooter({ links: [] });
         return;
       }
 
       console.log('📊 Global settings data:', data);
+
+      // If no data found, set fallback values
+      if (!data || data.length === 0) {
+        console.log('⚠️ No global settings found, using fallbacks');
+        setNavigation([]);
+        setFooter({ links: [] });
+        return;
+      }
 
       data?.forEach((setting: GlobalSetting) => {
         if (setting.setting_key === 'main_navigation') {
@@ -39,8 +50,16 @@ export const useGlobalSettings = () => {
           setFooter(setting.setting_value);
         }
       });
+
+      // Ensure we have fallbacks for missing settings
+      if (!navigation) setNavigation([]);
+      if (!footer) setFooter({ links: [] });
+
     } catch (error) {
       console.error('❌ Error fetching global settings:', error);
+      // Set fallback data on error
+      setNavigation([]);
+      setFooter({ links: [] });
     } finally {
       console.log('✅ Global settings loading complete');
       setLoading(false);
