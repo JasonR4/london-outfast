@@ -65,26 +65,6 @@ const Hero = () => {
         )}
         
         
-          <section className="hero-cta mt-10">
-            <div className="hero-cta__grid">
-
-
-
-              <a 
-                href="/brief" 
-                className="cta-card cta--brief"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate('/brief');
-                }}
-                data-cta="hero_specialist"
-                aria-label="Send My Brief - Discuss with a specialist"
-              >
-                <h3>Send My Brief</h3>
-                <p>Discuss your brief directly with a senior MBL media buying specialist.</p>
-              </a>
-            </div>
-          </section>
       </div>
       
       {/* Scroll Indicator */}
