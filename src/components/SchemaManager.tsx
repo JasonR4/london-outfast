@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import useGlobalSettings from '@/hooks/useGlobalSettings';
+import { useGlobalSettings } from '@/hooks/useGlobalSettings';
 import { usePageSchema } from '@/hooks/usePageSchema';
 
 export const SchemaManager = () => {
@@ -93,48 +93,6 @@ export const SchemaManager = () => {
 
   // Generate FAQPage schema
   const generateFAQSchema = () => {
-    // Handle blog post FAQs specifically for DOOH blog post
-    if (location.pathname === '/blog/dooh-advertising-london') {
-      return {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-          {
-            "@type": "Question",
-            "name": "What is DOOH in London?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "DOOH (Digital Out-of-Home) refers to digital billboards, London Underground screens, shopping mall panels, and roadside D48s that use dynamic creative and real-time triggers."
-            }
-          },
-          {
-            "@type": "Question", 
-            "name": "How much does DOOH advertising cost in London?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "DOOH advertising in London costs typically range from £15 to £45 CPM (cost per thousand impressions). Media Buying London guarantees discounted rates and uploads all invoices to your portal for full transparency."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Which London DOOH formats work best?",
-            "acceptedAnswer": {
-              "@type": "Answer", 
-              "text": "The most effective DOOH formats in London include D48 roadside panels, London Underground digital escalator panels, and landmark 3D screens such as Piccadilly Circus."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Which companies own DOOH sites in London?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Major DOOH media owners in London include JCDecaux, Clear Channel, Ocean Outdoor, Global Outdoor, Limited Space, and BlowUp Media."
-            }
-          }
-        ]
-      };
-    }
-
     if (!pageData?.schema?.faq_enabled || !pageData?.schema?.faq_items || pageData.schema.faq_items.length === 0) {
       return null;
     }
