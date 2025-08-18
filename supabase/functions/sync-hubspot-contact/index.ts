@@ -558,8 +558,8 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
         break;
         
       case 'general_quote':
-        quoteTitle = "[smart-quote] General Quote - OOH MBL";
-        quoteNotes = `Smart Quote Request - OOH MBL
+        quoteTitle = "[brief] Brief Quote Request - OOH MBL";
+        quoteNotes = `General Quote Request - OOH MBL
 
 Selected Formats (${formData.quoteDetails.selectedFormats?.length || 0}):
 ${formData.quoteDetails.selectedFormats?.map(format => `• ${format}`).join('\n') || 'No formats selected'}

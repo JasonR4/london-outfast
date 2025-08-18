@@ -155,29 +155,16 @@ const Navigation = () => {
                 </Link>
               );
             })}
-            {!navigation.menu_items?.some((item: any) => item.url === '/media-buying-rates-london') && (
-              <Link
-                to={'/media-buying-rates-london'}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                Rates
-              </Link>
-            )}
             {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
-              <Button 
-                asChild
-                className="bg-london-blue hover:bg-london-blue/90 text-white"
-                size="sm"
+              <Link
+                to={'/brief'}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive('/brief') ? 'text-primary' : 'text-muted-foreground'
+                }`}
+                onClick={() => trackBriefCtaClicked({ location: "London" })}
               >
-                <Link
-                  to={'/brief'}
-                  onClick={() => trackBriefCtaClicked({ location: "London" })}
-                >
-                  Brief Us Today
-                </Link>
-              </Button>
+                Talk to a specialist
+              </Link>
             )}
             {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
               <Link
@@ -282,32 +269,19 @@ const Navigation = () => {
                     </Link>
                   );
                 })}
-                {!navigation.menu_items?.some((item: any) => item.url === '/media-buying-rates-london') && (
+                {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
                   <Link
-                    to={'/media-buying-rates-london'}
-                    onClick={() => setIsOpen(false)}
+                    to={'/brief'}
+                    onClick={() => {
+                      trackBriefCtaClicked({ location: "London" });
+                      setIsOpen(false);
+                    }}
                     className={`text-left text-lg font-medium transition-colors hover:text-primary ${
-                      isActive('/media-buying-rates-london') ? 'text-primary' : 'text-muted-foreground'
+                      isActive('/brief') ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
-                    Rates
+                    Talk to a specialist
                   </Link>
-                )}
-                {!navigation.menu_items?.some((item: any) => item.url === '/brief') && (
-                  <Button 
-                    asChild
-                    className="bg-london-blue hover:bg-london-blue/90 text-white w-full mt-4"
-                  >
-                    <Link
-                      to={'/brief'}
-                      onClick={() => {
-                        trackBriefCtaClicked({ location: "London" });
-                        setIsOpen(false);
-                      }}
-                    >
-                      Brief Us Today
-                    </Link>
-                  </Button>
                 )}
                 {!navigation.menu_items?.some((item: any) => item.url === '/blog') && (
                   <Link

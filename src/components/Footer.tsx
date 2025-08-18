@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 import useGlobalSettings from '@/hooks/useGlobalSettings';
 import IndustriesDropdown from './IndustriesDropdown';
 
@@ -139,19 +138,6 @@ const Footer = () => {
             </div>
           )}
 
-        </div>
-
-        {/* Get Quote CTA Section */}
-        <div className="mt-16 py-12 text-center bg-gradient-cta rounded-2xl">
-          <h3 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
-            Ready to Get Your London OOH Quote?
-          </h3>
-          <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
-            Same-day quotes and unbeatable rates for all London OOH formats
-          </p>
-          <Button asChild size="lg" className="text-lg px-8 py-6 shadow-glow">
-            <Link to="/quote">Get My Quote</Link>
-          </Button>
         </div>
         
         {/* Bottom Section */}
