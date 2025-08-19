@@ -32,7 +32,10 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
   const nav: NavItem[] = navData.menu_items.map((item: any) => ({
     label: item.label,
     href: item.url,
-    children: undefined // Add dropdown logic here if needed
+    children: item.children ? item.children.map((child: any) => ({
+      label: child.label,
+      href: child.url
+    })) : undefined
   }));
 
   const footerData = footerSetting.setting_value as any;
