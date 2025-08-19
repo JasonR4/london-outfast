@@ -25,9 +25,6 @@ export default function Footer({
               <p className="text-gray-300">
                 <strong>Phone:</strong> +44 204 524 3019
               </p>
-              <p className="text-gray-300">
-                <strong>Email:</strong> hello@mediabuyinglondon.co.uk
-              </p>
             </div>
           </div>
 
