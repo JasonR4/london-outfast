@@ -54,8 +54,15 @@ const Hero = () => {
           {content?.title || "London’s Fastest Out-of-Home Media Buying Specialists"}
         </h1>
         
-        <p className="text-2xl md:text-3xl font-semibold mb-4 text-foreground">
-          {content?.subtitle || "From London Underground (TfL) to Classic & Digital Roadside, Bus, Taxi, National Rail, Retail & Leisure, Airports, Street Furniture, Programmatic DOOH, and Ambient OOH — we secure the best locations, the best rates, and deliver same-day quotes."}
+        <p className="text-xl md:text-2xl font-medium mb-6 text-foreground leading-relaxed max-w-5xl mx-auto">
+          {content?.subtitle || (
+            <>
+              From <span className="font-semibold">London Underground (TfL)</span> to <span className="font-semibold">Classic & Digital Roadside</span>, <span className="font-semibold">Bus</span>, <span className="font-semibold">Taxi</span>, <span className="font-semibold">National Rail</span>, <span className="font-semibold">Retail & Leisure</span>, <span className="font-semibold">Airports</span>, <span className="font-semibold">Street Furniture</span>, <span className="font-semibold">Programmatic DOOH</span>, and <span className="font-semibold">Ambient OOH</span>
+              <br />
+              <br />
+              We secure the best locations, the best rates, and deliver same-day quotes.
+            </>
+          )}
         </p>
         
         {(content?.description && String(content.description).trim() !== "") && (
