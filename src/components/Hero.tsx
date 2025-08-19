@@ -84,7 +84,7 @@ const Hero = () => {
               aria-label="Send My Brief - Discuss with a specialist"
             >
               <h3>Send My Brief</h3>
-              <p>Discuss your brief directly with a senior MBL media buying specialist.</p>
+              <p>Fill in our short brief form and we'll send you a tailored media plan within 3 hours, direct from a senior MBL specialist.</p>
             </a>
           </section>
       </div>
