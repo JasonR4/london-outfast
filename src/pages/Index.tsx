@@ -19,7 +19,7 @@ const Index = () => {
 
         <section aria-label="About Media Buying London" className="px-4">
           <div className="max-w-3xl mx-auto text-sm text-muted-foreground leading-7">
-            <p>
+            <p className="text-center">
               Media Buying London is a dedicated out-of-home buying specialist.
               We focus solely on London formats: 6-sheets, D48 billboards, Tube
               advertising, bus media, and digital OOH. Every schedule is built
