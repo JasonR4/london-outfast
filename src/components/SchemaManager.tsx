@@ -20,12 +20,20 @@ export const SchemaManager = () => {
   const { pageData } = usePageSchema(pageKey || '');
 
   const autoCanonicalFromSlug = () => {
-    return `https://mediabuyinglondon.co.uk${location.pathname}`;
+    // Always ensure canonical URL points to non-www version
+    const cleanPath = location.pathname.endsWith('/') && location.pathname !== '/' 
+      ? location.pathname.slice(0, -1) 
+      : location.pathname;
+    return `https://mediabuyinglondon.co.uk${cleanPath}`;
   };
 
   const canonicalUrl = pageData?.seo?.canonical ? 
     `https://mediabuyinglondon.co.uk${pageData.seo.canonical}` : 
     autoCanonicalFromSlug();
+
+  // Add redirect meta tag if accessed via www or ooh subdomain
+  const currentHost = typeof window !== 'undefined' ? window.location.host : '';
+  const needsRedirect = currentHost.includes('www.') || currentHost.includes('ooh.');
 
   // Generate Organization schema for homepage
   const generateOrganizationSchema = () => {
