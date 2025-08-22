@@ -335,7 +335,7 @@ const FormatPage = () => {
   }, [formatSlug, formatsLoading]);
 
   const handleGetQuote = () => {
-    navigate('/quote');
+    navigate('/brief');
   };
 
   const handleCallNow = () => {
