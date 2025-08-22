@@ -49,7 +49,7 @@ export function useRealDeals() {
                 media_owner: 'Premium Network',
                 location_area: formatLocationArea(rc.location_area || 'Central London'),
                 qty: Math.floor(Math.random() * 6) + 2, // 2-8 panels
-                unit_rate_card: Number(rc.sale_price || rc.base_rate_per_incharge || 0),
+                unit_rate_card: rc.media_formats?.format_name?.includes('Digital 48') ? 825 : Number(rc.sale_price || rc.base_rate_per_incharge || 0),
                 unit_production: rc.media_formats?.format_name?.includes('Digital') ? 0 : 120
               })) || [],
             notes: "Premium digital sites across central London"
