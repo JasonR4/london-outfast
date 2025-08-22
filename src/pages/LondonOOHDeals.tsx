@@ -216,10 +216,10 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                   </TableCell>
                   <TableCell className="text-xs text-right">
                     <div className="font-semibold text-green-600">
-                      £{(line.perPanelRateCard - line.perPanelDeal).toFixed(0)}
+                      £{Math.round(line.perPanelRateCard * (deal.discount_pct / 100))}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      ({Math.round(((line.perPanelRateCard - line.perPanelDeal) / line.perPanelRateCard) * 100)}% off)
+                      ({deal.discount_pct}% off)
                     </div>
                   </TableCell>
                   <TableCell className="text-xs text-right font-semibold">
