@@ -210,8 +210,8 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                     />
                   </TableCell>
                   <TableCell className="text-xs text-right">
-                    <div className="text-muted-foreground line-through text-xs">£{line.perPanelRateCard.toFixed(0)}</div>
                     <div className="font-semibold text-green-600">£{line.perPanelDeal.toFixed(0)}</div>
+                    <div className="text-muted-foreground line-through text-xs">£{line.perPanelRateCard.toFixed(0)}</div>
                   </TableCell>
                   <TableCell className="text-xs text-right font-semibold">
                     £{line.lineSubtotal.toLocaleString()}
