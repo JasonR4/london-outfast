@@ -46,7 +46,7 @@ export function useRealDeals() {
               .map(rc => ({
                 format_slug: rc.media_formats?.format_slug || 'digital-format',
                 format_name: rc.media_formats?.format_name || 'Digital Format',
-                media_owner: getMediaOwnerByArea(rc.location_area || 'Central'),
+                media_owner: 'Premium Network',
                 location_area: formatLocationArea(rc.location_area || 'Central London'),
                 qty: Math.floor(Math.random() * 6) + 2, // 2-8 panels
                 unit_rate_card: Number(rc.sale_price || rc.base_rate_per_incharge || 1500),
@@ -75,7 +75,7 @@ export function useRealDeals() {
               .map(rc => ({
                 format_slug: rc.media_formats?.format_slug || 'transport-format',
                 format_name: rc.media_formats?.format_name || 'Transport Format',
-                media_owner: getMediaOwnerByFormat(rc.media_formats?.format_name || ''),
+                media_owner: 'Transport Network',
                 location_area: formatLocationArea(rc.location_area || 'Central London'),
                 qty: Math.floor(Math.random() * 8) + 4, // 4-12 panels
                 unit_rate_card: Number(rc.sale_price || rc.base_rate_per_incharge || 900),
@@ -103,7 +103,7 @@ export function useRealDeals() {
               .map(rc => ({
                 format_slug: rc.media_formats?.format_slug || 'roadside-format',
                 format_name: rc.media_formats?.format_name || 'Roadside Format',
-                media_owner: getMediaOwnerByArea(rc.location_area || 'Central'),
+                media_owner: 'Premium Network',
                 location_area: formatLocationArea(rc.location_area || 'Central London'),
                 qty: Math.floor(Math.random() * 4) + 2, // 2-6 panels
                 unit_rate_card: Number(rc.sale_price || rc.base_rate_per_incharge || 2200),
@@ -127,7 +127,7 @@ export function useRealDeals() {
               .map(rc => ({
                 format_slug: rc.media_formats?.format_slug || 'mixed-format',
                 format_name: rc.media_formats?.format_name || 'Mixed Format',
-                media_owner: getMediaOwnerByArea(rc.location_area || 'East'),
+                media_owner: 'Media Network',
                 location_area: formatLocationArea(rc.location_area || 'East London'),
                 qty: Math.floor(Math.random() * 6) + 3, // 3-9 panels
                 unit_rate_card: Number(rc.sale_price || rc.base_rate_per_incharge || 1100),

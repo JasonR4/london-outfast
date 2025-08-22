@@ -89,7 +89,6 @@ const DealCard = ({ deal }: { deal: Deal }) => {
   const calc = calcDeal(deal);
   const formats = Array.from(new Set(deal.items.map(item => item.format_name)));
   const areas = Array.from(new Set(deal.items.map(item => item.location_area)));
-  const mediaOwners = Array.from(new Set(deal.items.map(item => item.media_owner)));
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -102,10 +101,9 @@ const DealCard = ({ deal }: { deal: Deal }) => {
     track('deal_impression', {
       deal_slug: deal.slug,
       value: calc.totals.grandTotal,
-      discount_pct: deal.discount_pct,
-      media_owners: mediaOwners.join(', ')
+      discount_pct: deal.discount_pct
     });
-  }, [deal.slug, calc.totals.grandTotal, deal.discount_pct, mediaOwners]);
+  }, [deal.slug, calc.totals.grandTotal, deal.discount_pct]);
 
   const handleLockDeal = () => {
     track('deal_cta_lock_clicked', {
@@ -158,7 +156,7 @@ const DealCard = ({ deal }: { deal: Deal }) => {
           <Table className="text-xs">
             <TableHeader>
               <TableRow>
-                <TableHead className="text-xs">Format / Owner</TableHead>
+                <TableHead className="text-xs">Format</TableHead>
                 <TableHead className="text-xs">Area</TableHead>
                 <TableHead className="text-xs text-right">Qty</TableHead>
                 <TableHead className="text-xs text-right">Per Panel (Deal)</TableHead>
@@ -170,7 +168,6 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                 <TableRow key={index}>
                   <TableCell className="font-medium text-xs">
                     {line.format_name}
-                    <div className="text-muted-foreground">{line.media_owner}</div>
                   </TableCell>
                   <TableCell className="text-xs">{line.area}</TableCell>
                   <TableCell className="text-xs text-right">{line.qty}</TableCell>
@@ -221,11 +218,6 @@ const DealCard = ({ deal }: { deal: Deal }) => {
           </p>
         )}
 
-        <div className="text-xs text-muted-foreground mb-4">
-          <strong>Media owners:</strong> {mediaOwners.join(", ")}
-        </div>
-
-        <Separator className="my-4" />
 
         <div className="flex flex-col gap-2">
           <Button 
