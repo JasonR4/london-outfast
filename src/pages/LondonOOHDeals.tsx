@@ -4,72 +4,147 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Clock, MapPin, Users, TrendingDown, ExternalLink, Calendar } from "lucide-react";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Clock, MapPin, Users, TrendingDown, ExternalLink, Calendar, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatGBP } from "@/lib/pricingMath";
+import { Deal, calcDeal, formatPeriodRange, formatPeriodCodes } from "@/utils/dealCalculations";
+import { useDealLocking } from "@/hooks/useDealLocking";
+import { supabase } from "@/integrations/supabase/client";
+import { track } from "@/utils/analytics";
 
-interface DealData {
-  slug: string;
-  title: string;
-  standard_rate: number;
-  deal_rate: number;
-  formats: string[];
-  areas: string[];
-  incharge_weeks: number;
-  inventory_note: string;
-  availability: number;
-  media_owners: string[];
-  images?: string[];
-}
-
-const DEALS_DATA: DealData[] = [
+// Sample deals data - in production this would come from CMS
+const DEALS_DATA: Deal[] = [
   {
     slug: "central-london-d48-supersides",
     title: "Central London: D48 + Bus Supersides",
-    standard_rate: 28500,
-    deal_rate: 19800,
-    formats: ["D48", "Bus Superside"],
-    areas: ["Zone 1-2", "West End", "City"],
-    incharge_weeks: 2,
-    inventory_note: "Premium roadside + high frequency bus coverage",
-    availability: 3,
-    media_owners: ["Global", "JCDecaux", "Ocean"]
+    deadline_utc: "2025-08-29T15:00:00Z", // Friday 4pm UK time
+    discount_pct: 45,
+    production_uplift_pct: 15,
+    availability_left: 3,
+    periods: [
+      { code: "2025-P19", start: "2025-09-01", end: "2025-09-14" },
+      { code: "2025-P20", start: "2025-09-15", end: "2025-09-28" }
+    ],
+    items: [
+      {
+        format_slug: "digital-48-sheet",
+        format_name: "Digital 48-sheet",
+        media_owner: "Ocean",
+        location_area: "Zone 1-2 / West End",
+        qty: 4,
+        unit_rate_card: 2800,
+        unit_production: 0
+      },
+      {
+        format_slug: "bus-superside",
+        format_name: "Bus Superside",
+        media_owner: "Global",
+        location_area: "Central London",
+        qty: 6,
+        unit_rate_card: 1900,
+        unit_production: 120
+      }
+    ],
+    notes: "Premium roadside + high frequency bus coverage"
   },
   {
     slug: "east-london-6sheet-tube-combo",
     title: "East London: 6-Sheet + Tube Bundle",
-    standard_rate: 22400,
-    deal_rate: 16800,
-    formats: ["6-Sheet", "LT Platform"],
-    areas: ["Canary Wharf", "Liverpool St", "Tower Bridge"],
-    incharge_weeks: 2,
-    inventory_note: "Financial district reach + commuter frequency",
-    availability: 2,
-    media_owners: ["JCDecaux", "TfL Partners", "Ocean"]
+    deadline_utc: "2025-08-29T15:00:00Z",
+    discount_pct: 45,
+    production_uplift_pct: 10,
+    availability_left: 2,
+    periods: [
+      { code: "2025-P19", start: "2025-09-01", end: "2025-09-14" },
+      { code: "2025-P20", start: "2025-09-15", end: "2025-09-28" }
+    ],
+    items: [
+      {
+        format_slug: "6-sheet",
+        format_name: "6-Sheet",
+        media_owner: "JCDecaux",
+        location_area: "Canary Wharf / City",
+        qty: 8,
+        unit_rate_card: 1200,
+        unit_production: 85
+      },
+      {
+        format_slug: "lt-platform",
+        format_name: "LT Platform",
+        media_owner: "TfL Partners",
+        location_area: "Liverpool St / Tower Bridge",
+        qty: 4,
+        unit_rate_card: 2200,
+        unit_production: 0
+      }
+    ],
+    notes: "Financial district reach + commuter frequency"
   },
   {
     slug: "west-london-digital-package",
     title: "West London: Digital OOH Premium",
-    standard_rate: 45200,
-    deal_rate: 31400,
-    formats: ["Digital 6-Sheet", "Digital D48"],
-    areas: ["Hammersmith", "Kensington", "Fulham"],
-    incharge_weeks: 1,
-    inventory_note: "High-impact digital sites in affluent areas",
-    availability: 1,
-    media_owners: ["Ocean", "Clear Channel", "Global"]
+    deadline_utc: "2025-08-29T15:00:00Z",
+    discount_pct: 40,
+    production_uplift_pct: 0,
+    availability_left: 1,
+    periods: [
+      { code: "2025-P19", start: "2025-09-01", end: "2025-09-14" }
+    ],
+    items: [
+      {
+        format_slug: "digital-6-sheet",
+        format_name: "Digital 6-Sheet",
+        media_owner: "Clear Channel",
+        location_area: "Hammersmith / Kensington",
+        qty: 6,
+        unit_rate_card: 3200,
+        unit_production: 0
+      },
+      {
+        format_slug: "digital-48-sheet",
+        format_name: "Digital 48-Sheet",
+        media_owner: "Ocean",
+        location_area: "Fulham",
+        qty: 2,
+        unit_rate_card: 4100,
+        unit_production: 0
+      }
+    ],
+    notes: "High-impact digital sites in affluent areas"
   },
   {
     slug: "north-london-transport-hub",
     title: "North London: Transport Hub Mix",
-    standard_rate: 18900,
-    deal_rate: 14200,
-    formats: ["Bus Rears", "LT Panels", "Rail"],
-    areas: ["Camden", "King's Cross", "Angel"],
-    incharge_weeks: 2,
-    inventory_note: "Multi-modal transport coverage",
-    availability: 4,
-    media_owners: ["TfL Partners", "JCDecaux", "Admedia"]
+    deadline_utc: "2025-08-29T15:00:00Z",
+    discount_pct: 50,
+    production_uplift_pct: 12,
+    availability_left: 4,
+    periods: [
+      { code: "2025-P19", start: "2025-09-01", end: "2025-09-14" },
+      { code: "2025-P20", start: "2025-09-15", end: "2025-09-28" }
+    ],
+    items: [
+      {
+        format_slug: "bus-rear",
+        format_name: "Bus Rear",
+        media_owner: "Admedia",
+        location_area: "Camden / King's Cross",
+        qty: 12,
+        unit_rate_card: 850,
+        unit_production: 95
+      },
+      {
+        format_slug: "lt-panel",
+        format_name: "LT Panel",
+        media_owner: "JCDecaux",
+        location_area: "Angel / King's Cross",
+        qty: 6,
+        unit_rate_card: 1100,
+        unit_production: 0
+      }
+    ],
+    notes: "Multi-modal transport coverage"
   }
 ];
 
@@ -140,18 +215,46 @@ const CountdownTimer = () => {
   );
 };
 
-const DealCard = ({ deal }: { deal: DealData }) => {
+const DealCard = ({ deal }: { deal: Deal }) => {
   const navigate = useNavigate();
-  const saving = deal.standard_rate - deal.deal_rate;
-  const savingPct = Math.round((saving / deal.standard_rate) * 100);
+  const { lockDeal, isLocking } = useDealLocking();
+  const [user, setUser] = useState(null);
+  
+  const calc = calcDeal(deal);
+  const formats = Array.from(new Set(deal.items.map(item => item.format_name)));
+  const areas = Array.from(new Set(deal.items.map(item => item.location_area)));
+  const mediaOwners = Array.from(new Set(deal.items.map(item => item.media_owner)));
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+    });
+  }, []);
+
+  useEffect(() => {
+    // Track deal impression
+    track('deal_impression', {
+      deal_slug: deal.slug,
+      value: calc.totals.grandTotal,
+      discount_pct: deal.discount_pct,
+      media_owners: mediaOwners.join(', ')
+    });
+  }, [deal.slug, calc.totals.grandTotal, deal.discount_pct, mediaOwners]);
 
   const handleLockDeal = () => {
-    // TODO: Implement auth check and redirect to portal
-    navigate('/auth');
+    track('deal_cta_lock_clicked', {
+      deal_slug: deal.slug,
+      value: calc.totals.grandTotal
+    });
+    lockDeal(deal, user?.id);
   };
 
   const handleSendBrief = () => {
-    navigate(`/brief?deal=${deal.slug}&budget=${deal.deal_rate}`);
+    track('deal_cta_brief_clicked', {
+      deal_slug: deal.slug,
+      value: calc.totals.grandTotal
+    });
+    navigate(`/brief?deal=${deal.slug}&budget=${calc.totals.grandTotal}`);
   };
 
   return (
@@ -160,12 +263,12 @@ const DealCard = ({ deal }: { deal: DealData }) => {
         <div className="flex justify-between items-start mb-2">
           <CardTitle className="text-xl font-bold">{deal.title}</CardTitle>
           <Badge variant="destructive" className="text-xs">
-            {deal.availability} left
+            {deal.availability_left} left
           </Badge>
         </div>
         
         <div className="flex flex-wrap gap-2 mb-3">
-          {deal.formats.map((format, index) => (
+          {formats.map((format, index) => (
             <Badge key={index} variant="secondary" className="text-xs">
               {format}
             </Badge>
@@ -174,43 +277,104 @@ const DealCard = ({ deal }: { deal: DealData }) => {
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
           <MapPin className="h-4 w-4" />
-          <span>{deal.areas.join(", ")}</span>
+          <span>{areas.join(", ")}</span>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
           <Calendar className="h-4 w-4" />
-          <span>Next In-Charge: {deal.incharge_weeks} weeks</span>
+          <span>Periods: {formatPeriodRange(deal.periods)} ({formatPeriodCodes(deal.periods)})</span>
         </div>
       </CardHeader>
 
       <CardContent className="pt-0">
-        <div className="mb-4">
-          <div className="flex items-baseline gap-2 mb-1">
-            <span className="text-sm text-muted-foreground line-through">
-              {formatGBP(deal.standard_rate)}
-            </span>
-            <span className="text-2xl font-bold text-accent">
-              {formatGBP(deal.deal_rate)}
-            </span>
-          </div>
-          <div className="text-sm font-semibold text-green-600">
-            Save {formatGBP(saving)} ({savingPct}%) vs rate card
-          </div>
+        {/* Detailed Pricing Table */}
+        <div className="mb-4 overflow-x-auto">
+          <Table className="text-xs">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-xs">Format / Owner</TableHead>
+                <TableHead className="text-xs">Area</TableHead>
+                <TableHead className="text-xs text-right">Qty</TableHead>
+                <TableHead className="text-xs text-right">Per Panel (Deal)</TableHead>
+                <TableHead className="text-xs text-right">Subtotal</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {calc.lines.map((line, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium text-xs">
+                    {line.format_name}
+                    <div className="text-muted-foreground">{line.media_owner}</div>
+                  </TableCell>
+                  <TableCell className="text-xs">{line.area}</TableCell>
+                  <TableCell className="text-xs text-right">{line.qty}</TableCell>
+                  <TableCell className="text-xs text-right">
+                    <div>£{line.perPanelDeal.toFixed(0)}</div>
+                    <div className="text-muted-foreground line-through">£{line.perPanelRateCard.toFixed(0)}</div>
+                  </TableCell>
+                  <TableCell className="text-xs text-right font-semibold">
+                    £{line.lineSubtotal.toLocaleString()}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={4} className="text-right font-semibold">
+                  <div className="space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground line-through">Rate card total:</span>
+                      <span className="text-muted-foreground line-through">£{calc.totals.mediaRateCard.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-green-600">
+                      <span>You save ({Math.round(calc.totals.savingPct * 100)}%):</span>
+                      <span>£{calc.totals.discountValue.toLocaleString()}</span>
+                    </div>
+                    {calc.totals.production > 0 && (
+                      <div className="flex justify-between">
+                        <span>Production total:</span>
+                        <span>£{calc.totals.production.toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="text-lg font-bold text-accent">
+                    £{calc.totals.grandTotal.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-muted-foreground">ex VAT</div>
+                </TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
         </div>
 
-        <p className="text-sm text-muted-foreground mb-4">
-          {deal.inventory_note}
-        </p>
+        {deal.notes && (
+          <p className="text-sm text-muted-foreground mb-4">
+            {deal.notes}
+          </p>
+        )}
 
         <div className="text-xs text-muted-foreground mb-4">
-          <strong>Media owners:</strong> {deal.media_owners.join(", ")}
+          <strong>Media owners:</strong> {mediaOwners.join(", ")}
         </div>
 
         <Separator className="my-4" />
 
         <div className="flex flex-col gap-2">
-          <Button onClick={handleLockDeal} className="w-full">
-            Lock this deal
+          <Button 
+            onClick={handleLockDeal} 
+            className="w-full" 
+            disabled={isLocking}
+          >
+            {isLocking ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Locking deal...
+              </>
+            ) : (
+              'Lock this deal'
+            )}
           </Button>
           <Button variant="outline" onClick={handleSendBrief} className="w-full">
             <ExternalLink className="h-4 w-4 mr-2" />
@@ -219,7 +383,7 @@ const DealCard = ({ deal }: { deal: DealData }) => {
         </div>
 
         <p className="text-xs text-muted-foreground mt-3 text-center">
-          Rate includes media only. Production optional. Subject to availability.
+          Media only unless stated. Production shown separately. Subject to availability. Deadline: Friday 4:00 PM (UK).
         </p>
       </CardContent>
     </Card>

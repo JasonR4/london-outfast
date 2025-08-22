@@ -351,3 +351,21 @@ export const trackDealLocked = (dealSlug: string, dealRate: number) => {
     console.error("❌ deal_locked tracking error", err);
   }
 };
+
+// Generic track function for custom events
+export const track = (eventName: string, parameters: Record<string, any> = {}) => {
+  try {
+    const w = window as any;
+    w.gtag?.('event', eventName, {
+      ...parameters,
+      page_location: window.location.href,
+    });
+    
+    // Debug logging
+    if (w.MBL_DEBUG_EVENTS) {
+      console.log(`📊 [Analytics] ${eventName}`, parameters);
+    }
+  } catch (err) {
+    console.error(`❌ ${eventName} tracking error`, err);
+  }
+};
