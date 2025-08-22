@@ -1292,7 +1292,17 @@ const FormatPage = () => {
         </>
       )}
 
-      {/* CTA Section */}
+      {/* Detailed Content Section - Show if CMS has detailed_content */}
+      {cmsContent?.content?.detailed_content && (
+        <section className="py-20 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div 
+              className="prose prose-lg prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: cmsContent.content.detailed_content }}
+            />
+          </div>
+        </section>
+      )}
       <section className="py-20 px-4 bg-gradient-to-br from-primary/10 via-accent/10 to-background">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">
