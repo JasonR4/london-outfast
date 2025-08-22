@@ -49,7 +49,7 @@ export function useRealDeals() {
                 media_owner: 'Premium Network',
                 location_area: formatLocationArea(rc.location_area || 'Central London'),
                 qty: Math.floor(Math.random() * 6) + 2, // 2-8 panels
-                unit_rate_card: Number(rc.sale_price || rc.base_rate_per_incharge || 1500),
+                unit_rate_card: 825, // Your standard selling price
                 unit_production: rc.media_formats?.format_name?.includes('Digital') ? 0 : 120
               })) || [],
             notes: "Premium digital sites across central London"
@@ -78,7 +78,7 @@ export function useRealDeals() {
                 media_owner: 'Transport Network',
                 location_area: formatLocationArea(rc.location_area || 'Central London'),
                 qty: Math.floor(Math.random() * 8) + 4, // 4-12 panels
-                unit_rate_card: Number(rc.sale_price || rc.base_rate_per_incharge || 900),
+                unit_rate_card: 825, // Your standard selling price
                 unit_production: 95
               })) || [],
             notes: "Multi-modal transport coverage across London"
@@ -106,7 +106,7 @@ export function useRealDeals() {
                 media_owner: 'Premium Network',
                 location_area: formatLocationArea(rc.location_area || 'Central London'),
                 qty: Math.floor(Math.random() * 4) + 2, // 2-6 panels
-                unit_rate_card: Number(rc.sale_price || rc.base_rate_per_incharge || 2200),
+                unit_rate_card: 825, // Your standard selling price
                 unit_production: rc.media_formats?.format_name?.includes('Digital') ? 0 : 140
               })) || [],
             notes: "High-impact roadside advertising in premium locations"
@@ -130,7 +130,7 @@ export function useRealDeals() {
                 media_owner: 'Media Network',
                 location_area: formatLocationArea(rc.location_area || 'East London'),
                 qty: Math.floor(Math.random() * 6) + 3, // 3-9 panels
-                unit_rate_card: Number(rc.sale_price || rc.base_rate_per_incharge || 1100),
+                unit_rate_card: 825, // Your standard selling price
                 unit_production: 80
               })) || [],
             notes: "Mixed format coverage across East London"
