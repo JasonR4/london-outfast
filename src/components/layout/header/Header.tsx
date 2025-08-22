@@ -120,7 +120,7 @@ export default function Header({ nav }: { nav: NavItem[] }) {
               variant="outline"
               size="sm"
             >
-              <a href='tel:+442045243019'>
+              <a href='tel:+442045243019' data-placement="header_phone">
                 <Phone className="h-4 w-4 mr-2" />
                 +44 204 524 3019
               </a>
@@ -278,7 +278,7 @@ function MobileMenu({ nav, isOpen, setIsOpen, user, userProfile, currentQuote, i
             asChild
             className="w-full mt-4"
           >
-            <a href='tel:+442045243019' onClick={() => setIsOpen(false)}>
+            <a href='tel:+442045243019' data-placement="mobile_header_phone" onClick={() => setIsOpen(false)}>
               <Phone className="h-4 w-4 mr-2" />
               +44 204 524 3019
             </a>

@@ -34,7 +34,7 @@ import ClientPortal from "./pages/ClientPortal";
 import Contact from "./pages/Contact";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
-import { trackPageView, initCampaignTracking } from "@/utils/analytics";
+import { trackPageView, initCampaignTracking, trackTelClick } from "@/utils/analytics";
 import { updateMetaTags, enforceCanonical } from "@/utils/seo";
 import EmailTest from "./pages/EmailTest";
 import NoInspect from "@/components/security/NoInspect";
@@ -83,6 +83,23 @@ const RouterAnalytics = () => {
 };
 
 const App = () => {
+  // Global telephone link tracking
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null;
+      const a = t?.closest?.('a[href^="tel:"]') as HTMLAnchorElement | null;
+      if (!a) return;
+
+      const phone = (a.getAttribute("href") || "").replace(/^tel:/i, "");
+      const placement =
+        a.dataset.placement || a.getAttribute("aria-label") || a.textContent?.trim();
+
+      trackTelClick(phone, placement || undefined);
+    };
+
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, []);
 
   return (
     <HelmetProvider>

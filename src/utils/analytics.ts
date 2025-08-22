@@ -259,3 +259,26 @@ export const trackPageView = (pagePath: string, pageTitle?: string) => {
     console.error('❌ Analytics tracking error:', error);
   }
 };
+
+// Track telephone link clicks to GA4
+export const trackTelClick = (phone: string, placement?: string) => {
+  try {
+    const w = window as any;
+
+    w.gtag?.('event', 'tel_click', {
+      event_category: 'engagement',
+      event_label: phone,
+      value: 1,
+      phone_number: phone,
+      placement: placement || 'unknown',
+      page_location: window.location.href,
+    });
+
+    // Debug (optional)
+    if (w.MBL_DEBUG_EVENTS) {
+      console.log("📞 tel_click sent to GA4:", { phone, placement });
+    }
+  } catch (err) {
+    console.error("❌ tel_click tracking error", err);
+  }
+};
