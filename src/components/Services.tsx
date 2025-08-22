@@ -73,10 +73,30 @@ const Services = () => {
           </Button>
         </div>
         
-        <div className="text-center">
+        <div className="text-center space-y-4">
+          {/* Weekly Deals CTA */}
+          <Card className="max-w-md mx-auto bg-gradient-to-r from-accent/10 to-primary/10 border-accent/20">
+            <CardContent className="p-6 text-center">
+              <Badge variant="secondary" className="mb-2">
+                NEW · REFRESHES WEEKLY
+              </Badge>
+              <h3 className="text-xl font-bold mb-2">London OOH Deals of the Week</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                4 hand-picked packages across London. Rates end Friday 4pm.
+              </p>
+              <Button 
+                onClick={() => navigate('/london-ooh-deals')}
+                className="w-full"
+              >
+                View this week's deals →
+              </Button>
+            </CardContent>
+          </Card>
+          
           <Button 
             onClick={() => navigate('/outdoor-media')}
             size="lg"
+            variant="outline"
           >
             View All Formats
           </Button>

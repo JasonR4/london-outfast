@@ -282,3 +282,72 @@ export const trackTelClick = (phone: string, placement?: string) => {
     console.error("❌ tel_click tracking error", err);
   }
 };
+
+// --- Track deals page events ---
+export const trackDealsPageView = (weekId: string) => {
+  try {
+    const w = window as any;
+    w.gtag?.('event', 'deals_page_view', {
+      event_category: 'deals',
+      week_id: weekId,
+      page_location: window.location.href,
+    });
+  } catch (err) {
+    console.error("❌ deals_page_view tracking error", err);
+  }
+};
+
+export const trackDealImpression = (dealSlug: string, dealRate: number, savingPct: number) => {
+  try {
+    const w = window as any;
+    w.gtag?.('event', 'deal_impression', {
+      event_category: 'deals',
+      deal_slug: dealSlug,
+      deal_rate: dealRate,
+      saving_pct: savingPct,
+    });
+  } catch (err) {
+    console.error("❌ deal_impression tracking error", err);
+  }
+};
+
+export const trackDealCTAClick = (action: 'lock' | 'brief', dealSlug: string, dealRate: number, savingPct: number) => {
+  try {
+    const w = window as any;
+    w.gtag?.('event', `deal_cta_${action}_clicked`, {
+      event_category: 'deals',
+      deal_slug: dealSlug,
+      deal_rate: dealRate,
+      saving_pct: savingPct,
+    });
+  } catch (err) {
+    console.error(`❌ deal_cta_${action}_clicked tracking error`, err);
+  }
+};
+
+export const trackDealLocked = (dealSlug: string, dealRate: number) => {
+  try {
+    const w = window as any;
+    w.gtag?.('event', 'deal_locked', {
+      event_category: 'deals',
+      deal_slug: dealSlug,
+      value: dealRate,
+    });
+    
+    // Also send as purchase event
+    w.gtag?.('event', 'purchase', {
+      transaction_id: `deal_${dealSlug}_${Date.now()}`,
+      value: dealRate,
+      currency: 'GBP',
+      items: [{
+        item_id: dealSlug,
+        item_name: `Deal: ${dealSlug}`,
+        category: 'deals',
+        quantity: 1,
+        price: dealRate
+      }]
+    });
+  } catch (err) {
+    console.error("❌ deal_locked tracking error", err);
+  }
+};
