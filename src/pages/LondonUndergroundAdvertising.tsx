@@ -469,21 +469,512 @@ const LondonUndergroundAdvertising = () => {
           </div>
         </section>
 
+        {/* London Underground Lines & Stations */}
+        <section className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                  Strategic Line Selection for Maximum Impact
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                  Each London Underground line offers unique passenger demographics and journey patterns. Our data-driven approach ensures your campaign reaches the right audience at the optimal touchpoints.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-3 text-blue-600">Central Line</h3>
+                    <p className="text-muted-foreground mb-4">
+                      London's busiest line connecting Liverpool Street, Oxford Circus, and Notting Hill Gate. Ideal for reaching business professionals and shoppers.
+                    </p>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• 1.85 million daily passengers</li>
+                      <li>• Key stations: Oxford Circus, Liverpool Street, Bank</li>
+                      <li>• Prime for retail and financial services</li>
+                    </ul>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-3 text-yellow-600">Circle & District Lines</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Serving major tourist destinations and business districts. Perfect for hospitality, entertainment, and luxury brands.
+                    </p>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• High tourist footfall year-round</li>
+                      <li>• Westminster, Victoria, King's Cross connections</li>
+                      <li>• Excellent for brand awareness campaigns</li>
+                    </ul>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-3 text-red-600">Northern Line</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Connecting affluent residential areas with business districts. Ideal for financial services, property, and premium consumer brands.
+                    </p>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• High-income passenger demographic</li>
+                      <li>• Canary Wharf, London Bridge, Camden connections</li>
+                      <li>• Excellent morning/evening commuter reach</li>
+                    </ul>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-3 text-purple-600">Piccadilly Line</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Direct Heathrow connection brings international passengers through central London. Perfect for travel, luxury, and destination marketing.
+                    </p>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• International traveller gateway</li>
+                      <li>• Heathrow Airport direct connection</li>
+                      <li>• Leicester Square, Covent Garden tourist hotspots</li>
+                    </ul>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-3 text-green-600">Jubilee Line</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Modern line connecting Canary Wharf financial district with West End entertainment zone. High-value passenger demographic.
+                    </p>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• Canary Wharf business district</li>
+                      <li>• Westminster, London Bridge interchange</li>
+                      <li>• Premium passenger spending power</li>
+                    </ul>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-3 text-pink-600">Elizabeth Line</h3>
+                    <p className="text-muted-foreground mb-4">
+                      London's newest and most technologically advanced line. Premium environment with affluent cross-London commuters.
+                    </p>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• State-of-the-art digital capabilities</li>
+                      <li>• High-income passenger profile</li>
+                      <li>• Heathrow to City direct connection</li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Underground Advertising Costs & ROI */}
+        <section className="py-20 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                  London Underground Advertising Costs & ROI
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                  Understanding the investment required and returns delivered by Underground advertising helps optimise campaign planning and budget allocation across different formats and locations.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+                <div>
+                  <h3 className="text-2xl font-bold mb-6">Cost Factors</h3>
+                  <div className="space-y-4">
+                    <Card>
+                      <CardContent className="p-6">
+                        <h4 className="font-semibold mb-2">Station Classification</h4>
+                        <p className="text-muted-foreground">
+                          Zone 1 stations command premium rates due to highest footfall and tourist traffic. Zones 2-6 offer cost-effective reach for targeted demographics.
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-6">
+                        <h4 className="font-semibold mb-2">Seasonal Demand</h4>
+                        <p className="text-muted-foreground">
+                          Peak periods (January-March, September-November) see increased rates. Summer months offer better value with sustained tourist traffic.
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-6">
+                        <h4 className="font-semibold mb-2">Campaign Duration</h4>
+                        <p className="text-muted-foreground">
+                          Longer campaigns (4+ weeks) typically secure better rates. Minimum bookings usually start at 2-week periods for maximum impact.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-2xl font-bold mb-6">ROI Metrics</h3>
+                  <div className="space-y-4">
+                    <Card>
+                      <CardContent className="p-6">
+                        <h4 className="font-semibold mb-2">Brand Recall</h4>
+                        <p className="text-muted-foreground">
+                          Underground advertising typically achieves 35-45% aided brand recall, significantly higher than many other OOH formats due to extended dwell times.
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-6">
+                        <h4 className="font-semibold mb-2">Reach & Frequency</h4>
+                        <p className="text-muted-foreground">
+                          Strategic station selection can achieve 70%+ London adult reach with optimal frequency for message retention and action.
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-6">
+                        <h4 className="font-semibold mb-2">Digital Integration</h4>
+                        <p className="text-muted-foreground">
+                          QR codes and digital call-to-actions see 15-25% higher engagement rates in Underground environments compared to street-level OOH.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Case Studies & Success Stories */}
+        <section className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                  London Underground Advertising Success Stories
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                  Real campaigns that demonstrate the power of strategic Underground advertising across different sectors and objectives.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <Card>
+                  <CardContent className="p-8">
+                    <Badge className="mb-4">Financial Services</Badge>
+                    <h3 className="text-xl font-bold mb-4">Digital Banking Campaign</h3>
+                    <p className="text-muted-foreground mb-4">
+                      A challenger bank used targeted Northern Line placements during morning peak hours to reach high-earning commuters travelling between Canary Wharf and the City.
+                    </p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Campaign Duration:</span>
+                        <span className="font-semibold">6 weeks</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Format:</span>
+                        <span className="font-semibold">Digital Escalator Panels</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Brand Recall Lift:</span>
+                        <span className="font-semibold text-green-600">+42%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Account Openings:</span>
+                        <span className="font-semibold text-green-600">+156%</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-8">
+                    <Badge className="mb-4">Entertainment</Badge>
+                    <h3 className="text-xl font-bold mb-4">West End Show Launch</h3>
+                    <p className="text-muted-foreground mb-4">
+                      A major theatre production used full station takeovers at tourist-heavy stations on the Piccadilly and Central lines to drive ticket sales.
+                    </p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Campaign Duration:</span>
+                        <span className="font-semibold">4 weeks</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Format:</span>
+                        <span className="font-semibold">Station Takeovers</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Ticket Sales Increase:</span>
+                        <span className="font-semibold text-green-600">+89%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Tourist Bookings:</span>
+                        <span className="font-semibold text-green-600">+134%</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-8">
+                    <Badge className="mb-4">Technology</Badge>
+                    <h3 className="text-xl font-bold mb-4">App Launch Campaign</h3>
+                    <p className="text-muted-foreground mb-4">
+                      A tech startup combined Cross Track Projections with QR codes to drive app downloads, targeting key interchange stations for maximum exposure.
+                    </p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Campaign Duration:</span>
+                        <span className="font-semibold">8 weeks</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Format:</span>
+                        <span className="font-semibold">XTP + QR Integration</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>App Downloads:</span>
+                        <span className="font-semibold text-green-600">47,000+</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Cost Per Download:</span>
+                        <span className="font-semibold text-green-600">£2.80</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-8">
+                    <Badge className="mb-4">Retail</Badge>
+                    <h3 className="text-xl font-bold mb-4">Fashion Brand Awareness</h3>
+                    <p className="text-muted-foreground mb-4">
+                      A premium fashion retailer used sequential storytelling across multiple Oxford Street area stations to build brand narrative and drive store visits.
+                    </p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Campaign Duration:</span>
+                        <span className="font-semibold">12 weeks</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Format:</span>
+                        <span className="font-semibold">16-Sheet Corridors</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Store Footfall:</span>
+                        <span className="font-semibold text-green-600">+67%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Purchase Intent:</span>
+                        <span className="font-semibold text-green-600">+91%</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Planning & Strategy Deep Dive */}
+        <section className="py-20 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                  Strategic Underground Advertising Planning
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                  Successful Underground campaigns require detailed planning across audience insights, journey mapping, creative optimisation, and performance measurement.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+                <div>
+                  <h3 className="text-2xl font-bold mb-6">Audience Intelligence</h3>
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="text-lg font-semibold mb-3">Demographic Profiling</h4>
+                      <p className="text-muted-foreground mb-4">
+                        We analyse TfL passenger data, PAMCO insights, and Experian Mosaic classifications to understand who travels where and when. This includes age, income, lifestyle, and consumption patterns by line and station.
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• Real-time passenger flow analytics</li>
+                        <li>• Cross-referenced lifestyle and spending data</li>
+                        <li>• Seasonal variation analysis</li>
+                        <li>• Peak vs off-peak demographic shifts</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold mb-3">Journey Pattern Mapping</h4>
+                      <p className="text-muted-foreground mb-4">
+                        Understanding how passengers move through the network helps optimise placement for maximum exposure and message sequencing opportunities.
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• Origin-destination flow analysis</li>
+                        <li>• Interchange behaviour patterns</li>
+                        <li>• Dwell time optimisation by location</li>
+                        <li>• Multi-touchpoint journey orchestration</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-2xl font-bold mb-6">Creative Optimisation</h3>
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="text-lg font-semibold mb-3">Environment-Specific Design</h4>
+                      <p className="text-muted-foreground mb-4">
+                        Underground environments require specific creative considerations for lighting, viewing angles, movement patterns, and attention capture in busy surroundings.
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• High contrast design for tunnel lighting</li>
+                        <li>• Motion graphics optimised for escalator viewing</li>
+                        <li>• Clear typography for platform sight lines</li>
+                        <li>• Brand safety in crowded environments</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold mb-3">Message Hierarchy</h4>
+                      <p className="text-muted-foreground mb-4">
+                        Structuring campaign messages across different touchpoints to build narrative and drive action throughout the passenger journey.
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• Awareness messaging at entry points</li>
+                        <li>• Consideration drivers during dwell time</li>
+                        <li>• Conversion prompts at exit points</li>
+                        <li>• Follow-up sequencing for repeat journeys</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Technical Specifications */}
+        <section className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                  Technical Specifications & Production Requirements
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                  Ensuring your creative assets meet TfL requirements and are optimised for each Underground advertising format.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-4">Static Formats</h3>
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <span className="font-semibold">6-Sheet Underground:</span>
+                        <p className="text-muted-foreground">1200mm x 1800mm, 300 DPI, CMYK + 2 Spot</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold">16-Sheet Corridor:</span>
+                        <p className="text-muted-foreground">2032mm x 3048mm, 150 DPI minimum</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold">Production Lead Time:</span>
+                        <p className="text-muted-foreground">5-7 working days post-approval</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-4">Digital Formats</h3>
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <span className="font-semibold">Cross Track Projection:</span>
+                        <p className="text-muted-foreground">1920x1080 MP4, 10-15 second loops</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold">Escalator Panels:</span>
+                        <p className="text-muted-foreground">Portrait orientation, sequential playback</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold">Content Updates:</span>
+                        <p className="text-muted-foreground">72-hour minimum notice required</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-4">Approval Process</h3>
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <span className="font-semibold">TfL Creative Review:</span>
+                        <p className="text-muted-foreground">3-5 working days assessment period</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold">ASA Compliance:</span>
+                        <p className="text-muted-foreground">All content must meet advertising standards</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold">Safety Requirements:</span>
+                        <p className="text-muted-foreground">No flashing content, accessibility compliant</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Our Process */}
         <section className="py-20 bg-muted/30">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl font-bold mb-6">Our Process</h2>
+                <h2 className="text-3xl md:text-4xl font-bold mb-6">Our London Underground Advertising Process</h2>
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                  From initial strategy through to campaign measurement, we manage every aspect of your Underground advertising investment with precision and transparency.
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
                 {[
-                  { step: "1", title: "Planning", desc: "Audience mapping and location strategy." },
-                  { step: "2", title: "Format Selection", desc: "Choosing the right blend for objectives and budget." },
-                  { step: "3", title: "Creative Consultation", desc: "Optimising assets for Underground environments." },
-                  { step: "4", title: "Booking & Buying", desc: "Securing the best market rates via our media owner relationships." },
-                  { step: "5", title: "Measurement", desc: "Transparent reporting and campaign performance analysis." }
+                  { 
+                    step: "1", 
+                    title: "Strategic Planning", 
+                    desc: "Comprehensive audience mapping, line selection, and location strategy based on your objectives and target demographics." 
+                  },
+                  { 
+                    step: "2", 
+                    title: "Format Selection", 
+                    desc: "Choosing optimal format combinations for maximum impact within budget, considering reach, frequency, and creative opportunities." 
+                  },
+                  { 
+                    step: "3", 
+                    title: "Creative Development", 
+                    desc: "Optimising creative assets for Underground environments, TfL compliance, and technical specifications across all chosen formats." 
+                  },
+                  { 
+                    step: "4", 
+                    title: "Media Booking", 
+                    desc: "Securing premium inventory at competitive rates through established media owner relationships and transparent pricing structures." 
+                  },
+                  { 
+                    step: "5", 
+                    title: "Performance Analysis", 
+                    desc: "Comprehensive reporting including reach, frequency, brand lift studies, and campaign ROI analysis with actionable insights." 
+                  }
                 ].map((item, index) => (
                   <div key={index} className="text-center">
                     <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-bold">
