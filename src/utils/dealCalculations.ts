@@ -58,12 +58,14 @@ export type DealCalc = {
 export function calcDeal(deal: Deal): DealCalc {
   const periodsCount = Math.max(1, deal.periods?.length || 1);
   const globalDisc = (deal.discount_pct ?? 45) / 100;
+  console.log('calcDeal - discount percentage:', deal.discount_pct, 'globalDisc:', globalDisc);
   const globalProdUp = (deal.production_uplift_pct ?? 0) / 100;
 
   const lines = deal.items.map(item => {
     // Calculate per-panel prices
     const perPanelRateCard = item.unit_rate_card;
     const perPanelDeal = perPanelRateCard * (1 - globalDisc); // Apply discount to individual panel price
+    console.log(`Item ${item.format_name}: rateCard=${perPanelRateCard}, deal=${perPanelDeal}, discount=${globalDisc}`);
     const uplift = (item.production_uplift_pct ?? (globalProdUp * 100)) / 100;
     const perPanelProduction = item.unit_production * (1 + uplift);
 
