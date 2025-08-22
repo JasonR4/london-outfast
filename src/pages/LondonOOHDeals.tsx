@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Clock, MapPin, Users, TrendingDown, ExternalLink, Calendar, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -85,10 +86,29 @@ const DealCard = ({ deal }: { deal: Deal }) => {
   const navigate = useNavigate();
   const { lockDeal, isLocking } = useDealLocking();
   const [user, setUser] = useState(null);
+  const [quantities, setQuantities] = useState<Record<number, number>>({});
   
-  const calc = calcDeal(deal);
-  const formats = Array.from(new Set(deal.items.map(item => item.format_name)));
-  const areas = Array.from(new Set(deal.items.map(item => item.location_area)));
+  // Initialize quantities with default of 20
+  useEffect(() => {
+    const initialQuantities: Record<number, number> = {};
+    deal.items.forEach((_, index) => {
+      initialQuantities[index] = 20;
+    });
+    setQuantities(initialQuantities);
+  }, [deal.items]);
+
+  // Create modified deal with user-selected quantities
+  const modifiedDeal = {
+    ...deal,
+    items: deal.items.map((item, index) => ({
+      ...item,
+      qty: quantities[index] || 20
+    }))
+  };
+  
+  const calc = calcDeal(modifiedDeal);
+  const formats = Array.from(new Set(modifiedDeal.items.map(item => item.format_name)));
+  const areas = Array.from(new Set(modifiedDeal.items.map(item => item.location_area)));
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -110,7 +130,7 @@ const DealCard = ({ deal }: { deal: Deal }) => {
       deal_slug: deal.slug,
       value: calc.totals.grandTotal
     });
-    lockDeal(deal, user?.id);
+    lockDeal(modifiedDeal, user?.id);
   };
 
   const handleSendBrief = () => {
@@ -119,6 +139,15 @@ const DealCard = ({ deal }: { deal: Deal }) => {
       value: calc.totals.grandTotal
     });
     navigate(`/brief?deal=${deal.slug}&budget=${calc.totals.grandTotal}`);
+  };
+
+  const handleQuantityChange = (itemIndex: number, newQty: number) => {
+    if (newQty >= 1 && newQty <= 100) {
+      setQuantities(prev => ({
+        ...prev,
+        [itemIndex]: newQty
+      }));
+    }
   };
 
   return (
@@ -158,7 +187,7 @@ const DealCard = ({ deal }: { deal: Deal }) => {
               <TableRow>
                 <TableHead className="text-xs">Format</TableHead>
                 <TableHead className="text-xs">Area</TableHead>
-                <TableHead className="text-xs text-right">Qty</TableHead>
+                <TableHead className="text-xs text-right">Select Qty</TableHead>
                 <TableHead className="text-xs text-right">Per Panel (Deal)</TableHead>
                 <TableHead className="text-xs text-right">Subtotal</TableHead>
               </TableRow>
@@ -170,7 +199,16 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                     {line.format_name}
                   </TableCell>
                   <TableCell className="text-xs">{line.area}</TableCell>
-                  <TableCell className="text-xs text-right">{line.qty}</TableCell>
+                  <TableCell className="text-xs text-right">
+                    <Input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={quantities[index] || 20}
+                      onChange={(e) => handleQuantityChange(index, parseInt(e.target.value) || 1)}
+                      className="w-16 h-8 text-xs text-center"
+                    />
+                  </TableCell>
                   <TableCell className="text-xs text-right">
                     <div>£{line.perPanelDeal.toFixed(0)}</div>
                     <div className="text-muted-foreground line-through">£{line.perPanelRateCard.toFixed(0)}</div>
