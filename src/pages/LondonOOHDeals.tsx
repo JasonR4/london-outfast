@@ -102,7 +102,7 @@ const DealCard = ({ deal }: { deal: Deal }) => {
     ...deal,
     items: deal.items.map((item, index) => ({
       ...item,
-      qty: quantities[index] || 20
+      qty: quantities[index] || item.qty
     }))
   };
   
@@ -205,7 +205,7 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                       type="number"
                       min="1"
                       max="100"
-                      value={quantities[index] || 20}
+                      value={quantities[index] || line.qty}
                       onChange={(e) => handleQuantityChange(index, parseInt(e.target.value) || 1)}
                       className="w-16 h-8 text-xs text-center"
                     />
