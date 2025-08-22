@@ -189,6 +189,7 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                 <TableHead className="text-xs">Area</TableHead>
                 <TableHead className="text-xs text-right">Select Qty</TableHead>
                 <TableHead className="text-xs text-right">Per Panel Price</TableHead>
+                <TableHead className="text-xs text-right">Per Panel Discount</TableHead>
                 <TableHead className="text-xs text-right">Line Total</TableHead>
               </TableRow>
             </TableHeader>
@@ -213,6 +214,14 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                     <div className="font-semibold text-green-600">£{line.perPanelDeal.toFixed(0)}</div>
                     <div className="text-muted-foreground line-through text-xs">£{line.perPanelRateCard.toFixed(0)}</div>
                   </TableCell>
+                  <TableCell className="text-xs text-right">
+                    <div className="font-semibold text-green-600">
+                      £{(line.perPanelRateCard - line.perPanelDeal).toFixed(0)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      ({Math.round(((line.perPanelRateCard - line.perPanelDeal) / line.perPanelRateCard) * 100)}% off)
+                    </div>
+                  </TableCell>
                   <TableCell className="text-xs text-right font-semibold">
                     £{line.lineSubtotal.toLocaleString()}
                   </TableCell>
@@ -221,7 +230,7 @@ const DealCard = ({ deal }: { deal: Deal }) => {
             </TableBody>
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={4} className="text-right font-semibold">
+                <TableCell colSpan={5} className="text-right font-semibold">
                   <div className="space-y-1">
                     <div className="flex justify-between text-green-600">
                       <span>You save ({Math.round(calc.totals.savingPct * 100)}%):</span>
