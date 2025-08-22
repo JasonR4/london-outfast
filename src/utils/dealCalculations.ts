@@ -61,13 +61,15 @@ export function calcDeal(deal: Deal): DealCalc {
   const globalProdUp = (deal.production_uplift_pct ?? 0) / 100;
 
   const lines = deal.items.map(item => {
-    // Use the unit_rate_card as the base panel price
+    // Calculate per-panel prices
     const perPanelRateCard = item.unit_rate_card;
+    const perPanelDeal = perPanelRateCard * (1 - globalDisc); // Apply discount to individual panel price
     const uplift = (item.production_uplift_pct ?? (globalProdUp * 100)) / 100;
     const perPanelProduction = item.unit_production * (1 + uplift);
 
-    // Calculate totals before discount
+    // Calculate totals
     const mediaRateCard = item.qty * perPanelRateCard * periodsCount;
+    const mediaDeal = item.qty * perPanelDeal * periodsCount;
     const productionTotal = item.qty * perPanelProduction;
 
     return {
@@ -77,30 +79,21 @@ export function calcDeal(deal: Deal): DealCalc {
       area: item.location_area,
       qty: item.qty,
       perPanelRateCard,
-      perPanelDeal: perPanelRateCard, // Will be calculated after discount
+      perPanelDeal,
       perPanelProduction,
       mediaRateCard,
-      mediaDeal: mediaRateCard, // Will be calculated after discount
+      mediaDeal,
       productionTotal,
-      lineSubtotal: mediaRateCard + productionTotal, // Will be calculated after discount
+      lineSubtotal: mediaDeal + productionTotal,
     };
   });
 
-  // Apply discount to total media cost, not individual panel prices
   const mediaRateCard = lines.reduce((a, l) => a + l.mediaRateCard, 0);
-  const mediaDeal = mediaRateCard * (1 - globalDisc);
+  const mediaDeal = lines.reduce((a, l) => a + l.mediaDeal, 0);
   const production = lines.reduce((a, l) => a + l.productionTotal, 0);
   const discountValue = Math.max(0, mediaRateCard - mediaDeal);
   const grandTotal = mediaDeal + production;
   const savingPct = mediaRateCard ? discountValue / mediaRateCard : 0;
-
-  // Update line items with proportional discount
-  const discountRatio = mediaRateCard > 0 ? mediaDeal / mediaRateCard : 1;
-  lines.forEach(line => {
-    line.mediaDeal = line.mediaRateCard * discountRatio;
-    line.perPanelDeal = line.perPanelRateCard * discountRatio;
-    line.lineSubtotal = line.mediaDeal + line.productionTotal;
-  });
 
   return {
     periodsCount,
