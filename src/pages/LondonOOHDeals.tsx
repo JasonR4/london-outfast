@@ -188,8 +188,8 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                 <TableHead className="text-xs">Format</TableHead>
                 <TableHead className="text-xs">Area</TableHead>
                 <TableHead className="text-xs text-right">Select Qty</TableHead>
-                <TableHead className="text-xs text-right">Per Panel (Deal)</TableHead>
-                <TableHead className="text-xs text-right">Subtotal</TableHead>
+                <TableHead className="text-xs text-right">Per Panel (Deal Price)</TableHead>
+                <TableHead className="text-xs text-right">Line Total</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -210,8 +210,8 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                     />
                   </TableCell>
                   <TableCell className="text-xs text-right">
-                    <div>£{line.perPanelDeal.toFixed(0)}</div>
                     <div className="text-muted-foreground line-through">£{line.perPanelRateCard.toFixed(0)}</div>
+                    <div className="font-semibold">£{line.perPanelDeal.toFixed(0)}</div>
                   </TableCell>
                   <TableCell className="text-xs text-right font-semibold">
                     £{line.lineSubtotal.toLocaleString()}
@@ -223,13 +223,13 @@ const DealCard = ({ deal }: { deal: Deal }) => {
               <TableRow>
                 <TableCell colSpan={4} className="text-right font-semibold">
                   <div className="space-y-1">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground line-through">Rate card total:</span>
-                      <span className="text-muted-foreground line-through">£{calc.totals.mediaRateCard.toLocaleString()}</span>
-                    </div>
                     <div className="flex justify-between text-green-600">
                       <span>You save ({Math.round(calc.totals.savingPct * 100)}%):</span>
                       <span>£{calc.totals.discountValue.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Deal media total:</span>
+                      <span>£{calc.totals.mediaDeal.toLocaleString()}</span>
                     </div>
                     {calc.totals.production > 0 && (
                       <div className="flex justify-between">
@@ -240,6 +240,9 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
+                  <div className="text-xs text-muted-foreground line-through mb-1">
+                    Rate card: £{calc.totals.mediaRateCard.toLocaleString()}
+                  </div>
                   <div className="text-lg font-bold text-accent">
                     £{calc.totals.grandTotal.toLocaleString()}
                   </div>
