@@ -61,13 +61,14 @@ export function calcDeal(deal: Deal): DealCalc {
   const globalProdUp = (deal.production_uplift_pct ?? 0) / 100;
 
   const lines = deal.items.map(item => {
-    const perPanelRateCard = item.unit_rate_card;
-    const perPanelDeal = perPanelRateCard * (1 - globalDisc);
+    // The "unit_rate_card" is actually your normal selling price (e.g. £825)
+    const perPanelRateCard = item.unit_rate_card; // Your normal selling price
+    const perPanelDeal = perPanelRateCard * (1 - globalDisc); // 45% off your selling price
     const uplift = (item.production_uplift_pct ?? (globalProdUp * 100)) / 100;
     const perPanelProduction = item.unit_production * (1 + uplift);
 
-    const mediaRateCard = item.qty * perPanelRateCard * periodsCount;
-    const mediaDeal = item.qty * perPanelDeal * periodsCount;
+    const mediaRateCard = item.qty * perPanelRateCard * periodsCount; // Total at your normal price
+    const mediaDeal = item.qty * perPanelDeal * periodsCount; // Total at deal price
     const productionTotal = item.qty * perPanelProduction;
 
     return {

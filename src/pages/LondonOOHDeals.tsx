@@ -188,7 +188,7 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                 <TableHead className="text-xs">Format</TableHead>
                 <TableHead className="text-xs">Area</TableHead>
                 <TableHead className="text-xs text-right">Select Qty</TableHead>
-                <TableHead className="text-xs text-right">Per Panel (Deal Price)</TableHead>
+                <TableHead className="text-xs text-right">Per Panel Price</TableHead>
                 <TableHead className="text-xs text-right">Line Total</TableHead>
               </TableRow>
             </TableHeader>
@@ -210,8 +210,8 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                     />
                   </TableCell>
                   <TableCell className="text-xs text-right">
-                    <div className="text-muted-foreground line-through">£{line.perPanelRateCard.toFixed(0)}</div>
-                    <div className="font-semibold">£{line.perPanelDeal.toFixed(0)}</div>
+                    <div className="text-muted-foreground line-through text-xs">£{line.perPanelRateCard.toFixed(0)}</div>
+                    <div className="font-semibold text-green-600">£{line.perPanelDeal.toFixed(0)}</div>
                   </TableCell>
                   <TableCell className="text-xs text-right font-semibold">
                     £{line.lineSubtotal.toLocaleString()}
@@ -241,12 +241,12 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="text-xs text-muted-foreground line-through mb-1">
-                    Rate card: £{calc.totals.mediaRateCard.toLocaleString()}
+                    Normal price: £{calc.totals.mediaRateCard.toLocaleString()}
                   </div>
-                  <div className="text-lg font-bold text-accent">
+                  <div className="text-lg font-bold text-green-600">
                     £{calc.totals.grandTotal.toLocaleString()}
                   </div>
-                  <div className="text-xs text-muted-foreground">ex VAT</div>
+                  <div className="text-xs text-muted-foreground">Deal price ex VAT</div>
                 </TableCell>
               </TableRow>
             </TableFooter>
