@@ -77,7 +77,7 @@ export function useRealDeals() {
                 format_name: rc.media_formats?.format_name || 'Transport Format',
                 media_owner: 'Transport Network',
                 location_area: formatLocationArea(rc.location_area || 'Central London'),
-                qty: Math.floor(Math.random() * 8) + 4, // 4-12 panels
+                qty: rc.media_formats?.format_name?.toLowerCase().includes('river') ? 20 : Math.floor(Math.random() * 8) + 4,
                 unit_rate_card: Number(rc.sale_price || rc.base_rate_per_incharge || 0),
                 unit_production: 95
               })) || [],
