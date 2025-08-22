@@ -87,7 +87,7 @@ export function useRealDeals() {
             slug: "roadside-premium-package",
             title: "Roadside Premium Package",
             deadline_utc: "2025-08-29T15:00:00Z",
-            discount_pct: 40,
+            discount_pct: 45,
             production_uplift_pct: 10,
             availability_left: 1,
             periods: [
