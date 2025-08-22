@@ -10,143 +10,9 @@ import { useNavigate } from "react-router-dom";
 import { formatGBP } from "@/lib/pricingMath";
 import { Deal, calcDeal, formatPeriodRange, formatPeriodCodes } from "@/utils/dealCalculations";
 import { useDealLocking } from "@/hooks/useDealLocking";
+import { useRealDeals } from "@/hooks/useRealDeals";
 import { supabase } from "@/integrations/supabase/client";
 import { track } from "@/utils/analytics";
-
-// Sample deals data - in production this would come from CMS
-const DEALS_DATA: Deal[] = [
-  {
-    slug: "central-london-d48-supersides",
-    title: "Central London: D48 + Bus Supersides",
-    deadline_utc: "2025-08-29T15:00:00Z", // Friday 4pm UK time
-    discount_pct: 45,
-    production_uplift_pct: 15,
-    availability_left: 3,
-    periods: [
-      { code: "2025-P19", start: "2025-09-01", end: "2025-09-14" },
-      { code: "2025-P20", start: "2025-09-15", end: "2025-09-28" }
-    ],
-    items: [
-      {
-        format_slug: "digital-48-sheet",
-        format_name: "Digital 48-sheet",
-        media_owner: "Ocean",
-        location_area: "Zone 1-2 / West End",
-        qty: 4,
-        unit_rate_card: 2800,
-        unit_production: 0
-      },
-      {
-        format_slug: "bus-superside",
-        format_name: "Bus Superside",
-        media_owner: "Global",
-        location_area: "Central London",
-        qty: 6,
-        unit_rate_card: 1900,
-        unit_production: 120
-      }
-    ],
-    notes: "Premium roadside + high frequency bus coverage"
-  },
-  {
-    slug: "east-london-6sheet-tube-combo",
-    title: "East London: 6-Sheet + Tube Bundle",
-    deadline_utc: "2025-08-29T15:00:00Z",
-    discount_pct: 45,
-    production_uplift_pct: 10,
-    availability_left: 2,
-    periods: [
-      { code: "2025-P19", start: "2025-09-01", end: "2025-09-14" },
-      { code: "2025-P20", start: "2025-09-15", end: "2025-09-28" }
-    ],
-    items: [
-      {
-        format_slug: "6-sheet",
-        format_name: "6-Sheet",
-        media_owner: "JCDecaux",
-        location_area: "Canary Wharf / City",
-        qty: 8,
-        unit_rate_card: 1200,
-        unit_production: 85
-      },
-      {
-        format_slug: "lt-platform",
-        format_name: "LT Platform",
-        media_owner: "TfL Partners",
-        location_area: "Liverpool St / Tower Bridge",
-        qty: 4,
-        unit_rate_card: 2200,
-        unit_production: 0
-      }
-    ],
-    notes: "Financial district reach + commuter frequency"
-  },
-  {
-    slug: "west-london-digital-package",
-    title: "West London: Digital OOH Premium",
-    deadline_utc: "2025-08-29T15:00:00Z",
-    discount_pct: 40,
-    production_uplift_pct: 0,
-    availability_left: 1,
-    periods: [
-      { code: "2025-P19", start: "2025-09-01", end: "2025-09-14" }
-    ],
-    items: [
-      {
-        format_slug: "digital-6-sheet",
-        format_name: "Digital 6-Sheet",
-        media_owner: "Clear Channel",
-        location_area: "Hammersmith / Kensington",
-        qty: 6,
-        unit_rate_card: 3200,
-        unit_production: 0
-      },
-      {
-        format_slug: "digital-48-sheet",
-        format_name: "Digital 48-Sheet",
-        media_owner: "Ocean",
-        location_area: "Fulham",
-        qty: 2,
-        unit_rate_card: 4100,
-        unit_production: 0
-      }
-    ],
-    notes: "High-impact digital sites in affluent areas"
-  },
-  {
-    slug: "north-london-transport-hub",
-    title: "North London: Transport Hub Mix",
-    deadline_utc: "2025-08-29T15:00:00Z",
-    discount_pct: 50,
-    production_uplift_pct: 12,
-    availability_left: 4,
-    periods: [
-      { code: "2025-P19", start: "2025-09-01", end: "2025-09-14" },
-      { code: "2025-P20", start: "2025-09-15", end: "2025-09-28" }
-    ],
-    items: [
-      {
-        format_slug: "bus-rear",
-        format_name: "Bus Rear",
-        media_owner: "Admedia",
-        location_area: "Camden / King's Cross",
-        qty: 12,
-        unit_rate_card: 850,
-        unit_production: 95
-      },
-      {
-        format_slug: "lt-panel",
-        format_name: "LT Panel",
-        media_owner: "JCDecaux",
-        location_area: "Angel / King's Cross",
-        qty: 6,
-        unit_rate_card: 1100,
-        unit_production: 0
-      }
-    ],
-    notes: "Multi-modal transport coverage"
-  }
-];
 
 const CountdownTimer = () => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -392,6 +258,7 @@ const DealCard = ({ deal }: { deal: Deal }) => {
 
 const LondonOOHDeals = () => {
   const navigate = useNavigate();
+  const { deals, loading, error } = useRealDeals();
 
   return (
     <>
@@ -499,11 +366,27 @@ const LondonOOHDeals = () => {
         {/* Deals Grid */}
         <section className="py-20 px-4">
           <div className="max-w-7xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-8 mb-16">
-              {DEALS_DATA.map((deal) => (
-                <DealCard key={deal.slug} deal={deal} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="text-center py-12">
+                <Loader2 className="h-8 w-8 mx-auto animate-spin mb-4" />
+                <p className="text-muted-foreground">Loading real rate card deals...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <p className="text-destructive mb-4">Failed to load deals: {error}</p>
+                <Button onClick={() => window.location.reload()}>Try Again</Button>
+              </div>
+            ) : deals.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No deals available this week. Check back Monday 9am.</p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-8 mb-16">
+                {deals.map((deal) => (
+                  <DealCard key={deal.slug} deal={deal} />
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
