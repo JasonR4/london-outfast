@@ -277,6 +277,30 @@ const FormatPage = () => {
         })
       } : null;
 
+      // Safe array parsing helper
+      const parseArrayField = (field: any): string[] => {
+        if (Array.isArray(field)) return field;
+        if (typeof field === 'string') {
+          try {
+            // Try to parse as JSON array
+            const parsed = JSON.parse(field);
+            return Array.isArray(parsed) ? parsed : [field];
+          } catch {
+            // If parsing fails, treat as single item or comma-separated
+            return field.includes(',') ? field.split(',').map(s => s.trim()) : [field];
+          }
+        }
+        return [];
+      };
+
+      // Ensure whoUsesIt is always an array
+      if (finalFormat && finalFormat.whoUsesIt) {
+        finalFormat.whoUsesIt = parseArrayField(finalFormat.whoUsesIt);
+      }
+      if (finalFormat && finalFormat.whoUsesThis) {
+        finalFormat.whoUsesIt = parseArrayField(finalFormat.whoUsesThis);
+      }
+
       setFormat(finalFormat);
       setLoading(false);
 
@@ -1276,7 +1300,7 @@ const FormatPage = () => {
                 Who Uses {format?.shortName || format?.format_name} Ads?
               </h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {format.whoUsesIt?.map((use: string, index: number) => (
+                {(Array.isArray(format.whoUsesIt) ? format.whoUsesIt : []).map((use: string, index: number) => (
                   <Card key={index} className="text-center">
                     <CardContent className="pt-6">
                       <h3 className="font-semibold mb-2">{use}</h3>
