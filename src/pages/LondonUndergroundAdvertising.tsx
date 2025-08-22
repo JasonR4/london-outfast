@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   Train, 
   Users, 
@@ -505,6 +505,9 @@ const LondonUndergroundAdvertising = () => {
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
                 Get your brand inside the network that moves London.
               </h2>
+              <p className="text-xl text-white/90 mb-8">
+                Learn more about <Link to="/blog/tube-advertising-london" className="underline hover:no-underline">london underground advertising strategies</Link> in our comprehensive guide.
+              </p>
               <Button 
                 size="lg" 
                 variant="secondary"
