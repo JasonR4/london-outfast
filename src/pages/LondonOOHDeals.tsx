@@ -198,7 +198,7 @@ const DealCard = ({ deal }: { deal: Deal }) => {
                   <TableCell className="font-medium text-xs">
                     {line.format_name}
                   </TableCell>
-                  <TableCell className="text-xs">{line.area}</TableCell>
+                  <TableCell className="text-xs">Specific location will be provided on request</TableCell>
                   <TableCell className="text-xs text-right">
                     <Input
                       type="number"
