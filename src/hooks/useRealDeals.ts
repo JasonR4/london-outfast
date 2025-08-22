@@ -49,7 +49,7 @@ export function useRealDeals() {
                 media_owner: 'Premium Network',
                 location_area: formatLocationArea(rc.location_area || 'Central London'),
                 qty: Math.floor(Math.random() * 6) + 2, // 2-8 panels
-                unit_rate_card: 825, // Your standard selling price
+                unit_rate_card: getCorrectRate(rc.media_formats?.format_name || ''),
                 unit_production: rc.media_formats?.format_name?.includes('Digital') ? 0 : 120
               })) || [],
             notes: "Premium digital sites across central London"
@@ -78,7 +78,7 @@ export function useRealDeals() {
                 media_owner: 'Transport Network',
                 location_area: formatLocationArea(rc.location_area || 'Central London'),
                 qty: Math.floor(Math.random() * 8) + 4, // 4-12 panels
-                unit_rate_card: 825, // Your standard selling price
+                unit_rate_card: getCorrectRate(rc.media_formats?.format_name || ''),
                 unit_production: 95
               })) || [],
             notes: "Multi-modal transport coverage across London"
@@ -106,7 +106,7 @@ export function useRealDeals() {
                 media_owner: 'Premium Network',
                 location_area: formatLocationArea(rc.location_area || 'Central London'),
                 qty: Math.floor(Math.random() * 4) + 2, // 2-6 panels
-                unit_rate_card: 825, // Your standard selling price
+                unit_rate_card: getCorrectRate(rc.media_formats?.format_name || ''),
                 unit_production: rc.media_formats?.format_name?.includes('Digital') ? 0 : 140
               })) || [],
             notes: "High-impact roadside advertising in premium locations"
@@ -130,7 +130,7 @@ export function useRealDeals() {
                 media_owner: 'Media Network',
                 location_area: formatLocationArea(rc.location_area || 'East London'),
                 qty: Math.floor(Math.random() * 6) + 3, // 3-9 panels
-                unit_rate_card: 825, // Your standard selling price
+                unit_rate_card: getCorrectRate(rc.media_formats?.format_name || ''),
                 unit_production: 80
               })) || [],
             notes: "Mixed format coverage across East London"
@@ -159,6 +159,26 @@ export function useRealDeals() {
 }
 
 // Helper functions
+function getCorrectRate(formatName: string): number {
+  // Set correct rates based on format type
+  if (formatName?.toLowerCase().includes('6') || formatName?.toLowerCase().includes('d6')) {
+    return 6; // D6/6-sheet formats
+  }
+  if (formatName?.toLowerCase().includes('48') || formatName?.toLowerCase().includes('d48')) {
+    return 825; // 48-sheet formats
+  }
+  if (formatName?.toLowerCase().includes('bus')) {
+    return 400; // Bus advertising
+  }
+  if (formatName?.toLowerCase().includes('underground') || formatName?.toLowerCase().includes('tube')) {
+    return 300; // London Underground
+  }
+  if (formatName?.toLowerCase().includes('digital')) {
+    return 1200; // Digital formats
+  }
+  return 825; // Default rate
+}
+
 function getMediaOwnerByArea(area: string): string {
   if (area?.includes('Central') || area?.includes('GD')) return 'Global';
   if (area?.includes('East')) return 'Ocean';
