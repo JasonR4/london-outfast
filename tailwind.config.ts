@@ -54,6 +54,8 @@ export default {
 				},
 				'london-red': 'hsl(var(--london-red))',
 				'london-blue': 'hsl(var(--london-blue))',
+				'london-gold': 'hsl(var(--london-gold))',
+				'london-navy': 'hsl(var(--london-navy))',
 				'dark-navy': 'hsl(var(--dark-navy))',
 				'steel-blue': 'hsl(var(--steel-blue))',
 				sidebar: {
@@ -98,7 +100,9 @@ export default {
 			},
 			backgroundImage: {
 				'gradient-hero': 'var(--gradient-hero)',
-				'gradient-card': 'var(--gradient-card)'
+				'gradient-card': 'var(--gradient-card)',
+				'gradient-luxury': 'var(--gradient-luxury)',
+				'gradient-radial': 'radial-gradient(circle at center, var(--tw-gradient-stops))'
 			},
 			boxShadow: {
 				'glow': 'var(--shadow-glow)',

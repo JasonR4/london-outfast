@@ -12,6 +12,8 @@ import SiteShell from "@/components/layout/SiteShell";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { AnalyticsScripts } from "@/components/AnalyticsScripts";
 import Index from "./pages/Index";
+import HomeTest1 from "./pages/HomeTest1";
+import HomeTest2 from "./pages/HomeTest2";
 import Quote from "./pages/Quote";
 import FormatPage from "./pages/FormatPage";
 import FormatDirectory from "./pages/FormatDirectory";
@@ -119,6 +121,8 @@ const App = () => {
             <SiteShell>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/hometest1" element={<HomeTest1 />} />
+                <Route path="/hometest2" element={<HomeTest2 />} />
                 <Route path="/quote" element={<Quote />} />
                 <Route path="/quote-plan" element={<QuotePlan />} />
                 <Route path="/quote-submitted" element={<QuoteSubmitted />} />

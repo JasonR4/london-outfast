@@ -39,12 +39,15 @@ All colors MUST be HSL.
     /* Custom design tokens */
     --london-red: 0 72% 51%;
     --london-blue: 217 91% 60%;
+    --london-gold: 45 100% 51%;
+    --london-navy: 210 17% 8%;
     --dark-navy: 210 17% 8%;
     --steel-blue: 220 50% 20%;
     
     /* Gradients */
     --gradient-hero: linear-gradient(135deg, hsl(var(--london-red)), hsl(var(--london-blue)));
     --gradient-card: linear-gradient(145deg, hsl(var(--steel-blue)), hsl(var(--muted)));
+    --gradient-luxury: linear-gradient(135deg, hsl(var(--london-gold) / 0.1), hsl(var(--london-red) / 0.05), hsl(var(--london-navy) / 0.08));
     
     /* Shadows */
     --shadow-glow: 0 0 40px hsl(var(--london-red) / 0.3);
@@ -430,4 +433,35 @@ All colors MUST be HSL.
     .cta-card:hover,
     .cta-card:focus-visible { transform: none; }
   }
+}
+
+/* Luxury Homepage Variants */
+.luxury-variant-1 {
+  position: relative;
+}
+
+.luxury-variant-1 .luxury-section {
+  position: relative;
+  z-index: 10;
+}
+
+.luxury-variant-2 {
+  position: relative;
+}
+
+/* Premium glass morphism effects */
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Luxury hover transitions */
+.luxury-hover {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.luxury-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.2);
 }
