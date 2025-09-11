@@ -380,6 +380,20 @@ const onSubmit = async (values: FormValues) => {
             <span>{name}</span>
           </label>
         ))}
+        
+        {/* Special "Open to recommendations" option for larger formats */}
+        <label className="flex items-center gap-2 text-sm border-t pt-2 mt-2">
+          <Checkbox
+            checked={form.getValues('formats')?.includes('Above 48" - Open to recommendations') || false}
+            onCheckedChange={(checked) => {
+              const current = new Set(form.getValues('formats') || [])
+              if (checked) current.add('Above 48" - Open to recommendations'); else current.delete('Above 48" - Open to recommendations');
+              form.setValue('formats', Array.from(current))
+            }}
+          />
+          <span className="text-primary font-medium">Above 48" - Open to recommendations</span>
+        </label>
+        
         {filteredFormatNames.length === 0 && (
           <p className="text-sm text-muted-foreground">No formats found.</p>
         )}
