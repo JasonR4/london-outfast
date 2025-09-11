@@ -367,6 +367,19 @@ const onSubmit = async (values: FormValues) => {
         </Select>
       </div>
       <div className="max-h-56 overflow-auto border rounded-md p-3 space-y-2">
+        {/* Special "Open to recommendations" option at the top */}
+        <label className="flex items-center gap-2 text-sm border-b pb-2 mb-2">
+          <Checkbox
+            checked={form.getValues('formats')?.includes('Open to recommendations') || false}
+            onCheckedChange={(checked) => {
+              const current = new Set(form.getValues('formats') || [])
+              if (checked) current.add('Open to recommendations'); else current.delete('Open to recommendations');
+              form.setValue('formats', Array.from(current))
+            }}
+          />
+          <span className="text-primary font-medium">Open to recommendations</span>
+        </label>
+        
         {filteredFormatNames.map((name) => (
           <label key={name} className="flex items-center gap-2 text-sm">
             <Checkbox
@@ -380,19 +393,6 @@ const onSubmit = async (values: FormValues) => {
             <span>{name}</span>
           </label>
         ))}
-        
-        {/* Special "Open to recommendations" option for larger formats */}
-        <label className="flex items-center gap-2 text-sm border-t pt-2 mt-2">
-          <Checkbox
-            checked={form.getValues('formats')?.includes('Above 48" - Open to recommendations') || false}
-            onCheckedChange={(checked) => {
-              const current = new Set(form.getValues('formats') || [])
-              if (checked) current.add('Above 48" - Open to recommendations'); else current.delete('Above 48" - Open to recommendations');
-              form.setValue('formats', Array.from(current))
-            }}
-          />
-          <span className="text-primary font-medium">Open to recommendations</span>
-        </label>
         
         {filteredFormatNames.length === 0 && (
           <p className="text-sm text-muted-foreground">No formats found.</p>
