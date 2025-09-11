@@ -32,7 +32,7 @@ const Hero = () => {
       {/* Left Side - Hero Image */}
       <div className="flex-1 relative min-h-[50vh] md:min-h-screen">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-left bg-no-repeat"
           style={{ backgroundImage: `url(${content?.background_image || londonHero})` }}
         />
         <div className="absolute inset-0 bg-black/30" />
