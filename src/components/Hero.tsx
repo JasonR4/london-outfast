@@ -46,9 +46,6 @@ const Hero = () => {
       
       {/* Content */}
       <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
-        <Badge variant="secondary" className="mb-6 text-lg px-6 py-2">
-          Buy smarter. Plan faster.
-        </Badge>
         
         <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent leading-tight">
           {content?.title || "London’s Fastest Out-of-Home Media Buying Specialists"}
