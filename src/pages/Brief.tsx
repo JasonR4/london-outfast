@@ -391,7 +391,7 @@ const onSubmit = async (values: FormValues) => {
               form.setValue('formats', Array.from(current))
             }}
           />
-          <span className="text-primary font-medium">Above 48" - Open to recommendations</span>
+          <span className="text-primary font-medium">Open to recommendations</span>
         </label>
         
         {filteredFormatNames.length === 0 && (
