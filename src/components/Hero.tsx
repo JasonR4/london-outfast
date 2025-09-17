@@ -46,8 +46,7 @@ const Hero = () => {
           </h1>
           
           <p className="font-inter text-xl md:text-2xl mb-12 leading-relaxed text-white/90 font-normal">
-            With London's fastest OOH specialists,<br />
-            premium locations, and same-day quotes.
+            No hidden fees. No mark-ups. The rate we pay is the rate you pay — powered by sharp buyers who move fast and get the job done
           </p>
           
           <Button 
