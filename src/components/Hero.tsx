@@ -43,7 +43,7 @@ const Hero = () => {
         <div className="w-full max-w-2xl mx-auto px-8 lg:px-16 py-16">
           <h1 className="font-playfair text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-medium mb-8 leading-tight">
             REACH YOUR<br />
-            <span className="text-primary">OOH GOALS</span>
+            <span className="text-primary">The Outdoor Advertising Specialists</span>
           </h1>
           
           <p className="font-inter text-xl md:text-2xl mb-12 leading-relaxed text-white/90 font-normal">
