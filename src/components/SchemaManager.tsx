@@ -13,6 +13,22 @@ export const SchemaManager = () => {
     if (pathname === '/') return null; // Homepage handled separately
     if (pathname === '/outdoor-media') return 'outdoor_media';
     if (pathname === '/london-ooh-specialists') return 'london_ooh_specialists';
+    if (pathname === '/ooh-advertising-london') return 'ooh_advertising_london';
+    if (pathname === '/media-buying-rates-london') return 'media_buying_rates_london';
+    if (pathname === '/london-ooh-deals') return 'london_ooh_deals';
+    if (pathname === '/ooh') return 'ooh_hub';
+    if (pathname.startsWith('/ooh/')) {
+      const slug = pathname.replace('/ooh/', '').replace(/-/g, '_');
+      return `ooh_${slug}`;
+    }
+    if (pathname === '/industries') return 'industries';
+    if (pathname === '/about') return 'about';
+    if (pathname === '/contact') return 'contact';
+    if (pathname === '/blog') return 'blog';
+    if (pathname === '/faqs') return 'faqs';
+    if (pathname === '/brief') return 'brief';
+    if (pathname === '/how-we-work') return 'how_we_work';
+    if (pathname === '/what-is-media-buying-in-london') return 'what_is_media_buying';
     return null;
   };
 
