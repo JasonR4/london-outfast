@@ -248,7 +248,7 @@ export const DealContactForm = ({ deal, isOpen, onClose, user }: DealContactForm
                   type="url"
                   value={formData.website}
                   onChange={(e) => handleInputChange('website', e.target.value)}
-                  placeholder="https://"
+                  placeholder="www."
                 />
               </div>
               
