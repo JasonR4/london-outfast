@@ -1,0 +1,1 @@
+INSERT INTO investor_commitments (amount, investor_email, status) VALUES (574000, 'demo@investor.com', 'committed')
