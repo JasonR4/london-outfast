@@ -245,7 +245,7 @@ export const DealContactForm = ({ deal, isOpen, onClose, user }: DealContactForm
                 <Label htmlFor="website">Website</Label>
                 <Input
                   id="website"
-                  type="url"
+                  type="text"
                   value={formData.website}
                   onChange={(e) => handleInputChange('website', e.target.value)}
                   placeholder="www."
