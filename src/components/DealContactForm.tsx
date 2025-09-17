@@ -109,9 +109,8 @@ export const DealContactForm = ({ deal, isOpen, onClose, user }: DealContactForm
       console.log('✅ Quote items created');
       if (itemsError) throw itemsError;
 
-      console.log('🔄 Syncing to HubSpot...');
-      // Sync to HubSpot
-      const { error: hubspotError } = await supabase.functions.invoke('sync-hubspot-contact', {
+      console.log('🔄 Syncing to HubSpot (non-blocking with timeout)...');
+      const hubspotPromise = supabase.functions.invoke('sync-hubspot-contact', {
         body: {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -128,11 +127,16 @@ export const DealContactForm = ({ deal, isOpen, onClose, user }: DealContactForm
         }
       });
 
-      if (hubspotError) {
-        console.error('❌ HubSpot sync error:', hubspotError);
-        // Don't fail the whole process if HubSpot sync fails
-      } else {
-        console.log('✅ HubSpot sync completed');
+      // Do not block UI on HubSpot; give it up to 7s then continue
+      try {
+        await Promise.race([
+          hubspotPromise,
+          new Promise((_, reject) => setTimeout(() => reject(new Error('HubSpot sync timeout')), 7000))
+        ]);
+        console.log('✅ HubSpot sync completed or started successfully');
+      } catch (e) {
+        console.warn('⚠️ HubSpot sync did not complete in time or failed softly:', e);
+        // Soft-fail: continue without blocking user flow
       }
 
       console.log('📈 Tracking analytics...');
