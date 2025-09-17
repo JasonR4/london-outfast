@@ -45,7 +45,11 @@ export const DealContactForm = ({ deal, isOpen, onClose, user }: DealContactForm
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('🚀 Form submission started');
+    console.log('📝 Form data:', formData);
+    
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.company) {
+      console.log('❌ Validation failed - missing required fields');
       toast({
         title: "Please fill in all required fields",
         variant: "destructive"
@@ -53,9 +57,11 @@ export const DealContactForm = ({ deal, isOpen, onClose, user }: DealContactForm
       return;
     }
 
+    console.log('✅ Validation passed, starting submission');
     setIsSubmitting(true);
 
     try {
+      console.log('💾 Creating quote record...');
       // Create quote record
       const { data: quote, error: quoteError } = await supabase
         .from('quotes')
@@ -77,8 +83,10 @@ export const DealContactForm = ({ deal, isOpen, onClose, user }: DealContactForm
         .select()
         .single();
 
+      console.log('📊 Quote created:', quote);
       if (quoteError) throw quoteError;
 
+      console.log('📝 Creating quote items...');
       // Create quote items
       const itemsPayload = calc.lines.map(line => ({
         quote_id: quote.id,
@@ -93,12 +101,15 @@ export const DealContactForm = ({ deal, isOpen, onClose, user }: DealContactForm
         creative_needs: `${line.media_owner} - ${line.area}`
       }));
 
+      console.log('📋 Quote items payload:', itemsPayload);
       const { error: itemsError } = await supabase
         .from('quote_items')
         .insert(itemsPayload);
 
+      console.log('✅ Quote items created');
       if (itemsError) throw itemsError;
 
+      console.log('🔄 Syncing to HubSpot...');
       // Sync to HubSpot
       const { error: hubspotError } = await supabase.functions.invoke('sync-hubspot-contact', {
         body: {
@@ -118,10 +129,13 @@ export const DealContactForm = ({ deal, isOpen, onClose, user }: DealContactForm
       });
 
       if (hubspotError) {
-        console.error('HubSpot sync error:', hubspotError);
+        console.error('❌ HubSpot sync error:', hubspotError);
         // Don't fail the whole process if HubSpot sync fails
+      } else {
+        console.log('✅ HubSpot sync completed');
       }
 
+      console.log('📈 Tracking analytics...');
       // Analytics tracking
       track('deal_contact_submitted', {
         deal_slug: deal.slug,
@@ -137,6 +151,7 @@ export const DealContactForm = ({ deal, isOpen, onClose, user }: DealContactForm
       });
 
     } catch (error) {
+      console.error('💥 Error submitting deal contact:', error);
       console.error('Error submitting deal contact:', error);
       toast({
         title: "Error",
