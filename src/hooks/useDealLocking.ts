@@ -8,7 +8,7 @@ export function useDealLocking() {
   const [isLocking, setIsLocking] = useState(false);
   const { toast } = useToast();
 
-  const lockDeal = async (deal: Deal, userId?: string) => {
+  const lockDeal = async (deal: Deal, userId?: string, onShowContactForm?: () => void) => {
     if (!userId) {
       // Save deal for after authentication
       sessionStorage.setItem('deal_draft', JSON.stringify(deal));
@@ -16,6 +16,13 @@ export function useDealLocking() {
       return;
     }
 
+    // Show the contact form instead of processing the deal immediately
+    if (onShowContactForm) {
+      onShowContactForm();
+      return;
+    }
+
+    // Fallback for backwards compatibility
     setIsLocking(true);
     
     try {
@@ -28,8 +35,8 @@ export function useDealLocking() {
           user_id: userId,
           status: 'draft',
           user_session_id: deal.slug, // Use deal slug as session identifier
-          contact_name: '', // Will be filled in brief
-          contact_email: '', // Will be filled in brief
+          contact_name: '', // Will be filled in contact form
+          contact_email: '', // Will be filled in contact form
           subtotal: calc.totals.mediaDeal,
           total_cost: calc.totals.grandTotal,
           total_inc_vat: calc.totals.grandTotal * 1.2, // Assuming 20% VAT

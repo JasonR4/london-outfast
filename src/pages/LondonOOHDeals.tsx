@@ -14,6 +14,7 @@ import { useDealLocking } from "@/hooks/useDealLocking";
 import { useRealDeals } from "@/hooks/useRealDeals";
 import { supabase } from "@/integrations/supabase/client";
 import { track } from "@/utils/analytics";
+import { DealContactForm } from "@/components/DealContactForm";
 
 const CountdownTimer = () => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -87,6 +88,7 @@ const DealCard = ({ deal }: { deal: Deal }) => {
   const { lockDeal, isLocking } = useDealLocking();
   const [user, setUser] = useState(null);
   const [quantities, setQuantities] = useState<Record<number, number>>({});
+  const [showContactForm, setShowContactForm] = useState(false);
   
   // Initialize quantities with default of 20
   useEffect(() => {
@@ -130,7 +132,7 @@ const DealCard = ({ deal }: { deal: Deal }) => {
       deal_slug: deal.slug,
       value: calc.totals.grandTotal
     });
-    lockDeal(modifiedDeal, user?.id);
+    lockDeal(modifiedDeal, user?.id, () => setShowContactForm(true));
   };
 
   const handleSendBrief = () => {
@@ -294,6 +296,13 @@ const DealCard = ({ deal }: { deal: Deal }) => {
           Media only unless stated. Production shown separately. Subject to availability. Deadline: Friday 4:00 PM (UK).
         </p>
       </CardContent>
+
+      <DealContactForm 
+        deal={modifiedDeal}
+        isOpen={showContactForm}
+        onClose={() => setShowContactForm(false)}
+        user={user}
+      />
     </Card>
   );
 };
