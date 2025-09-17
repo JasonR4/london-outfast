@@ -26,7 +26,7 @@ export function useDealLocking() {
         .from('quotes')
         .insert({
           user_id: userId,
-          status: 'deal_draft',
+          status: 'draft',
           user_session_id: deal.slug, // Use deal slug as session identifier
           contact_name: '', // Will be filled in brief
           contact_email: '', // Will be filled in brief
