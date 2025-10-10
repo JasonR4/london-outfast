@@ -326,7 +326,7 @@ const OOHAdvertisingLondon = () => {
                 </Button>
                 <Button
                   size="lg"
-                  variant="accent"
+                  variant="secondary"
                   className="px-6"
                   onClick={() => navigate("/brief")}
                   aria-label="Submit brief to OOH specialist"
