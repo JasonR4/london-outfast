@@ -21,6 +21,16 @@ export const SchemaManager = () => {
       const slug = pathname.replace('/ooh/', '').replace(/-/g, '_');
       return `ooh_${slug}`;
     }
+    if (pathname.startsWith('/outdoor-media/')) {
+      // Handle dynamic format pages
+      return null; // These have their own canonical handling
+    }
+    if (pathname.startsWith('/industries/')) {
+      return null; // Industry pages handle their own canonicals
+    }
+    if (pathname.startsWith('/blog/')) {
+      return null; // Blog posts handle their own canonicals
+    }
     if (pathname === '/industries') return 'industries';
     if (pathname === '/about') return 'about';
     if (pathname === '/contact') return 'contact';
@@ -29,6 +39,13 @@ export const SchemaManager = () => {
     if (pathname === '/brief') return 'brief';
     if (pathname === '/how-we-work') return 'how_we_work';
     if (pathname === '/what-is-media-buying-in-london') return 'what_is_media_buying';
+    if (pathname === '/quote') return 'quote';
+    if (pathname === '/configurator') return 'configurator';
+    if (pathname.startsWith('/privacy-') || pathname.startsWith('/terms-') || 
+        pathname.startsWith('/cookie-') || pathname.startsWith('/disclaimer') ||
+        pathname.startsWith('/legal/')) {
+      return null; // Legal pages handle their own canonicals
+    }
     return null;
   };
 

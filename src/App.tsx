@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { MediaFormatsProvider } from "@/components/providers/MediaFormatsProvider";
 import { SchemaManager } from "@/components/SchemaManager";
+import { CanonicalRedirect } from "@/components/CanonicalRedirect";
 
 import SiteShell from "@/components/layout/SiteShell";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -113,6 +114,7 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
           <ScrollToTop />
+          <CanonicalRedirect />
           <RouterAnalytics />
           <SchemaManager />
           <NoInspect />
