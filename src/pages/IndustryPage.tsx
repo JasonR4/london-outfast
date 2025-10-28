@@ -68,14 +68,27 @@ export default function IndustryPage() {
   // Update SEO tags when data is loaded
   useEffect(() => {
     if (seoData && pageData) {
+      // Ensure canonical URL is absolute
+      const canonicalUrl = seoData.canonical_url?.startsWith('http') 
+        ? seoData.canonical_url 
+        : `https://mediabuyinglondon.co.uk${seoData.canonical_url || `/industries/${industrySlug}`}`;
+      
       updateMetaTags(
         seoData.meta_title,
         seoData.meta_description,
-        seoData.canonical_url,
+        canonicalUrl,
         seoData
       );
+    } else if (pageData) {
+      // Fallback when no SEO data exists
+      const canonicalUrl = `https://mediabuyinglondon.co.uk/industries/${industrySlug}`;
+      updateMetaTags(
+        pageData.title,
+        pageData.meta_description || '',
+        canonicalUrl
+      );
     }
-  }, [seoData, pageData]);
+  }, [seoData, pageData, industrySlug]);
 
   if (isPageLoading) {
     return (

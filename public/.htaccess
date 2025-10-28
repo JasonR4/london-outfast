@@ -20,6 +20,9 @@
   # Legacy removed page: return 410 Gone to avoid soft 404
   RewriteRule ^lander/?$ - [G=410,L]
 
+  # Legacy route redirects to canonical URLs
+  RewriteRule ^formats/?$ /outdoor-media [R=301,L]
+
   # Serve existing files/directories as-is
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
