@@ -234,7 +234,7 @@ const TaxiAdvertising = () => {
           name="description" 
           content="Taxi advertising in London delivers premium mobile brand exposure across all 32 boroughs, reaching millions of residents, commuters, and tourists every week. From full taxi wraps to tip seats and digital roof screens, we connect your brand with high-value audiences on the move." 
         />
-        <link rel="canonical" href="https://mediabuyinglondon.co.uk/taxi-advertising" />
+        <link rel="canonical" href="https://mediabuyinglondon.co.uk/ooh/taxi-advertising" />
       </Helmet>
 
       <main className="min-h-screen bg-background">

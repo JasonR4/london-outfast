@@ -202,7 +202,7 @@ const AirportAdvertising = () => {
           name="description" 
           content="Airport advertising in London targets high-value business travellers, tourists, and affluent frequent flyers. From digital screens to large-format banners, we deliver your brand in front of millions passing through London's major airports every month." 
         />
-        <link rel="canonical" href="https://mediabuyinglondon.co.uk/airport-advertising" />
+        <link rel="canonical" href="https://mediabuyinglondon.co.uk/ooh/airport-advertising" />
       </Helmet>
 
       <main className="min-h-screen bg-background">

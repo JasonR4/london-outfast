@@ -146,7 +146,7 @@ const ProjectionMappingAdvertising = () => {
           name="description" 
           content="Projection mapping advertising in London. Transform iconic buildings into dynamic brand canvases. Tower of London, The Shard, Tate Modern projections. Get quote today." 
         />
-        <link rel="canonical" href="https://reactivemedia.co.uk/ooh/projection-mapping-advertising" />
+        <link rel="canonical" href="https://mediabuyinglondon.co.uk/ooh/projection-mapping-advertising" />
       </Helmet>
 
       <main className="min-h-screen bg-background">

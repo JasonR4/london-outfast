@@ -2,12 +2,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SmartQuoteForm } from "@/components/SmartQuoteForm";
 import londonHero from "@/assets/london-hero.jpg";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 const Quote = () => {
+  const location = useLocation();
+  const isSearchTemplate = location.search.includes('{search_term_string}');
+
   return (
     <>
+      <Helmet>
+        <title>Get Your London OOH Quote | Media Buying London</title>
+        <meta name="description" content="Get instant quotes for outdoor advertising across London. Same-day response, best price guarantee, and 100% London coverage." />
+        <link rel="canonical" href="https://mediabuyinglondon.co.uk/quote" />
+        <meta name="robots" content={isSearchTemplate ? "noindex,nofollow" : "index,follow"} />
+      </Helmet>
+      
       <section className="relative py-20 overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"

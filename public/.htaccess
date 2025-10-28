@@ -22,6 +22,7 @@
 
   # Legacy route redirects to canonical URLs
   RewriteRule ^formats/?$ /outdoor-media [R=301,L]
+  RewriteRule ^what-is-media-buying/?$ /what-is-media-buying-in-london [R=301,L]
 
   # Serve existing files/directories as-is
   RewriteCond %{REQUEST_FILENAME} -f [OR]

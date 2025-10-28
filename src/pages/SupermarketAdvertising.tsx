@@ -157,7 +157,7 @@ const SupermarketAdvertising = () => {
           name="description" 
           content="Supermarket advertising in London across Tesco, Asda, Sainsbury's, and Morrisons. Digital 6-Sheets, trolley advertising, aisle-end panels. Point-of-purchase dominance." 
         />
-        <link rel="canonical" href="https://reactivemedia.co.uk/ooh/supermarket-advertising" />
+        <link rel="canonical" href="https://mediabuyinglondon.co.uk/ooh/supermarket-advertising" />
       </Helmet>
 
       <main className="min-h-screen bg-background">
