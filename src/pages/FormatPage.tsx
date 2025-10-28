@@ -239,7 +239,7 @@ const FormatPage = () => {
       // If we have either static format OR CMS data, we can proceed
       if (!staticFormat && !cmsData && !formatsLoading) {
         console.log('No format found, redirecting to 404');
-        navigate('/404');
+        navigate('/404', { replace: true });
         return;
       }
 

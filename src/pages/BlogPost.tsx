@@ -17,7 +17,25 @@ const BlogPost: React.FC = () => {
   }, [post]);
 
   if (loading) return <div className="max-w-3xl mx-auto px-4 py-16 text-center text-muted-foreground">Loading...</div>;
-  if (!post) return <div className="max-w-3xl mx-auto px-4 py-16 text-center text-muted-foreground">Post not found.</div>;
+  
+  if (!post) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-2xl text-center">
+          <h1 className="text-4xl font-bold mb-4">Blog Post Not Found</h1>
+          <p className="text-lg text-muted-foreground mb-8">
+            The blog post you're looking for doesn't exist or has been removed.
+          </p>
+          <Link 
+            to="/blog" 
+            className="inline-flex items-center gap-2 text-primary hover:underline"
+          >
+            ← Back to Blog
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main>
