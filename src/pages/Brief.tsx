@@ -1,104 +1,83 @@
-import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { toast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
-import { LocationSelector } from "@/components/LocationSelector";
-import { oohFormats } from "@/data/oohFormats";
-import { trackBriefFormSubmitted } from "@/utils/analytics";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
+import { Slider } from '@/components/ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
-const objectives = [
-  "Brand awareness",
-  "Store visits",
-  "Lead generation",
-  "Website traffic",
-  "App installs",
-  "Product launch",
-  "Event promotion",
-  "Recruitment",
-  "Geo domination",
-  "Retargeting",
-  "Seasonal",
-  "PR launch",
-  "Directional",
-  "Education",
-  "Other",
-] as const;
-
-const creativeStatuses = ["Ready", "Need design", "Unsure"] as const;
-
-const HARDCODED_FORMAT_CATEGORIES = [
-  'Classic & Digital Roadside',
-  'London Underground (TfL)',
-  'National Rail & Commuter Rail',
-  'Bus Advertising',
-  'Taxi Advertising',
-  'Retail & Leisure Environments',
-  'Airports',
-  'Street Furniture',
-  'Programmatic DOOH (pDOOH)',
-  'Ambient / Guerrilla OOH',
-] as const;
+// HubSpot Configuration - UPDATE THESE WITH YOUR PORTAL/FORM IDs
+const HUBSPOT_PORTAL_ID = "YOUR_PORTAL_ID";
+const HUBSPOT_FORM_ID = "YOUR_FORM_ID";
 
 type FormData = {
-  firstname: string;
-  lastname: string;
+  environment: string;
+  format: string;
+  market: string;
+  goLiveDate: Date | undefined;
+  campaignDuration: string;
+  budgetMin: number;
+  budgetMax: number;
+  objectives: string[];
+  mediaType: string;
+  shareOfVoice: string;
+  additionalNotes: string;
+  name: string;
   email: string;
   phone: string;
   company: string;
-  website: string;
-  jobtitle: string;
-  budget_band: string;
-  objective: string;
-  objective_other?: string;
-  target_areas: string[];
-  formats: string[];
-  start_month: string;
-  creative_status: string;
-  notes: string;
-  consent: boolean;
 };
 
 // Chip selection component
 const ChipGroup = ({ 
+  name, 
   options, 
-  selected, 
+  value, 
   onChange, 
-  multi = true 
+  multiple = false 
 }: { 
-  options: readonly string[] | string[]; 
-  selected: string | string[]; 
-  onChange: (val: string | string[]) => void;
-  multi?: boolean;
+  name: string;
+  options: string[];
+  value: string | string[];
+  onChange: (value: string | string[]) => void;
+  multiple?: boolean;
 }) => {
-  const handleClick = (opt: string) => {
-    if (multi) {
-      const arr = Array.isArray(selected) ? selected : [];
-      const newVal = arr.includes(opt) ? arr.filter(x => x !== opt) : [...arr, opt];
-      onChange(newVal);
+  const handleClick = (option: string) => {
+    if (multiple && Array.isArray(value)) {
+      const newValue = value.includes(option)
+        ? value.filter(v => v !== option)
+        : [...value, option];
+      onChange(newValue);
     } else {
-      onChange(opt);
+      onChange(option);
     }
   };
 
   return (
     <div className="flex flex-wrap gap-2">
-      {options.map((opt) => {
-        const isSelected = multi 
-          ? (Array.isArray(selected) && selected.includes(opt))
-          : selected === opt;
+      {options.map((option) => {
+        const isSelected = Array.isArray(value) 
+          ? value.includes(option)
+          : value === option;
+        
         return (
           <Badge
-            key={opt}
+            key={option}
             variant={isSelected ? "default" : "outline"}
-            className="cursor-pointer px-4 py-2 text-sm transition-all hover:scale-105"
-            onClick={() => handleClick(opt)}
+            className="cursor-pointer px-4 py-2 text-sm hover:opacity-80 transition-opacity"
+            onClick={() => handleClick(option)}
           >
-            {opt}
+            {option}
           </Badge>
         );
       })}
@@ -108,534 +87,492 @@ const ChipGroup = ({
 
 export default function Brief() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [environments, setEnvironments] = useState<string[]>([]);
   
   const [formData, setFormData] = useState<FormData>({
-    firstname: '',
-    lastname: '',
+    environment: '',
+    format: '',
+    market: '',
+    goLiveDate: undefined,
+    campaignDuration: '',
+    budgetMin: 0,
+    budgetMax: 150000,
+    objectives: [],
+    mediaType: '',
+    shareOfVoice: '',
+    additionalNotes: '',
+    name: '',
     email: '',
     phone: '',
-    company: '',
-    website: '',
-    jobtitle: '',
-    budget_band: '',
-    objective: '',
-    objective_other: '',
-    target_areas: [],
-    formats: [],
-    start_month: '',
-    creative_status: '',
-    notes: '',
-    consent: false,
+    company: ''
   });
 
-  const [formatSearch, setFormatSearch] = useState('');
-  const [formatCategory, setFormatCategory] = useState<string>('all');
+  // Fetch environments from Supabase or use hardcoded list
+  useEffect(() => {
+    // TODO: Replace with actual Supabase query if you have an environments table
+    // For now, using hardcoded options
+    setEnvironments([
+      "Premium Digital Billboard",
+      "Bus Shelters",
+      "London Underground",
+      "Rail Stations",
+      "Shopping Malls",
+      "Airport Advertising",
+      "Street Furniture",
+      "Taxi Advertising"
+    ]);
+  }, []);
 
-  const filteredFormatNames = useMemo(() => {
-    const q = formatSearch.trim().toLowerCase();
-    return oohFormats
-      .filter(f => formatCategory === 'all' || f.category === formatCategory)
-      .filter(f => !q || f.name.toLowerCase().includes(q) || f.shortName?.toLowerCase().includes(q) || f.description.toLowerCase().includes(q))
-      .map(f => f.shortName || f.name);
-  }, [formatCategory, formatSearch]);
+  const formatOptions = ["Static", "Digital", "Both"];
+  
+  const marketOptions = [
+    "London",
+    "Birmingham",
+    "Manchester",
+    "Edinburgh",
+    "Glasgow",
+    "Liverpool",
+    "Bristol",
+    "Leeds",
+    "Sheffield",
+    "UK Cities"
+  ];
 
-  // Extract UTM and source_path
-  const utm = useMemo(() => {
-    const p = new URLSearchParams(location.search);
-    return {
-      source_path: location.pathname + location.search,
-      utm_source: p.get('utm_source') || undefined,
-      utm_medium: p.get('utm_medium') || undefined,
-      utm_campaign: p.get('utm_campaign') || undefined,
-      utm_term: p.get('utm_term') || undefined,
-      utm_content: p.get('utm_content') || undefined,
-    }
-  }, [location.pathname, location.search]);
+  const objectiveOptions = [
+    "Brand Awareness",
+    "Lead Generation",
+    "Product Launch",
+    "Event Promotion",
+    "Seasonal Campaign",
+    "Other"
+  ];
 
-  const updateField = (field: keyof FormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  const mediaTypeOptions = ["Roadside", "Transit", "Retail", "Mixed"];
+  
+  const shareOfVoiceOptions = [
+    { value: "100%", label: "100% - Maximum Impact" },
+    { value: "50%", label: "50% - High Visibility" },
+    { value: "25%", label: "25% - Moderate Presence" },
+    { value: "No Preference", label: "No Preference" }
+  ];
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    console.log('🔥 Form submission started with values:', formData);
-    try {
-      const firstName = (formData.firstname || '').trim() || 'there';
-      toast({
-        title: 'Submitting brief',
-        description: `Hang tight, ${firstName} — this takes a few seconds.`,
-        duration: 7000,
-      });
-      
-      const objectiveFinal = formData.objective === 'Other' && formData.objective_other?.trim()
-        ? `Other: ${formData.objective_other.trim()}`
-        : formData.objective;
-      
-      const { objective_other, consent, ...rest } = formData;
-      const payload = {
-        ...rest,
-        objective: objectiveFinal,
-        ...utm,
-        mbl: true,
-        start_month: formData.start_month ? `${formData.start_month}` : undefined,
-      };
-      
-      const { data, error } = await supabase.functions.invoke('submit-brief', { body: payload });
-      if (error || !data?.ok) throw new Error(error?.message || data?.error || 'Failed to submit');
-      
-      const extractBudgetValue = (budgetString: string | number): number => {
-        if (typeof budgetString === 'number') return budgetString;
-        const str = String(budgetString || '');
-        const numbers = str.match(/[\d,]+/g)?.map(n => parseFloat(n.replace(/,/g, ''))) || [];
-        if (numbers.length === 0) return 5000;
-        if (numbers.length === 1) return numbers[0];
-        return Math.round((Math.min(...numbers) + Math.max(...numbers)) / 2);
-      };
-      
-      const budget = extractBudgetValue(formData.budget_band);
-      trackBriefFormSubmitted({
-        plan_value: budget,
-        formats_count: formData.formats?.length || 0,
-        location: "London"
-      });
-      
-      toast({ title: 'Brief sent', description: "We'll call you shortly." });
-      
-      const thankYouUrl = `/thank-you?brief=1` +
-        `&firstname=${encodeURIComponent(formData.firstname)}` +
-        `&budget=${encodeURIComponent(formData.budget_band)}` +
-        `&objective=${encodeURIComponent(objectiveFinal)}` +
-        `&target_areas=${encodeURIComponent(formData.target_areas.join(','))}` +
-        `&formats=${encodeURIComponent(formData.formats.join(','))}` +
-        `&start_month=${encodeURIComponent(formData.start_month || '')}` +
-        `&creative_status=${encodeURIComponent(formData.creative_status)}` +
-        (formData.notes ? `&notes=${encodeURIComponent(formData.notes)}` : '');
-      
-      navigate(thankYouUrl);
-    } catch (e: any) {
-      toast({ title: 'Submission failed', description: e.message || 'Please try again.', variant: 'destructive' });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // One-question-at-a-time steps
-  const steps = useMemo(() => {
-    const base = [
-      { id: 'firstname', title: 'What is your first name?' },
-      { id: 'lastname', title: 'And your last name?' },
-      { id: 'email', title: 'What is your work email?' },
-      { id: 'phone', title: 'What number can we call?' },
-      { id: 'company', title: 'What’s your company?' },
-      { id: 'website', title: 'Your website?' },
-      { id: 'jobtitle', title: 'Your role?' },
-      { id: 'budget_band', title: 'What’s your budget (GBP)?' },
-      { id: 'objective', title: 'What’s your primary objective?' },
-      ...(formData.objective === 'Other' ? [{ id: 'objective_other', title: 'Please specify your objective' }] : []),
-      { id: 'target_areas', title: 'Choose your target areas' },
-      { id: 'formats', title: 'Which formats interest you?' },
-      { id: 'start_month', title: 'Earliest start month?' },
-      { id: 'creative_status', title: 'Do you have creative ready?' },
-      { id: 'notes', title: 'Any additional requirements?' },
-      { id: 'consent', title: 'Consent' },
-    ];
-    return base;
-  }, [formData.objective]);
-
-  const totalSteps = steps.length;
-  const progress = ((currentStep + 1) / totalSteps) * 100;
+  const steps = [
+    { id: 'environment', title: "Which environment are you interested in?", required: true },
+    { id: 'format', title: "What format do you prefer?", required: true },
+    { id: 'market', title: "Which market are you targeting?", required: true },
+    { id: 'timing', title: "When do you need to go live?", required: false },
+    { id: 'budget', title: "What's your budget range?", required: true },
+    { id: 'objectives', title: "What are your campaign objectives?", required: false },
+    { id: 'mediaType', title: "Media type preference?", required: false },
+    { id: 'shareOfVoice', title: "What share of voice do you need?", required: false },
+    { id: 'notes', title: "Any additional notes?", required: false },
+    { id: 'contact', title: "Let's get your contact details", required: true }
+  ];
 
   const canProceed = () => {
-    const step = steps[currentStep]?.id;
-    switch (step) {
-      case 'firstname': return !!formData.firstname;
-      case 'lastname': return !!formData.lastname;
-      case 'email': return !!formData.email;
-      case 'phone': return !!formData.phone;
-      case 'company': return !!formData.company;
-      case 'website': return !!formData.website;
-      case 'jobtitle': return !!formData.jobtitle;
-      case 'budget_band': return !!formData.budget_band;
-      case 'objective': return !!formData.objective;
-      case 'objective_other': return !!formData.objective_other;
-      case 'target_areas': return formData.target_areas.length > 0;
-      case 'formats': return formData.formats.length > 0;
-      case 'start_month': return !!formData.start_month;
-      case 'creative_status': return !!formData.creative_status;
-      case 'notes': return !!formData.notes;
-      case 'consent': return !!formData.consent;
-      default: return true;
+    const step = steps[currentStep];
+    
+    switch(step.id) {
+      case 'environment': return formData.environment !== '';
+      case 'format': return formData.format !== '';
+      case 'market': return formData.market !== '';
+      case 'timing': return true; // Optional
+      case 'budget': return formData.budgetMin >= 0 && formData.budgetMax > formData.budgetMin;
+      case 'objectives': return true; // Optional
+      case 'mediaType': return true; // Optional
+      case 'shareOfVoice': return true; // Optional
+      case 'notes': return true; // Optional
+      case 'contact': 
+        return formData.name.trim() !== '' && 
+               formData.email.trim() !== '' && 
+               formData.email.includes('@') &&
+               formData.phone.trim() !== '';
+      default: return false;
     }
   };
 
   const handleNext = () => {
-    if (canProceed()) {
-      if (currentStep < totalSteps - 1) {
-        setCurrentStep(prev => prev + 1);
-      } else {
-        handleSubmit();
-      }
-    } else {
-      toast({ title: 'Required field', description: 'Please complete this step before continuing.', variant: 'destructive' });
+    if (canProceed() && currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
     }
   };
 
   const handleBack = () => {
     if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
+      setCurrentStep(currentStep - 1);
     }
   };
 
-  useEffect(() => { document.title = 'Talk to a Specialist | Media Buying London' }, []);
+  const handleSubmit = async () => {
+    if (!canProceed()) return;
+    
+    setIsSubmitting(true);
+    try {
+      // Get HubSpot tracking cookie
+      const hubspotCookie = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('hubspotutk='))
+        ?.split('=')[1];
+
+      // Prepare HubSpot submission
+      const hubspotData = {
+        fields: [
+          { name: "environment", value: formData.environment },
+          { name: "format", value: formData.format },
+          { name: "market", value: formData.market },
+          { name: "go_live_date", value: formData.goLiveDate ? format(formData.goLiveDate, 'yyyy-MM-dd') : '' },
+          { name: "campaign_duration", value: formData.campaignDuration },
+          { name: "budget_min", value: formData.budgetMin.toString() },
+          { name: "budget_max", value: formData.budgetMax.toString() },
+          { name: "objectives", value: formData.objectives.join(', ') },
+          { name: "media_type", value: formData.mediaType },
+          { name: "share_of_voice", value: formData.shareOfVoice },
+          { name: "additional_notes", value: formData.additionalNotes },
+          { name: "firstname", value: formData.name.split(' ')[0] },
+          { name: "lastname", value: formData.name.split(' ').slice(1).join(' ') || formData.name },
+          { name: "email", value: formData.email },
+          { name: "phone", value: formData.phone },
+          { name: "company", value: formData.company }
+        ],
+        context: {
+          hutk: hubspotCookie,
+          pageUri: window.location.href,
+          pageName: document.title
+        }
+      };
+
+      // Submit to HubSpot
+      const response = await fetch(
+        `https://api.hsforms.com/submissions/v3/integration/submit/${HUBSPOT_PORTAL_ID}/${HUBSPOT_FORM_ID}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(hubspotData)
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('HubSpot submission failed');
+      }
+
+      toast.success('Deal finder submitted successfully!');
+      
+      // Reset form
+      setFormData({
+        environment: '',
+        format: '',
+        market: '',
+        goLiveDate: undefined,
+        campaignDuration: '',
+        budgetMin: 0,
+        budgetMax: 150000,
+        objectives: [],
+        mediaType: '',
+        shareOfVoice: '',
+        additionalNotes: '',
+        name: '',
+        email: '',
+        phone: '',
+        company: ''
+      });
+      
+      setCurrentStep(0);
+      navigate('/thank-you');
+    } catch (error) {
+      console.error('Error submitting deal finder:', error);
+      toast.error('Failed to submit. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const renderStep = () => {
     const step = steps[currentStep];
-    const id = step.id as string;
-
-    switch (id) {
-      case 'firstname':
+    
+    switch(step.id) {
+      case 'environment':
         return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <Input
-              placeholder="Jane"
-              value={formData.firstname}
-              onChange={(e) => updateField('firstname', e.target.value)}
-              autoComplete="given-name"
-            />
-          </div>
-        );
-      case 'lastname':
-        return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <Input
-              placeholder="Doe"
-              value={formData.lastname}
-              onChange={(e) => updateField('lastname', e.target.value)}
-              autoComplete="family-name"
-            />
-          </div>
-        );
-      case 'email':
-        return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <Input
-              type="email"
-              placeholder="name@company.com"
-              value={formData.email}
-              onChange={(e) => updateField('email', e.target.value)}
-              autoComplete="email"
-            />
-          </div>
-        );
-      case 'phone':
-        return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <Input
-              type="tel"
-              placeholder="07..."
-              value={formData.phone}
-              onChange={(e) => updateField('phone', e.target.value)}
-              autoComplete="tel"
-            />
-          </div>
-        );
-      case 'company':
-        return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <Input
-              placeholder="Acme Ltd"
-              value={formData.company}
-              onChange={(e) => updateField('company', e.target.value)}
-              autoComplete="organization"
-            />
-          </div>
-        );
-      case 'website':
-        return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <Input
-              type="url"
-              placeholder="https://... or company.com"
-              value={formData.website}
-              onChange={(e) => updateField('website', e.target.value)}
-              autoComplete="url"
-            />
-          </div>
-        );
-      case 'jobtitle':
-        return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <Input
-              placeholder="Marketing Manager"
-              value={formData.jobtitle}
-              onChange={(e) => updateField('jobtitle', e.target.value)}
-              autoComplete="organization-title"
-            />
-          </div>
-        );
-      case 'budget_band':
-        return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <Input
-              placeholder="Enter amount e.g. 15000"
-              inputMode="numeric"
-              value={formData.budget_band}
-              onChange={(e) => updateField('budget_band', e.target.value)}
-            />
-            <p className="text-sm text-muted-foreground">Numbers only; we'll interpret this as GBP</p>
-          </div>
-        );
-      case 'objective':
-        return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
+          <div className="space-y-4">
             <ChipGroup
-              options={objectives}
-              selected={formData.objective}
-              onChange={(val) => updateField('objective', val)}
-              multi={false}
+              name="environment"
+              options={environments}
+              value={formData.environment}
+              onChange={(value) => setFormData({...formData, environment: value as string})}
+              multiple={false}
             />
           </div>
         );
-      case 'objective_other':
+      
+      case 'format':
         return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <Input
-              placeholder="Describe your objective"
-              value={formData.objective_other || ''}
-              onChange={(e) => updateField('objective_other', e.target.value)}
+          <div className="space-y-4">
+            <ChipGroup
+              name="format"
+              options={formatOptions}
+              value={formData.format}
+              onChange={(value) => setFormData({...formData, format: value as string})}
+              multiple={false}
             />
           </div>
         );
-      case 'target_areas':
+      
+      case 'market':
         return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <LocationSelector
-              selectedLocations={formData.target_areas}
-              onSelectionChange={(locs) => updateField('target_areas', locs)}
-              title="London Areas"
-              description="Select your London areas."
-              showSelectedSummary
-              maxHeight="400px"
-            />
-          </div>
-        );
-      case 'formats':
-        return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Input
-                placeholder="Search formats..."
-                value={formatSearch}
-                onChange={(e) => setFormatSearch(e.target.value)}
-              />
-              <select 
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={formatCategory}
-                onChange={(e) => setFormatCategory(e.target.value)}
-              >
-                <option value="all">All categories</option>
-                {HARDCODED_FORMAT_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+          <div className="space-y-4">
+            <Select value={formData.market} onValueChange={(value) => setFormData({...formData, market: value})}>
+              <SelectTrigger className="text-lg">
+                <SelectValue placeholder="Select a market" />
+              </SelectTrigger>
+              <SelectContent>
+                {marketOptions.map((market) => (
+                  <SelectItem key={market} value={market}>
+                    {market}
+                  </SelectItem>
                 ))}
-              </select>
-            </div>
-            <div className="space-y-2 max-h-96 overflow-auto border rounded-md p-4">
-              <label className="flex items-center gap-2 text-sm border-b pb-2 mb-2">
-                <input
-                  type="checkbox"
-                  className="rounded"
-                  checked={formData.formats.includes('Open to recommendations')}
-                  onChange={(e) => {
-                    const current = new Set(formData.formats);
-                    if (e.target.checked) current.add('Open to recommendations');
-                    else current.delete('Open to recommendations');
-                    updateField('formats', Array.from(current));
-                  }}
-                />
-                <span className="font-medium text-primary">Open to recommendations</span>
-              </label>
-              {filteredFormatNames.map((name) => (
-                <label key={name} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    className="rounded"
-                    checked={formData.formats.includes(name)}
-                    onChange={(e) => {
-                      const current = new Set(formData.formats);
-                      if (e.target.checked) current.add(name);
-                      else current.delete(name);
-                      updateField('formats', Array.from(current));
-                    }}
+              </SelectContent>
+            </Select>
+          </div>
+        );
+      
+      case 'timing':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Go Live Date</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !formData.goLiveDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.goLiveDate ? format(formData.goLiveDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.goLiveDate}
+                    onSelect={(date) => setFormData({...formData, goLiveDate: date})}
+                    initialFocus
+                    className="pointer-events-auto"
                   />
-                  <span>{name}</span>
-                </label>
-              ))}
-              {filteredFormatNames.length === 0 && (
-                <p className="text-sm text-muted-foreground">No formats found.</p>
-              )}
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Campaign Duration</label>
+              <Input
+                type="text"
+                value={formData.campaignDuration}
+                onChange={(e) => setFormData({...formData, campaignDuration: e.target.value})}
+                placeholder="e.g., 2 weeks, 1 month, 3 months"
+                className="text-lg"
+              />
             </div>
           </div>
         );
-      case 'start_month':
+      
+      case 'budget':
         return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <Input
-              type="month"
-              value={formData.start_month}
-              onChange={(e) => updateField('start_month', e.target.value)}
+          <div className="space-y-6">
+            <div className="text-center py-4">
+              <p className="text-3xl font-bold">
+                £{formData.budgetMin.toLocaleString()} - £{formData.budgetMax.toLocaleString()}
+              </p>
+            </div>
+            <Slider
+              min={0}
+              max={150000}
+              step={1000}
+              value={[formData.budgetMin, formData.budgetMax]}
+              onValueChange={([min, max]) => setFormData({...formData, budgetMin: min, budgetMax: max})}
+              className="w-full"
             />
           </div>
         );
-      case 'creative_status':
+      
+      case 'objectives':
         return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
+          <div className="space-y-4">
             <ChipGroup
-              options={creativeStatuses}
-              selected={formData.creative_status}
-              onChange={(val) => updateField('creative_status', val)}
-              multi={false}
+              name="objectives"
+              options={objectiveOptions}
+              value={formData.objectives}
+              onChange={(value) => setFormData({...formData, objectives: value as string[]})}
+              multiple={true}
             />
           </div>
         );
+      
+      case 'mediaType':
+        return (
+          <div className="space-y-4">
+            <ChipGroup
+              name="mediaType"
+              options={mediaTypeOptions}
+              value={formData.mediaType}
+              onChange={(value) => setFormData({...formData, mediaType: value as string})}
+              multiple={false}
+            />
+          </div>
+        );
+      
+      case 'shareOfVoice':
+        return (
+          <div className="space-y-4">
+            {shareOfVoiceOptions.map((option) => (
+              <Badge
+                key={option.value}
+                variant={formData.shareOfVoice === option.value ? "default" : "outline"}
+                className="w-full cursor-pointer px-4 py-3 text-sm justify-center hover:opacity-80 transition-opacity"
+                onClick={() => setFormData({...formData, shareOfVoice: option.value})}
+              >
+                {option.label}
+              </Badge>
+            ))}
+          </div>
+        );
+      
       case 'notes':
         return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
+          <div className="space-y-4">
             <Textarea
-              placeholder="Tell us about your campaign, audience, specific requirements..."
-              value={formData.notes}
-              onChange={(e) => updateField('notes', e.target.value)}
-              rows={6}
+              value={formData.additionalNotes}
+              onChange={(e) => setFormData({...formData, additionalNotes: e.target.value})}
+              placeholder="Any additional campaign details..."
+              className="text-lg min-h-32"
             />
           </div>
         );
-      case 'consent':
+      
+      case 'contact':
         return (
-          <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <label className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-              <input
-                type="checkbox"
-                className="mt-1 rounded"
-                checked={formData.consent}
-                onChange={(e) => updateField('consent', e.target.checked)}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Name *</label>
+              <Input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="Your full name"
+                className="text-lg"
               />
-              <span className="text-sm">
-                I consent to Media Buying London contacting me about this brief and storing my details according to their privacy policy. *
-              </span>
-            </label>
-            <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-              <div className="flex items-center gap-2 text-green-600">
-                <CheckCircle2 className="h-5 w-5" />
-                <span className="font-medium">Your brief is ready to submit!</span>
-              </div>
-              <p className="text-sm text-muted-foreground">We'll review your brief and call you within 24 hours</p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Email *</label>
+              <Input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                placeholder="your.email@company.com"
+                className="text-lg"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Phone *</label>
+              <Input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                placeholder="+44 20 1234 5678"
+                className="text-lg"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Company</label>
+              <Input
+                type="text"
+                value={formData.company}
+                onChange={(e) => setFormData({...formData, company: e.target.value})}
+                placeholder="Your company name"
+                className="text-lg"
+              />
             </div>
           </div>
         );
+      
       default:
         return null;
     }
   };
 
+  const progress = ((currentStep + 1) / steps.length) * 100;
+
   return (
-    <main className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="border-b border-border bg-gradient-to-b from-background to-muted/20">
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          <h1 className="text-4xl font-bold tracking-tight mb-3">Talk to a Specialist</h1>
-          <p className="text-lg text-muted-foreground mb-6">
-            Prefer the phone? Call <a href="tel:+442045243019" className="text-primary hover:underline font-medium">020 4524 3019</a> now. 
-            Or send a quick brief and we'll call you back fast.
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <div className="bg-primary text-primary-foreground py-16 px-4">
+        <div className="container mx-auto max-w-4xl text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Deal Finder</h1>
+          <p className="text-xl opacity-90 mb-6">
+            Find your perfect OOH advertising deal in minutes
           </p>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild size="lg" variant="outline">
-              <a href="tel:+442045243019">Call now</a>
-            </Button>
-            <Button 
-              size="lg"
-              onClick={() => {
-                const el = document.getElementById('brief-form');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              Send brief
-            </Button>
-          </div>
         </div>
-      </section>
+      </div>
 
-      {/* Form */}
-      <section id="brief-form" className="py-12">
-        <div className="max-w-2xl mx-auto px-4">
-          {/* Progress bar */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                Step {currentStep + 1} of {totalSteps}
-              </span>
-              <span className="text-sm font-medium text-primary">{Math.round(progress)}%</span>
+      {/* Form Section */}
+      <div className="container mx-auto max-w-3xl px-4 py-12">
+        <Card>
+          <CardContent className="p-8">
+            {/* Progress Bar */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-muted-foreground">
+                  Step {currentStep + 1} of {steps.length}
+                </span>
+                <span className="text-sm font-medium">{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
             </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-primary transition-all duration-300 ease-out"
-                style={{ width: `${progress}%` }}
-              />
+
+            {/* Question */}
+            <div className="mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold mb-6">
+                {steps[currentStep].title}
+              </h2>
+              {renderStep()}
             </div>
-          </div>
 
-          {/* Step content */}
-          <div className="bg-card border rounded-lg p-6 sm:p-8 mb-6">
-            {renderStep()}
-          </div>
-
-          {/* Navigation */}
-          <div className="flex gap-3">
-            {currentStep > 0 && (
+            {/* Navigation */}
+            <div className="flex justify-between gap-4">
               <Button
                 variant="outline"
                 onClick={handleBack}
-                className="gap-2"
-                disabled={isSubmitting}
+                disabled={currentStep === 0}
+                className="w-32"
               >
-                <ArrowLeft className="h-4 w-4" />
                 Back
               </Button>
-            )}
-            <Button
-              onClick={handleNext}
-              className="flex-1 gap-2"
-              disabled={isSubmitting || !canProceed()}
-            >
-              {currentStep === totalSteps - 1 ? (
-                isSubmitting ? 'Submitting...' : 'Submit brief'
+              
+              {currentStep === steps.length - 1 ? (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!canProceed() || isSubmitting}
+                  className="w-32"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit'}
+                </Button>
               ) : (
-                <>
-                  Continue
-                  <ArrowRight className="h-4 w-4" />
-                </>
+                <Button
+                  onClick={handleNext}
+                  disabled={!canProceed()}
+                  className="w-32"
+                >
+                  Next
+                </Button>
               )}
-            </Button>
-          </div>
-        </div>
-      </section>
-    </main>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }
