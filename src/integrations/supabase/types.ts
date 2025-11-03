@@ -518,6 +518,33 @@ export type Database = {
           },
         ]
       }
+      environments: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       global_settings: {
         Row: {
           created_at: string
@@ -1310,18 +1337,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_allowed_cms_domain: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
-      is_super_admin: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
-      user_has_cms_role: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
+      is_allowed_cms_domain: { Args: { user_id: string }; Returns: boolean }
+      is_super_admin: { Args: { user_id: string }; Returns: boolean }
+      user_has_cms_role: { Args: { user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
