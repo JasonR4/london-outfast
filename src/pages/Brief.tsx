@@ -342,42 +342,32 @@ export default function Brief() {
       
       case 'timing':
         return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">When do you need to go live?</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.goLiveDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.goLiveDate ? format(formData.goLiveDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.goLiveDate}
-                    onSelect={(date) => setFormData({...formData, goLiveDate: date})}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">How long is your campaign?</label>
+          <div className="space-y-6">
+            <div className="text-center">
               <Input
                 type="text"
-                value={formData.campaignDuration}
-                onChange={(e) => setFormData({...formData, campaignDuration: e.target.value})}
-                placeholder="e.g., 2 weeks, 1 month, 3 months"
-                className="text-lg"
+                inputMode="numeric"
+                value={formData.goLiveDate ? format(formData.goLiveDate, 'dd/MM/yyyy') : ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Basic date parsing from DD/MM/YYYY format
+                  const parts = value.split('/');
+                  if (parts.length === 3) {
+                    const day = parseInt(parts[0]);
+                    const month = parseInt(parts[1]) - 1;
+                    const year = parseInt(parts[2]);
+                    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                      const date = new Date(year, month, day);
+                      setFormData({...formData, goLiveDate: date});
+                    }
+                  }
+                }}
+                placeholder="DD/MM/YYYY"
+                className="text-4xl text-center font-normal border-none shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
               />
+              <p className="text-sm text-muted-foreground mt-2">
+                Enter the start date for your campaign (cannot be in the past)
+              </p>
             </div>
           </div>
         );
