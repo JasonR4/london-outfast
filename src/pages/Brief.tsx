@@ -24,6 +24,7 @@ type FormData = {
   formats: string;
   market: string;
   goLiveDate: Date | undefined;
+  campaignEndDate: Date | undefined;
   campaignDuration: string;
   budgetMin: number;
   budgetMax: number;
@@ -93,6 +94,7 @@ export default function Brief() {
     formats: '',
     market: '',
     goLiveDate: undefined,
+    campaignEndDate: undefined,
     campaignDuration: '',
     budgetMin: 0,
     budgetMax: 150000,
@@ -155,7 +157,8 @@ export default function Brief() {
     { id: 'market', title: "Where do you want your brand to be seen?", required: true },
     { id: 'environment', title: "Which environment are you interested in?", required: true },
     { id: 'format', title: "What format do you prefer?", required: true },
-    { id: 'timing', title: "When do you need to go live?", required: false },
+    { id: 'startDate', title: "When do you want your campaign to start?", required: false },
+    { id: 'endDate', title: "When do you want your campaign to end?", required: false },
     { id: 'budget', title: "What's your budget range?", required: true },
     { id: 'objectives', title: "What are your campaign objectives?", required: false },
     { id: 'mediaType', title: "Media type preference?", required: false },
@@ -174,7 +177,9 @@ export default function Brief() {
         return formData.environment !== '';
       case 'format': 
         return formData.formats !== '';
-      case 'timing': 
+      case 'startDate': 
+        return true; // Optional
+      case 'endDate': 
         return true; // Optional
       case 'budget': 
         return formData.budgetMin >= 0 && formData.budgetMax > formData.budgetMin;
@@ -230,6 +235,7 @@ export default function Brief() {
           { name: "format", value: formData.formats },
           { name: "market", value: formData.market },
           { name: "go_live_date", value: formData.goLiveDate ? format(formData.goLiveDate, 'yyyy-MM-dd') : '' },
+          { name: "campaign_end_date", value: formData.campaignEndDate ? format(formData.campaignEndDate, 'yyyy-MM-dd') : '' },
           { name: "campaign_duration", value: formData.campaignDuration },
           { name: "budget_min", value: formData.budgetMin.toString() },
           { name: "budget_max", value: formData.budgetMax.toString() },
@@ -274,6 +280,7 @@ export default function Brief() {
         formats: '',
         market: '',
         goLiveDate: undefined,
+        campaignEndDate: undefined,
         campaignDuration: '',
         budgetMin: 0,
         budgetMax: 150000,
@@ -340,7 +347,7 @@ export default function Brief() {
           />
         );
       
-      case 'timing':
+      case 'startDate':
         return (
           <div className="space-y-6">
             <div className="text-center">
@@ -367,6 +374,38 @@ export default function Brief() {
               />
               <p className="text-sm text-muted-foreground mt-2">
                 Enter the start date for your campaign (cannot be in the past)
+              </p>
+            </div>
+          </div>
+        );
+      
+      case 'endDate':
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={formData.campaignEndDate ? format(formData.campaignEndDate, 'dd/MM/yyyy') : ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Basic date parsing from DD/MM/YYYY format
+                  const parts = value.split('/');
+                  if (parts.length === 3) {
+                    const day = parseInt(parts[0]);
+                    const month = parseInt(parts[1]) - 1;
+                    const year = parseInt(parts[2]);
+                    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                      const date = new Date(year, month, day);
+                      setFormData({...formData, campaignEndDate: date});
+                    }
+                  }
+                }}
+                placeholder="DD/MM/YYYY"
+                className="text-4xl text-center font-normal border-none shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
+              />
+              <p className="text-sm text-muted-foreground mt-2">
+                Enter the end date for your campaign (must be after start date)
               </p>
             </div>
           </div>
