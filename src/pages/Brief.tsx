@@ -26,9 +26,8 @@ type FormData = {
   goLiveDate: Date | undefined;
   campaignEndDate: Date | undefined;
   targetAudience: string[];
+  budget: string;
   campaignDuration: string;
-  budgetMin: number;
-  budgetMax: number;
   objectives: string[];
   mediaType: string;
   shareOfVoice: string;
@@ -98,9 +97,8 @@ export default function Brief() {
     goLiveDate: undefined,
     campaignEndDate: undefined,
     targetAudience: [],
+    budget: '',
     campaignDuration: '',
-    budgetMin: 0,
-    budgetMax: 150000,
     objectives: [],
     mediaType: '',
     shareOfVoice: '',
@@ -213,7 +211,7 @@ export default function Brief() {
       case 'audience': 
         return true; // Optional
       case 'budget': 
-        return formData.budgetMin >= 0 && formData.budgetMax > formData.budgetMin;
+        return formData.budget.trim() !== '';
       case 'objectives': 
         return true; // Optional
       case 'mediaType': 
@@ -268,9 +266,8 @@ export default function Brief() {
           { name: "go_live_date", value: formData.goLiveDate ? format(formData.goLiveDate, 'yyyy-MM-dd') : '' },
           { name: "campaign_end_date", value: formData.campaignEndDate ? format(formData.campaignEndDate, 'yyyy-MM-dd') : '' },
           { name: "target_audience", value: formData.targetAudience.join(', ') },
+          { name: "budget", value: formData.budget },
           { name: "campaign_duration", value: formData.campaignDuration },
-          { name: "budget_min", value: formData.budgetMin.toString() },
-          { name: "budget_max", value: formData.budgetMax.toString() },
           { name: "objectives", value: formData.objectives.join(', ') },
           { name: "media_type", value: formData.mediaType },
           { name: "share_of_voice", value: formData.shareOfVoice },
@@ -314,9 +311,8 @@ export default function Brief() {
         goLiveDate: undefined,
         campaignEndDate: undefined,
         targetAudience: [],
+        budget: '',
         campaignDuration: '',
-        budgetMin: 0,
-        budgetMax: 150000,
         objectives: [],
         mediaType: '',
         shareOfVoice: '',
@@ -508,19 +504,21 @@ export default function Brief() {
       case 'budget':
         return (
           <div className="space-y-6">
-            <div className="text-center py-4">
-              <p className="text-3xl font-bold">
-                £{formData.budgetMin.toLocaleString()} - £{formData.budgetMax.toLocaleString()}
-              </p>
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-6xl font-bold text-primary">£</span>
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={formData.budget}
+                onChange={(e) => {
+                  // Allow only numbers and commas
+                  const value = e.target.value.replace(/[^\d,]/g, '');
+                  setFormData({...formData, budget: value});
+                }}
+                placeholder="Enter your total budget"
+                className="text-2xl text-center max-w-md"
+              />
             </div>
-            <Slider
-              min={0}
-              max={150000}
-              step={1000}
-              value={[formData.budgetMin, formData.budgetMax]}
-              onValueChange={([min, max]) => setFormData({...formData, budgetMin: min, budgetMax: max})}
-              className="w-full"
-            />
           </div>
         );
       
