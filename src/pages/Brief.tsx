@@ -730,10 +730,6 @@ export default function Brief() {
                 </div>
               </CardContent>
             </Card>
-
-            <p className="text-xs text-muted-foreground text-center">
-              All campaigns are contracted and invoiced by <span className="font-medium">Deadline Day / Solwaria Ltd</span> under the <span className="font-medium">Remnant Inventory Framework (RIF/A)</span> and <span className="font-medium">Agency Alignment Protocol (AAP)</span>. Managed transparently in partnership with <span className="font-medium">84 Advertising</span> across CAR · AEA · IBBA · IPA · AAA.
-            </p>
           </div>
         );
       
