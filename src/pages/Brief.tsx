@@ -195,7 +195,8 @@ export default function Brief() {
     { id: 'audience', title: "Who are you trying to reach?", required: false },
     { id: 'budget', title: "What's your budget for this campaign?", required: true },
     { id: 'artwork', title: "Do you have artwork ready?", required: false },
-    { id: 'contact', title: "Who should we send your options to?", required: true }
+    { id: 'contact', title: "Who should we send your options to?", required: true },
+    { id: 'review', title: `Perfect, ${formData.name.split(' ')[0] || 'there'} - we are on it!`, required: true }
   ];
 
   const canProceed = () => {
@@ -232,6 +233,8 @@ export default function Brief() {
                formData.email.includes('@') &&
                formData.company.trim() !== '' &&
                formData.agreedToTerms;
+      case 'review':
+        return true; // Always can proceed from review
       default: 
         return false;
     }
@@ -667,6 +670,75 @@ export default function Brief() {
           </div>
         );
       
+      case 'review':
+        return (
+          <div className="space-y-6">
+            <p className="text-base text-muted-foreground text-center">
+              Our trading desk will now source your off-market options. Expect a shortlist within 24 hours.
+            </p>
+
+            <Card className="bg-card border-border">
+              <CardContent className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Locations</p>
+                    <p className="text-base">{formData.market || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Start Date</p>
+                    <p className="text-base">{formData.goLiveDate ? format(formData.goLiveDate, 'dd/MM/yyyy') : 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">End Date</p>
+                    <p className="text-base">{formData.campaignEndDate ? format(formData.campaignEndDate, 'dd/MM/yyyy') : 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Audience</p>
+                    <p className="text-base">{formData.targetAudience.join(', ') || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Environments</p>
+                    <p className="text-base">{formData.environment.join(', ') || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Budget</p>
+                    <p className="text-base">£{formData.budget || '0'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Creative</p>
+                    <p className="text-base">{formData.artworkStatus || 'Not specified'}</p>
+                  </div>
+                  {formData.additionalNotes && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground mb-1">Notes</p>
+                      <p className="text-base">{formData.additionalNotes}</p>
+                    </div>
+                  )}
+                  <div className="col-span-2 pt-2 border-t border-border">
+                    <p className="text-sm text-muted-foreground mb-1">Contact</p>
+                    <p className="text-base font-medium">{formData.name} — {formData.company}</p>
+                    <p className="text-sm text-muted-foreground">{formData.email} · {formData.phone || 'No phone'}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 pt-4">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <label className="text-sm text-muted-foreground">
+                    Fast-Track Deal Finder (priority sourcing)
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
+
+            <p className="text-xs text-muted-foreground text-center">
+              All campaigns are contracted and invoiced by <span className="font-medium">Deadline Day / Solwaria Ltd</span> under the <span className="font-medium">Remnant Inventory Framework (RIF/A)</span> and <span className="font-medium">Agency Alignment Protocol (AAP)</span>. Managed transparently in partnership with <span className="font-medium">84 Advertising</span> across CAR · AEA · IBBA · IPA · AAA.
+            </p>
+          </div>
+        );
+      
       default:
         return null;
     }
@@ -723,9 +795,9 @@ export default function Brief() {
                 <Button
                   onClick={handleSubmit}
                   disabled={!canProceed() || isSubmitting}
-                  className="w-32"
+                  className="w-40"
                 >
-                  {isSubmitting ? 'Submitting...' : 'Submit'}
+                  {isSubmitting ? 'Submitting...' : 'Submit Brief'}
                 </Button>
               ) : (
                 <Button
