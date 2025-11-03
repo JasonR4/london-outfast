@@ -222,6 +222,7 @@ export default function Brief() {
     }
   };
 
+  // One-question-at-a-time steps
   const steps = useMemo(() => {
     const base = [
       { id: 'firstname', title: 'What is your first name?' },
@@ -292,153 +293,136 @@ export default function Brief() {
 
   const renderStep = () => {
     const step = steps[currentStep];
+    const id = step.id as string;
 
-    switch (step.id) {
-      case 'contact':
+    switch (id) {
+      case 'firstname':
         return (
           <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Let's start with your details</h2>
-              <p className="text-muted-foreground">We'll use this to get in touch with you</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">First name *</label>
-                <Input
-                  placeholder="Jane"
-                  value={formData.firstname}
-                  onChange={(e) => updateField('firstname', e.target.value)}
-                  autoComplete="given-name"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Last name *</label>
-                <Input
-                  placeholder="Doe"
-                  value={formData.lastname}
-                  onChange={(e) => updateField('lastname', e.target.value)}
-                  autoComplete="family-name"
-                />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <label className="text-sm font-medium">Work email *</label>
-                <Input
-                  type="email"
-                  placeholder="name@company.com"
-                  value={formData.email}
-                  onChange={(e) => updateField('email', e.target.value)}
-                  autoComplete="email"
-                />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <label className="text-sm font-medium">Phone *</label>
-                <Input
-                  type="tel"
-                  placeholder="07..."
-                  value={formData.phone}
-                  onChange={(e) => updateField('phone', e.target.value)}
-                  autoComplete="tel"
-                />
-              </div>
-            </div>
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <Input
+              placeholder="Jane"
+              value={formData.firstname}
+              onChange={(e) => updateField('firstname', e.target.value)}
+              autoComplete="given-name"
+            />
           </div>
         );
-
+      case 'lastname':
+        return (
+          <div className="space-y-6 animate-in fade-in-50 duration-300">
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <Input
+              placeholder="Doe"
+              value={formData.lastname}
+              onChange={(e) => updateField('lastname', e.target.value)}
+              autoComplete="family-name"
+            />
+          </div>
+        );
+      case 'email':
+        return (
+          <div className="space-y-6 animate-in fade-in-50 duration-300">
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <Input
+              type="email"
+              placeholder="name@company.com"
+              value={formData.email}
+              onChange={(e) => updateField('email', e.target.value)}
+              autoComplete="email"
+            />
+          </div>
+        );
+      case 'phone':
+        return (
+          <div className="space-y-6 animate-in fade-in-50 duration-300">
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <Input
+              type="tel"
+              placeholder="07..."
+              value={formData.phone}
+              onChange={(e) => updateField('phone', e.target.value)}
+              autoComplete="tel"
+            />
+          </div>
+        );
       case 'company':
         return (
           <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Tell us about your company</h2>
-              <p className="text-muted-foreground">This helps us understand your needs better</p>
-            </div>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Company name *</label>
-                <Input
-                  placeholder="Acme Ltd"
-                  value={formData.company}
-                  onChange={(e) => updateField('company', e.target.value)}
-                  autoComplete="organization"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Website *</label>
-                <Input
-                  type="url"
-                  placeholder="https://... or company.com"
-                  value={formData.website}
-                  onChange={(e) => updateField('website', e.target.value)}
-                  autoComplete="url"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Your role *</label>
-                <Input
-                  placeholder="Marketing Manager"
-                  value={formData.jobtitle}
-                  onChange={(e) => updateField('jobtitle', e.target.value)}
-                  autoComplete="organization-title"
-                />
-              </div>
-            </div>
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <Input
+              placeholder="Acme Ltd"
+              value={formData.company}
+              onChange={(e) => updateField('company', e.target.value)}
+              autoComplete="organization"
+            />
           </div>
         );
-
-      case 'budget':
+      case 'website':
         return (
           <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">What's your budget?</h2>
-              <p className="text-muted-foreground">This helps us recommend the right formats</p>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Budget (GBP) *</label>
-              <Input
-                placeholder="Enter amount e.g. 15000"
-                inputMode="numeric"
-                value={formData.budget_band}
-                onChange={(e) => updateField('budget_band', e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">Numbers only; we'll interpret this as GBP</p>
-            </div>
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <Input
+              type="url"
+              placeholder="https://... or company.com"
+              value={formData.website}
+              onChange={(e) => updateField('website', e.target.value)}
+              autoComplete="url"
+            />
           </div>
         );
-
+      case 'jobtitle':
+        return (
+          <div className="space-y-6 animate-in fade-in-50 duration-300">
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <Input
+              placeholder="Marketing Manager"
+              value={formData.jobtitle}
+              onChange={(e) => updateField('jobtitle', e.target.value)}
+              autoComplete="organization-title"
+            />
+          </div>
+        );
+      case 'budget_band':
+        return (
+          <div className="space-y-6 animate-in fade-in-50 duration-300">
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <Input
+              placeholder="Enter amount e.g. 15000"
+              inputMode="numeric"
+              value={formData.budget_band}
+              onChange={(e) => updateField('budget_band', e.target.value)}
+            />
+            <p className="text-sm text-muted-foreground">Numbers only; we'll interpret this as GBP</p>
+          </div>
+        );
       case 'objective':
         return (
           <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">What's your campaign objective?</h2>
-              <p className="text-muted-foreground">Select your primary goal</p>
-            </div>
-            <div className="space-y-4">
-              <ChipGroup
-                options={objectives}
-                selected={formData.objective}
-                onChange={(val) => updateField('objective', val)}
-                multi={false}
-              />
-              {formData.objective === 'Other' && (
-                <div className="space-y-2 pt-4">
-                  <label className="text-sm font-medium">Please specify *</label>
-                  <Input
-                    placeholder="Describe your objective"
-                    value={formData.objective_other || ''}
-                    onChange={(e) => updateField('objective_other', e.target.value)}
-                  />
-                </div>
-              )}
-            </div>
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <ChipGroup
+              options={objectives}
+              selected={formData.objective}
+              onChange={(val) => updateField('objective', val)}
+              multi={false}
+            />
           </div>
         );
-
-      case 'locations':
+      case 'objective_other':
         return (
           <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Where do you want to advertise?</h2>
-              <p className="text-muted-foreground">Select your target areas in London</p>
-            </div>
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <Input
+              placeholder="Describe your objective"
+              value={formData.objective_other || ''}
+              onChange={(e) => updateField('objective_other', e.target.value)}
+            />
+          </div>
+        );
+      case 'target_areas':
+        return (
+          <div className="space-y-6 animate-in fade-in-50 duration-300">
+            <h2 className="text-2xl font-bold">{step.title}</h2>
             <LocationSelector
               selectedLocations={formData.target_areas}
               onSelectionChange={(locs) => updateField('target_areas', locs)}
@@ -449,135 +433,103 @@ export default function Brief() {
             />
           </div>
         );
-
       case 'formats':
         return (
           <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Which formats interest you?</h2>
-              <p className="text-muted-foreground">Select all that apply</p>
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Input
+                placeholder="Search formats..."
+                value={formatSearch}
+                onChange={(e) => setFormatSearch(e.target.value)}
+              />
+              <select 
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={formatCategory}
+                onChange={(e) => setFormatCategory(e.target.value)}
+              >
+                <option value="all">All categories</option>
+                {HARDCODED_FORMAT_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
             </div>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Input
-                  placeholder="Search formats..."
-                  value={formatSearch}
-                  onChange={(e) => setFormatSearch(e.target.value)}
+            <div className="space-y-2 max-h-96 overflow-auto border rounded-md p-4">
+              <label className="flex items-center gap-2 text-sm border-b pb-2 mb-2">
+                <input
+                  type="checkbox"
+                  className="rounded"
+                  checked={formData.formats.includes('Open to recommendations')}
+                  onChange={(e) => {
+                    const current = new Set(formData.formats);
+                    if (e.target.checked) current.add('Open to recommendations');
+                    else current.delete('Open to recommendations');
+                    updateField('formats', Array.from(current));
+                  }}
                 />
-                <select 
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  value={formatCategory}
-                  onChange={(e) => setFormatCategory(e.target.value)}
-                >
-                  <option value="all">All categories</option>
-                  {HARDCODED_FORMAT_CATEGORIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="space-y-2 max-h-96 overflow-auto border rounded-md p-4">
-                <label className="flex items-center gap-2 text-sm border-b pb-2 mb-2">
+                <span className="font-medium text-primary">Open to recommendations</span>
+              </label>
+              {filteredFormatNames.map((name) => (
+                <label key={name} className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
                     className="rounded"
-                    checked={formData.formats.includes('Open to recommendations')}
+                    checked={formData.formats.includes(name)}
                     onChange={(e) => {
                       const current = new Set(formData.formats);
-                      if (e.target.checked) {
-                        current.add('Open to recommendations');
-                      } else {
-                        current.delete('Open to recommendations');
-                      }
+                      if (e.target.checked) current.add(name);
+                      else current.delete(name);
                       updateField('formats', Array.from(current));
                     }}
                   />
-                  <span className="font-medium text-primary">Open to recommendations</span>
+                  <span>{name}</span>
                 </label>
-                
-                {filteredFormatNames.map((name) => (
-                  <label key={name} className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      className="rounded"
-                      checked={formData.formats.includes(name)}
-                      onChange={(e) => {
-                        const current = new Set(formData.formats);
-                        if (e.target.checked) {
-                          current.add(name);
-                        } else {
-                          current.delete(name);
-                        }
-                        updateField('formats', Array.from(current));
-                      }}
-                    />
-                    <span>{name}</span>
-                  </label>
-                ))}
-                
-                {filteredFormatNames.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No formats found.</p>
-                )}
-              </div>
+              ))}
+              {filteredFormatNames.length === 0 && (
+                <p className="text-sm text-muted-foreground">No formats found.</p>
+              )}
             </div>
           </div>
         );
-
-      case 'timing':
+      case 'start_month':
         return (
           <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Campaign timing</h2>
-              <p className="text-muted-foreground">When do you want to start?</p>
-            </div>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Earliest start month *</label>
-                <Input
-                  type="month"
-                  value={formData.start_month}
-                  onChange={(e) => updateField('start_month', e.target.value)}
-                />
-              </div>
-              <div className="space-y-3">
-                <label className="text-sm font-medium">Creative status *</label>
-                <ChipGroup
-                  options={creativeStatuses}
-                  selected={formData.creative_status}
-                  onChange={(val) => updateField('creative_status', val)}
-                  multi={false}
-                />
-              </div>
-            </div>
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <Input
+              type="month"
+              value={formData.start_month}
+              onChange={(e) => updateField('start_month', e.target.value)}
+            />
           </div>
         );
-
+      case 'creative_status':
+        return (
+          <div className="space-y-6 animate-in fade-in-50 duration-300">
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <ChipGroup
+              options={creativeStatuses}
+              selected={formData.creative_status}
+              onChange={(val) => updateField('creative_status', val)}
+              multi={false}
+            />
+          </div>
+        );
       case 'notes':
         return (
           <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Any additional requirements?</h2>
-              <p className="text-muted-foreground">Tell us anything else we should know</p>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Notes *</label>
-              <Textarea
-                placeholder="Tell us about your campaign, audience, specific requirements..."
-                value={formData.notes}
-                onChange={(e) => updateField('notes', e.target.value)}
-                rows={6}
-              />
-            </div>
+            <h2 className="text-2xl font-bold">{step.title}</h2>
+            <Textarea
+              placeholder="Tell us about your campaign, audience, specific requirements..."
+              value={formData.notes}
+              onChange={(e) => updateField('notes', e.target.value)}
+              rows={6}
+            />
           </div>
         );
-
       case 'consent':
         return (
           <div className="space-y-6 animate-in fade-in-50 duration-300">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Almost done!</h2>
-              <p className="text-muted-foreground">Just one more thing...</p>
-            </div>
+            <h2 className="text-2xl font-bold">{step.title}</h2>
             <label className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
               <input
                 type="checkbox"
@@ -598,7 +550,6 @@ export default function Brief() {
             </div>
           </div>
         );
-
       default:
         return null;
     }
