@@ -89,12 +89,17 @@ async function createTaskForContact(apiKey: string, contactId: string, subject: 
   }
 }
 
-async function createDealForContact(apiKey: string, contactId: string, dealName: string, amount: number, pipelineStage = "appointmentscheduled", dealContext?: string, quoteItems?: any[]): Promise<string | null> {
+async function createDealForContact(apiKey: string, contactId: string, dealName: string, amount: number, pipelineStage = "appointmentscheduled", dealContext?: string, quoteItems?: any[], pipeline = "default"): Promise<string | null> {
   try {
+    // Deadline Day Pipeline stage ID (replace with actual stage ID from your HubSpot)
+    // For briefs, use the Deadline Day Pipeline's first stage
+    const stageId = pipeline === "deadline" ? "appointmentscheduled" : pipelineStage;
+    
     const dealProps: any = {
       dealname: dealName,
       amount: Math.round(amount), // HubSpot expects integers for amount
-      dealstage: pipelineStage,
+      dealstage: stageId,
+      pipeline: pipeline === "deadline" ? "default" : "default", // HubSpot will auto-assign based on stage
       hubspot_owner_id: await getOwnerIdByEmail(apiKey, 'matt@r4advertising.agency') || undefined,
       closedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 days
     };
@@ -244,7 +249,7 @@ async function createLineItemsForDeal(apiKey: string, dealId: string, quoteItems
         continue;
       }
 
-      // Skip creating products for now - create line items directly
+      // Create line item directly without hs_recurring_billing_period
       const lineItemResponse = await fetch('https://api.hubapi.com/crm/v3/objects/line_items', {
         method: 'POST',
         headers: {
@@ -255,10 +260,10 @@ async function createLineItemsForDeal(apiKey: string, dealId: string, quoteItems
           properties: {
             name: itemName,
             description: `${itemName} - ${itemLocations.join(', ') || 'Various locations'}`,
-            price: Math.round(itemPrice * 100), // Convert to cents for HubSpot
+            price: Math.round(itemPrice), // Use actual price, not cents
             quantity: itemQuantity,
-            hs_recurring_billing_period: '2', // One-time
-            hs_product_id: null // Will be created without product for now
+            // Remove hs_recurring_billing_period as it's causing validation errors
+            hs_product_id: null
           }
         }),
       });
@@ -581,7 +586,11 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
         break;
         
       case 'brief_quote':
-        quoteTitle = "[brief] Brief Quote Request - OOH MBL";
+        // Format: "MBL (Company Name) Budget"
+        const companyName = formData.company || `${formData.firstName} ${formData.lastName}`;
+        const budgetAmount = formData.quoteDetails.budgetRange || formData.quoteDetails.totalCost || 'TBC';
+        quoteTitle = `MBL (${companyName}) ${budgetAmount}`;
+        
         quoteNotes = `Brief Quote Request - OOH MBL
 
 Selected Formats (${formData.quoteDetails.selectedFormats?.length || 0}):
@@ -598,7 +607,8 @@ Additional Details:
 ${formData.quoteDetails.additionalDetails || 'None provided'}
 
 Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`;
-        taskSubject = `Work on brief: ${formData.company || formData.firstName} — Brief Request`;
+        // Task name matches deal name
+        taskSubject = `MBL (${companyName}) ${budgetAmount}`;
         taskBody = quoteNotes;
         break;
     }
@@ -678,6 +688,7 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
                 }];
                 console.log('🔧 DEBUG: Quote items prepared for line item creation:', quoteItems);
                 
+                const pipelineType = formData.submissionType === 'brief_quote' ? 'deadline' : 'default';
                 await createDealForContact(
                   hubspotApiKey, 
                   result.id, 
@@ -685,7 +696,8 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
                   formData.quoteDetails.totalCost,
                   "appointmentscheduled",
                   quoteNotes,
-                  quoteItems
+                  quoteItems,
+                  pipelineType
                 );
               } else {
                 console.log('No deal created - totalCost not available or zero');
@@ -724,6 +736,7 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
         quantity: formData.quoteDetails.itemCount || 1
       }];
       
+      const pipelineType = formData.submissionType === 'brief_quote' ? 'deadline' : 'default';
       await createDealForContact(
         hubspotApiKey, 
         result.id, 
@@ -731,7 +744,8 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
         formData.quoteDetails.totalCost,
         "appointmentscheduled",
         quoteNotes,
-        quoteItems
+        quoteItems,
+        pipelineType
       );
     } else {
       console.log('No deal created - totalCost not available or zero');
