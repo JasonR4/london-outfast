@@ -25,6 +25,7 @@ type FormData = {
   market: string;
   goLiveDate: Date | undefined;
   campaignEndDate: Date | undefined;
+  targetAudience: string[];
   campaignDuration: string;
   budgetMin: number;
   budgetMax: number;
@@ -88,6 +89,7 @@ export default function Brief() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [environments, setEnvironments] = useState<string[]>([]);
+  const [customAudience, setCustomAudience] = useState('');
   
   const [formData, setFormData] = useState<FormData>({
     environment: '',
@@ -95,6 +97,7 @@ export default function Brief() {
     market: '',
     goLiveDate: undefined,
     campaignEndDate: undefined,
+    targetAudience: [],
     campaignDuration: '',
     budgetMin: 0,
     budgetMax: 150000,
@@ -135,6 +138,15 @@ export default function Brief() {
     "Hong Kong"
   ];
 
+  const targetAudienceOptions = [
+    "Families",
+    "Commuters", 
+    "Young Professionals",
+    "Students",
+    "Travellers",
+    "Business Decision-Makers"
+  ];
+
   const objectiveOptions = [
     "Brand Awareness",
     "Lead Generation",
@@ -159,6 +171,7 @@ export default function Brief() {
     { id: 'format', title: "What format do you prefer?", required: true },
     { id: 'startDate', title: "When do you want your campaign to start?", required: false },
     { id: 'endDate', title: "When do you want your campaign to end?", required: false },
+    { id: 'audience', title: "Who are you trying to reach?", required: false },
     { id: 'budget', title: "What's your budget range?", required: true },
     { id: 'objectives', title: "What are your campaign objectives?", required: false },
     { id: 'mediaType', title: "Media type preference?", required: false },
@@ -180,6 +193,8 @@ export default function Brief() {
       case 'startDate': 
         return true; // Optional
       case 'endDate': 
+        return true; // Optional
+      case 'audience': 
         return true; // Optional
       case 'budget': 
         return formData.budgetMin >= 0 && formData.budgetMax > formData.budgetMin;
@@ -236,6 +251,7 @@ export default function Brief() {
           { name: "market", value: formData.market },
           { name: "go_live_date", value: formData.goLiveDate ? format(formData.goLiveDate, 'yyyy-MM-dd') : '' },
           { name: "campaign_end_date", value: formData.campaignEndDate ? format(formData.campaignEndDate, 'yyyy-MM-dd') : '' },
+          { name: "target_audience", value: formData.targetAudience.join(', ') },
           { name: "campaign_duration", value: formData.campaignDuration },
           { name: "budget_min", value: formData.budgetMin.toString() },
           { name: "budget_max", value: formData.budgetMax.toString() },
@@ -281,6 +297,7 @@ export default function Brief() {
         market: '',
         goLiveDate: undefined,
         campaignEndDate: undefined,
+        targetAudience: [],
         campaignDuration: '',
         budgetMin: 0,
         budgetMax: 150000,
@@ -407,6 +424,53 @@ export default function Brief() {
               <p className="text-sm text-muted-foreground mt-2">
                 Enter the end date for your campaign (must be after start date)
               </p>
+            </div>
+          </div>
+        );
+      
+      case 'audience':
+        return (
+          <div className="space-y-6">
+            <p className="text-sm text-muted-foreground text-center">
+              Tell us who your primary target audiences are (We use Experian Mosaic)
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {targetAudienceOptions.map((audience) => {
+                const isSelected = formData.targetAudience.includes(audience);
+                return (
+                  <Badge
+                    key={audience}
+                    variant={isSelected ? "default" : "outline"}
+                    className="cursor-pointer px-4 py-6 text-sm hover:opacity-80 transition-opacity justify-center text-center h-auto"
+                    onClick={() => {
+                      const newValue = isSelected
+                        ? formData.targetAudience.filter(a => a !== audience)
+                        : [...formData.targetAudience, audience];
+                      setFormData({...formData, targetAudience: newValue});
+                    }}
+                  >
+                    {audience}
+                  </Badge>
+                );
+              })}
+            </div>
+            <div className="text-center">
+              <Input
+                type="text"
+                value={customAudience}
+                onChange={(e) => setCustomAudience(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && customAudience.trim()) {
+                    setFormData({
+                      ...formData, 
+                      targetAudience: [...formData.targetAudience, customAudience.trim()]
+                    });
+                    setCustomAudience('');
+                  }
+                }}
+                placeholder="Or type your audience... then hit Enter"
+                className="text-sm text-center border-none shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/70"
+              />
             </div>
           </div>
         );
