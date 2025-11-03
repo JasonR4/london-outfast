@@ -92,6 +92,8 @@ export default function Brief() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [environments, setEnvironments] = useState<string[]>([]);
   const [customAudience, setCustomAudience] = useState('');
+  const [startDateInput, setStartDateInput] = useState('');
+  const [endDateInput, setEndDateInput] = useState('');
   
   const [formData, setFormData] = useState<FormData>({
     environment: [],
@@ -418,16 +420,18 @@ export default function Brief() {
               <Input
                 type="text"
                 inputMode="numeric"
-                value={formData.goLiveDate ? format(formData.goLiveDate, 'dd/MM/yyyy') : ''}
+                value={startDateInput}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Basic date parsing from DD/MM/YYYY format
+                  setStartDateInput(value);
+                  
+                  // Try to parse date from DD/MM/YYYY format
                   const parts = value.split('/');
-                  if (parts.length === 3) {
+                  if (parts.length === 3 && parts[0].length === 2 && parts[1].length === 2 && parts[2].length === 4) {
                     const day = parseInt(parts[0]);
                     const month = parseInt(parts[1]) - 1;
                     const year = parseInt(parts[2]);
-                    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                    if (!isNaN(day) && !isNaN(month) && !isNaN(year) && day >= 1 && day <= 31 && month >= 0 && month <= 11) {
                       const date = new Date(year, month, day);
                       setFormData({...formData, goLiveDate: date});
                     }
@@ -450,16 +454,18 @@ export default function Brief() {
               <Input
                 type="text"
                 inputMode="numeric"
-                value={formData.campaignEndDate ? format(formData.campaignEndDate, 'dd/MM/yyyy') : ''}
+                value={endDateInput}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Basic date parsing from DD/MM/YYYY format
+                  setEndDateInput(value);
+                  
+                  // Try to parse date from DD/MM/YYYY format
                   const parts = value.split('/');
-                  if (parts.length === 3) {
+                  if (parts.length === 3 && parts[0].length === 2 && parts[1].length === 2 && parts[2].length === 4) {
                     const day = parseInt(parts[0]);
                     const month = parseInt(parts[1]) - 1;
                     const year = parseInt(parts[2]);
-                    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                    if (!isNaN(day) && !isNaN(month) && !isNaN(year) && day >= 1 && day <= 31 && month >= 0 && month <= 11) {
                       const date = new Date(year, month, day);
                       setFormData({...formData, campaignEndDate: date});
                     }
