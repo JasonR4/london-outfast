@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
@@ -37,6 +38,7 @@ type FormData = {
   email: string;
   phone: string;
   company: string;
+  agreedToTerms: boolean;
 };
 
 // Chip selection component
@@ -108,7 +110,8 @@ export default function Brief() {
     name: '',
     email: '',
     phone: '',
-    company: ''
+    company: '',
+    agreedToTerms: false
   });
 
   // Set environment options (hardcoded - replace with Supabase query if you have an environments table)
@@ -192,11 +195,7 @@ export default function Brief() {
     { id: 'audience', title: "Who are you trying to reach?", required: false },
     { id: 'budget', title: "What's your budget for this campaign?", required: true },
     { id: 'artwork', title: "Do you have artwork ready?", required: false },
-    { id: 'objectives', title: "What are your campaign objectives?", required: false },
-    { id: 'mediaType', title: "Media type preference?", required: false },
-    { id: 'shareOfVoice', title: "What share of voice do you need?", required: false },
-    { id: 'notes', title: "Any additional notes?", required: false },
-    { id: 'contact', title: "Let's get your contact details", required: true }
+    { id: 'contact', title: "Who should we send your options to?", required: true }
   ];
 
   const canProceed = () => {
@@ -231,7 +230,8 @@ export default function Brief() {
         return formData.name.trim() !== '' && 
                formData.email.trim() !== '' && 
                formData.email.includes('@') &&
-               formData.phone.trim() !== '';
+               formData.company.trim() !== '' &&
+               formData.agreedToTerms;
       default: 
         return false;
     }
@@ -329,7 +329,8 @@ export default function Brief() {
         name: '',
         email: '',
         phone: '',
-        company: ''
+        company: '',
+        agreedToTerms: false
       });
       
       setCurrentStep(0);
@@ -595,46 +596,73 @@ export default function Brief() {
       
       case 'contact':
         return (
-          <div className="space-y-4">
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Your name</label>
+                <Input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  placeholder="Jane Doe"
+                  className="text-base"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Brand / company</label>
+                <Input
+                  type="text"
+                  value={formData.company}
+                  onChange={(e) => setFormData({...formData, company: e.target.value})}
+                  placeholder="Brand name"
+                  className="text-base"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Email</label>
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  placeholder="you@company.com"
+                  className="text-base"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Phone (optional)</label>
+                <Input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  placeholder="+44 7..."
+                  className="text-base"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <label className="text-sm font-medium">Name *</label>
-              <Input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="Your full name"
-                className="text-lg"
+              <label className="text-sm text-muted-foreground">Anything else we should know? (optional)</label>
+              <Textarea
+                value={formData.additionalNotes}
+                onChange={(e) => setFormData({...formData, additionalNotes: e.target.value})}
+                placeholder="Timing nuances, must-have sites, compliance notes..."
+                className="text-base min-h-24"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Email *</label>
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                placeholder="your.email@company.com"
-                className="text-lg"
+
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                checked={formData.agreedToTerms}
+                onChange={(e) => setFormData({...formData, agreedToTerms: e.target.checked})}
+                className="mt-1 h-4 w-4 rounded border-gray-300"
               />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Phone *</label>
-              <Input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                placeholder="+44 20 1234 5678"
-                className="text-lg"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Company</label>
-              <Input
-                type="text"
-                value={formData.company}
-                onChange={(e) => setFormData({...formData, company: e.target.value})}
-                placeholder="Your company name"
-                className="text-lg"
-              />
+              <label className="text-sm text-muted-foreground">
+                I confirm I'm authorised to brief on behalf of my organisation and agree to Deadline Day's RPA & AAP terms.
+              </label>
             </div>
           </div>
         );
