@@ -123,16 +123,14 @@ export default function Brief() {
   const formatOptions = ["Static", "Digital", "Both"];
   
   const marketOptions = [
-    "UK Cities",
     "London",
-    "Edinburgh",
-    "Birmingham",
-    "Manchester",
-    "Glasgow",
-    "Liverpool",
-    "Bristol",
-    "Leeds",
-    "Sheffield"
+    "New York",
+    "Dubai",
+    "Paris",
+    "Tokyo",
+    "Sydney",
+    "Singapore",
+    "Hong Kong"
   ];
 
   const objectiveOptions = [
@@ -154,9 +152,9 @@ export default function Brief() {
   ];
 
   const steps = [
+    { id: 'market', title: "Where do you want your brand to be seen?", required: true },
     { id: 'environment', title: "Which environment are you interested in?", required: true },
     { id: 'format', title: "What format do you prefer?", required: true },
-    { id: 'market', title: "Which market are you targeting?", required: true },
     { id: 'timing', title: "When do you need to go live?", required: false },
     { id: 'budget', title: "What's your budget range?", required: true },
     { id: 'objectives', title: "What are your campaign objectives?", required: false },
@@ -170,12 +168,12 @@ export default function Brief() {
     const step = steps[currentStep];
     
     switch(step.id) {
+      case 'market': 
+        return formData.market !== '';
       case 'environment': 
         return formData.environment !== '';
       case 'format': 
         return formData.formats !== '';
-      case 'market': 
-        return formData.market !== '';
       case 'timing': 
         return true; // Optional
       case 'budget': 
@@ -303,6 +301,25 @@ export default function Brief() {
     const step = steps[currentStep];
     
     switch(step.id) {
+      case 'market':
+        return (
+          <div className="space-y-4">
+            <Input
+              type="text"
+              value={formData.market}
+              onChange={(e) => setFormData({...formData, market: e.target.value})}
+              placeholder="Type a city or region... then hit Enter"
+              className="text-lg"
+            />
+            <ChipGroup
+              options={marketOptions}
+              value={formData.market}
+              onChange={(value) => setFormData({...formData, market: value as string})}
+              multiple={false}
+            />
+          </div>
+        );
+      
       case 'environment':
         return (
           <ChipGroup
@@ -321,22 +338,6 @@ export default function Brief() {
             onChange={(value) => setFormData({...formData, formats: value as string})}
             multiple={false}
           />
-        );
-      
-      case 'market':
-        return (
-          <Select value={formData.market} onValueChange={(value) => setFormData({...formData, market: value})}>
-            <SelectTrigger className="text-lg">
-              <SelectValue placeholder="Select a market" />
-            </SelectTrigger>
-            <SelectContent className="bg-background z-50">
-              {marketOptions.map((market) => (
-                <SelectItem key={market} value={market}>
-                  {market}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         );
       
       case 'timing':
@@ -504,10 +505,7 @@ export default function Brief() {
       {/* Hero Section */}
       <div className="bg-primary text-primary-foreground py-16 px-4">
         <div className="container mx-auto max-w-4xl text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Deal Finder</h1>
-          <p className="text-xl opacity-90 mb-6">
-            Find your perfect OOH advertising deal in minutes
-          </p>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Let's find your perfect campaign.</h1>
         </div>
       </div>
 
