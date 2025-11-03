@@ -20,7 +20,7 @@ const HUBSPOT_PORTAL_ID = "YOUR_PORTAL_ID";
 const HUBSPOT_FORM_ID = "YOUR_FORM_ID";
 
 type FormData = {
-  environment: string;
+  environment: string[];
   formats: string;
   market: string;
   goLiveDate: Date | undefined;
@@ -92,7 +92,7 @@ export default function Brief() {
   const [customAudience, setCustomAudience] = useState('');
   
   const [formData, setFormData] = useState<FormData>({
-    environment: '',
+    environment: [],
     formats: '',
     market: '',
     goLiveDate: undefined,
@@ -114,14 +114,30 @@ export default function Brief() {
   // Set environment options (hardcoded - replace with Supabase query if you have an environments table)
   useEffect(() => {
     setEnvironments([
-      "Premium Digital Billboard",
-      "Bus Shelters",
-      "London Underground",
-      "Rail Stations",
-      "Shopping Malls",
-      "Airport Advertising",
-      "Street Furniture",
-      "Taxi Advertising"
+      "Roadside",
+      "Rail",
+      "Bus",
+      "Taxi",
+      "Airport",
+      "Underground",
+      "Metro",
+      "Motorway",
+      "Forecourt",
+      "Petrol Station",
+      "Shopping Mall",
+      "Supermarket",
+      "Retail Park",
+      "City Centre",
+      "Urban",
+      "Leisure",
+      "Cinema",
+      "Gym",
+      "Sports Stadium",
+      "Retail",
+      "Education",
+      "Corporate",
+      "Experiential",
+      "Event"
     ]);
   }, []);
 
@@ -167,7 +183,7 @@ export default function Brief() {
 
   const steps = [
     { id: 'market', title: "Where do you want your brand to be seen?", required: true },
-    { id: 'environment', title: "Which environment are you interested in?", required: true },
+    { id: 'environment', title: "What environments are you interested in?", required: true },
     { id: 'format', title: "What format do you prefer?", required: true },
     { id: 'startDate', title: "When do you want your campaign to start?", required: false },
     { id: 'endDate', title: "When do you want your campaign to end?", required: false },
@@ -187,7 +203,7 @@ export default function Brief() {
       case 'market': 
         return formData.market !== '';
       case 'environment': 
-        return formData.environment !== '';
+        return formData.environment.length > 0;
       case 'format': 
         return formData.formats !== '';
       case 'startDate': 
@@ -246,7 +262,7 @@ export default function Brief() {
       // Prepare HubSpot submission
       const hubspotData = {
         fields: [
-          { name: "environment", value: formData.environment },
+          { name: "environment", value: formData.environment.join(', ') },
           { name: "format", value: formData.formats },
           { name: "market", value: formData.market },
           { name: "go_live_date", value: formData.goLiveDate ? format(formData.goLiveDate, 'yyyy-MM-dd') : '' },
@@ -292,7 +308,7 @@ export default function Brief() {
       
       // Reset form
       setFormData({
-        environment: '',
+        environment: [],
         formats: '',
         market: '',
         goLiveDate: undefined,
@@ -346,12 +362,26 @@ export default function Brief() {
       
       case 'environment':
         return (
-          <ChipGroup
-            options={environments}
-            value={formData.environment}
-            onChange={(value) => setFormData({...formData, environment: value as string})}
-            multiple={false}
-          />
+          <div className="grid grid-cols-3 gap-3">
+            {environments.map((env) => {
+              const isSelected = formData.environment.includes(env);
+              return (
+                <Badge
+                  key={env}
+                  variant={isSelected ? "default" : "outline"}
+                  className="cursor-pointer px-4 py-6 text-sm hover:opacity-80 transition-opacity justify-center text-center h-auto"
+                  onClick={() => {
+                    const newValue = isSelected
+                      ? formData.environment.filter(e => e !== env)
+                      : [...formData.environment, env];
+                    setFormData({...formData, environment: newValue});
+                  }}
+                >
+                  {env}
+                </Badge>
+              );
+            })}
+          </div>
         );
       
       case 'format':
