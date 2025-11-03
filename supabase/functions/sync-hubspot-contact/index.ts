@@ -689,14 +689,15 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
                 }];
                 console.log('🔧 DEBUG: Quote items prepared for line item creation:', quoteItems);
                 
-                // Use Deadline Day Pipeline (2662311103) for brief quotes, default for others
+                // Use Deadline Day Pipeline (2662311103) with stage 3669700802 for brief quotes
                 const pipelineId = formData.submissionType === 'brief_quote' ? '2662311103' : undefined;
+                const dealStage = formData.submissionType === 'brief_quote' ? '3669700802' : 'appointmentscheduled';
                 await createDealForContact(
                   hubspotApiKey, 
                   result.id, 
                   quoteTitle, 
                   formData.quoteDetails.totalCost,
-                  "appointmentscheduled",
+                  dealStage,
                   quoteNotes,
                   quoteItems,
                   pipelineId
@@ -738,14 +739,15 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
         quantity: formData.quoteDetails.itemCount || 1
       }];
       
-      // Use Deadline Day Pipeline (2662311103) for brief quotes, default for others
+      // Use Deadline Day Pipeline (2662311103) with stage 3669700802 for brief quotes
       const pipelineId = formData.submissionType === 'brief_quote' ? '2662311103' : undefined;
+      const dealStage = formData.submissionType === 'brief_quote' ? '3669700802' : 'appointmentscheduled';
       await createDealForContact(
         hubspotApiKey, 
         result.id, 
         quoteTitle, 
         formData.quoteDetails.totalCost,
-        "appointmentscheduled",
+        dealStage,
         quoteNotes,
         quoteItems,
         pipelineId
