@@ -262,14 +262,14 @@ export default function Brief() {
         firstname,
         lastname,
         email: formData.email,
-        phone: formData.phone,
+        phone: formData.phone && formData.phone.trim() !== '' ? formData.phone : 'N/A',
         company: formData.company,
         budget_band: formData.budget,
-        objective: formData.objectives.join(', '),
+        objective: formData.objectives.length > 0 ? formData.objectives.join(', ') : 'General campaign',
         target_areas: formData.market ? [formData.market] : [],
         formats: formData.environment,
         start_month: formData.goLiveDate ? format(formData.goLiveDate, 'yyyy-MM-dd') : null,
-        creative_status: formData.artworkStatus,
+        creative_status: formData.artworkStatus && formData.artworkStatus.trim() !== '' ? formData.artworkStatus : 'Not specified',
         notes: [
           formData.additionalNotes,
           formData.formats ? `Format preference: ${formData.formats}` : '',
@@ -288,8 +288,8 @@ export default function Brief() {
         body: briefData
       });
 
-      if (error) throw error;
-      if (!(data as any)?.ok) throw new Error('Submission failed');
+      if (error) throw new Error(error.message || 'Submission failed');
+      if (data && (data as any).ok === false) throw new Error((data as any).error || 'Submission failed');
 
       toast.success('Brief submitted successfully!');
       
@@ -318,9 +318,9 @@ export default function Brief() {
       setStartDateInput('');
       setEndDateInput('');
       navigate('/thank-you');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting brief:', error);
-      toast.error('Failed to submit. Please try again.');
+      toast.error(error?.message || 'Failed to submit. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
