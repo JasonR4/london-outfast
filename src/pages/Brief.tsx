@@ -357,13 +357,21 @@ export default function Brief() {
               type="text"
               value={formData.market}
               onChange={(e) => setFormData({...formData, market: e.target.value})}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && formData.market.trim()) {
+                  toast.success(`${formData.market} saved!`);
+                }
+              }}
               placeholder="Type a city or region... then hit Enter"
               className="text-lg"
             />
             <ChipGroup
               options={marketOptions}
               value={formData.market}
-              onChange={(value) => setFormData({...formData, market: value as string})}
+              onChange={(value) => {
+                setFormData({...formData, market: value as string});
+                toast.success(`${value} selected!`);
+              }}
               multiple={false}
             />
           </div>
