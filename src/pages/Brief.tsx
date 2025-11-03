@@ -8,21 +8,20 @@ import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
-// HubSpot Configuration - UPDATE THESE WITH YOUR PORTAL/FORM IDs
+// HubSpot Configuration - REPLACE WITH YOUR ACTUAL IDs
 const HUBSPOT_PORTAL_ID = "YOUR_PORTAL_ID";
 const HUBSPOT_FORM_ID = "YOUR_FORM_ID";
 
 type FormData = {
   environment: string;
-  format: string;
+  formats: string;
   market: string;
   goLiveDate: Date | undefined;
   campaignDuration: string;
@@ -40,13 +39,11 @@ type FormData = {
 
 // Chip selection component
 const ChipGroup = ({ 
-  name, 
   options, 
   value, 
   onChange, 
   multiple = false 
 }: { 
-  name: string;
   options: string[];
   value: string | string[];
   onChange: (value: string | string[]) => void;
@@ -93,7 +90,7 @@ export default function Brief() {
   
   const [formData, setFormData] = useState<FormData>({
     environment: '',
-    format: '',
+    formats: '',
     market: '',
     goLiveDate: undefined,
     campaignDuration: '',
@@ -109,10 +106,8 @@ export default function Brief() {
     company: ''
   });
 
-  // Fetch environments from Supabase or use hardcoded list
+  // Set environment options (hardcoded - replace with Supabase query if you have an environments table)
   useEffect(() => {
-    // TODO: Replace with actual Supabase query if you have an environments table
-    // For now, using hardcoded options
     setEnvironments([
       "Premium Digital Billboard",
       "Bus Shelters",
@@ -128,16 +123,16 @@ export default function Brief() {
   const formatOptions = ["Static", "Digital", "Both"];
   
   const marketOptions = [
+    "UK Cities",
     "London",
+    "Edinburgh",
     "Birmingham",
     "Manchester",
-    "Edinburgh",
     "Glasgow",
     "Liverpool",
     "Bristol",
     "Leeds",
-    "Sheffield",
-    "UK Cities"
+    "Sheffield"
   ];
 
   const objectiveOptions = [
@@ -175,21 +170,31 @@ export default function Brief() {
     const step = steps[currentStep];
     
     switch(step.id) {
-      case 'environment': return formData.environment !== '';
-      case 'format': return formData.format !== '';
-      case 'market': return formData.market !== '';
-      case 'timing': return true; // Optional
-      case 'budget': return formData.budgetMin >= 0 && formData.budgetMax > formData.budgetMin;
-      case 'objectives': return true; // Optional
-      case 'mediaType': return true; // Optional
-      case 'shareOfVoice': return true; // Optional
-      case 'notes': return true; // Optional
+      case 'environment': 
+        return formData.environment !== '';
+      case 'format': 
+        return formData.formats !== '';
+      case 'market': 
+        return formData.market !== '';
+      case 'timing': 
+        return true; // Optional
+      case 'budget': 
+        return formData.budgetMin >= 0 && formData.budgetMax > formData.budgetMin;
+      case 'objectives': 
+        return true; // Optional
+      case 'mediaType': 
+        return true; // Optional
+      case 'shareOfVoice': 
+        return true; // Optional
+      case 'notes': 
+        return true; // Optional
       case 'contact': 
         return formData.name.trim() !== '' && 
                formData.email.trim() !== '' && 
                formData.email.includes('@') &&
                formData.phone.trim() !== '';
-      default: return false;
+      default: 
+        return false;
     }
   };
 
@@ -216,11 +221,15 @@ export default function Brief() {
         .find(row => row.startsWith('hubspotutk='))
         ?.split('=')[1];
 
+      // Get page context
+      const pageUri = window.location.href;
+      const pageName = document.title;
+
       // Prepare HubSpot submission
       const hubspotData = {
         fields: [
           { name: "environment", value: formData.environment },
-          { name: "format", value: formData.format },
+          { name: "format", value: formData.formats },
           { name: "market", value: formData.market },
           { name: "go_live_date", value: formData.goLiveDate ? format(formData.goLiveDate, 'yyyy-MM-dd') : '' },
           { name: "campaign_duration", value: formData.campaignDuration },
@@ -238,12 +247,12 @@ export default function Brief() {
         ],
         context: {
           hutk: hubspotCookie,
-          pageUri: window.location.href,
-          pageName: document.title
+          pageUri: pageUri,
+          pageName: pageName
         }
       };
 
-      // Submit to HubSpot
+      // Submit to HubSpot Forms API
       const response = await fetch(
         `https://api.hsforms.com/submissions/v3/integration/submit/${HUBSPOT_PORTAL_ID}/${HUBSPOT_FORM_ID}`,
         {
@@ -264,7 +273,7 @@ export default function Brief() {
       // Reset form
       setFormData({
         environment: '',
-        format: '',
+        formats: '',
         market: '',
         goLiveDate: undefined,
         campaignDuration: '',
@@ -296,53 +305,45 @@ export default function Brief() {
     switch(step.id) {
       case 'environment':
         return (
-          <div className="space-y-4">
-            <ChipGroup
-              name="environment"
-              options={environments}
-              value={formData.environment}
-              onChange={(value) => setFormData({...formData, environment: value as string})}
-              multiple={false}
-            />
-          </div>
+          <ChipGroup
+            options={environments}
+            value={formData.environment}
+            onChange={(value) => setFormData({...formData, environment: value as string})}
+            multiple={false}
+          />
         );
       
       case 'format':
         return (
-          <div className="space-y-4">
-            <ChipGroup
-              name="format"
-              options={formatOptions}
-              value={formData.format}
-              onChange={(value) => setFormData({...formData, format: value as string})}
-              multiple={false}
-            />
-          </div>
+          <ChipGroup
+            options={formatOptions}
+            value={formData.formats}
+            onChange={(value) => setFormData({...formData, formats: value as string})}
+            multiple={false}
+          />
         );
       
       case 'market':
         return (
-          <div className="space-y-4">
-            <Select value={formData.market} onValueChange={(value) => setFormData({...formData, market: value})}>
-              <SelectTrigger className="text-lg">
-                <SelectValue placeholder="Select a market" />
-              </SelectTrigger>
-              <SelectContent>
-                {marketOptions.map((market) => (
-                  <SelectItem key={market} value={market}>
-                    {market}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={formData.market} onValueChange={(value) => setFormData({...formData, market: value})}>
+            <SelectTrigger className="text-lg">
+              <SelectValue placeholder="Select a market" />
+            </SelectTrigger>
+            <SelectContent className="bg-background z-50">
+              {marketOptions.map((market) => (
+                <SelectItem key={market} value={market}>
+                  {market}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         );
       
       case 'timing':
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Go Live Date</label>
+              <label className="text-sm font-medium">When do you need to go live?</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -356,7 +357,7 @@ export default function Brief() {
                     {formData.goLiveDate ? format(formData.goLiveDate, "PPP") : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 bg-background z-50" align="start">
                   <Calendar
                     mode="single"
                     selected={formData.goLiveDate}
@@ -368,7 +369,7 @@ export default function Brief() {
               </Popover>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Campaign Duration</label>
+              <label className="text-sm font-medium">How long is your campaign?</label>
               <Input
                 type="text"
                 value={formData.campaignDuration}
@@ -401,33 +402,27 @@ export default function Brief() {
       
       case 'objectives':
         return (
-          <div className="space-y-4">
-            <ChipGroup
-              name="objectives"
-              options={objectiveOptions}
-              value={formData.objectives}
-              onChange={(value) => setFormData({...formData, objectives: value as string[]})}
-              multiple={true}
-            />
-          </div>
+          <ChipGroup
+            options={objectiveOptions}
+            value={formData.objectives}
+            onChange={(value) => setFormData({...formData, objectives: value as string[]})}
+            multiple={true}
+          />
         );
       
       case 'mediaType':
         return (
-          <div className="space-y-4">
-            <ChipGroup
-              name="mediaType"
-              options={mediaTypeOptions}
-              value={formData.mediaType}
-              onChange={(value) => setFormData({...formData, mediaType: value as string})}
-              multiple={false}
-            />
-          </div>
+          <ChipGroup
+            options={mediaTypeOptions}
+            value={formData.mediaType}
+            onChange={(value) => setFormData({...formData, mediaType: value as string})}
+            multiple={false}
+          />
         );
       
       case 'shareOfVoice':
         return (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {shareOfVoiceOptions.map((option) => (
               <Badge
                 key={option.value}
@@ -443,14 +438,12 @@ export default function Brief() {
       
       case 'notes':
         return (
-          <div className="space-y-4">
-            <Textarea
-              value={formData.additionalNotes}
-              onChange={(e) => setFormData({...formData, additionalNotes: e.target.value})}
-              placeholder="Any additional campaign details..."
-              className="text-lg min-h-32"
-            />
-          </div>
+          <Textarea
+            value={formData.additionalNotes}
+            onChange={(e) => setFormData({...formData, additionalNotes: e.target.value})}
+            placeholder="Any additional campaign details..."
+            className="text-lg min-h-32"
+          />
         );
       
       case 'contact':
@@ -538,7 +531,9 @@ export default function Brief() {
               <h2 className="text-2xl md:text-3xl font-bold mb-6">
                 {steps[currentStep].title}
               </h2>
-              {renderStep()}
+              <div className="min-h-[200px]">
+                {renderStep()}
+              </div>
             </div>
 
             {/* Navigation */}
@@ -546,7 +541,7 @@ export default function Brief() {
               <Button
                 variant="outline"
                 onClick={handleBack}
-                disabled={currentStep === 0}
+                disabled={currentStep === 0 || isSubmitting}
                 className="w-32"
               >
                 Back
