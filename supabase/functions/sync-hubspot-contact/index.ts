@@ -89,20 +89,21 @@ async function createTaskForContact(apiKey: string, contactId: string, subject: 
   }
 }
 
-async function createDealForContact(apiKey: string, contactId: string, dealName: string, amount: number, pipelineStage = "appointmentscheduled", dealContext?: string, quoteItems?: any[], pipeline = "default"): Promise<string | null> {
+async function createDealForContact(apiKey: string, contactId: string, dealName: string, amount: number, pipelineStage = "appointmentscheduled", dealContext?: string, quoteItems?: any[], pipelineId?: string): Promise<string | null> {
   try {
-    // Deadline Day Pipeline stage ID (replace with actual stage ID from your HubSpot)
-    // For briefs, use the Deadline Day Pipeline's first stage
-    const stageId = pipeline === "deadline" ? "appointmentscheduled" : pipelineStage;
-    
     const dealProps: any = {
       dealname: dealName,
       amount: Math.round(amount), // HubSpot expects integers for amount
-      dealstage: stageId,
-      pipeline: pipeline === "deadline" ? "default" : "default", // HubSpot will auto-assign based on stage
+      dealstage: pipelineStage,
       hubspot_owner_id: await getOwnerIdByEmail(apiKey, 'matt@r4advertising.agency') || undefined,
       closedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 days
     };
+    
+    // Add pipeline ID if specified (for Deadline Day Pipeline: 2662311103)
+    if (pipelineId) {
+      dealProps.pipeline = pipelineId;
+      console.log(`🎯 Creating deal in pipeline ${pipelineId}: ${dealName}`);
+    }
 
     // Add enhanced context as description with quote item details
     if (dealContext) {
@@ -688,7 +689,8 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
                 }];
                 console.log('🔧 DEBUG: Quote items prepared for line item creation:', quoteItems);
                 
-                const pipelineType = formData.submissionType === 'brief_quote' ? 'deadline' : 'default';
+                // Use Deadline Day Pipeline (2662311103) for brief quotes, default for others
+                const pipelineId = formData.submissionType === 'brief_quote' ? '2662311103' : undefined;
                 await createDealForContact(
                   hubspotApiKey, 
                   result.id, 
@@ -697,7 +699,7 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
                   "appointmentscheduled",
                   quoteNotes,
                   quoteItems,
-                  pipelineType
+                  pipelineId
                 );
               } else {
                 console.log('No deal created - totalCost not available or zero');
@@ -736,7 +738,8 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
         quantity: formData.quoteDetails.itemCount || 1
       }];
       
-      const pipelineType = formData.submissionType === 'brief_quote' ? 'deadline' : 'default';
+      // Use Deadline Day Pipeline (2662311103) for brief quotes, default for others
+      const pipelineId = formData.submissionType === 'brief_quote' ? '2662311103' : undefined;
       await createDealForContact(
         hubspotApiKey, 
         result.id, 
@@ -745,7 +748,7 @@ Submitted: ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}`
         "appointmentscheduled",
         quoteNotes,
         quoteItems,
-        pipelineType
+        pipelineId
       );
     } else {
       console.log('No deal created - totalCost not available or zero');
