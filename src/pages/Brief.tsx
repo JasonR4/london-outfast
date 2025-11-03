@@ -222,55 +222,52 @@ export default function Brief() {
     }
   };
 
-  // Define all steps
-  const steps = [
-    { id: 'contact', title: 'Your details', fields: ['firstname', 'lastname', 'email', 'phone'] },
-    { id: 'company', title: 'Company info', fields: ['company', 'website', 'jobtitle'] },
-    { id: 'budget', title: 'Budget', fields: ['budget_band'] },
-    { id: 'objective', title: 'Campaign objective', fields: ['objective', 'objective_other'] },
-    { id: 'locations', title: 'Target areas', fields: ['target_areas'] },
-    { id: 'formats', title: 'Preferred formats', fields: ['formats'] },
-    { id: 'timing', title: 'Campaign timing', fields: ['start_month', 'creative_status'] },
-    { id: 'notes', title: 'Additional notes', fields: ['notes'] },
-    { id: 'consent', title: 'Final step', fields: ['consent'] },
-  ];
+  const steps = useMemo(() => {
+    const base = [
+      { id: 'firstname', title: 'What is your first name?' },
+      { id: 'lastname', title: 'And your last name?' },
+      { id: 'email', title: 'What is your work email?' },
+      { id: 'phone', title: 'What number can we call?' },
+      { id: 'company', title: 'What’s your company?' },
+      { id: 'website', title: 'Your website?' },
+      { id: 'jobtitle', title: 'Your role?' },
+      { id: 'budget_band', title: 'What’s your budget (GBP)?' },
+      { id: 'objective', title: 'What’s your primary objective?' },
+      ...(formData.objective === 'Other' ? [{ id: 'objective_other', title: 'Please specify your objective' }] : []),
+      { id: 'target_areas', title: 'Choose your target areas' },
+      { id: 'formats', title: 'Which formats interest you?' },
+      { id: 'start_month', title: 'Earliest start month?' },
+      { id: 'creative_status', title: 'Do you have creative ready?' },
+      { id: 'notes', title: 'Any additional requirements?' },
+      { id: 'consent', title: 'Consent' },
+    ];
+    return base;
+  }, [formData.objective]);
 
   const totalSteps = steps.length;
   const progress = ((currentStep + 1) / totalSteps) * 100;
 
   const canProceed = () => {
-    const step = steps[currentStep];
-    if (step.id === 'contact') {
-      return formData.firstname && formData.lastname && formData.email && formData.phone;
+    const step = steps[currentStep]?.id;
+    switch (step) {
+      case 'firstname': return !!formData.firstname;
+      case 'lastname': return !!formData.lastname;
+      case 'email': return !!formData.email;
+      case 'phone': return !!formData.phone;
+      case 'company': return !!formData.company;
+      case 'website': return !!formData.website;
+      case 'jobtitle': return !!formData.jobtitle;
+      case 'budget_band': return !!formData.budget_band;
+      case 'objective': return !!formData.objective;
+      case 'objective_other': return !!formData.objective_other;
+      case 'target_areas': return formData.target_areas.length > 0;
+      case 'formats': return formData.formats.length > 0;
+      case 'start_month': return !!formData.start_month;
+      case 'creative_status': return !!formData.creative_status;
+      case 'notes': return !!formData.notes;
+      case 'consent': return !!formData.consent;
+      default: return true;
     }
-    if (step.id === 'company') {
-      return formData.company && formData.website && formData.jobtitle;
-    }
-    if (step.id === 'budget') {
-      return formData.budget_band;
-    }
-    if (step.id === 'objective') {
-      if (formData.objective === 'Other') {
-        return formData.objective && formData.objective_other;
-      }
-      return formData.objective;
-    }
-    if (step.id === 'locations') {
-      return formData.target_areas.length > 0;
-    }
-    if (step.id === 'formats') {
-      return formData.formats.length > 0;
-    }
-    if (step.id === 'timing') {
-      return formData.start_month && formData.creative_status;
-    }
-    if (step.id === 'notes') {
-      return formData.notes;
-    }
-    if (step.id === 'consent') {
-      return formData.consent;
-    }
-    return true;
   };
 
   const handleNext = () => {
