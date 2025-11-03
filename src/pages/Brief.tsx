@@ -27,6 +27,7 @@ type FormData = {
   campaignEndDate: Date | undefined;
   targetAudience: string[];
   budget: string;
+  artworkStatus: string;
   campaignDuration: string;
   objectives: string[];
   mediaType: string;
@@ -98,6 +99,7 @@ export default function Brief() {
     campaignEndDate: undefined,
     targetAudience: [],
     budget: '',
+    artworkStatus: '',
     campaignDuration: '',
     objectives: [],
     mediaType: '',
@@ -161,6 +163,8 @@ export default function Brief() {
     "Business Decision-Makers"
   ];
 
+  const artworkStatusOptions = ["Yes — ready to upload", "In development", "Need creative support"];
+
   const objectiveOptions = [
     "Brand Awareness",
     "Lead Generation",
@@ -186,7 +190,8 @@ export default function Brief() {
     { id: 'startDate', title: "When do you want your campaign to start?", required: false },
     { id: 'endDate', title: "When do you want your campaign to end?", required: false },
     { id: 'audience', title: "Who are you trying to reach?", required: false },
-    { id: 'budget', title: "What's your budget range?", required: true },
+    { id: 'budget', title: "What's your budget for this campaign?", required: true },
+    { id: 'artwork', title: "Do you have artwork ready?", required: false },
     { id: 'objectives', title: "What are your campaign objectives?", required: false },
     { id: 'mediaType', title: "Media type preference?", required: false },
     { id: 'shareOfVoice', title: "What share of voice do you need?", required: false },
@@ -212,6 +217,8 @@ export default function Brief() {
         return true; // Optional
       case 'budget': 
         return formData.budget.trim() !== '';
+      case 'artwork': 
+        return true; // Optional
       case 'objectives': 
         return true; // Optional
       case 'mediaType': 
@@ -267,6 +274,7 @@ export default function Brief() {
           { name: "campaign_end_date", value: formData.campaignEndDate ? format(formData.campaignEndDate, 'yyyy-MM-dd') : '' },
           { name: "target_audience", value: formData.targetAudience.join(', ') },
           { name: "budget", value: formData.budget },
+          { name: "artwork_status", value: formData.artworkStatus },
           { name: "campaign_duration", value: formData.campaignDuration },
           { name: "objectives", value: formData.objectives.join(', ') },
           { name: "media_type", value: formData.mediaType },
@@ -312,6 +320,7 @@ export default function Brief() {
         campaignEndDate: undefined,
         targetAudience: [],
         budget: '',
+        artworkStatus: '',
         campaignDuration: '',
         objectives: [],
         mediaType: '',
@@ -519,6 +528,22 @@ export default function Brief() {
                 className="text-2xl text-center max-w-md"
               />
             </div>
+          </div>
+        );
+      
+      case 'artwork':
+        return (
+          <div className="flex justify-center gap-4">
+            {artworkStatusOptions.map((status) => (
+              <Badge
+                key={status}
+                variant={formData.artworkStatus === status ? "default" : "outline"}
+                className="cursor-pointer px-6 py-6 text-sm hover:opacity-80 transition-opacity text-center"
+                onClick={() => setFormData({...formData, artworkStatus: status})}
+              >
+                {status}
+              </Badge>
+            ))}
           </div>
         );
       
