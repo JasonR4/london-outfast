@@ -38,7 +38,6 @@ type FormData = {
   email: string;
   phone: string;
   company: string;
-  agreedToTerms: boolean;
 };
 
 // Chip selection component
@@ -112,8 +111,7 @@ export default function Brief() {
     name: '',
     email: '',
     phone: '',
-    company: '',
-    agreedToTerms: false
+    company: ''
   });
 
   // Set environment options (hardcoded - replace with Supabase query if you have an environments table)
@@ -233,8 +231,7 @@ export default function Brief() {
         return formData.name.trim() !== '' && 
                formData.email.trim() !== '' && 
                formData.email.includes('@') &&
-               formData.company.trim() !== '' &&
-               formData.agreedToTerms;
+               formData.company.trim() !== '';
       case 'review':
         return true; // Always can proceed from review
       default: 
@@ -334,8 +331,7 @@ export default function Brief() {
         name: '',
         email: '',
         phone: '',
-        company: '',
-        agreedToTerms: false
+        company: ''
       });
       
       setCurrentStep(0);
@@ -668,18 +664,6 @@ export default function Brief() {
                 placeholder="Timing nuances, must-have sites, compliance notes..."
                 className="text-base min-h-24"
               />
-            </div>
-
-            <div className="flex items-start gap-3">
-              <input
-                type="checkbox"
-                checked={formData.agreedToTerms}
-                onChange={(e) => setFormData({...formData, agreedToTerms: e.target.checked})}
-                className="mt-1 h-4 w-4 rounded border-gray-300"
-              />
-              <label className="text-sm text-muted-foreground">
-                I confirm I'm authorised to brief on behalf of my organisation and agree to Deadline Day's RPA & AAP terms.
-              </label>
             </div>
           </div>
         );
