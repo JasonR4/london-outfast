@@ -15,10 +15,7 @@ import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-
-// HubSpot Configuration - REPLACE WITH YOUR ACTUAL IDs
-const HUBSPOT_PORTAL_ID = "YOUR_PORTAL_ID";
-const HUBSPOT_FORM_ID = "YOUR_FORM_ID";
+import { supabase } from '@/integrations/supabase/client';
 
 type FormData = {
   environment: string[];
@@ -256,62 +253,45 @@ export default function Brief() {
     
     setIsSubmitting(true);
     try {
-      // Get HubSpot tracking cookie
-      const hubspotCookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('hubspotutk='))
-        ?.split('=')[1];
+      // Prepare submission data for the edge function
+      const nameParts = formData.name.trim().split(' ');
+      const firstname = nameParts[0] || '';
+      const lastname = nameParts.slice(1).join(' ') || firstname;
 
-      // Get page context
-      const pageUri = window.location.href;
-      const pageName = document.title;
-
-      // Prepare HubSpot submission
-      const hubspotData = {
-        fields: [
-          { name: "environment", value: formData.environment.join(', ') },
-          { name: "format", value: formData.formats },
-          { name: "market", value: formData.market },
-          { name: "go_live_date", value: formData.goLiveDate ? format(formData.goLiveDate, 'yyyy-MM-dd') : '' },
-          { name: "campaign_end_date", value: formData.campaignEndDate ? format(formData.campaignEndDate, 'yyyy-MM-dd') : '' },
-          { name: "target_audience", value: formData.targetAudience.join(', ') },
-          { name: "budget", value: formData.budget },
-          { name: "artwork_status", value: formData.artworkStatus },
-          { name: "campaign_duration", value: formData.campaignDuration },
-          { name: "objectives", value: formData.objectives.join(', ') },
-          { name: "media_type", value: formData.mediaType },
-          { name: "share_of_voice", value: formData.shareOfVoice },
-          { name: "additional_notes", value: formData.additionalNotes },
-          { name: "firstname", value: formData.name.split(' ')[0] },
-          { name: "lastname", value: formData.name.split(' ').slice(1).join(' ') || formData.name },
-          { name: "email", value: formData.email },
-          { name: "phone", value: formData.phone },
-          { name: "company", value: formData.company }
-        ],
-        context: {
-          hutk: hubspotCookie,
-          pageUri: pageUri,
-          pageName: pageName
-        }
+      const briefData = {
+        firstname,
+        lastname,
+        email: formData.email,
+        phone: formData.phone,
+        company: formData.company,
+        budget_band: formData.budget,
+        objective: formData.objectives.join(', '),
+        target_areas: formData.market ? [formData.market] : [],
+        formats: formData.environment,
+        start_month: formData.goLiveDate ? format(formData.goLiveDate, 'yyyy-MM-dd') : null,
+        creative_status: formData.artworkStatus,
+        notes: [
+          formData.additionalNotes,
+          formData.formats ? `Format preference: ${formData.formats}` : '',
+          formData.campaignEndDate ? `End date: ${format(formData.campaignEndDate, 'yyyy-MM-dd')}` : '',
+          formData.targetAudience.length > 0 ? `Target audience: ${formData.targetAudience.join(', ')}` : '',
+          formData.campaignDuration ? `Duration: ${formData.campaignDuration}` : '',
+          formData.mediaType ? `Media type: ${formData.mediaType}` : '',
+          formData.shareOfVoice ? `Share of voice: ${formData.shareOfVoice}` : ''
+        ].filter(Boolean).join('\n'),
+        source_path: window.location.pathname,
+        mbl: true
       };
 
-      // Submit to HubSpot Forms API
-      const response = await fetch(
-        `https://api.hsforms.com/submissions/v3/integration/submit/${HUBSPOT_PORTAL_ID}/${HUBSPOT_FORM_ID}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(hubspotData)
-        }
-      );
+      // Submit to edge function
+      const { data, error } = await supabase.functions.invoke('submit-brief', {
+        body: briefData
+      });
 
-      if (!response.ok) {
-        throw new Error('HubSpot submission failed');
-      }
+      if (error) throw error;
+      if (!(data as any)?.ok) throw new Error('Submission failed');
 
-      toast.success('Deal finder submitted successfully!');
+      toast.success('Brief submitted successfully!');
       
       // Reset form
       setFormData({
@@ -335,9 +315,11 @@ export default function Brief() {
       });
       
       setCurrentStep(0);
+      setStartDateInput('');
+      setEndDateInput('');
       navigate('/thank-you');
     } catch (error) {
-      console.error('Error submitting deal finder:', error);
+      console.error('Error submitting brief:', error);
       toast.error('Failed to submit. Please try again.');
     } finally {
       setIsSubmitting(false);
