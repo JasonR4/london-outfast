@@ -297,8 +297,23 @@ export default function Brief() {
       if (data && (data as any).ok === false) throw new Error((data as any).error || 'Submission failed');
 
       toast.success('Brief submitted successfully!');
-      
-      // Reset form
+
+      // Build thank-you URL with summary params
+      const params = new URLSearchParams({
+        firstname,
+        budget: briefData.budget_band || '',
+        objective: briefData.objective || '',
+        target_areas: (briefData.target_areas || []).join(','),
+        formats: (briefData.formats || []).join(','),
+        start_month: briefData.start_month || '',
+        creative_status: briefData.creative_status || '',
+        notes: briefData.notes || ''
+      });
+
+      // Navigate first so data shows on the final screen
+      navigate(`/thank-you?${params.toString()}`);
+
+      // Then reset state
       setFormData({
         environment: [],
         formats: '',
@@ -322,7 +337,6 @@ export default function Brief() {
       setCurrentStep(0);
       setStartDateInput('');
       setEndDateInput('');
-      navigate('/thank-you');
     } catch (error: any) {
       console.error('Error submitting brief:', error);
       toast.error(error?.message || 'Failed to submit. Please try again.');
