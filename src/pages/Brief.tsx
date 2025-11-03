@@ -306,8 +306,19 @@ export default function Brief() {
         target_areas: (briefData.target_areas || []).join(','),
         formats: (briefData.formats || []).join(','),
         start_month: briefData.start_month || '',
+        end_month: formData.campaignEndDate ? format(formData.campaignEndDate, 'yyyy-MM-dd') : '',
         creative_status: briefData.creative_status || '',
-        notes: briefData.notes || ''
+        notes: briefData.notes || '',
+        market: formData.market || '',
+        audience: formData.targetAudience.join(', ') || '',
+        format_preference: formData.formats || ''
+      });
+
+      console.log('Submitting with dates:', {
+        goLiveDate: formData.goLiveDate,
+        campaignEndDate: formData.campaignEndDate,
+        start_month: briefData.start_month,
+        end_month: formData.campaignEndDate ? format(formData.campaignEndDate, 'yyyy-MM-dd') : ''
       });
 
       // Navigate first so data shows on the final screen
@@ -431,6 +442,7 @@ export default function Brief() {
                     if (!isNaN(day) && !isNaN(month) && !isNaN(year) && day >= 1 && day <= 31 && month >= 0 && month <= 11) {
                       const date = new Date(year, month, day);
                       setFormData({...formData, goLiveDate: date});
+                      console.log('Start date set:', date);
                     }
                   }
                 }}
@@ -438,8 +450,13 @@ export default function Brief() {
                 className="text-4xl text-center font-normal border-none shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
               />
               <p className="text-sm text-muted-foreground mt-2">
-                Enter the start date for your campaign (cannot be in the past)
+                Enter the start date for your campaign (e.g., 15/12/2025)
               </p>
+              {formData.goLiveDate && (
+                <p className="text-sm text-primary mt-2">
+                  ✓ {format(formData.goLiveDate, 'dd MMMM yyyy')}
+                </p>
+              )}
             </div>
           </div>
         );
@@ -465,6 +482,7 @@ export default function Brief() {
                     if (!isNaN(day) && !isNaN(month) && !isNaN(year) && day >= 1 && day <= 31 && month >= 0 && month <= 11) {
                       const date = new Date(year, month, day);
                       setFormData({...formData, campaignEndDate: date});
+                      console.log('End date set:', date);
                     }
                   }
                 }}
@@ -472,8 +490,13 @@ export default function Brief() {
                 className="text-4xl text-center font-normal border-none shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
               />
               <p className="text-sm text-muted-foreground mt-2">
-                Enter the end date for your campaign (must be after start date)
+                Enter the end date for your campaign (e.g., 15/01/2026)
               </p>
+              {formData.campaignEndDate && (
+                <p className="text-sm text-primary mt-2">
+                  ✓ {format(formData.campaignEndDate, 'dd MMMM yyyy')}
+                </p>
+              )}
             </div>
           </div>
         );

@@ -11,8 +11,12 @@ export default function ThankYou() {
   const targetAreas = (params.get("target_areas") || "").split(",").filter(Boolean);
   const formats = (params.get("formats") || "").split(",").filter(Boolean);
   const startMonth = params.get("start_month") || "";
+  const endMonth = params.get("end_month") || "";
   const creativeStatus = params.get("creative_status") || "";
   const notes = params.get("notes") || "";
+  const market = params.get("market") || "";
+  const audience = params.get("audience") || "";
+  const formatPreference = params.get("format_preference") || "";
 
   useEffect(() => {
     const title = `Thanks, ${firstname || "there"} — Brief received | Media Buying London`;
@@ -30,24 +34,36 @@ export default function ThankYou() {
           <div className="mt-8 border border-border rounded-lg p-6 bg-background">
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
               <div>
+                <dt className="text-sm text-muted-foreground">Market</dt>
+                <dd className="font-medium">{market || "—"}</dd>
+              </div>
+              <div>
                 <dt className="text-sm text-muted-foreground">Budget</dt>
-                <dd className="font-medium">{budget || "—"}</dd>
+                <dd className="font-medium">£{budget || "—"}</dd>
               </div>
               <div>
                 <dt className="text-sm text-muted-foreground">Primary objective</dt>
                 <dd className="font-medium">{objective || "—"}</dd>
               </div>
-              <div className="sm:col-span-2">
-                <dt className="text-sm text-muted-foreground">Target areas</dt>
-                <dd className="font-medium">{targetAreas.length ? targetAreas.join(", ") : "—"}</dd>
+              <div>
+                <dt className="text-sm text-muted-foreground">Format preference</dt>
+                <dd className="font-medium">{formatPreference || "—"}</dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="text-sm text-muted-foreground">Preferred formats</dt>
+                <dt className="text-sm text-muted-foreground">Environments</dt>
                 <dd className="font-medium">{formats.length ? formats.join(", ") : "—"}</dd>
               </div>
               <div>
-                <dt className="text-sm text-muted-foreground">Earliest start</dt>
+                <dt className="text-sm text-muted-foreground">Start date</dt>
                 <dd className="font-medium">{startMonth || "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">End date</dt>
+                <dd className="font-medium">{endMonth || "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">Target audience</dt>
+                <dd className="font-medium">{audience || "—"}</dd>
               </div>
               <div>
                 <dt className="text-sm text-muted-foreground">Creative status</dt>
