@@ -288,6 +288,11 @@ export default function Brief() {
         body: briefData
       });
 
+      console.log('submit-brief response', {
+        ok: data && (data as any).ok,
+        hasError: !!error,
+      });
+
       if (error) throw new Error(error.message || 'Submission failed');
       if (data && (data as any).ok === false) throw new Error((data as any).error || 'Submission failed');
 
@@ -679,6 +684,10 @@ export default function Brief() {
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Environments</p>
                     <p className="text-base">{formData.environment.join(', ') || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Format Preference</p>
+                    <p className="text-base">{formData.formats || 'Not specified'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Budget</p>
