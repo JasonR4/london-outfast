@@ -135,7 +135,7 @@ const App = () => {
                 <Route path="/create-account" element={<CreateAccount />} />
                 <Route path="/account-created" element={<AccountCreated />} />
                 <Route path="/client-portal" element={<ClientPortal />} />
-                <Route path="/configurator" element={<Brief />} />
+                <Route path="/configurator" element={<Configurator />} />
                 <Route path="/formats" element={<RedirectToFormatDirectory />} />
                 <Route path="/outdoor-media" element={<FormatDirectory />} />
                 <Route path="/outdoor-media/:formatSlug" element={<FormatPage />} />
