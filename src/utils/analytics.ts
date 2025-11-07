@@ -43,9 +43,9 @@ export const initCampaignTracking = () => {
   try { getCampaignParams(); } catch {}
 };
 
-// Track quote submission as a lead conversion
-export const trackQuoteSubmission = (quoteData: {
-  quoteId: string;
+// Track brief submission as a lead conversion
+export const trackBriefSubmission = (briefData: {
+  briefId: string;
   totalValue: number;
   itemCount: number;
   contactEmail?: string;
@@ -56,57 +56,57 @@ export const trackQuoteSubmission = (quoteData: {
     if (typeof window !== 'undefined' && window.gtag) {
       const campaign = getCampaignParams();
       window.gtag('event', 'generate_lead', {
-        value: quoteData.totalValue,
+        value: briefData.totalValue,
         currency: 'GBP',
-        quote_id: quoteData.quoteId,
-        item_count: quoteData.itemCount,
-        contact_email: quoteData.contactEmail || 'unknown',
-        contact_company: quoteData.contactCompany || 'unknown',
+        brief_id: briefData.briefId,
+        item_count: briefData.itemCount,
+        contact_email: briefData.contactEmail || 'unknown',
+        contact_company: briefData.contactCompany || 'unknown',
         ...campaign
       });
 
       // Also track as a conversion with proper revenue
       window.gtag('event', 'conversion', {
-        value: quoteData.totalValue,
+        value: briefData.totalValue,
         currency: 'GBP',
-        transaction_id: quoteData.quoteId
+        transaction_id: briefData.briefId
       });
 
       // Track as purchase for ecommerce revenue tracking (GA4 Enhanced Ecommerce)
       window.gtag('event', 'purchase', {
-        transaction_id: quoteData.quoteId,
-        value: quoteData.totalValue,
+        transaction_id: briefData.briefId,
+        value: briefData.totalValue,
         currency: 'GBP',
         coupon: '',
         shipping: 0,
-        tax: quoteData.totalValue * 0.2, // 20% VAT
+        tax: briefData.totalValue * 0.2, // 20% VAT
         items: [{
-          item_id: 'quote_submission',
-          item_name: 'OOH Quote Submission',
-          category: 'Quote',
-          quantity: quoteData.itemCount || 1,
-          price: quoteData.totalValue / (quoteData.itemCount || 1)
+          item_id: 'brief_submission',
+          item_name: 'OOH Brief Submission',
+          category: 'Brief',
+          quantity: briefData.itemCount || 1,
+          price: briefData.totalValue / (briefData.itemCount || 1)
         }]
       });
 
       // Also send as a custom conversion for Google Ads 
       window.gtag('event', 'conversion', {
-        send_to: 'G-FNYQ5VFL2F/quote_submission',
-        value: quoteData.totalValue,
+        send_to: 'G-FNYQ5VFL2F/brief_submission',
+        value: briefData.totalValue,
         currency: 'GBP',
-        transaction_id: quoteData.quoteId
+        transaction_id: briefData.briefId
       });
 
-      console.log('📊 Analytics: Quote submission tracked as lead', quoteData);
+      console.log('📊 Analytics: Brief submission tracked as lead', briefData);
     }
 
     // Facebook Pixel tracking (if needed)
     if (typeof window !== 'undefined' && (window as any).fbq) {
       (window as any).fbq('track', 'Lead', {
-        value: quoteData.totalValue,
+        value: briefData.totalValue,
         currency: 'GBP',
-        content_ids: [quoteData.quoteId],
-        content_type: 'quote_request'
+        content_ids: [briefData.briefId],
+        content_type: 'brief_request'
       });
       console.log('📊 Facebook Pixel: Lead tracked');
     }
@@ -206,7 +206,7 @@ export const trackBriefFormSubmitted = (meta: PlanMeta = {}) => {
 };
 
 // Track other key actions
-export const trackQuoteItemAdded = (itemData: {
+export const trackCampaignItemAdded = (itemData: {
   formatName: string;
   quantity: number;
   value: number;
@@ -214,7 +214,7 @@ export const trackQuoteItemAdded = (itemData: {
   try {
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'add_to_cart', {
-        event_category: 'Quote Building',
+        event_category: 'Campaign Building',
         event_label: itemData.formatName,
         value: itemData.value,
         currency: 'GBP',
@@ -223,21 +223,21 @@ export const trackQuoteItemAdded = (itemData: {
           quantity: itemData.quantity
         }
       });
-      console.log('📊 Analytics: Quote item added', itemData);
+      console.log('📊 Analytics: Campaign item added', itemData);
     }
   } catch (error) {
     console.error('❌ Analytics tracking error:', error);
   }
 };
 
-export const trackQuoteStarted = () => {
+export const trackCampaignStarted = () => {
   try {
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'begin_checkout', {
-        event_category: 'Quote Building',
-        event_label: 'Quote Started'
+        event_category: 'Campaign Building',
+        event_label: 'Campaign Started'
       });
-      console.log('📊 Analytics: Quote started');
+      console.log('📊 Analytics: Campaign started');
     }
   } catch (error) {
     console.error('❌ Analytics tracking error:', error);

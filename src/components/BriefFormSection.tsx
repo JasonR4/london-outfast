@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, AlertTriangle, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { trackQuoteSubmission } from '@/utils/analytics';
+import { trackBriefSubmission } from '@/utils/analytics';
 
 interface QuoteFormSectionProps {
   prefilledFormats: string[];
@@ -146,10 +146,10 @@ const QuoteFormSection = ({
         console.log('Successfully synced configurator quote to HubSpot');
         
         // Track conversion in Google Analytics
-        // Estimate quote value based on format count and budget range
+        // Estimate brief value based on format count and budget range
         const estimatedValue = getEstimatedQuoteValue(budgetRange, prefilledFormats.length);
-        trackQuoteSubmission({
-          quoteId: `configurator-${Date.now()}`,
+        trackBriefSubmission({
+          briefId: `configurator-${Date.now()}`,
           totalValue: estimatedValue,
           itemCount: prefilledFormats.length,
           contactEmail: formData.email,

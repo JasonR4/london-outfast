@@ -1,7 +1,7 @@
 import React from "react";
 import { formatCurrency } from "@/utils/money";
 
-interface QuoteBreakdownProps {
+interface CampaignBreakdownProps {
   campaignCost: number;      // Media cost after any discounts
   productionCost: number;    // Print runs × sites × production unit price
   creativeCost: number;      // Creative count × creative unit price
@@ -11,7 +11,7 @@ interface QuoteBreakdownProps {
   currency?: string;         // Defaults to GBP
 }
 
-export const QuoteBreakdown: React.FC<QuoteBreakdownProps> = ({
+export const CampaignBreakdown: React.FC<CampaignBreakdownProps> = ({
   campaignCost,
   productionCost,
   creativeCost,
@@ -42,7 +42,7 @@ export const QuoteBreakdown: React.FC<QuoteBreakdownProps> = ({
   ];
 
   return (
-    <div className="quote-breakdown space-y-3">
+    <div className="campaign-breakdown space-y-3">
       {items.map((it, i) => (
         <div
           key={i}

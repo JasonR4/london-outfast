@@ -26,14 +26,14 @@ import { CreativeUpsellModal } from '@/components/CreativeUpsellModal';
 import { useCreativeCapacity } from '@/hooks/useCreativeCapacity';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
-import { trackQuoteItemAdded } from '@/utils/analytics';
+import { trackCampaignItemAdded } from '@/utils/analytics';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Search, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { QuoteBreakdown } from '@/components/QuoteBreakdown';
+import { CampaignBreakdown } from '@/components/CampaignBreakdown';
 
 const FormatPage = () => {
   const { formatSlug } = useParams();
@@ -454,14 +454,14 @@ const FormatPage = () => {
     const success = await addQuoteItem(quoteItem);
     
     if (success) {
-      // Track analytics for quote item added
+      // Track analytics for campaign item added
       try {
-        trackQuoteItemAdded({
+        trackCampaignItemAdded({
           formatName: format.name,
           quantity,
           value: grandTotal
         });
-        console.log('📊 Analytics: Quote item tracked from outdoor-media', {
+        console.log('📊 Analytics: Campaign item tracked from outdoor-media', {
           formatName: format.name,
           quantity,
           value: grandTotal,

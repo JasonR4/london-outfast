@@ -33,7 +33,7 @@ import PlanBreakdown from '@/components/PlanBreakdown';
 import { usePlanDraft } from '@/state/plan';
 import MiniConfigurator from '@/components/MiniConfigurator';
 import QuickSummary from '@/components/QuickSummary';
-import { trackQuoteSubmission, trackQuoteItemAdded, trackQuoteStarted } from '@/utils/analytics';
+import { trackBriefSubmission, trackCampaignItemAdded, trackCampaignStarted } from '@/utils/analytics';
 
 interface SmartBriefFormProps {
   onBriefSubmitted?: () => void;
@@ -243,10 +243,10 @@ export const SmartBriefForm = ({ onBriefSubmitted }: SmartBriefFormProps) => {
   useEffect(() => {
     const initializeQuote = async () => {
       await createOrGetQuote();
-      // Track quote started event (only once per session)
-      if (!sessionStorage.getItem('quote_started_tracked')) {
-        trackQuoteStarted();
-        sessionStorage.setItem('quote_started_tracked', 'true');
+      // Track campaign started event (only once per session)
+      if (!sessionStorage.getItem('campaign_started_tracked')) {
+        trackCampaignStarted();
+        sessionStorage.setItem('campaign_started_tracked', 'true');
       }
     };
     initializeQuote();
@@ -474,7 +474,7 @@ export const SmartBriefForm = ({ onBriefSubmitted }: SmartBriefFormProps) => {
         console.log(`✅ Item added successfully: ${success}`);
         
         // Track item addition in analytics
-        trackQuoteItemAdded({
+        trackCampaignItemAdded({
           formatName: format.format_name,
           quantity: formatQuantities[format.format_slug] || 1,
           value: pricing.totalCost / selectedFormats.length
@@ -604,8 +604,8 @@ export const SmartBriefForm = ({ onBriefSubmitted }: SmartBriefFormProps) => {
         const totalValue = Number(latest?.total_cost || 0);
         const itemCount = latest?.quote_items?.length || 0;
         
-        trackQuoteSubmission({
-          quoteId: latest?.id || 'unknown',
+        trackBriefSubmission({
+          briefId: latest?.id || 'unknown',
           totalValue: totalValue,
           itemCount: itemCount,
           contactEmail: contactDetails.contact_email,

@@ -15,7 +15,7 @@ import { MediaPlanGenerator, GeneratedMediaPlan } from '@/services/MediaPlanGene
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/utils/money';
 import { ToastAction } from '@/components/ui/toast';
-import { trackQuoteItemAdded } from '@/utils/analytics';
+import { trackCampaignItemAdded } from '@/utils/analytics';
 import { computeMedia, formatGBP, countPrintRuns, uniquePeriodsCount } from '@/lib/pricingMath';
 
 export interface Answer {
@@ -988,12 +988,12 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
         
         // Track each item addition in analytics
         try {
-          trackQuoteItemAdded({
+          trackCampaignItemAdded({
             formatName: item.formatName,
             quantity: item.recommendedQuantity,
             value: item.totalCost
           });
-          console.log('📊 Analytics: Quote item tracked from configurator media plan', {
+          console.log('📊 Analytics: Campaign item tracked from configurator media plan', {
             formatName: item.formatName,
             quantity: item.recommendedQuantity,
             value: item.totalCost,
@@ -1252,14 +1252,14 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
                       
                        console.log('Successfully inserted item:', insertedItem);
                        
-                       // Track analytics for quote item added
+                       // Track analytics for campaign item added
                        try {
-                         trackQuoteItemAdded({
+                         trackCampaignItemAdded({
                            formatName: formatInfo?.name || rec.format,
                            quantity: rec.calculatedQuantity || 1,
                            value: totalCost
                          });
-                         console.log('📊 Analytics: Quote item tracked from configurator quick quote', {
+                         console.log('📊 Analytics: Campaign item tracked from configurator quick quote', {
                            formatName: formatInfo?.name || rec.format,
                            quantity: rec.calculatedQuantity || 1,
                            value: totalCost,
