@@ -317,7 +317,7 @@ export default function CreateAccount() {
             <div className="lg:col-span-1">
               <Card className="sticky top-8">
                 <CardHeader>
-                  <CardTitle>{hasQuoteData ? 'Secure Your Quote' : 'Create Your Account'}</CardTitle>
+                  <CardTitle>{hasQuoteData ? 'Secure Your Brief' : 'Create Your Account'}</CardTitle>
                   <CardDescription>
                     {hasQuoteData 
                       ? 'Your details are pre-filled from your quote submission'

@@ -370,7 +370,7 @@ export default function ClientPortal() {
               <CardHeader className="p-2 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <CardTitle className="text-base sm:text-xl">Your Quotes & Campaigns</CardTitle>
+                    <CardTitle className="text-base sm:text-xl">Your Briefs & Campaigns</CardTitle>
                     <CardDescription className="text-xs">
                       Track your quotes through every stage of the process
                     </CardDescription>

@@ -35,12 +35,12 @@ import MiniConfigurator from '@/components/MiniConfigurator';
 import QuickSummary from '@/components/QuickSummary';
 import { trackQuoteSubmission, trackQuoteItemAdded, trackQuoteStarted } from '@/utils/analytics';
 
-interface SmartQuoteFormProps {
-  onQuoteSubmitted?: () => void;
+interface SmartBriefFormProps {
+  onBriefSubmitted?: () => void;
 }
 
-export const SmartQuoteForm = ({ onQuoteSubmitted }: SmartQuoteFormProps) => {
-  console.log('🚀 SmartQuoteForm component rendering');
+export const SmartBriefForm = ({ onBriefSubmitted }: SmartBriefFormProps) => {
+  console.log('🚀 SmartBriefForm component rendering');
   
   const { toast } = useToast();
   const navigate = useNavigate();

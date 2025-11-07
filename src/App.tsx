@@ -15,7 +15,6 @@ import { AnalyticsScripts } from "@/components/AnalyticsScripts";
 import Index from "./pages/Index";
 import HomeTest1 from "./pages/HomeTest1";
 import HomeTest2 from "./pages/HomeTest2";
-import Quote from "./pages/Quote";
 import FormatPage from "./pages/FormatPage";
 import FormatDirectory from "./pages/FormatDirectory";
 import Auth from "./pages/Auth";
@@ -29,8 +28,8 @@ import NotFound from "./pages/NotFound";
 import IndustryPage from "./pages/IndustryPage";
 import Industries from "./pages/Industries";
 import Configurator from "./pages/Configurator";
-import QuotePlan from "./pages/QuotePlan";
-import QuoteSubmitted from "./pages/QuoteSubmitted";
+import BriefPlan from "./pages/BriefPlan";
+import BriefSubmitted from "./pages/BriefSubmitted";
 import CreateAccount from "./pages/CreateAccount";
 import AccountCreated from "./pages/AccountCreated";
 import ClientPortal from "./pages/ClientPortal";
@@ -129,8 +128,10 @@ const App = () => {
                 <Route path="/hometest2" element={<HomeTest2 />} />
                 <Route path="/brief" element={<Brief />} />
                 <Route path="/quote" element={<Brief />} />
-                <Route path="/quote-plan" element={<QuotePlan />} />
-                <Route path="/quote-submitted" element={<QuoteSubmitted />} />
+                <Route path="/quote-plan" element={<BriefPlan />} />
+                <Route path="/brief-plan" element={<BriefPlan />} />
+                <Route path="/quote-submitted" element={<BriefSubmitted />} />
+                <Route path="/brief-submitted" element={<BriefSubmitted />} />
                 <Route path="/create-account" element={<CreateAccount />} />
                 <Route path="/account-created" element={<AccountCreated />} />
                 <Route path="/client-portal" element={<ClientPortal />} />
@@ -146,7 +147,6 @@ const App = () => {
                 <Route path="/about" element={<About />} />
                 <Route path="/faqs" element={<FAQs />} />
                 <Route path="/contact" element={<Contact />} />
-                <Route path="/brief" element={<Brief />} />
                 <Route path="/how-we-work" element={<HowWeWork />} />
                 <Route path="/thank-you" element={<ThankYou />} />
                 <Route path="/blog" element={<Blog />} />

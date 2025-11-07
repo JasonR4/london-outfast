@@ -88,10 +88,10 @@ const Navigation = () => {
             <Link
               to="/brief"
               className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/configurator') ? 'text-primary' : 'text-muted-foreground'
+                isActive('/brief') ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
-              Configurator
+              Brief Builder
             </Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

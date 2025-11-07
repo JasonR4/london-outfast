@@ -11,10 +11,9 @@ const HtmlSitemap = () => {
 
   const staticRoutes = useMemo(() => [
     { path: "/", label: "Home" },
-    { path: "/quote", label: "Get a Quote" },
     { path: "/brief", label: "Submit Brief" },
-    { path: "/quote-plan", label: "Your Plan" },
-    { path: "/configurator", label: "OOH Configurator" },
+    { path: "/brief-plan", label: "Your Campaign Plan" },
+    { path: "/quote-plan", label: "Your Campaign Plan (Legacy)" },
     { path: "/outdoor-media", label: "Formats Directory" },
     { path: "/industries", label: "Industries" },
     { path: "/how-we-work", label: "How We Work" },

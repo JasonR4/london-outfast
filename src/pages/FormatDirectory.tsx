@@ -73,15 +73,15 @@ const FormatDirectory = () => {
     navigate(`/outdoor-media/${slug}`);
   };
 
-  const handleGetQuote = () => {
+  const handleGetStarted = () => {
     navigate("/brief");
   };
 
   return (
     <>
       <Helmet>
-        <title>Outdoor Media Buying London | OOH Advertising Quotes & Campaign Planning</title>
-        <meta name="description" content="Outdoor media buying in London with instant quotes and a dedicated client portal. Access all OOH channels and receive a full media schedule with precise locations." />
+        <title>Outdoor Media Buying London | OOH Advertising Briefs & Campaign Planning</title>
+        <meta name="description" content="Outdoor media buying in London with instant brief submissions and a dedicated client portal. Access all OOH channels and receive a full media schedule with precise locations." />
         <link rel="canonical" href="https://mediabuyinglondon.co.uk/outdoor-media" />
         <meta name="robots" content="index,follow" />
       </Helmet>
@@ -93,10 +93,10 @@ const FormatDirectory = () => {
             OOH FORMAT DIRECTORY
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent">
-            Outdoor Media Buying in London – Quote & Campaign Planning
+            Outdoor Media Buying in London – Brief Submission & Campaign Planning
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Outdoor media buying in London requires speed, precision, and clear campaign planning. This quoting hub provides instant access to rates and availability across every major OOH format — from high-impact roadside billboards to targeted street-level displays. Once confirmed, campaigns are delivered with detailed media schedules, precise site locations, and full transparency through the client portal.
+            Outdoor media buying in London requires speed, precision, and clear campaign planning. This brief submission hub provides instant access to rates and availability across every major OOH format — from high-impact roadside billboards to targeted street-level displays. Once confirmed, campaigns are delivered with detailed media schedules, precise site locations, and full transparency through the client portal.
           </p>
           <div className="space-y-6 mb-8">
             <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto text-left">
@@ -109,7 +109,7 @@ const FormatDirectory = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">2</span>
-                    <span><strong>Instant Quotes</strong> – Get rates fast without multiple supplier calls.</span>
+                    <span><strong>Instant Briefs</strong> – Submit requests fast without multiple supplier calls.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">3</span>
@@ -117,7 +117,7 @@ const FormatDirectory = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">4</span>
-                    <span><strong>Campaign Support</strong> – From quote to live campaign tracking, every detail is handled.</span>
+                    <span><strong>Campaign Support</strong> – From brief to live campaign tracking, every detail is handled.</span>
                   </li>
                 </ol>
               </div>
@@ -133,8 +133,8 @@ const FormatDirectory = () => {
               </div>
             </div>
           </div>
-          <Button onClick={handleGetQuote} size="lg" className="bg-gradient-primary hover:opacity-90">
-            Request a Quote Now
+          <Button onClick={handleGetStarted} size="lg" className="bg-gradient-primary hover:opacity-90">
+            Submit Brief Now
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
@@ -376,14 +376,14 @@ const FormatDirectory = () => {
       <section className="py-20 px-4 bg-gradient-to-br from-primary/10 via-accent/10 to-background">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">
-            Request Your Outdoor Media Quote
+            Submit Your Campaign Brief
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Start planning today. Whether you're running a single-site campaign or a multi-format takeover, the quoting hub and client portal deliver the speed, clarity, and precision needed to make it happen.
+            Start planning today. Whether you're running a single-site campaign or a multi-format takeover, our brief submission hub and client portal deliver the speed, clarity, and precision needed to make it happen.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button onClick={handleGetQuote} size="lg" className="bg-gradient-primary hover:opacity-90">
-              Request a Quote Now
+            <Button onClick={handleGetStarted} size="lg" className="bg-gradient-primary hover:opacity-90">
+              Submit Brief Now
             </Button>
             <Button variant="outline" size="lg" onClick={() => window.location.href = "tel:+442045243019"}>
               CALL: +44 204 524 3019

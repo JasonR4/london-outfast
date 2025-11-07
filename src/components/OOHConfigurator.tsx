@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ArrowRight, Target, Users, MapPin, Clock, DollarSign, Eye, Zap } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import QuoteFormSection from './QuoteFormSection';
+import BriefFormSection from './BriefFormSection';
 import { LocationSelector } from './LocationSelector';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
@@ -1026,7 +1026,7 @@ export const OOHConfigurator = ({ onComplete }: OOHConfiguratorProps = {}) => {
 
 
   if (showQuoteForm) {
-    return <QuoteFormSection 
+    return <BriefFormSection 
       prefilledFormats={getSelectedFormats()}
       budgetRange={getBudgetRange()}
       campaignObjective={getCampaignObjective()}
