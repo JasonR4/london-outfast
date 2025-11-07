@@ -245,7 +245,7 @@ const Industries = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              onClick={() => navigate('/quote')}
+              onClick={() => navigate('/brief')}
               size="lg"
             >
               Get Custom Quote

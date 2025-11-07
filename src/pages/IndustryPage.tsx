@@ -147,7 +147,7 @@ export default function IndustryPage() {
                 <Button 
                   size="lg" 
                   className="text-lg px-8 py-6 shadow-glow"
-                  onClick={() => navigate('/quote')}
+                  onClick={() => navigate('/brief')}
                 >
                   GET MY MEDIA QUOTE
                 </Button>
@@ -155,7 +155,7 @@ export default function IndustryPage() {
                   variant="outline" 
                   size="lg" 
                   className="text-lg px-8 py-6"
-                  onClick={() => navigate('/quote')}
+                  onClick={() => navigate('/brief')}
                 >
                   REQUEST CALLBACK
                 </Button>
@@ -209,7 +209,7 @@ export default function IndustryPage() {
                 <Button 
                   size="lg" 
                   className="text-xl px-12 py-8 shadow-glow"
-                  onClick={() => navigate(section.buttonLink || '/quote')}
+                  onClick={() => navigate(section.buttonLink || '/brief')}
                 >
                   {section.buttonText || 'GET MY MEDIA QUOTE'}
                 </Button>
@@ -217,7 +217,7 @@ export default function IndustryPage() {
                   variant="outline" 
                   size="lg" 
                   className="text-xl px-12 py-8"
-                  onClick={() => navigate('/quote')}
+                  onClick={() => navigate('/brief')}
                 >
                   REQUEST CALLBACK
                 </Button>

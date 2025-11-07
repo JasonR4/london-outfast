@@ -192,7 +192,7 @@ const About: React.FC = () => {
               <Button
                 size="lg"
                 className="px-6"
-                onClick={() => navigate("/quote")}
+                onClick={() => navigate("/brief")}
                 aria-label="Start a quote – I know what I want"
               >
                 I Know What I Want
@@ -201,7 +201,7 @@ const About: React.FC = () => {
                 size="lg"
                 variant="outline"
                 className="px-6"
-                onClick={() => navigate("/configurator")}
+                onClick={() => navigate("/brief")}
                 aria-label="Guide me – I need help choosing formats"
               >
                 I Need Guidance

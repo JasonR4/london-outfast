@@ -301,7 +301,7 @@ const OOHAdvertisingLondon = () => {
                 <Button
                   size="lg"
                   className="px-6"
-                  onClick={() => navigate("/quote")}
+                  onClick={() => navigate("/brief")}
                   aria-label="Get same-day quote for OOH advertising"
                 >
                   Get Same-Day Quote
@@ -310,7 +310,7 @@ const OOHAdvertisingLondon = () => {
                   size="lg"
                   variant="outline"
                   className="px-6"
-                  onClick={() => navigate("/configurator")}
+                  onClick={() => navigate("/brief")}
                   aria-label="Configure your OOH campaign"
                 >
                   Configure Campaign

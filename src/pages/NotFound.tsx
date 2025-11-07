@@ -59,7 +59,7 @@ const NotFound = () => {
                 <p className="text-sm text-muted-foreground">Browse all available OOH formats</p>
               </Link>
               <Link 
-                to="/quote" 
+                to="/brief" 
                 className="p-4 border border-border rounded-lg hover:bg-accent transition-colors"
               >
                 <h4 className="font-semibold mb-1">Get a Quote</h4>

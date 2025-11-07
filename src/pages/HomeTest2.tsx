@@ -66,7 +66,7 @@ const HomeTest2 = () => {
             <Button 
               size="lg" 
               className="bg-london-gold hover:bg-london-gold/90 text-black py-6 text-lg font-medium"
-              onClick={() => navigate('/quote')}
+              onClick={() => navigate('/brief')}
             >
               Get Quote
             </Button>
@@ -74,7 +74,7 @@ const HomeTest2 = () => {
               size="lg" 
               variant="outline"
               className="border-2 border-slate-300 text-slate-700 hover:bg-slate-100 py-6 text-lg font-medium"
-              onClick={() => navigate('/configurator')}
+              onClick={() => navigate('/brief')}
             >
               Explore
             </Button>

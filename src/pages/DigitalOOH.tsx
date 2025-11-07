@@ -176,7 +176,7 @@ const DigitalOOH = () => {
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="px-8 py-6 text-lg">
-                  <Link to="/configurator">
+                  <Link to="/brief">
                     Smart Quote Builder
                   </Link>
                 </Button>
@@ -486,12 +486,12 @@ const DigitalOOH = () => {
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="lg" className="px-8 py-6 text-lg">
-                    <Link to="/configurator">
+                    <Link to="/brief">
                       Configure Campaign
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="lg" className="px-8 py-6 text-lg">
-                    <Link to="/quote">
+                    <Link to="/brief">
                       Get Pricing
                     </Link>
                   </Button>

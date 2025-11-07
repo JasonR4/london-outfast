@@ -224,7 +224,7 @@ const AirportAdvertising = () => {
                 <Button 
                   size="lg" 
                   variant="secondary"
-                  onClick={() => navigate('/quote')}
+                  onClick={() => navigate('/brief')}
                   className="text-sm sm:text-base lg:text-lg px-6 sm:px-8 py-3 sm:py-4 lg:py-6 bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
                 >
                   Get Airport Quote
@@ -233,7 +233,7 @@ const AirportAdvertising = () => {
                 <Button 
                   size="lg" 
                   variant="outline"
-                  onClick={() => navigate('/quote')}
+                  onClick={() => navigate('/brief')}
                   className="text-sm sm:text-base lg:text-lg px-6 sm:px-8 py-3 sm:py-4 lg:py-6 border-red-600/50 text-red-400 hover:bg-red-600/10 w-full sm:w-auto"
                 >
                   Plan Campaign
@@ -393,7 +393,7 @@ const AirportAdvertising = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
                   size="lg" 
-                  onClick={() => navigate('/quote')}
+                  onClick={() => navigate('/brief')}
                   className="text-lg px-8 py-6"
                 >
                   Get Your Airport Advertising Quote

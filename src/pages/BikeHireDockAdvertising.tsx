@@ -198,7 +198,7 @@ const BikeHireDockAdvertising = () => {
                 <Button 
                   size="lg" 
                   variant="secondary"
-                  onClick={() => navigate('/quote')}
+                  onClick={() => navigate('/brief')}
                   className="text-lg px-8 py-6 bg-red-600 hover:bg-red-700 text-white"
                 >
                   Get Dock Quote
@@ -207,7 +207,7 @@ const BikeHireDockAdvertising = () => {
                 <Button 
                   size="lg" 
                   variant="outline"
-                  onClick={() => navigate('/configurator')}
+                  onClick={() => navigate('/brief')}
                   className="text-lg px-8 py-6 border-red-600/50 text-red-400 hover:bg-red-600/10"
                 >
                   Plan Campaign
@@ -410,7 +410,7 @@ const BikeHireDockAdvertising = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
                   size="lg" 
-                  onClick={() => navigate('/quote')}
+                  onClick={() => navigate('/brief')}
                   className="text-lg px-8 py-6"
                 >
                   Search Formats
@@ -419,7 +419,7 @@ const BikeHireDockAdvertising = () => {
                 <Button 
                   size="lg" 
                   variant="outline"
-                  onClick={() => navigate('/configurator')}
+                  onClick={() => navigate('/brief')}
                   className="text-lg px-8 py-6"
                 >
                   Configure Campaign

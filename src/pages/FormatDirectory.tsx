@@ -74,7 +74,7 @@ const FormatDirectory = () => {
   };
 
   const handleGetQuote = () => {
-    navigate("/quote");
+    navigate("/brief");
   };
 
   return (

@@ -86,7 +86,7 @@ const Navigation = () => {
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
             <Link
-              to="/configurator"
+              to="/brief"
               className={`text-sm font-medium transition-colors hover:text-primary ${
                 isActive('/configurator') ? 'text-primary' : 'text-muted-foreground'
               }`}
@@ -252,7 +252,7 @@ const Navigation = () => {
             <SheetContent>
               <div className="flex flex-col space-y-4 mt-8">
                 <Link
-                  to="/configurator"
+                  to="/brief"
                   onClick={() => setIsOpen(false)}
                   className={`text-left text-lg font-medium transition-colors hover:text-primary ${
                     isActive('/configurator') ? 'text-primary' : 'text-muted-foreground'

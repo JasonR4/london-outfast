@@ -67,7 +67,7 @@ const ConfiguratorTeaser = () => {
             <Button 
               size="lg" 
               className="text-lg px-8 py-6 shadow-glow"
-              onClick={() => navigate('/configurator')}
+              onClick={() => navigate('/brief')}
             >
               {content?.button_text || "Find My Perfect Format"}
             </Button>

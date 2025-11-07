@@ -184,7 +184,7 @@ const WhatIsMediaBuying = () => {
                 <strong className="text-foreground">Media Buying London</strong> is recognised as one of London's fastest OOH media buying specialists, delivering campaigns for brands across all sectors — from retail and hospitality to tech, finance, and FMCG. Whether you need a single roadside billboard or a multi-environment London takeover, we'll deliver with speed, precision, and value.
               </p>
               <p className="mt-4">
-                <Link to="/quote" className="text-primary hover:underline font-medium">Get a quote</Link> and experience the difference specialist focus makes.
+                <Link to="/brief" className="text-primary hover:underline font-medium">Get a quote</Link> and experience the difference specialist focus makes.
               </p>
             </div>
           </section>
@@ -194,13 +194,13 @@ const WhatIsMediaBuying = () => {
         <section className="hero-cta">
           <div className="hero-cta__grid">
             {/* 1) Primary */}
-            <Link to="/quote" className="cta-card cta--quote">
+            <Link to="/brief" className="cta-card cta--quote">
               <h3>Get My Quote</h3>
               <p>Get your OOH campaign booked today.</p>
             </Link>
 
             {/* 2) Configurator */}
-            <Link to="/configurator" className="cta-card cta--config">
+            <Link to="/brief" className="cta-card cta--config">
               <h3>Use the Configurator</h3>
               <p>Answer a few quick questions and we'll recommend formats, locations, and budget split.</p>
             </Link>

@@ -34,7 +34,7 @@ const CTA = () => {
               className="text-lg px-8 py-6 shadow-glow"
               onClick={() => {
                 trackAccountCtaClicked({ location: "London" });
-                navigate('/quote');
+                navigate('/brief');
               }}
             >
               I Know What I Want
@@ -43,7 +43,7 @@ const CTA = () => {
               variant="outline" 
               size="lg" 
               className="text-lg px-8 py-6"
-              onClick={() => navigate('/configurator')}
+              onClick={() => navigate('/brief')}
             >
               I Need Guidance
             </Button>

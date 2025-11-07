@@ -77,7 +77,7 @@ const HowWeWork = () => {
   };
 
   const handleGetQuote = () => {
-    navigate('/quote');
+    navigate('/brief');
   };
 
   const entryRoutes = [

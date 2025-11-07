@@ -92,7 +92,7 @@ const PlanningTools = () => {
           <Button 
             variant="ghost" 
             className="text-accent hover:text-accent-foreground"
-            onClick={() => navigate('/configurator')}
+            onClick={() => navigate('/brief')}
           >
             Take Our Quick Assessment →
           </Button>

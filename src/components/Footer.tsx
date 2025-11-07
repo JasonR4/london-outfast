@@ -150,7 +150,7 @@ const Footer = () => {
             Same-day quotes and unbeatable rates for all London OOH formats
           </p>
           <Button asChild size="lg" className="text-lg px-8 py-6 shadow-glow">
-            <Link to="/quote">Get My Quote</Link>
+            <Link to="/brief">Get My Quote</Link>
           </Button>
         </div>
         
