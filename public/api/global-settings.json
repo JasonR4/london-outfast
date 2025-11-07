@@ -1,7 +1,7 @@
 {
   "header": {
     "nav": [
-      { "label": "Get Quote", "href": "/quote" },
+      { "label": "Submit Brief", "href": "/brief" },
       { 
         "label": "Formats", 
         "href": "/ooh",
@@ -40,8 +40,7 @@
       { 
         "title": "Services", 
         "links": [
-          { "label": "Get Quote", "href": "/quote" },
-          { "label": "Configurator", "href": "/configurator" },
+          { "label": "Submit Brief", "href": "/brief" },
           { "label": "London Underground", "href": "/ooh/london-underground" },
           { "label": "Bus Advertising", "href": "/ooh/bus-advertising" },
           { "label": "Roadside Advertising", "href": "/ooh/roadside-billboards" }

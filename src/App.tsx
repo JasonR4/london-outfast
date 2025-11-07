@@ -127,13 +127,14 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/hometest1" element={<HomeTest1 />} />
                 <Route path="/hometest2" element={<HomeTest2 />} />
-                <Route path="/quote" element={<Quote />} />
+                <Route path="/brief" element={<Brief />} />
+                <Route path="/quote" element={<Brief />} />
                 <Route path="/quote-plan" element={<QuotePlan />} />
                 <Route path="/quote-submitted" element={<QuoteSubmitted />} />
                 <Route path="/create-account" element={<CreateAccount />} />
                 <Route path="/account-created" element={<AccountCreated />} />
                 <Route path="/client-portal" element={<ClientPortal />} />
-                <Route path="/configurator" element={<Configurator />} />
+                <Route path="/configurator" element={<Brief />} />
                 <Route path="/formats" element={<RedirectToFormatDirectory />} />
                 <Route path="/outdoor-media" element={<FormatDirectory />} />
                 <Route path="/outdoor-media/:formatSlug" element={<FormatPage />} />
