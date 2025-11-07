@@ -16,11 +16,13 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { londonAreas } from '@/data/londonAreas';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type FormData = {
   environment: string[];
   formats: string;
-  market: string;
+  market: string[];
   goLiveDate: Date | undefined;
   campaignEndDate: Date | undefined;
   targetAudience: string[];
@@ -94,7 +96,7 @@ export default function Brief() {
   const [formData, setFormData] = useState<FormData>({
     environment: [],
     formats: '',
-    market: '',
+    market: [],
     goLiveDate: undefined,
     campaignEndDate: undefined,
     targetAudience: [],
@@ -142,17 +144,6 @@ export default function Brief() {
   }, []);
 
   const formatOptions = ["Static", "Digital", "Both"];
-  
-  const marketOptions = [
-    "London",
-    "New York",
-    "Dubai",
-    "Paris",
-    "Tokyo",
-    "Sydney",
-    "Singapore",
-    "Hong Kong"
-  ];
 
   const targetAudienceOptions = [
     "Families",
@@ -201,8 +192,8 @@ export default function Brief() {
     
     switch(step.id) {
       case 'market': 
-        return formData.market !== '';
-      case 'environment': 
+        return formData.market.length > 0;
+      case 'environment':
         return formData.environment.length > 0;
       case 'format': 
         return formData.formats !== '';
@@ -266,7 +257,7 @@ export default function Brief() {
         company: formData.company,
         budget_band: formData.budget,
         objective: formData.objectives.length > 0 ? formData.objectives.join(', ') : 'General campaign',
-        target_areas: formData.market ? [formData.market] : [],
+        target_areas: formData.market,
         formats: formData.environment,
         start_month: formData.goLiveDate ? format(formData.goLiveDate, 'yyyy-MM-dd') : null,
         creative_status: formData.artworkStatus && formData.artworkStatus.trim() !== '' ? formData.artworkStatus : 'Not specified',
@@ -309,7 +300,7 @@ export default function Brief() {
         end_month: formData.campaignEndDate ? format(formData.campaignEndDate, 'yyyy-MM-dd') : '',
         creative_status: briefData.creative_status || '',
         notes: briefData.notes || '',
-        market: formData.market || '',
+        market: formData.market.join(', ') || '',
         audience: formData.targetAudience.join(', ') || '',
         format_preference: formData.formats || ''
       });
@@ -328,7 +319,7 @@ export default function Brief() {
       setFormData({
         environment: [],
         formats: '',
-        market: '',
+        market: [],
         goLiveDate: undefined,
         campaignEndDate: undefined,
         targetAudience: [],
@@ -363,27 +354,46 @@ export default function Brief() {
       case 'market':
         return (
           <div className="space-y-4">
-            <Input
-              type="text"
-              value={formData.market}
-              onChange={(e) => setFormData({...formData, market: e.target.value})}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && formData.market.trim()) {
-                  toast.success(`${formData.market} saved!`);
-                }
-              }}
-              placeholder="Type a city or region... then hit Enter"
-              className="text-lg"
-            />
-            <ChipGroup
-              options={marketOptions}
-              value={formData.market}
-              onChange={(value) => {
-                setFormData({...formData, market: value as string});
-                toast.success(`${value} selected!`);
-              }}
-              multiple={false}
-            />
+            <p className="text-sm text-muted-foreground mb-4">
+              Select one or more London locations across different zones
+            </p>
+            <ScrollArea className="h-[400px] pr-4">
+              <div className="space-y-6">
+                {londonAreas.map((zone) => (
+                  <div key={zone.zone} className="space-y-3">
+                    <h3 className="font-semibold text-sm flex items-center gap-2">
+                      <span className={`w-3 h-3 rounded-full ${zone.color}`}></span>
+                      {zone.zone}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {zone.areas.map((area) => {
+                        const isSelected = formData.market.includes(area);
+                        return (
+                          <Badge
+                            key={area}
+                            variant={isSelected ? "default" : "outline"}
+                            className="cursor-pointer px-3 py-1 text-xs hover:opacity-80 transition-opacity"
+                            onClick={() => {
+                              const newMarket = isSelected
+                                ? formData.market.filter(m => m !== area)
+                                : [...formData.market, area];
+                              setFormData({...formData, market: newMarket});
+                            }}
+                          >
+                            {area}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+            {formData.market.length > 0 && (
+              <p className="text-sm text-primary mt-4">
+                ✓ {formData.market.length} location{formData.market.length !== 1 ? 's' : ''} selected
+              </p>
+            )}
           </div>
         );
       
@@ -704,7 +714,7 @@ export default function Brief() {
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Locations</p>
-                    <p className="text-base">{formData.market || 'Not specified'}</p>
+                    <p className="text-base">{formData.market.length > 0 ? formData.market.join(', ') : 'Not specified'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Start Date</p>
